@@ -322,6 +322,29 @@ backend:
         comment: "POST /api/measurements/analyze-floorplan endpoint tested successfully. AI analysis of floor plan images works correctly using emergentintegrations LLM with GPT-4o vision model. Returns structured analysis of room dimensions."
 
 frontend:
+  - task: "Profile - Warranty Reminder Settings"
+    implemented: true
+    working: "NA"
+    file: "frontend/app/(tabs)/profile.tsx"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "Implemented warranty reminder settings in profile page. Users can now tap on the warranty reminder preference card to open a modal and select between 7, 14, or 30 days before expiry. The selection is saved to the backend via PUT /api/auth/profile with warranty_reminder_days parameter. UI includes three option cards with icons and visual feedback for the selected option."
+
+  - task: "Near Me Feature - Location-based Services"
+    implemented: true
+    working: "NA"
+    file: "frontend/screens/property/NearMeScreen.tsx"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "Implemented 'Near Me' feature as a new tab in property details. Uses OpenStreetMap Nominatim API for geocoding property address and Overpass API to find nearby places (hospitals, schools, malls, restaurants, banks, pharmacies, fuel stations, police stations) within 2km radius. Features include: category filtering, distance calculation, sortable list by distance, tap to open in Google Maps for navigation. No API key required as using free OpenStreetMap services."
   # No frontend testing performed as per instructions
 
 metadata:
