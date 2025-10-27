@@ -57,6 +57,7 @@ export default function FixturesScreen({ propertyId }: FixturesScreenProps) {
   const [warrantyExpiryDate, setWarrantyExpiryDate] = useState('');
   const [photo, setPhoto] = useState('');
   const [invoice, setInvoice] = useState('');
+  const [isDatePickerVisible, setDatePickerVisibility] = useState(false);
 
   useEffect(() => {
     fetchFixtures();
