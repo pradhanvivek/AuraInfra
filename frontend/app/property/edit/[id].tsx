@@ -117,7 +117,7 @@ export default function EditPropertyScreen() {
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
         style={styles.content}
       >
-        <ScrollView style={styles.scrollView} keyboardShouldPersistTaps="handled">
+        <View style={styles.formContainer}>
           <View style={styles.section}>
             <Text style={styles.label}>Property Name</Text>
             <TextInput
@@ -177,6 +177,7 @@ export default function EditPropertyScreen() {
                     shadowOffset: { width: 0, height: 2 },
                     shadowOpacity: 0.1,
                     shadowRadius: 4,
+                    maxHeight: 200,
                   },
                   row: {
                     backgroundColor: '#fff',
@@ -251,7 +252,7 @@ export default function EditPropertyScreen() {
               Select an address from the dropdown to automatically capture coordinates for accurate nearby place suggestions.
             </Text>
           </View>
-        </ScrollView>
+        </View>
       </KeyboardAvoidingView>
     </SafeAreaView>
   );
