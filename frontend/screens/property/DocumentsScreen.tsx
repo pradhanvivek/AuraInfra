@@ -269,13 +269,16 @@ export default function DocumentsScreen({ propertyId }: DocumentsScreenProps) {
       >
         <View style={styles.viewModalContainer}>
           <View style={styles.viewModalHeader}>
-            <TouchableOpacity onPress={() => setViewModalVisible(false)}>
+            <TouchableOpacity 
+              style={styles.closeButton}
+              onPress={() => setViewModalVisible(false)}
+            >
               <Ionicons name="close" size={28} color="#007AFF" />
             </TouchableOpacity>
             <Text style={styles.viewModalTitle} numberOfLines={1}>
               {selectedDocument?.name}
             </Text>
-            <View style={{ width: 28 }} />
+            <View style={{ width: 44 }} />
           </View>
 
           <ScrollView 
