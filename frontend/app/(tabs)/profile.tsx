@@ -39,6 +39,8 @@ export default function Profile() {
   const [saving, setSaving] = useState(false);
   const [warrantyModalVisible, setWarrantyModalVisible] = useState(false);
   const [selectedReminderDays, setSelectedReminderDays] = useState(30);
+  const [geomancyModalVisible, setGeomancyModalVisible] = useState(false);
+  const [selectedGeomancy, setSelectedGeomancy] = useState<'vastu' | 'feng_shui'>('vastu');
 
   useEffect(() => {
     fetchProfile();
