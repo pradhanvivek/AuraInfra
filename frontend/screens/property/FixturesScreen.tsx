@@ -1,0 +1,568 @@
+import { useState, useEffect } from 'react';
+import {
+  View,
+  Text,
+  StyleSheet,
+  FlatList,
+  TouchableOpacity,
+  ActivityIndicator,
+  Alert,
+  Modal,
+  TextInput,
+  ScrollView,
+  KeyboardAvoidingView,
+  Platform,
+  Image,
+} from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
+import * as ImagePicker from 'expo-image-picker';
+import { useAuth } from '../../contexts/AuthContext';
+import { fixtureApi } from '../../services/api';
+
+interface Fixture {
+  id: string;
+  name: string;
+  category: string;
+  make?: string;
+  model?: string;
+  serial_number?: string;
+  warranty_info?: string;
+  photo?: string;
+}
+
+interface FixturesScreenProps {
+  propertyId: string;
+}
+
+export default function FixturesScreen({ propertyId }: FixturesScreenProps) {
+  const { token } = useAuth();
+  const [fixtures, setFixtures] = useState<Fixture[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [modalVisible, setModalVisible] = useState(false);
+  const [detailsModalVisible, setDetailsModalVisible] = useState(false);
+  const [selectedFixture, setSelectedFixture] = useState<Fixture | null>(null);
+  const [saving, setSaving] = useState(false);
+
+  // Form state
+  const [name, setName] = useState('');
+  const [category, setCategory] = useState('lights');
+  const [make, setMake] = useState('');
+  const [model, setModel] = useState('');
+  const [serialNumber, setSerialNumber] = useState('');
+  const [warrantyInfo, setWarrantyInfo] = useState('');
+  const [photo, setPhoto] = useState('');
+
+  useEffect(() => {
+    fetchFixtures();
+  }, []);
+
+  const fetchFixtures = async () => {
+    try {
+      const data = await fixtureApi.getAll(token!, propertyId);
+      setFixtures(data);
+    } catch (error: any) {
+      Alert.alert('Error', error.message || 'Failed to load fixtures');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const resetForm = () => {
+    setName('');
+    setCategory('lights');
+    setMake('');
+    setModel('');
+    setSerialNumber('');
+    setWarrantyInfo('');
+    setPhoto('');
+  };
+
+  const handleAddFixture = async () => {
+    if (!name) {
+      Alert.alert('Error', 'Please enter a name');
+      return;
+    }
+
+    setSaving(true);
+    try {
+      await fixtureApi.create(token!, propertyId, {
+        name,
+        category,
+        make: make || undefined,
+        model: model || undefined,
+        serial_number: serialNumber || undefined,
+        warranty_info: warrantyInfo || undefined,
+        photo: photo || undefined,
+      });
+
+      Alert.alert('Success', 'Fixture added successfully');
+      setModalVisible(false);
+      resetForm();
+      fetchFixtures();
+    } catch (error: any) {
+      Alert.alert('Error', error.message || 'Failed to add fixture');
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const handlePickImage = async () => {
+    const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+    if (status !== 'granted') {
+      Alert.alert('Permission Required', 'Please grant camera roll permissions');
+      return;
+    }
+
+    const result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      allowsEditing: true,
+      quality: 0.7,
+      base64: true,
+    });
+
+    if (!result.canceled && result.assets[0].base64) {
+      setPhoto(result.assets[0].base64);
+    }
+  };
+
+  const handleFixturePress = async (fixture: Fixture) => {
+    setSelectedFixture(fixture);
+    setDetailsModalVisible(true);
+  };
+
+  const getCategoryIcon = (category: string) => {
+    switch (category) {
+      case 'lights':
+        return 'bulb-outline';
+      case 'fans':
+        return 'sync-outline';
+      case 'electrical appliances':
+        return 'hardware-chip-outline';
+      default:
+        return 'cube-outline';
+    }
+  };
+
+  const renderFixture = ({ item }: { item: Fixture }) => (
+    <TouchableOpacity style={styles.fixtureCard} onPress={() => handleFixturePress(item)}>
+      <View style={styles.fixtureIcon}>
+        <Ionicons name={getCategoryIcon(item.category)} size={24} color="#007AFF" />
+      </View>
+      <View style={styles.fixtureInfo}>
+        <Text style={styles.fixtureName}>{item.name}</Text>
+        <Text style={styles.fixtureCategory}>{item.category}</Text>
+      </View>
+      <Ionicons name="chevron-forward" size={20} color="#C7C7CC" />
+    </TouchableOpacity>
+  );
+
+  if (loading) {
+    return (
+      <View style={styles.centerContainer}>
+        <ActivityIndicator size="large" color="#007AFF" />
+      </View>
+    );
+  }
+
+  return (
+    <View style={styles.container}>
+      {fixtures.length === 0 ? (
+        <View style={styles.emptyContainer}>
+          <Ionicons name="hardware-chip-outline" size={64} color="#C7C7CC" />
+          <Text style={styles.emptyText}>No fixtures yet</Text>
+          <Text style={styles.emptySubtext}>Add your first fixture</Text>
+        </View>
+      ) : (
+        <FlatList
+          data={fixtures}
+          renderItem={renderFixture}
+          keyExtractor={(item) => item.id}
+          contentContainerStyle={styles.listContent}
+        />
+      )}
+
+      <TouchableOpacity
+        style={styles.fab}
+        onPress={() => setModalVisible(true)}
+      >
+        <Ionicons name="add" size={28} color="#fff" />
+      </TouchableOpacity>
+
+      {/* Add Fixture Modal */}
+      <Modal
+        visible={modalVisible}
+        animationType="slide"
+        presentationStyle="pageSheet"
+        onRequestClose={() => setModalVisible(false)}
+      >
+        <KeyboardAvoidingView
+          behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+          style={styles.modalContainer}
+        >
+          <View style={styles.modalHeader}>
+            <TouchableOpacity onPress={() => setModalVisible(false)}>
+              <Text style={styles.cancelButton}>Cancel</Text>
+            </TouchableOpacity>
+            <Text style={styles.modalTitle}>Add Fixture</Text>
+            <TouchableOpacity onPress={handleAddFixture} disabled={saving}>
+              <Text style={[styles.saveButton, saving && styles.saveButtonDisabled]}>
+                {saving ? 'Saving...' : 'Save'}
+              </Text>
+            </TouchableOpacity>
+          </View>
+
+          <ScrollView style={styles.modalContent}>
+            <Text style={styles.label}>Name *</Text>
+            <TextInput
+              style={styles.input}
+              placeholder="e.g., Living Room Ceiling Fan"
+              value={name}
+              onChangeText={setName}
+            />
+
+            <Text style={styles.label}>Category *</Text>
+            <View style={styles.categoryContainer}>
+              {['lights', 'fans', 'electrical appliances'].map((cat) => (
+                <TouchableOpacity
+                  key={cat}
+                  style={[
+                    styles.categoryButton,
+                    category === cat && styles.categoryButtonActive,
+                  ]}
+                  onPress={() => setCategory(cat)}
+                >
+                  <Text
+                    style={[
+                      styles.categoryButtonText,
+                      category === cat && styles.categoryButtonTextActive,
+                    ]}
+                  >
+                    {cat.charAt(0).toUpperCase() + cat.slice(1)}
+                  </Text>
+                </TouchableOpacity>
+              ))}
+            </View>
+
+            <Text style={styles.label}>Make</Text>
+            <TextInput
+              style={styles.input}
+              placeholder="Brand name"
+              value={make}
+              onChangeText={setMake}
+            />
+
+            <Text style={styles.label}>Model</Text>
+            <TextInput
+              style={styles.input}
+              placeholder="Model number"
+              value={model}
+              onChangeText={setModel}
+            />
+
+            <Text style={styles.label}>Serial Number</Text>
+            <TextInput
+              style={styles.input}
+              placeholder="Serial number"
+              value={serialNumber}
+              onChangeText={setSerialNumber}
+            />
+
+            <Text style={styles.label}>Warranty Information</Text>
+            <TextInput
+              style={[styles.input, styles.textArea]}
+              placeholder="Warranty details"
+              value={warrantyInfo}
+              onChangeText={setWarrantyInfo}
+              multiline
+              numberOfLines={3}
+              textAlignVertical="top"
+            />
+
+            <Text style={styles.label}>Photo (Optional)</Text>
+            <TouchableOpacity style={styles.photoButton} onPress={handlePickImage}>
+              {photo ? (
+                <Image
+                  source={{ uri: `data:image/jpeg;base64,${photo}` }}
+                  style={styles.photoPreview}
+                />
+              ) : (
+                <View style={styles.photoPlaceholder}>
+                  <Ionicons name="camera-outline" size={32} color="#8E8E93" />
+                  <Text style={styles.photoPlaceholderText}>Add Photo</Text>
+                </View>
+              )}
+            </TouchableOpacity>
+          </ScrollView>
+        </KeyboardAvoidingView>
+      </Modal>
+
+      {/* Details Modal */}
+      <Modal
+        visible={detailsModalVisible}
+        animationType="slide"
+        presentationStyle="pageSheet"
+        onRequestClose={() => setDetailsModalVisible(false)}
+      >
+        <View style={styles.modalContainer}>
+          <View style={styles.modalHeader}>
+            <TouchableOpacity onPress={() => setDetailsModalVisible(false)}>
+              <Text style={styles.cancelButton}>Close</Text>
+            </TouchableOpacity>
+            <Text style={styles.modalTitle}>Fixture Details</Text>
+            <View style={{ width: 50 }} />
+          </View>
+
+          <ScrollView style={styles.modalContent}>
+            {selectedFixture?.photo && (
+              <Image
+                source={{ uri: `data:image/jpeg;base64,${selectedFixture.photo}` }}
+                style={styles.detailsPhoto}
+              />
+            )}
+
+            <View style={styles.detailsRow}>
+              <Text style={styles.detailsLabel}>Name</Text>
+              <Text style={styles.detailsValue}>{selectedFixture?.name}</Text>
+            </View>
+
+            <View style={styles.detailsRow}>
+              <Text style={styles.detailsLabel}>Category</Text>
+              <Text style={styles.detailsValue}>{selectedFixture?.category}</Text>
+            </View>
+
+            {selectedFixture?.make && (
+              <View style={styles.detailsRow}>
+                <Text style={styles.detailsLabel}>Make</Text>
+                <Text style={styles.detailsValue}>{selectedFixture.make}</Text>
+              </View>
+            )}
+
+            {selectedFixture?.model && (
+              <View style={styles.detailsRow}>
+                <Text style={styles.detailsLabel}>Model</Text>
+                <Text style={styles.detailsValue}>{selectedFixture.model}</Text>
+              </View>
+            )}
+
+            {selectedFixture?.serial_number && (
+              <View style={styles.detailsRow}>
+                <Text style={styles.detailsLabel}>Serial Number</Text>
+                <Text style={styles.detailsValue}>{selectedFixture.serial_number}</Text>
+              </View>
+            )}
+
+            {selectedFixture?.warranty_info && (
+              <View style={styles.detailsRow}>
+                <Text style={styles.detailsLabel}>Warranty Information</Text>
+                <Text style={styles.detailsValue}>{selectedFixture.warranty_info}</Text>
+              </View>
+            )}
+          </ScrollView>
+        </View>
+      </Modal>
+    </View>
+  );
+}
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: '#F2F2F7',
+  },
+  centerContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  listContent: {
+    padding: 16,
+  },
+  fixtureCard: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#fff',
+    borderRadius: 12,
+    padding: 16,
+    marginBottom: 12,
+  },
+  fixtureIcon: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    backgroundColor: '#E3F2FD',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: 12,
+  },
+  fixtureInfo: {
+    flex: 1,
+  },
+  fixtureName: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#000',
+    marginBottom: 4,
+  },
+  fixtureCategory: {
+    fontSize: 14,
+    color: '#8E8E93',
+    textTransform: 'capitalize',
+  },
+  emptyContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 32,
+  },
+  emptyText: {
+    fontSize: 20,
+    fontWeight: '600',
+    color: '#000',
+    marginTop: 16,
+  },
+  emptySubtext: {
+    fontSize: 14,
+    color: '#8E8E93',
+    marginTop: 8,
+  },
+  fab: {
+    position: 'absolute',
+    right: 16,
+    bottom: 16,
+    width: 56,
+    height: 56,
+    borderRadius: 28,
+    backgroundColor: '#007AFF',
+    justifyContent: 'center',
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 4,
+    elevation: 5,
+  },
+  modalContainer: {
+    flex: 1,
+    backgroundColor: '#F2F2F7',
+  },
+  modalHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    padding: 16,
+    backgroundColor: '#fff',
+    borderBottomWidth: 1,
+    borderBottomColor: '#E5E5EA',
+  },
+  modalTitle: {
+    fontSize: 17,
+    fontWeight: '600',
+    color: '#000',
+  },
+  cancelButton: {
+    fontSize: 16,
+    color: '#007AFF',
+  },
+  saveButton: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#007AFF',
+  },
+  saveButtonDisabled: {
+    opacity: 0.5,
+  },
+  modalContent: {
+    flex: 1,
+    padding: 16,
+  },
+  label: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#000',
+    marginBottom: 8,
+    marginTop: 16,
+  },
+  input: {
+    backgroundColor: '#fff',
+    borderRadius: 12,
+    padding: 16,
+    fontSize: 16,
+    borderWidth: 1,
+    borderColor: '#E5E5EA',
+  },
+  textArea: {
+    height: 100,
+    paddingTop: 16,
+  },
+  categoryContainer: {
+    flexDirection: 'row',
+    gap: 8,
+  },
+  categoryButton: {
+    flex: 1,
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    borderRadius: 12,
+    backgroundColor: '#fff',
+    borderWidth: 1,
+    borderColor: '#E5E5EA',
+    alignItems: 'center',
+  },
+  categoryButtonActive: {
+    backgroundColor: '#007AFF',
+    borderColor: '#007AFF',
+  },
+  categoryButtonText: {
+    fontSize: 14,
+    fontWeight: '500',
+    color: '#000',
+  },
+  categoryButtonTextActive: {
+    color: '#fff',
+  },
+  photoButton: {
+    backgroundColor: '#fff',
+    borderRadius: 12,
+    overflow: 'hidden',
+    borderWidth: 1,
+    borderColor: '#E5E5EA',
+  },
+  photoPlaceholder: {
+    height: 200,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  photoPlaceholderText: {
+    marginTop: 8,
+    fontSize: 14,
+    color: '#8E8E93',
+  },
+  photoPreview: {
+    width: '100%',
+    height: 200,
+    resizeMode: 'cover',
+  },
+  detailsPhoto: {
+    width: '100%',
+    height: 250,
+    borderRadius: 12,
+    marginBottom: 16,
+    resizeMode: 'cover',
+  },
+  detailsRow: {
+    backgroundColor: '#fff',
+    borderRadius: 12,
+    padding: 16,
+    marginBottom: 12,
+  },
+  detailsLabel: {
+    fontSize: 14,
+    color: '#8E8E93',
+    marginBottom: 4,
+  },
+  detailsValue: {
+    fontSize: 16,
+    color: '#000',
+    fontWeight: '500',
+  },
+});
