@@ -255,6 +255,7 @@ export default function EditPropertyScreen() {
                   url: 'https://cors-anywhere.herokuapp.com/https://maps.googleapis.com/maps/api',
                 }}
               />
+              </View>
             ) : (
               <TextInput
                 style={styles.input}
