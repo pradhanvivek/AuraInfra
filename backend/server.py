@@ -1062,7 +1062,16 @@ async def get_vastu_analyses(property_id: str, user_id: str = Depends(get_curren
     if not property_doc:
         raise HTTPException(status_code=404, detail="Property not found")
     
-    analyses = await db.vastu_analysis.find({"property_id": property_id}).to_list(1000)
+    # Get user's current geomancy preference
+    user_doc = await db.users.find_one({"id": user_id})
+    geomancy_preference = user_doc.get("geomancy_preference", "vastu") if user_doc else "vastu"
+    
+    # Filter analyses by geomancy type matching user's current preference
+    analyses = await db.vastu_analysis.find({
+        "property_id": property_id,
+        "geomancy_type": geomancy_preference
+    }).to_list(1000)
+    
     return [VastuAnalysis(**a) for a in analyses]
 
 @api_router.delete("/properties/{property_id}/vastu/{vastu_id}")
