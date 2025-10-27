@@ -436,6 +436,12 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: '#8E8E93',
   },
+  pdfBadge: {
+    fontSize: 12,
+    color: '#007AFF',
+    marginTop: 4,
+    fontWeight: '500',
+  },
   deleteButton: {
     padding: 8,
   },
