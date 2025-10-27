@@ -361,6 +361,10 @@ const styles = StyleSheet.create({
   },
   listContent: {
     padding: 16,
+    paddingTop: 8,
+  },
+  flatList: {
+    flex: 1,
   },
   documentCard: {
     flexDirection: 'row',
