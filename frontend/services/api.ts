@@ -207,6 +207,35 @@ export const measurementApi = {
   },
 };
 
+// Notification API
+export const notificationApi = {
+  getAll: async (token: string) => {
+    const response = await axios.get(
+      `${API_URL}/api/notifications`,
+      getAuthHeaders(token)
+    );
+    return response.data;
+  },
+
+  markAsRead: async (token: string, notificationId: string) => {
+    const response = await axios.put(
+      `${API_URL}/api/notifications/${notificationId}/read`,
+      {},
+      getAuthHeaders(token)
+    );
+    return response.data;
+  },
+
+  checkWarranties: async (token: string) => {
+    const response = await axios.post(
+      `${API_URL}/api/notifications/check-warranties`,
+      {},
+      getAuthHeaders(token)
+    );
+    return response.data;
+  },
+};
+
 // Vastu API
 export const vastuApi = {
   getAll: async (token: string, propertyId: string) => {
