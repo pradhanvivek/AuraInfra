@@ -117,29 +117,37 @@ export default function NearMeScreen({ propertyId }: NearMeScreenProps) {
     try {
       // Fetch nearby places using Overpass API
       const radius = 2000; // 2km radius
-      const overpassQuery = `
-        [out:json];
-        (
-          node["amenity"="hospital"](around:${radius},${lat},${lon});
-          node["amenity"="school"](around:${radius},${lat},${lon});
-          node["shop"="mall"](around:${radius},${lat},${lon});
-          node["amenity"="restaurant"](around:${radius},${lat},${lon});
-          node["amenity"="bank"](around:${radius},${lat},${lon});
-          node["amenity"="pharmacy"](around:${radius},${lat},${lon});
-          node["amenity"="fuel"](around:${radius},${lat},${lon});
-          node["amenity"="police"](around:${radius},${lat},${lon});
-        );
-        out body;
-      `;
+      const overpassQuery = `[out:json];(node["amenity"="hospital"](around:${radius},${lat},${lon});node["amenity"="school"](around:${radius},${lat},${lon});node["shop"="mall"](around:${radius},${lat},${lon});node["amenity"="restaurant"](around:${radius},${lat},${lon});node["amenity"="bank"](around:${radius},${lat},${lon});node["amenity"="pharmacy"](around:${radius},${lat},${lon});node["amenity"="fuel"](around:${radius},${lat},${lon});node["amenity"="police"](around:${radius},${lat},${lon}););out body;`;
 
       const overpassResponse = await fetch(
         'https://overpass-api.de/api/interpreter',
         {
           method: 'POST',
-          body: overpassQuery,
+          headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+          },
+          body: `data=${encodeURIComponent(overpassQuery)}`,
         }
       );
-      const overpassData = await overpassResponse.json();
+
+      if (!overpassResponse.ok) {
+        throw new Error(`Overpass API error: ${overpassResponse.status}`);
+      }
+
+      const responseText = await overpassResponse.text();
+      let overpassData;
+      
+      try {
+        overpassData = JSON.parse(responseText);
+      } catch (parseError) {
+        console.error('JSON parse error:', responseText.substring(0, 200));
+        throw new Error('Failed to parse nearby places data');
+      }
+
+      if (!overpassData.elements || overpassData.elements.length === 0) {
+        setPlaces([]);
+        return;
+      }
 
       // Process and calculate distances
       const nearbyPlaces: NearbyPlace[] = overpassData.elements.map((element: any) => {
