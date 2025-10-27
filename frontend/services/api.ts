@@ -272,10 +272,13 @@ export const vastuApi = {
     return response.data;
   },
 
-  create: async (token: string, propertyId: string, imageBase64: string) => {
+  create: async (token: string, propertyId: string, imageBase64: string, geomancyType: string = 'vastu') => {
     const response = await axios.post(
       `${API_URL}/api/properties/${propertyId}/vastu`,
-      { floor_plan_image: imageBase64 },
+      { 
+        floor_plan_image: imageBase64,
+        geomancy_type: geomancyType
+      },
       getAuthHeaders(token)
     );
     return response.data;
