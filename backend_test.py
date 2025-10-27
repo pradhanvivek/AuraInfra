@@ -633,6 +633,25 @@ class PropertyManagerAPITester:
         self.test_user_registration()
         self.test_user_login()
         
+        # Profile/Warranty Reminder Tests
+        print("\n👤 PROFILE & WARRANTY REMINDER TESTS")
+        print("-" * 30)
+        self.test_get_profile_default_warranty_days()
+        
+        # Test valid warranty days updates
+        valid_days = [7, 14, 30]
+        for days in valid_days:
+            self.test_update_warranty_days_valid(days)
+        
+        # Test invalid warranty days (should be rejected)
+        invalid_days = [1, 5, 15, 60, 0, -1, 100]
+        for days in invalid_days:
+            self.test_update_warranty_days_invalid(days)
+        
+        # Test persistence for each valid value
+        for days in valid_days:
+            self.test_warranty_days_persistence(days)
+        
         # Property Tests
         print("\n🏠 PROPERTY TESTS")
         print("-" * 30)
