@@ -20,7 +20,7 @@ export const authApi = {
     return response.data;
   },
 
-  updateProfile: async (token: string, data: { email?: string; phone?: string }) => {
+  updateProfile: async (token: string, data: { email?: string; phone?: string; warranty_reminder_days?: number }) => {
     const response = await axios.put(
       `${API_URL}/api/auth/profile`,
       data,
