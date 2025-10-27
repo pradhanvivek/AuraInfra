@@ -47,7 +47,7 @@ export default function DocumentsScreen({ propertyId }: DocumentsScreenProps) {
 
   const handleUploadDocument = async () => {
     try {
-      // First try with images using ImagePicker for better mobile support
+      // Use ImagePicker for better mobile support with base64
       const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
       
       if (status !== 'granted') {
@@ -70,23 +70,11 @@ export default function DocumentsScreen({ propertyId }: DocumentsScreenProps) {
       const file = result.assets[0];
 
       try {
-        // Use base64 if available, otherwise read from URI
-        let base64Data = file.base64;
+        // Get base64 data
+        const base64Data = file.base64;
         
-        if (!base64Data && file.uri) {
-          // Try to read from file system
-          try {
-            base64Data = await FileSystem.readAsStringAsync(file.uri, {
-              encoding: FileSystem.EncodingType.Base64,
-            });
-          } catch (fsError) {
-            console.error('FileSystem read error:', fsError);
-            throw new Error('Unable to read file. Please try a different file.');
-          }
-        }
-
         if (!base64Data) {
-          throw new Error('Unable to process file. Please try again.');
+          throw new Error('Unable to process file. Please try again with an image or photo.');
         }
 
         // Determine file name and type
@@ -107,7 +95,7 @@ export default function DocumentsScreen({ propertyId }: DocumentsScreenProps) {
       }
     } catch (error: any) {
       console.error('Document picker error:', error);
-      Alert.alert('Error', error.message || 'Failed to upload document');
+      Alert.alert('Error', error.message || 'Failed to upload document. Please try with an image or photo.');
     } finally {
       setUploading(false);
     }
