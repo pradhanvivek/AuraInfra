@@ -1,7 +1,30 @@
 import { Tabs } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
+import { useState, useEffect } from 'react';
+import { useAuth } from '../../contexts/AuthContext';
+import { notificationApi } from '../../services/api';
+import { View, Text, StyleSheet } from 'react-native';
 
 export default function TabsLayout() {
+  const { token } = useAuth();
+  const [unreadCount, setUnreadCount] = useState(0);
+
+  useEffect(() => {
+    fetchUnreadCount();
+    // Check for warranties on mount
+    notificationApi.checkWarranties(token!).catch(console.error);
+  }, []);
+
+  const fetchUnreadCount = async () => {
+    try {
+      const notifications = await notificationApi.getAll(token!);
+      const unread = notifications.filter((n: any) => !n.is_read).length;
+      setUnreadCount(unread);
+    } catch (error) {
+      console.error('Error fetching notifications:', error);
+    }
+  };
+
   return (
     <Tabs
       screenOptions={{
@@ -38,6 +61,29 @@ export default function TabsLayout() {
         }}
       />
       <Tabs.Screen
+        name="notifications"
+        options={{
+          title: 'Notifications',
+          tabBarIcon: ({ color, size }) => (
+            <View>
+              <Ionicons name="notifications-outline" size={size} color={color} />
+              {unreadCount > 0 && (
+                <View style={styles.badge}>
+                  <Text style={styles.badgeText}>
+                    {unreadCount > 9 ? '9+' : unreadCount}
+                  </Text>
+                </View>
+              )}
+            </View>
+          ),
+        }}
+        listeners={{
+          tabPress: () => {
+            fetchUnreadCount();
+          },
+        }}
+      />
+      <Tabs.Screen
         name="profile"
         options={{
           title: 'Profile',
@@ -49,3 +95,23 @@ export default function TabsLayout() {
     </Tabs>
   );
 }
+
+const styles = StyleSheet.create({
+  badge: {
+    position: 'absolute',
+    right: -6,
+    top: -3,
+    backgroundColor: '#FF3B30',
+    borderRadius: 10,
+    minWidth: 18,
+    height: 18,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingHorizontal: 4,
+  },
+  badgeText: {
+    color: '#fff',
+    fontSize: 10,
+    fontWeight: 'bold',
+  },
+});
