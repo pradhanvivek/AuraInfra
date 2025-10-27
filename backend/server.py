@@ -564,6 +564,72 @@ async def delete_measurement(
     
     return {"message": "Measurement deleted successfully"}
 
+# ============= NOTIFICATION ENDPOINTS =============
+
+@api_router.get("/notifications")
+async def get_notifications(user_id: str = Depends(get_current_user)):
+    notifications = await db.notifications.find({"user_id": user_id}).sort("created_at", -1).to_list(100)
+    return [Notification(**n) for n in notifications]
+
+@api_router.put("/notifications/{notification_id}/read")
+async def mark_notification_read(notification_id: str, user_id: str = Depends(get_current_user)):
+    result = await db.notifications.update_one(
+        {"id": notification_id, "user_id": user_id},
+        {"$set": {"is_read": True}}
+    )
+    if result.matched_count == 0:
+        raise HTTPException(status_code=404, detail="Notification not found")
+    return {"message": "Notification marked as read"}
+
+@api_router.post("/notifications/check-warranties")
+async def check_warranty_expiries(user_id: str = Depends(get_current_user)):
+    """Check for warranty expiries and create notifications"""
+    # Get user settings
+    user_doc = await db.users.find_one({"id": user_id})
+    reminder_days = user_doc.get("warranty_reminder_days", 30)
+    
+    # Get all user's properties
+    properties = await db.properties.find({"user_id": user_id}).to_list(1000)
+    property_ids = [p["id"] for p in properties]
+    
+    # Get all fixtures with warranty expiry dates
+    fixtures = await db.fixtures.find({
+        "property_id": {"$in": property_ids},
+        "warranty_expiry_date": {"$ne": None}
+    }).to_list(1000)
+    
+    notifications_created = 0
+    today = datetime.utcnow()
+    target_date = today + timedelta(days=reminder_days)
+    
+    for fixture in fixtures:
+        expiry_date = datetime.fromisoformat(fixture["warranty_expiry_date"])
+        days_until_expiry = (expiry_date - today).days
+        
+        # Check if we should create a notification
+        if 0 <= days_until_expiry <= reminder_days:
+            # Check if notification already exists
+            existing = await db.notifications.find_one({
+                "user_id": user_id,
+                "fixture_id": fixture["id"],
+                "type": "warranty_expiry"
+            })
+            
+            if not existing:
+                notification = Notification(
+                    user_id=user_id,
+                    property_id=fixture["property_id"],
+                    fixture_id=fixture["id"],
+                    fixture_name=fixture["name"],
+                    title="Warranty Expiring Soon",
+                    message=f"The warranty for {fixture['name']} expires in {days_until_expiry} days on {expiry_date.strftime('%Y-%m-%d')}.",
+                    type="warranty_expiry"
+                )
+                await db.notifications.insert_one(notification.dict())
+                notifications_created += 1
+    
+    return {"message": f"Created {notifications_created} warranty notifications"}
+
 # ============= AI FLOOR PLAN ANALYSIS =============
 
 @api_router.post("/measurements/analyze-floorplan")
