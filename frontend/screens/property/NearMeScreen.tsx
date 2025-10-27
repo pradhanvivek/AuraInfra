@@ -115,19 +115,6 @@ export default function NearMeScreen({ propertyId }: NearMeScreenProps) {
 
   const fetchNearbyPlaces = async (lat: number, lon: number) => {
     try {
-      // First, geocode the address to get coordinates
-      const geocodeResponse = await fetch(
-        `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(address)}`
-      );
-      const geocodeData = await geocodeResponse.json();
-      
-      if (geocodeData.length === 0) {
-        Alert.alert('Error', 'Could not find coordinates for this address');
-        return;
-      }
-
-      const { lat, lon } = geocodeData[0];
-
       // Fetch nearby places using Overpass API
       const radius = 2000; // 2km radius
       const overpassQuery = `
@@ -157,8 +144,8 @@ export default function NearMeScreen({ propertyId }: NearMeScreenProps) {
       // Process and calculate distances
       const nearbyPlaces: NearbyPlace[] = overpassData.elements.map((element: any) => {
         const distance = calculateDistance(
-          parseFloat(lat),
-          parseFloat(lon),
+          lat,
+          lon,
           element.lat,
           element.lon
         );
