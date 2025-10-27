@@ -453,11 +453,30 @@ const styles = StyleSheet.create({
   fixtureInfo: {
     flex: 1,
   },
+  fixtureNameRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 4,
+  },
   fixtureName: {
     fontSize: 16,
     fontWeight: '600',
     color: '#000',
-    marginBottom: 4,
+    marginRight: 8,
+  },
+  warrantyBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#E8F5E9',
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+    borderRadius: 4,
+    gap: 4,
+  },
+  warrantyBadgeText: {
+    fontSize: 10,
+    fontWeight: '600',
+    color: '#34C759',
   },
   fixtureCategory: {
     fontSize: 14,
