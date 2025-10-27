@@ -129,7 +129,7 @@ export default function FixturesScreen({ propertyId }: FixturesScreenProps) {
 
     setSaving(true);
     try {
-      await fixtureApi.create(token!, propertyId, {
+      const fixtureData = {
         name,
         category,
         make: make || undefined,
@@ -139,14 +139,23 @@ export default function FixturesScreen({ propertyId }: FixturesScreenProps) {
         warranty_expiry_date: warrantyExpiryDate || undefined,
         photo: photo || undefined,
         invoice: invoice || undefined,
-      });
+      };
 
-      Alert.alert('Success', 'Fixture added successfully');
+      if (isEditMode && editingFixtureId) {
+        // Update existing fixture
+        await fixtureApi.update(token!, propertyId, editingFixtureId, fixtureData);
+        Alert.alert('Success', 'Fixture updated successfully');
+      } else {
+        // Create new fixture
+        await fixtureApi.create(token!, propertyId, fixtureData);
+        Alert.alert('Success', 'Fixture added successfully');
+      }
+
       setModalVisible(false);
       resetForm();
       fetchFixtures();
     } catch (error: any) {
-      Alert.alert('Error', error.message || 'Failed to add fixture');
+      Alert.alert('Error', error.message || `Failed to ${isEditMode ? 'update' : 'add'} fixture`);
     } finally {
       setSaving(false);
     }
