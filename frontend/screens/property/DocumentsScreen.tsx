@@ -450,9 +450,10 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     alignItems: 'center',
     paddingHorizontal: 16,
-    paddingTop: 50,
-    paddingBottom: 16,
+    paddingVertical: 16,
     backgroundColor: '#000',
+    borderBottomWidth: 1,
+    borderBottomColor: 'rgba(255, 255, 255, 0.1)',
   },
   closeButton: {
     width: 44,
@@ -475,16 +476,38 @@ const styles = StyleSheet.create({
   },
   viewModalContentContainer: {
     flexGrow: 1,
+    paddingBottom: 20,
   },
   documentImage: {
     width: '100%',
-    height: 500,
+    height: 400,
+    maxHeight: 400,
     backgroundColor: '#000',
+  },
+  pdfPlaceholder: {
+    width: '100%',
+    height: 300,
+    backgroundColor: '#1C1C1E',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginVertical: 20,
+  },
+  pdfText: {
+    fontSize: 18,
+    fontWeight: '600',
+    color: '#fff',
+    marginTop: 16,
+  },
+  pdfSubtext: {
+    fontSize: 14,
+    color: '#8E8E93',
+    marginTop: 8,
   },
   documentDetails: {
     backgroundColor: '#1C1C1E',
     padding: 16,
     margin: 16,
+    marginTop: 20,
     borderRadius: 12,
   },
   detailsLabel: {
