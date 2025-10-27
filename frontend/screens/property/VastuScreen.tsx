@@ -24,13 +24,19 @@ interface VastuAnalysis {
 
 interface VastuScreenProps {
   propertyId: string;
+  geomancyType: 'vastu' | 'feng_shui';
 }
 
-export default function VastuScreen({ propertyId }: VastuScreenProps) {
+export default function VastuScreen({ propertyId, geomancyType = 'vastu' }: VastuScreenProps) {
   const { token } = useAuth();
   const [analyses, setAnalyses] = useState<VastuAnalysis[]>([]);
   const [loading, setLoading] = useState(true);
   const [analyzing, setAnalyzing] = useState(false);
+
+  const geomancyTitle = geomancyType === 'vastu' ? 'Vastu Shastra' : 'Feng Shui';
+  const geomancyDescription = geomancyType === 'vastu' 
+    ? 'Ancient Indian science of architecture and spatial harmony'
+    : 'Chinese practice of harmonizing individuals with their surrounding environment';
 
   useEffect(() => {
     fetchAnalyses();
@@ -41,7 +47,7 @@ export default function VastuScreen({ propertyId }: VastuScreenProps) {
       const data = await vastuApi.getAll(token!, propertyId);
       setAnalyses(data);
     } catch (error: any) {
-      Alert.alert('Error', error.message || 'Failed to load Vastu analyses');
+      Alert.alert('Error', error.message || `Failed to load ${geomancyTitle} analyses`);
     } finally {
       setLoading(false);
     }
