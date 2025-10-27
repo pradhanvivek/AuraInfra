@@ -86,6 +86,8 @@ export default function FixturesScreen({ propertyId }: FixturesScreenProps) {
     setWarrantyExpiryDate('');
     setPhoto('');
     setInvoice('');
+    setIsEditMode(false);
+    setEditingFixtureId(null);
   };
 
   const getWarrantyStatus = (expiryDate?: string) => {
