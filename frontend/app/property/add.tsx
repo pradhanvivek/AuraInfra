@@ -230,6 +230,9 @@ const styles = StyleSheet.create({
     flex: 1,
     padding: 16,
   },
+  section: {
+    marginBottom: 16,
+  },
   label: {
     fontSize: 16,
     fontWeight: '600',
