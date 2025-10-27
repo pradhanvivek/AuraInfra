@@ -27,6 +27,7 @@ interface Fixture {
   model?: string;
   serial_number?: string;
   warranty_info?: string;
+  warranty_expiry_date?: string;
   photo?: string;
   invoice?: string;
 }
