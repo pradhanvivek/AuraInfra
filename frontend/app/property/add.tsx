@@ -61,8 +61,8 @@ export default function AddProperty() {
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
         style={styles.keyboardView}
       >
-        <ScrollView style={styles.scrollView} keyboardShouldPersistTaps="handled">
-          <View style={styles.content}>
+        <View style={styles.content}>
+          <View style={styles.section}>
             <Text style={styles.label}>Property Name</Text>
             <TextInput
               style={styles.input}
@@ -72,7 +72,9 @@ export default function AddProperty() {
               autoCapitalize="words"
               editable={!loading}
             />
+          </View>
 
+          <View style={styles.section}>
             <Text style={styles.label}>Address</Text>
             {GOOGLE_MAPS_API_KEY ? (
               <GooglePlacesAutocomplete
@@ -120,6 +122,7 @@ export default function AddProperty() {
                     shadowOffset: { width: 0, height: 2 },
                     shadowOpacity: 0.1,
                     shadowRadius: 4,
+                    maxHeight: 200,
                   },
                   row: {
                     backgroundColor: '#fff',
@@ -174,39 +177,39 @@ export default function AddProperty() {
                 textAlignVertical="top"
               />
             )}
+          </View>
 
-            {latitude && longitude && (
-              <View style={styles.coordinatesCard}>
-                <Ionicons name="location" size={20} color="#007AFF" />
-                <View style={styles.coordinatesText}>
-                  <Text style={styles.coordinatesLabel}>Coordinates</Text>
-                  <Text style={styles.coordinatesValue}>
-                    {latitude.toFixed(6)}, {longitude.toFixed(6)}
-                  </Text>
-                </View>
+          {latitude && longitude && (
+            <View style={styles.coordinatesCard}>
+              <Ionicons name="location" size={20} color="#007AFF" />
+              <View style={styles.coordinatesText}>
+                <Text style={styles.coordinatesLabel}>Coordinates</Text>
+                <Text style={styles.coordinatesValue}>
+                  {latitude.toFixed(6)}, {longitude.toFixed(6)}
+                </Text>
               </View>
-            )}
-
-            <View style={styles.infoBox}>
-              <Ionicons name="information-circle-outline" size={20} color="#007AFF" />
-              <Text style={styles.infoText}>
-                Select an address from the dropdown to automatically capture coordinates for accurate nearby place suggestions.
-              </Text>
             </View>
+          )}
 
-            <TouchableOpacity
-              style={[styles.button, loading && styles.buttonDisabled]}
-              onPress={handleSubmit}
-              disabled={loading}
-            >
-              {loading ? (
-                <ActivityIndicator color="#fff" />
-              ) : (
-                <Text style={styles.buttonText}>Add Property</Text>
-              )}
+          <View style={styles.infoBox}>
+            <Ionicons name="information-circle-outline" size={20} color="#007AFF" />
+            <Text style={styles.infoText}>
+              Select an address from the dropdown to automatically capture coordinates for accurate nearby place suggestions.
+            </Text>
+          </View>
+
+          <TouchableOpacity
+            style={[styles.button, loading && styles.buttonDisabled]}
+            onPress={handleSubmit}
+            disabled={loading}
+          >
+            {loading ? (
+              <ActivityIndicator color="#fff" />
+            ) : (
+              <Text style={styles.buttonText}>Add Property</Text>
+            )}
           </TouchableOpacity>
         </View>
-      </ScrollView>
       </KeyboardAvoidingView>
     </SafeAreaView>
   );
