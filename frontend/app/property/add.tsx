@@ -174,6 +174,7 @@ export default function AddProperty() {
               )}
           </TouchableOpacity>
         </View>
+      </ScrollView>
       </KeyboardAvoidingView>
     </SafeAreaView>
   );
@@ -185,6 +186,9 @@ const styles = StyleSheet.create({
     backgroundColor: '#F2F2F7',
   },
   keyboardView: {
+    flex: 1,
+  },
+  scrollView: {
     flex: 1,
   },
   content: {
@@ -209,6 +213,42 @@ const styles = StyleSheet.create({
   textArea: {
     height: 100,
     paddingTop: 16,
+  },
+  coordinatesCard: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#E3F2FD',
+    marginTop: 16,
+    padding: 16,
+    borderRadius: 12,
+  },
+  coordinatesText: {
+    marginLeft: 12,
+    flex: 1,
+  },
+  coordinatesLabel: {
+    fontSize: 12,
+    color: '#007AFF',
+    fontWeight: '600',
+    marginBottom: 2,
+  },
+  coordinatesValue: {
+    fontSize: 14,
+    color: '#000',
+  },
+  infoBox: {
+    flexDirection: 'row',
+    backgroundColor: '#FFF8E1',
+    marginTop: 16,
+    padding: 16,
+    borderRadius: 12,
+  },
+  infoText: {
+    flex: 1,
+    marginLeft: 12,
+    fontSize: 13,
+    color: '#856404',
+    lineHeight: 18,
   },
   button: {
     backgroundColor: '#007AFF',
