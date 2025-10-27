@@ -303,6 +303,7 @@ const styles = StyleSheet.create({
   },
   formContainer: {
     flex: 1,
+    padding: 16,
   },
   section: {
     padding: 16,
