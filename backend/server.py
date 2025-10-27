@@ -647,30 +647,53 @@ async def check_warranty_expiries(user_id: str = Depends(get_current_user)):
     target_date = today + timedelta(days=reminder_days)
     
     for fixture in fixtures:
-        expiry_date = datetime.fromisoformat(fixture["warranty_expiry_date"])
-        days_until_expiry = (expiry_date - today).days
-        
-        # Check if we should create a notification
-        if 0 <= days_until_expiry <= reminder_days:
-            # Check if notification already exists
-            existing = await db.notifications.find_one({
-                "user_id": user_id,
-                "fixture_id": fixture["id"],
-                "type": "warranty_expiry"
-            })
+        try:
+            # Try to parse the date - handle multiple formats
+            date_str = fixture["warranty_expiry_date"]
             
-            if not existing:
-                notification = Notification(
-                    user_id=user_id,
-                    property_id=fixture["property_id"],
-                    fixture_id=fixture["id"],
-                    fixture_name=fixture["name"],
-                    title="Warranty Expiring Soon",
-                    message=f"The warranty for {fixture['name']} expires in {days_until_expiry} days on {expiry_date.strftime('%Y-%m-%d')}.",
-                    type="warranty_expiry"
-                )
-                await db.notifications.insert_one(notification.dict())
-                notifications_created += 1
+            # Try ISO format first
+            try:
+                expiry_date = datetime.fromisoformat(date_str)
+            except (ValueError, TypeError):
+                # Try MM/DD/YYYY format
+                try:
+                    from datetime import datetime as dt
+                    expiry_date = dt.strptime(date_str, "%m/%d/%Y")
+                except (ValueError, TypeError):
+                    # Try YYYY-MM-DD format
+                    try:
+                        expiry_date = dt.strptime(date_str, "%Y-%m-%d")
+                    except (ValueError, TypeError):
+                        # Skip this fixture if date format is unrecognized
+                        logger.warning(f"Could not parse warranty date for fixture {fixture['id']}: {date_str}")
+                        continue
+            
+            days_until_expiry = (expiry_date - today).days
+            
+            # Check if we should create a notification
+            if 0 <= days_until_expiry <= reminder_days:
+                # Check if notification already exists
+                existing = await db.notifications.find_one({
+                    "user_id": user_id,
+                    "fixture_id": fixture["id"],
+                    "type": "warranty_expiry"
+                })
+                
+                if not existing:
+                    notification = Notification(
+                        user_id=user_id,
+                        property_id=fixture["property_id"],
+                        fixture_id=fixture["id"],
+                        fixture_name=fixture["name"],
+                        title="Warranty Expiring Soon",
+                        message=f"The warranty for {fixture['name']} expires in {days_until_expiry} days on {expiry_date.strftime('%Y-%m-%d')}.",
+                        type="warranty_expiry"
+                    )
+                    await db.notifications.insert_one(notification.dict())
+                    notifications_created += 1
+        except Exception as e:
+            logger.error(f"Error processing fixture {fixture.get('id', 'unknown')}: {str(e)}")
+            continue
     
     return {"message": f"Created {notifications_created} warranty notifications"}
 
