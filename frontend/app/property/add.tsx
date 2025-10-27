@@ -73,75 +73,92 @@ export default function AddProperty() {
             />
 
             <Text style={styles.label}>Address</Text>
-            <GooglePlacesAutocomplete
-              ref={autocompleteRef}
-              placeholder="Search for address..."
-              minLength={2}
-              fetchDetails={true}
-              onPress={(data, details = null) => {
-                if (details) {
-                  setAddress(data.description);
-                  setLatitude(details.geometry.location.lat);
-                  setLongitude(details.geometry.location.lng);
-                }
-              }}
-              query={{
-                key: GOOGLE_MAPS_API_KEY,
-                language: 'en',
-              }}
-              styles={{
-                container: {
-                  flex: 0,
-                },
-                textInputContainer: {
-                  backgroundColor: '#F2F2F7',
-                  borderTopWidth: 0,
-                  borderBottomWidth: 0,
-                },
-                textInput: {
-                  height: 48,
-                  color: '#000',
-                  fontSize: 16,
-                  backgroundColor: '#fff',
-                  borderRadius: 12,
-                  paddingHorizontal: 16,
-                  borderWidth: 1,
-                  borderColor: '#E5E5EA',
-                },
-                listView: {
-                  backgroundColor: '#fff',
-                  borderRadius: 12,
-                  marginTop: 8,
-                  elevation: 3,
-                  shadowColor: '#000',
-                  shadowOffset: { width: 0, height: 2 },
-                  shadowOpacity: 0.1,
-                  shadowRadius: 4,
-                },
-                row: {
-                  backgroundColor: '#fff',
-                  padding: 13,
-                  height: 60,
-                  flexDirection: 'row',
-                },
-                separator: {
-                  height: 1,
-                  backgroundColor: '#F2F2F7',
-                },
-                description: {
-                  fontSize: 14,
-                },
-                predefinedPlacesDescription: {
-                  color: '#007AFF',
-                },
-              }}
-              textInputProps={{
-                value: address,
-                onChangeText: setAddress,
-              }}
-              enablePoweredByContainer={false}
-              debounce={300}
-            />
+            {GOOGLE_MAPS_API_KEY ? (
+              <GooglePlacesAutocomplete
+                ref={autocompleteRef}
+                placeholder="Search for address..."
+                minLength={2}
+                fetchDetails={true}
+                onPress={(data, details = null) => {
+                  if (details) {
+                    setAddress(data.description);
+                    setLatitude(details.geometry.location.lat);
+                    setLongitude(details.geometry.location.lng);
+                  }
+                }}
+                query={{
+                  key: GOOGLE_MAPS_API_KEY,
+                  language: 'en',
+                }}
+                styles={{
+                  container: {
+                    flex: 0,
+                  },
+                  textInputContainer: {
+                    backgroundColor: '#F2F2F7',
+                    borderTopWidth: 0,
+                    borderBottomWidth: 0,
+                  },
+                  textInput: {
+                    height: 48,
+                    color: '#000',
+                    fontSize: 16,
+                    backgroundColor: '#fff',
+                    borderRadius: 12,
+                    paddingHorizontal: 16,
+                    borderWidth: 1,
+                    borderColor: '#E5E5EA',
+                  },
+                  listView: {
+                    backgroundColor: '#fff',
+                    borderRadius: 12,
+                    marginTop: 8,
+                    elevation: 3,
+                    shadowColor: '#000',
+                    shadowOffset: { width: 0, height: 2 },
+                    shadowOpacity: 0.1,
+                    shadowRadius: 4,
+                  },
+                  row: {
+                    backgroundColor: '#fff',
+                    padding: 13,
+                    height: 60,
+                    flexDirection: 'row',
+                  },
+                  separator: {
+                    height: 1,
+                    backgroundColor: '#F2F2F7',
+                  },
+                  description: {
+                    fontSize: 14,
+                  },
+                  predefinedPlacesDescription: {
+                    color: '#007AFF',
+                  },
+                }}
+                textInputProps={{
+                  value: address,
+                  onChangeText: setAddress,
+                }}
+                enablePoweredByContainer={false}
+                debounce={300}
+                onFail={(error) => console.error('Google Places Error:', error)}
+                requestUrl={{
+                  useOnPlatform: 'web',
+                  url: 'https://cors-anywhere.herokuapp.com/https://maps.googleapis.com/maps/api',
+                }}
+              />
+            ) : (
+              <TextInput
+                style={styles.input}
+                placeholder="Enter full address"
+                value={address}
+                onChangeText={setAddress}
+                multiline
+                numberOfLines={3}
+                textAlignVertical="top"
+              />
+            )}
 
             {latitude && longitude && (
               <View style={styles.coordinatesCard}>
