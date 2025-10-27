@@ -203,20 +203,54 @@ export default function FixturesScreen({ propertyId }: FixturesScreenProps) {
   };
 
   const renderFixture = ({ item }: { item: Fixture }) => (
-    <TouchableOpacity style={styles.fixtureCard} onPress={() => handleFixturePress(item)}>
-      <View style={styles.fixtureIcon}>
-        <Ionicons name={getCategoryIcon(item.category)} size={24} color="#007AFF" />
-      </View>
-      <View style={styles.fixtureInfo}>
-        <View style={styles.fixtureNameRow}>
-          <Text style={styles.fixtureName}>{item.name}</Text>
-          {getWarrantyBadge(item)}
+    <View style={styles.fixtureCard}>
+      <TouchableOpacity 
+        style={styles.fixtureCardContent}
+        onPress={() => handleFixturePress(item)}
+      >
+        <View style={styles.fixtureIcon}>
+          <Ionicons name={getCategoryIcon(item.category)} size={24} color="#007AFF" />
         </View>
-        <Text style={styles.fixtureCategory}>{item.category}</Text>
-      </View>
-      <Ionicons name="chevron-forward" size={20} color="#C7C7CC" />
-    </TouchableOpacity>
+        <View style={styles.fixtureInfo}>
+          <View style={styles.fixtureNameRow}>
+            <Text style={styles.fixtureName}>{item.name}</Text>
+            {getWarrantyBadge(item)}
+          </View>
+          <Text style={styles.fixtureCategory}>{item.category}</Text>
+        </View>
+        <Ionicons name="chevron-forward" size={20} color="#C7C7CC" />
+      </TouchableOpacity>
+      <TouchableOpacity
+        style={styles.deleteIconButton}
+        onPress={() => handleDeleteFixture(item)}
+      >
+        <Ionicons name="trash-outline" size={20} color="#FF3B30" />
+      </TouchableOpacity>
+    </View>
   );
+
+  const handleDeleteFixture = (fixture: Fixture) => {
+    Alert.alert(
+      'Delete Fixture',
+      `Are you sure you want to delete "${fixture.name}"?`,
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Delete',
+          style: 'destructive',
+          onPress: async () => {
+            try {
+              await fixtureApi.delete(token!, propertyId, fixture.id);
+              Alert.alert('Success', 'Fixture deleted successfully');
+              fetchFixtures();
+            } catch (error: any) {
+              Alert.alert('Error', 'Failed to delete fixture');
+            }
+          },
+        },
+      ]
+    );
+  };
 
   if (loading) {
     return (
