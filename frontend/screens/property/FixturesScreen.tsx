@@ -186,6 +186,19 @@ export default function FixturesScreen({ propertyId }: FixturesScreenProps) {
     }
   };
 
+  const showDatePicker = () => {
+    setDatePickerVisibility(true);
+  };
+
+  const hideDatePicker = () => {
+    setDatePickerVisibility(false);
+  };
+
+  const handleConfirmDate = (date: Date) => {
+    setWarrantyExpiryDate(date.toISOString().split('T')[0]);
+    hideDatePicker();
+  };
+
   const handleFixturePress = async (fixture: Fixture) => {
     setSelectedFixture(fixture);
     setDetailsModalVisible(true);
