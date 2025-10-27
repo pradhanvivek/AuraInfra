@@ -47,6 +47,7 @@ export default function Profile() {
     try {
       const data = await authApi.getProfile(token!);
       setProfile(data);
+      setSelectedReminderDays(data.warranty_reminder_days || 30);
     } catch (error: any) {
       Alert.alert('Error', 'Failed to load profile');
     } finally {
