@@ -102,7 +102,7 @@
 # Testing Data - Main Agent and testing sub agent both should log testing data below this section
 #====================================================================================================
 
-user_problem_statement: "Backend Testing Task for Property Manager API - Test all authentication, property, document, fixture, measurement, and AI analysis endpoints"
+user_problem_statement: "Property Management App - Complete notification settings in profile page and implement 'Near Me' feature showing nearby places for each property"
 
 backend:
   - task: "User Authentication - Register"
