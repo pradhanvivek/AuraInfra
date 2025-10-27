@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import {
   View,
   Text,
@@ -9,18 +9,27 @@ import {
   Platform,
   Alert,
   ActivityIndicator,
+  ScrollView,
 } from 'react-native';
 import { useRouter } from 'expo-router';
+import { Ionicons } from '@expo/vector-icons';
+import { GooglePlacesAutocomplete } from 'react-native-google-places-autocomplete';
+import Constants from 'expo-constants';
 import { useAuth } from '../../contexts/AuthContext';
 import { propertyApi } from '../../services/api';
 import { SafeAreaView } from 'react-native-safe-area-context';
+
+const GOOGLE_MAPS_API_KEY = process.env.EXPO_PUBLIC_GOOGLE_MAPS_API_KEY || Constants.expoConfig?.extra?.googleMapsApiKey || '';
 
 export default function AddProperty() {
   const router = useRouter();
   const { token } = useAuth();
   const [name, setName] = useState('');
   const [address, setAddress] = useState('');
+  const [latitude, setLatitude] = useState<number | undefined>();
+  const [longitude, setLongitude] = useState<number | undefined>();
   const [loading, setLoading] = useState(false);
+  const autocompleteRef = useRef<any>(null);
 
   const handleSubmit = async () => {
     if (!name || !address) {
@@ -30,7 +39,12 @@ export default function AddProperty() {
 
     setLoading(true);
     try {
-      await propertyApi.create(token!, { name, address });
+      await propertyApi.create(token!, { 
+        name, 
+        address,
+        latitude,
+        longitude,
+      });
       Alert.alert('Success', 'Property added successfully');
       router.back();
     } catch (error: any) {
@@ -46,38 +60,118 @@ export default function AddProperty() {
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
         style={styles.keyboardView}
       >
-        <View style={styles.content}>
-          <Text style={styles.label}>Property Name</Text>
-          <TextInput
-            style={styles.input}
-            placeholder="e.g., My Home"
-            value={name}
-            onChangeText={setName}
-            editable={!loading}
-          />
+        <ScrollView style={styles.scrollView} keyboardShouldPersistTaps="handled">
+          <View style={styles.content}>
+            <Text style={styles.label}>Property Name</Text>
+            <TextInput
+              style={styles.input}
+              placeholder="e.g., My Home, Office Building"
+              value={name}
+              onChangeText={setName}
+              autoCapitalize="words"
+              editable={!loading}
+            />
 
-          <Text style={styles.label}>Address</Text>
-          <TextInput
-            style={[styles.input, styles.textArea]}
-            placeholder="Enter full address"
-            value={address}
-            onChangeText={setAddress}
-            multiline
-            numberOfLines={3}
-            textAlignVertical="top"
-            editable={!loading}
-          />
+            <Text style={styles.label}>Address</Text>
+            <GooglePlacesAutocomplete
+              ref={autocompleteRef}
+              placeholder="Search for address..."
+              minLength={2}
+              fetchDetails={true}
+              onPress={(data, details = null) => {
+                if (details) {
+                  setAddress(data.description);
+                  setLatitude(details.geometry.location.lat);
+                  setLongitude(details.geometry.location.lng);
+                }
+              }}
+              query={{
+                key: GOOGLE_MAPS_API_KEY,
+                language: 'en',
+              }}
+              styles={{
+                container: {
+                  flex: 0,
+                },
+                textInputContainer: {
+                  backgroundColor: '#F2F2F7',
+                  borderTopWidth: 0,
+                  borderBottomWidth: 0,
+                },
+                textInput: {
+                  height: 48,
+                  color: '#000',
+                  fontSize: 16,
+                  backgroundColor: '#fff',
+                  borderRadius: 12,
+                  paddingHorizontal: 16,
+                  borderWidth: 1,
+                  borderColor: '#E5E5EA',
+                },
+                listView: {
+                  backgroundColor: '#fff',
+                  borderRadius: 12,
+                  marginTop: 8,
+                  elevation: 3,
+                  shadowColor: '#000',
+                  shadowOffset: { width: 0, height: 2 },
+                  shadowOpacity: 0.1,
+                  shadowRadius: 4,
+                },
+                row: {
+                  backgroundColor: '#fff',
+                  padding: 13,
+                  height: 60,
+                  flexDirection: 'row',
+                },
+                separator: {
+                  height: 1,
+                  backgroundColor: '#F2F2F7',
+                },
+                description: {
+                  fontSize: 14,
+                },
+                predefinedPlacesDescription: {
+                  color: '#007AFF',
+                },
+              }}
+              textInputProps={{
+                value: address,
+                onChangeText: setAddress,
+              }}
+              enablePoweredByContainer={false}
+              debounce={300}
+            />
 
-          <TouchableOpacity
-            style={[styles.button, loading && styles.buttonDisabled]}
-            onPress={handleSubmit}
-            disabled={loading}
-          >
-            {loading ? (
-              <ActivityIndicator color="#fff" />
-            ) : (
-              <Text style={styles.buttonText}>Add Property</Text>
+            {latitude && longitude && (
+              <View style={styles.coordinatesCard}>
+                <Ionicons name="location" size={20} color="#007AFF" />
+                <View style={styles.coordinatesText}>
+                  <Text style={styles.coordinatesLabel}>Coordinates</Text>
+                  <Text style={styles.coordinatesValue}>
+                    {latitude.toFixed(6)}, {longitude.toFixed(6)}
+                  </Text>
+                </View>
+              </View>
             )}
+
+            <View style={styles.infoBox}>
+              <Ionicons name="information-circle-outline" size={20} color="#007AFF" />
+              <Text style={styles.infoText}>
+                Select an address from the dropdown to automatically capture coordinates for accurate nearby place suggestions.
+              </Text>
+            </View>
+
+            <TouchableOpacity
+              style={[styles.button, loading && styles.buttonDisabled]}
+              onPress={handleSubmit}
+              disabled={loading}
+            >
+              {loading ? (
+                <ActivityIndicator color="#fff" />
+              ) : (
+                <Text style={styles.buttonText}>Add Property</Text>
+              )}
           </TouchableOpacity>
         </View>
       </KeyboardAvoidingView>
