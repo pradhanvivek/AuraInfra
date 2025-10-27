@@ -130,25 +130,25 @@ export default function EditPropertyScreen() {
           <View style={styles.section}>
             <Text style={styles.label}>Address</Text>
             {GOOGLE_MAPS_API_KEY && GooglePlacesAutocomplete && Platform.OS !== 'web' ? (
-              <GooglePlacesAutocomplete
-                key={address} // Force re-render when address changes
-                ref={autocompleteRef}
-                placeholder="Search for address..."
-                minLength={2}
-                fetchDetails={true}
-                predefinedPlaces={[]}
-                onPress={(data: any, details: any = null) => {
-                  if (details) {
-                    setAddress(data.description);
-                    setLatitude(details.geometry.location.lat);
-                    setLongitude(details.geometry.location.lng);
-                  }
-                }}
-                query={{
-                  key: GOOGLE_MAPS_API_KEY,
-                  language: 'en',
-                }}
-                styles={{
+              <View>
+                <GooglePlacesAutocomplete
+                  ref={autocompleteRef}
+                  placeholder="Search for address..."
+                  minLength={2}
+                  fetchDetails={true}
+                  predefinedPlaces={[]}
+                  onPress={(data: any, details: any = null) => {
+                    if (details) {
+                      setAddress(data.description);
+                      setLatitude(details.geometry.location.lat);
+                      setLongitude(details.geometry.location.lng);
+                    }
+                  }}
+                  query={{
+                    key: GOOGLE_MAPS_API_KEY,
+                    language: 'en',
+                  }}
+                  styles={{
                   container: {
                     flex: 0,
                   },
