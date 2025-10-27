@@ -14,11 +14,16 @@ import {
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
-import { GooglePlacesAutocomplete } from 'react-native-google-places-autocomplete';
 import Constants from 'expo-constants';
 import { useAuth } from '../../contexts/AuthContext';
 import { propertyApi } from '../../services/api';
 import { SafeAreaView } from 'react-native-safe-area-context';
+
+// Conditional import for GooglePlacesAutocomplete (mobile only)
+let GooglePlacesAutocomplete: any = null;
+if (Platform.OS !== 'web') {
+  GooglePlacesAutocomplete = require('react-native-google-places-autocomplete').GooglePlacesAutocomplete;
+}
 
 const GOOGLE_MAPS_API_KEY = process.env.EXPO_PUBLIC_GOOGLE_MAPS_API_KEY || Constants.expoConfig?.extra?.googleMapsApiKey || '';
 
