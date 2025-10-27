@@ -47,6 +47,13 @@ export default function EditPropertyScreen() {
       setAddress(property.address);
       setLatitude(property.latitude);
       setLongitude(property.longitude);
+      
+      // Set the address in GooglePlacesAutocomplete after a short delay
+      setTimeout(() => {
+        if (autocompleteRef.current) {
+          autocompleteRef.current.setAddressText(property.address);
+        }
+      }, 100);
     } catch (error: any) {
       Alert.alert('Error', 'Failed to load property details');
       router.back();
