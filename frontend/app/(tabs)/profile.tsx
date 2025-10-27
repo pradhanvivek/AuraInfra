@@ -84,6 +84,23 @@ export default function Profile() {
     }
   };
 
+  const handleWarrantyReminderChange = async (days: number) => {
+    setSaving(true);
+    try {
+      const updatedProfile = await authApi.updateProfile(token!, { 
+        warranty_reminder_days: days 
+      });
+      setProfile(updatedProfile);
+      setSelectedReminderDays(days);
+      setWarrantyModalVisible(false);
+      Alert.alert('Success', 'Warranty reminder updated successfully');
+    } catch (error: any) {
+      Alert.alert('Error', error.message || 'Failed to update warranty reminder');
+    } finally {
+      setSaving(false);
+    }
+  };
+
   const handleLogout = () => {
     Alert.alert(
       'Logout',
