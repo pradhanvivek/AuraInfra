@@ -322,6 +322,20 @@ backend:
         comment: "POST /api/measurements/analyze-floorplan endpoint tested successfully. AI analysis of floor plan images works correctly using emergentintegrations LLM with GPT-4o vision model. Returns structured analysis of room dimensions."
 
 frontend:
+backend:
+  - task: "Profile - Warranty Reminder Settings Backend"
+    implemented: true
+    working: true
+    file: "backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: true
+        agent: "testing"
+        comment: "Comprehensive testing of warranty reminder settings backend functionality completed successfully. All test objectives met: 1) GET /api/auth/profile correctly returns default warranty_reminder_days of 30, 2) PUT /api/auth/profile successfully accepts and validates warranty_reminder_days parameter (accepts 7, 14, 30 and rejects invalid values with 400 error), 3) Values persist correctly after updates. Tested 18 scenarios with 100% success rate including valid updates, invalid value rejection, and data persistence verification."
+
+frontend:
   - task: "Profile - Warranty Reminder Settings"
     implemented: true
     working: "NA"
