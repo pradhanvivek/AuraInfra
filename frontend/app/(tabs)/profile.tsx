@@ -105,6 +105,23 @@ export default function Profile() {
     }
   };
 
+  const handleGeomancyChange = async (preference: 'vastu' | 'feng_shui') => {
+    setSaving(true);
+    try {
+      const updatedProfile = await authApi.updateProfile(token!, { 
+        geomancy_preference: preference 
+      });
+      setProfile(updatedProfile);
+      setSelectedGeomancy(preference);
+      setGeomancyModalVisible(false);
+      Alert.alert('Success', `Geomancy preference updated to ${preference === 'vastu' ? 'Vastu Shastra' : 'Feng Shui'}`);
+    } catch (error: any) {
+      Alert.alert('Error', error.message || 'Failed to update geomancy preference');
+    } finally {
+      setSaving(false);
+    }
+  };
+
   const handleLogout = () => {
     Alert.alert(
       'Logout',
