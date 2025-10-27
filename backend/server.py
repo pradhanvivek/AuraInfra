@@ -592,6 +592,119 @@ async def analyze_floorplan(
         logger.error(f"Error analyzing floor plan: {str(e)}")
         raise HTTPException(status_code=500, detail=f"Error analyzing floor plan: {str(e)}")
 
+# ============= VASTU ANALYSIS ENDPOINTS =============
+
+@api_router.post("/properties/{property_id}/vastu", response_model=VastuAnalysis)
+async def create_vastu_analysis(
+    property_id: str,
+    vastu_data: VastuAnalysisCreate,
+    user_id: str = Depends(get_current_user)
+):
+    # Verify property ownership
+    property_doc = await db.properties.find_one({"id": property_id, "user_id": user_id})
+    if not property_doc:
+        raise HTTPException(status_code=404, detail="Property not found")
+    
+    try:
+        from emergentintegrations.llm.chat import LlmChat, UserMessage, ImageContent
+        
+        # Get API key
+        api_key = os.environ.get('EMERGENT_LLM_KEY')
+        if not api_key:
+            raise HTTPException(status_code=500, detail="API key not configured")
+        
+        # Initialize LLM chat with vision model for Vastu analysis
+        chat = LlmChat(
+            api_key=api_key,
+            session_id=f"vastu_{user_id}_{uuid.uuid4()}",
+            system_message="You are an expert in Vastu Shastra, the ancient Indian science of architecture and spatial design. Analyze floor plans for Vastu compliance and provide detailed recommendations."
+        ).with_model("openai", "gpt-4o")
+        
+        # Create message with image
+        user_message = UserMessage(
+            text="""Analyze this floor plan according to Vastu Shastra principles. Please provide:
+
+1. **Overall Vastu Compliance Score** (0-100): Rate the overall adherence to Vastu principles
+2. **Direction Analysis**: Analyze the placement of rooms based on cardinal directions
+   - Main entrance direction and its significance
+   - Master bedroom placement (ideally South-West)
+   - Kitchen placement (ideally South-East)
+   - Pooja/Prayer room (ideally North-East)
+   - Bathrooms and toilets placement
+   - Living room placement (ideally North or East)
+
+3. **Key Observations**:
+   - Positive aspects that align with Vastu
+   - Areas of concern or non-compliance
+   - Energy flow assessment
+
+4. **Detailed Recommendations**:
+   - Specific corrections or remedies
+   - Color recommendations for different rooms
+   - Placement of furniture and fixtures
+   - Remedial measures for any Vastu defects
+
+5. **Priority Actions**: List 3-5 most important changes in order of priority
+
+Please be specific and practical in your recommendations.""",
+            file_contents=[ImageContent(image_base64=vastu_data.floor_plan_image)]
+        )
+        
+        # Get AI response
+        analysis_response = await chat.send_message(user_message)
+        
+        # Try to extract compliance score from response
+        compliance_score = None
+        if "score" in analysis_response.lower() or "/100" in analysis_response:
+            # Simple extraction of score (can be enhanced)
+            import re
+            score_match = re.search(r'(\d+)/100|score.*?(\d+)', analysis_response.lower())
+            if score_match:
+                compliance_score = int(score_match.group(1) or score_match.group(2))
+        
+        # Create Vastu analysis record
+        vastu_obj = VastuAnalysis(
+            property_id=property_id,
+            floor_plan_image=vastu_data.floor_plan_image,
+            analysis_text=analysis_response,
+            compliance_score=compliance_score,
+            recommendations=analysis_response
+        )
+        
+        await db.vastu_analysis.insert_one(vastu_obj.dict())
+        return vastu_obj
+        
+    except Exception as e:
+        logger.error(f"Error analyzing Vastu: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Error analyzing Vastu: {str(e)}")
+
+@api_router.get("/properties/{property_id}/vastu", response_model=List[VastuAnalysis])
+async def get_vastu_analyses(property_id: str, user_id: str = Depends(get_current_user)):
+    # Verify property ownership
+    property_doc = await db.properties.find_one({"id": property_id, "user_id": user_id})
+    if not property_doc:
+        raise HTTPException(status_code=404, detail="Property not found")
+    
+    analyses = await db.vastu_analysis.find({"property_id": property_id}).to_list(1000)
+    return [VastuAnalysis(**a) for a in analyses]
+
+@api_router.delete("/properties/{property_id}/vastu/{vastu_id}")
+async def delete_vastu_analysis(
+    property_id: str,
+    vastu_id: str,
+    user_id: str = Depends(get_current_user)
+):
+    # Verify property ownership
+    property_doc = await db.properties.find_one({"id": property_id, "user_id": user_id})
+    if not property_doc:
+        raise HTTPException(status_code=404, detail="Property not found")
+    
+    result = await db.vastu_analysis.delete_one({"id": vastu_id, "property_id": property_id})
+    if result.deleted_count == 0:
+        raise HTTPException(status_code=404, detail="Vastu analysis not found")
+    
+    return {"message": "Vastu analysis deleted successfully"}
+
 # ============= ROOT ENDPOINTS =============
 
 @api_router.get("/")
