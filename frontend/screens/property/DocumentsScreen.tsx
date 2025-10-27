@@ -518,6 +518,31 @@ const styles = StyleSheet.create({
     maxHeight: 400,
     backgroundColor: '#000',
   },
+  pdfContainer: {
+    width: '100%',
+    height: 500,
+    backgroundColor: '#000',
+    marginVertical: 10,
+  },
+  webview: {
+    flex: 1,
+    backgroundColor: '#000',
+  },
+  loadingContainer: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: '#000',
+  },
+  loadingText: {
+    marginTop: 12,
+    fontSize: 16,
+    color: '#fff',
+  },
   pdfPlaceholder: {
     width: '100%',
     height: 300,
