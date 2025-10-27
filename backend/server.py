@@ -875,6 +875,83 @@ async def delete_vastu_analysis(
 
 # ============= ROOT ENDPOINTS =============
 
+# Receipt/Invoice Analysis Endpoint
+@api_router.post("/analyze-receipt")
+async def analyze_receipt(request: dict, user_id: str = Depends(get_current_user)):
+    try:
+        from emergentintegrations import openai_client
+        import base64
+        import os
+        
+        image_base64 = request.get("image")
+        if not image_base64:
+            raise HTTPException(status_code=400, detail="No image provided")
+        
+        # Use OpenAI Vision to analyze the receipt
+        api_key = os.getenv("EMERGENT_LLM_KEY")
+        client = openai_client.get_openai_client(api_key=api_key)
+        
+        response = client.chat.completions.create(
+            model="gpt-4o",
+            messages=[
+                {
+                    "role": "user",
+                    "content": [
+                        {
+                            "type": "text",
+                            "text": """Analyze this receipt/invoice and extract the following information in JSON format:
+                            {
+                                "name": "product/appliance name",
+                                "make": "brand/manufacturer",
+                                "model": "model number",
+                                "serial_number": "serial number if visible",
+                                "vendor_name": "vendor/store name",
+                                "vendor_contact": "vendor phone number",
+                                "vendor_email": "vendor email",
+                                "warranty_info": "warranty details",
+                                "warranty_expiry_date": "warranty expiry date in YYYY-MM-DD format"
+                            }
+                            
+                            Only include fields that are clearly visible in the receipt. Use null for missing fields.
+                            Be accurate and extract exactly what you see."""
+                        },
+                        {
+                            "type": "image_url",
+                            "image_url": {
+                                "url": f"data:image/jpeg;base64,{image_base64}"
+                            }
+                        }
+                    ]
+                }
+            ],
+            max_tokens=500
+        )
+        
+        # Parse the response
+        import json
+        content = response.choices[0].message.content
+        
+        # Try to extract JSON from the response
+        try:
+            # Sometimes the model wraps JSON in markdown code blocks
+            if "```json" in content:
+                content = content.split("```json")[1].split("```")[0].strip()
+            elif "```" in content:
+                content = content.split("```")[1].split("```")[0].strip()
+            
+            extracted_data = json.loads(content)
+        except:
+            # If JSON parsing fails, return empty data
+            extracted_data = {}
+        
+        return extracted_data
+        
+    except Exception as e:
+        logger.error(f"Error analyzing receipt: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Failed to analyze receipt: {str(e)}")
+
+
+
 @api_router.get("/")
 async def root():
     return {"message": "Property Manager API"}
