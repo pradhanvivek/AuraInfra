@@ -354,11 +354,15 @@ metadata:
   run_ui: false
 
 test_plan:
-  current_focus: []
+  current_focus:
+    - "Profile - Warranty Reminder Settings"
+    - "Near Me Feature - Location-based Services"
   stuck_tasks: []
-  test_all: true
+  test_all: false
   test_priority: "high_first"
 
 agent_communication:
   - agent: "testing"
     message: "Comprehensive backend API testing completed successfully. All 18 backend endpoints tested with 100% success rate. Authentication, property management, document management, fixture management, measurement management, and AI floor plan analysis all working correctly. JWT authentication properly implemented with user isolation. Base64 file uploads working for documents, fixture photos, and floor plan images. AI integration with emergentintegrations LLM working correctly for floor plan analysis."
+  - agent: "main"
+    message: "Implemented two new features: 1) Warranty reminder settings in profile page - Users can now select 7, 14, or 30 days notification preference before warranty expiry. 2) 'Near Me' feature - Added as a new tab in property details that shows nearby places (hospitals, schools, malls, restaurants, etc.) using OpenStreetMap APIs. The feature geocodes the property address and finds places within 2km radius, displays them with distance, and allows navigation via Google Maps. Backend already supports warranty_reminder_days field. Ready for testing."
