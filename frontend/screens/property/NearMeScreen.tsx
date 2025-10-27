@@ -115,63 +115,75 @@ export default function NearMeScreen({ propertyId }: NearMeScreenProps) {
 
   const fetchNearbyPlaces = async (lat: number, lon: number) => {
     try {
-      // Fetch nearby places using Overpass API
-      const radius = 2000; // 2km radius
-      const overpassQuery = `[out:json];(node["amenity"="hospital"](around:${radius},${lat},${lon});node["amenity"="school"](around:${radius},${lat},${lon});node["shop"="mall"](around:${radius},${lat},${lon});node["amenity"="restaurant"](around:${radius},${lat},${lon});node["amenity"="bank"](around:${radius},${lat},${lon});node["amenity"="pharmacy"](around:${radius},${lat},${lon});node["amenity"="fuel"](around:${radius},${lat},${lon});node["amenity"="police"](around:${radius},${lat},${lon}););out body;`;
-
-      const overpassResponse = await fetch(
-        'https://overpass-api.de/api/interpreter',
-        {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/x-www-form-urlencoded',
-          },
-          body: `data=${encodeURIComponent(overpassQuery)}`,
-        }
-      );
-
-      if (!overpassResponse.ok) {
-        throw new Error(`Overpass API error: ${overpassResponse.status}`);
-      }
-
-      const responseText = await overpassResponse.text();
-      let overpassData;
+      // Use Google Places API instead of Overpass for better reliability
+      const apiKey = process.env.EXPO_PUBLIC_GOOGLE_MAPS_API_KEY || '';
       
-      try {
-        overpassData = JSON.parse(responseText);
-      } catch (parseError) {
-        console.error('JSON parse error:', responseText.substring(0, 200));
-        throw new Error('Failed to parse nearby places data');
-      }
-
-      if (!overpassData.elements || overpassData.elements.length === 0) {
-        setPlaces([]);
+      if (!apiKey) {
+        Alert.alert('Error', 'Google Maps API key not configured');
         return;
       }
 
-      // Process and calculate distances
-      const nearbyPlaces: NearbyPlace[] = overpassData.elements.map((element: any) => {
-        const distance = calculateDistance(
-          lat,
-          lon,
-          element.lat,
-          element.lon
-        );
-
-        return {
-          id: element.id.toString(),
-          name: element.tags.name || `Unnamed ${element.tags.amenity || element.tags.shop}`,
-          category: element.tags.amenity || element.tags.shop || 'other',
-          distance,
-          lat: element.lat,
-          lon: element.lon,
-          address: element.tags['addr:full'] || element.tags['addr:street'],
-        };
-      });
-
-      // Sort by distance
-      nearbyPlaces.sort((a, b) => a.distance - b.distance);
-      setPlaces(nearbyPlaces);
+      const radius = 2000; // 2km
+      const types = ['hospital', 'school', 'shopping_mall', 'restaurant', 'bank', 'pharmacy', 'gas_station', 'police'];
+      
+      const allPlaces: NearbyPlace[] = [];
+      
+      // Fetch places for each type
+      for (const type of types) {
+        try {
+          const response = await fetch(
+            `https://maps.googleapis.com/maps/api/place/nearbysearch/json?location=${lat},${lon}&radius=${radius}&type=${type}&key=${apiKey}`
+          );
+          
+          if (!response.ok) {
+            console.log(`Failed to fetch ${type}:`, response.status);
+            continue;
+          }
+          
+          const data = await response.json();
+          
+          if (data.results && data.results.length > 0) {
+            data.results.forEach((place: any) => {
+              const distance = calculateDistance(
+                lat,
+                lon,
+                place.geometry.location.lat,
+                place.geometry.location.lng
+              );
+              
+              // Map Google types to our categories
+              let category = type;
+              if (type === 'shopping_mall') category = 'mall';
+              if (type === 'gas_station') category = 'fuel_station';
+              
+              allPlaces.push({
+                id: place.place_id,
+                name: place.name,
+                category: category,
+                distance: distance,
+                lat: place.geometry.location.lat,
+                lon: place.geometry.location.lng,
+                address: place.vicinity,
+              });
+            });
+          }
+        } catch (typeError) {
+          console.log(`Error fetching ${type}:`, typeError);
+          continue;
+        }
+      }
+      
+      // Remove duplicates and sort by distance
+      const uniquePlaces = Array.from(
+        new Map(allPlaces.map(place => [place.id, place])).values()
+      );
+      
+      uniquePlaces.sort((a, b) => a.distance - b.distance);
+      setPlaces(uniquePlaces);
+      
+      if (uniquePlaces.length === 0) {
+        Alert.alert('Info', 'No nearby places found within 2km radius');
+      }
     } catch (error: any) {
       console.error('Error fetching nearby places:', error);
       Alert.alert('Error', 'Failed to fetch nearby places. Please try again.');
