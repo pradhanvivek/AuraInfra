@@ -125,6 +125,27 @@ export default function Properties() {
         </TouchableOpacity>
       </View>
 
+      {/* Search Bar */}
+      {properties.length > 0 && (
+        <View style={styles.searchContainer}>
+          <View style={styles.searchInputContainer}>
+            <Ionicons name="search" size={20} color="#8E8E93" style={styles.searchIcon} />
+            <TextInput
+              style={styles.searchInput}
+              placeholder="Search by name or address..."
+              value={searchQuery}
+              onChangeText={handleSearch}
+              placeholderTextColor="#C7C7CC"
+            />
+            {searchQuery.length > 0 && (
+              <TouchableOpacity onPress={clearSearch} style={styles.clearButton}>
+                <Ionicons name="close-circle" size={20} color="#8E8E93" />
+              </TouchableOpacity>
+            )}
+          </View>
+        </View>
+      )}
+
       {properties.length === 0 ? (
         <View style={styles.emptyContainer}>
           <Ionicons name="home-outline" size={80} color="#C7C7CC" />
@@ -140,9 +161,23 @@ export default function Properties() {
             <Text style={styles.emptyButtonText}>Add Property</Text>
           </TouchableOpacity>
         </View>
+      ) : filteredProperties.length === 0 ? (
+        <View style={styles.emptyContainer}>
+          <Ionicons name="search-outline" size={80} color="#C7C7CC" />
+          <Text style={styles.emptyTitle}>No Results Found</Text>
+          <Text style={styles.emptySubtitle}>
+            Try searching with different keywords
+          </Text>
+          <TouchableOpacity
+            style={styles.emptyButton}
+            onPress={clearSearch}
+          >
+            <Text style={styles.emptyButtonText}>Clear Search</Text>
+          </TouchableOpacity>
+        </View>
       ) : (
         <FlatList
-          data={properties}
+          data={filteredProperties}
           renderItem={renderProperty}
           keyExtractor={(item) => item.id}
           contentContainerStyle={styles.listContent}
