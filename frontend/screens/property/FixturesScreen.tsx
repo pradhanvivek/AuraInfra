@@ -327,7 +327,7 @@ export default function FixturesScreen({ propertyId }: FixturesScreenProps) {
             <TouchableOpacity onPress={() => setModalVisible(false)}>
               <Text style={styles.cancelButton}>Cancel</Text>
             </TouchableOpacity>
-            <Text style={styles.modalTitle}>Add Fixture</Text>
+            <Text style={styles.modalTitle}>{isEditMode ? 'Edit Fixture' : 'Add Fixture'}</Text>
             <TouchableOpacity onPress={handleAddFixture} disabled={saving}>
               <Text style={[styles.saveButton, saving && styles.saveButtonDisabled]}>
                 {saving ? 'Saving...' : 'Save'}
