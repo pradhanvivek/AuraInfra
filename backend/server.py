@@ -154,6 +154,21 @@ class VastuAnalysis(BaseModel):
 class VastuAnalysisCreate(BaseModel):
     floor_plan_image: str  # base64 encoded
 
+class Notification(BaseModel):
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    user_id: str
+    property_id: str
+    fixture_id: str
+    fixture_name: str
+    title: str
+    message: str
+    type: str  # warranty_expiry, etc.
+    is_read: bool = False
+    created_at: datetime = Field(default_factory=datetime.utcnow)
+
+class UserSettings(BaseModel):
+    warranty_reminder_days: int = 30  # 7, 14, or 30 days
+
 # ============= HELPER FUNCTIONS =============
 
 def create_access_token(data: dict):
