@@ -543,4 +543,58 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: '#E5E5EA',
   },
+  reminderDescription: {
+    fontSize: 14,
+    color: '#8E8E93',
+    marginBottom: 24,
+    lineHeight: 20,
+  },
+  optionCard: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    backgroundColor: '#fff',
+    borderRadius: 12,
+    padding: 16,
+    marginBottom: 12,
+    borderWidth: 2,
+    borderColor: '#E5E5EA',
+  },
+  optionCardSelected: {
+    borderColor: '#007AFF',
+    backgroundColor: '#F0F8FF',
+  },
+  optionContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    flex: 1,
+  },
+  optionText: {
+    marginLeft: 12,
+    flex: 1,
+  },
+  optionTitle: {
+    fontSize: 17,
+    fontWeight: '600',
+    color: '#000',
+    marginBottom: 2,
+  },
+  optionTitleSelected: {
+    color: '#007AFF',
+  },
+  optionSubtitle: {
+    fontSize: 13,
+    color: '#8E8E93',
+  },
+  savingIndicator: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginTop: 16,
+  },
+  savingText: {
+    marginLeft: 8,
+    fontSize: 14,
+    color: '#8E8E93',
+  },
 });
