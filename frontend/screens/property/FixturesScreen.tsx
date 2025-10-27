@@ -275,7 +275,7 @@ export default function FixturesScreen({ propertyId }: FixturesScreenProps) {
   const analyzeReceipt = async (base64Image: string) => {
     setScanningReceipt(true);
     try {
-      const response = await fetch('https://aurainfra.preview.emergentagent.com/api/analyze-receipt', {
+      const response = await fetch('https://realestate-buddy-5.preview.emergentagent.com/api/analyze-receipt', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
