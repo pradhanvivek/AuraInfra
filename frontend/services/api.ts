@@ -73,6 +73,14 @@ export const propertyApi = {
     );
     return response.data;
   },
+
+  getHealthScore: async (token: string, id: string) => {
+    const response = await axios.get(
+      `${API_URL}/api/properties/${id}/health-score`,
+      getAuthHeaders(token)
+    );
+    return response.data;
+  },
 };
 
 // Document API
