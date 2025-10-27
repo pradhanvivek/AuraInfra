@@ -286,6 +286,14 @@ export default function EditPropertyScreen() {
               Select an address from the dropdown to automatically capture coordinates for accurate nearby place suggestions.
             </Text>
           </View>
+
+          <TouchableOpacity
+            style={styles.deleteButton}
+            onPress={handleDelete}
+          >
+            <Ionicons name="trash-outline" size={20} color="#FF3B30" />
+            <Text style={styles.deleteButtonText}>Delete Property</Text>
+          </TouchableOpacity>
         </View>
       </KeyboardAvoidingView>
     </SafeAreaView>
