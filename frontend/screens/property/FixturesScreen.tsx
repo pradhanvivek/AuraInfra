@@ -475,6 +475,8 @@ export default function FixturesScreen({ propertyId }: FixturesScreenProps) {
               setEditingDetails(false);
               // Open in edit mode - populate form with current data
               if (selectedFixture) {
+                setIsEditMode(true);
+                setEditingFixtureId(selectedFixture.id);
                 setName(selectedFixture.name);
                 setCategory(selectedFixture.category);
                 setMake(selectedFixture.make || '');
