@@ -85,7 +85,11 @@ export default function VastuScreen({ propertyId, geomancyType = 'vastu' }: Vast
       Alert.alert('Success', `${geomancyTitle} analysis completed successfully`);
       fetchAnalyses();
     } catch (error: any) {
-      Alert.alert('Error', error.message || 'Failed to analyze floor plan');
+      console.error('Analysis error:', error);
+      const errorMessage = error.response?.data?.detail || 
+                          error.message || 
+                          'Failed to analyze floor plan. Please check your internet connection and try again.';
+      Alert.alert('Error', errorMessage);
     } finally {
       setAnalyzing(false);
     }
