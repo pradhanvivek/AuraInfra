@@ -1,0 +1,509 @@
+from fastapi import FastAPI, APIRouter, HTTPException, Depends, status, UploadFile, File
+from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
+from dotenv import load_dotenv
+from starlette.middleware.cors import CORSMiddleware
+from motor.motor_asyncio import AsyncIOMotorClient
+from pydantic import BaseModel, Field
+from typing import List, Optional
+from datetime import datetime, timedelta
+from pathlib import Path
+import os
+import logging
+import uuid
+import jwt
+import bcrypt
+import base64
+from bson import ObjectId
+
+# Load environment variables
+ROOT_DIR = Path(__file__).parent
+load_dotenv(ROOT_DIR / '.env')
+
+# MongoDB connection
+mongo_url = os.environ['MONGO_URL']
+client = AsyncIOMotorClient(mongo_url)
+db = client[os.environ.get('DB_NAME', 'test_database')]
+
+# JWT Configuration
+JWT_SECRET = os.environ.get('JWT_SECRET', 'property_manager_secret_key_2025')
+JWT_ALGORITHM = os.environ.get('JWT_ALGORITHM', 'HS256')
+security = HTTPBearer()
+
+# Create the main app
+app = FastAPI()
+
+# Create a router with the /api prefix
+api_router = APIRouter(prefix="/api")
+
+# Configure logging
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+)
+logger = logging.getLogger(__name__)
+
+# ============= MODELS =============
+
+class UserRegister(BaseModel):
+    username: str
+    password: str
+
+class UserLogin(BaseModel):
+    username: str
+    password: str
+
+class Token(BaseModel):
+    access_token: str
+    token_type: str
+    user_id: str
+    username: str
+
+class Property(BaseModel):
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    name: str
+    address: str
+    user_id: str
+    created_at: datetime = Field(default_factory=datetime.utcnow)
+
+class PropertyCreate(BaseModel):
+    name: str
+    address: str
+
+class Document(BaseModel):
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    property_id: str
+    name: str
+    file_data: str  # base64 encoded file
+    file_type: str
+    uploaded_at: datetime = Field(default_factory=datetime.utcnow)
+
+class DocumentCreate(BaseModel):
+    name: str
+    file_data: str  # base64 encoded
+    file_type: str
+
+class Fixture(BaseModel):
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    property_id: str
+    name: str
+    category: str  # lights, fans, electrical appliances
+    make: Optional[str] = None
+    model: Optional[str] = None
+    serial_number: Optional[str] = None
+    warranty_info: Optional[str] = None
+    photo: Optional[str] = None  # base64 encoded photo
+    created_at: datetime = Field(default_factory=datetime.utcnow)
+
+class FixtureCreate(BaseModel):
+    name: str
+    category: str
+    make: Optional[str] = None
+    model: Optional[str] = None
+    serial_number: Optional[str] = None
+    warranty_info: Optional[str] = None
+    photo: Optional[str] = None
+
+class Measurement(BaseModel):
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    property_id: str
+    room_type: str  # master_bedroom, living_area, kitchen, bathroom, dining_area
+    length: Optional[float] = None
+    width: Optional[float] = None
+    height: Optional[float] = None
+    unit: str = "feet"  # feet, meters
+    floor_plan_image: Optional[str] = None  # base64 encoded
+    notes: Optional[str] = None
+    created_at: datetime = Field(default_factory=datetime.utcnow)
+
+class MeasurementCreate(BaseModel):
+    room_type: str
+    length: Optional[float] = None
+    width: Optional[float] = None
+    height: Optional[float] = None
+    unit: str = "feet"
+    floor_plan_image: Optional[str] = None
+    notes: Optional[str] = None
+
+class FloorPlanAnalysis(BaseModel):
+    floor_plan_image: str  # base64 encoded
+
+# ============= HELPER FUNCTIONS =============
+
+def create_access_token(data: dict):
+    to_encode = data.copy()
+    expire = datetime.utcnow() + timedelta(days=30)
+    to_encode.update({"exp": expire})
+    encoded_jwt = jwt.encode(to_encode, JWT_SECRET, algorithm=JWT_ALGORITHM)
+    return encoded_jwt
+
+def verify_token(token: str):
+    try:
+        payload = jwt.decode(token, JWT_SECRET, algorithms=[JWT_ALGORITHM])
+        return payload
+    except jwt.ExpiredSignatureError:
+        raise HTTPException(status_code=401, detail="Token has expired")
+    except jwt.JWTError:
+        raise HTTPException(status_code=401, detail="Invalid token")
+
+async def get_current_user(credentials: HTTPAuthorizationCredentials = Depends(security)):
+    token = credentials.credentials
+    payload = verify_token(token)
+    user_id = payload.get("user_id")
+    if not user_id:
+        raise HTTPException(status_code=401, detail="Invalid token")
+    return user_id
+
+# ============= AUTH ENDPOINTS =============
+
+@api_router.post("/auth/register", response_model=Token)
+async def register(user: UserRegister):
+    # Check if user exists
+    existing_user = await db.users.find_one({"username": user.username})
+    if existing_user:
+        raise HTTPException(status_code=400, detail="Username already exists")
+    
+    # Hash password
+    hashed_password = bcrypt.hashpw(user.password.encode('utf-8'), bcrypt.gensalt())
+    
+    # Create user
+    user_id = str(uuid.uuid4())
+    user_doc = {
+        "id": user_id,
+        "username": user.username,
+        "password": hashed_password.decode('utf-8'),
+        "created_at": datetime.utcnow()
+    }
+    
+    await db.users.insert_one(user_doc)
+    
+    # Create token
+    access_token = create_access_token({"user_id": user_id, "username": user.username})
+    
+    return Token(
+        access_token=access_token,
+        token_type="bearer",
+        user_id=user_id,
+        username=user.username
+    )
+
+@api_router.post("/auth/login", response_model=Token)
+async def login(user: UserLogin):
+    # Find user
+    user_doc = await db.users.find_one({"username": user.username})
+    if not user_doc:
+        raise HTTPException(status_code=401, detail="Invalid credentials")
+    
+    # Verify password
+    if not bcrypt.checkpw(user.password.encode('utf-8'), user_doc["password"].encode('utf-8')):
+        raise HTTPException(status_code=401, detail="Invalid credentials")
+    
+    # Create token
+    access_token = create_access_token({"user_id": user_doc["id"], "username": user_doc["username"]})
+    
+    return Token(
+        access_token=access_token,
+        token_type="bearer",
+        user_id=user_doc["id"],
+        username=user_doc["username"]
+    )
+
+# ============= PROPERTY ENDPOINTS =============
+
+@api_router.post("/properties", response_model=Property)
+async def create_property(property_data: PropertyCreate, user_id: str = Depends(get_current_user)):
+    property_obj = Property(
+        name=property_data.name,
+        address=property_data.address,
+        user_id=user_id
+    )
+    await db.properties.insert_one(property_obj.dict())
+    return property_obj
+
+@api_router.get("/properties", response_model=List[Property])
+async def get_properties(user_id: str = Depends(get_current_user)):
+    properties = await db.properties.find({"user_id": user_id}).to_list(1000)
+    return [Property(**prop) for prop in properties]
+
+@api_router.get("/properties/{property_id}", response_model=Property)
+async def get_property(property_id: str, user_id: str = Depends(get_current_user)):
+    property_doc = await db.properties.find_one({"id": property_id, "user_id": user_id})
+    if not property_doc:
+        raise HTTPException(status_code=404, detail="Property not found")
+    return Property(**property_doc)
+
+@api_router.delete("/properties/{property_id}")
+async def delete_property(property_id: str, user_id: str = Depends(get_current_user)):
+    result = await db.properties.delete_one({"id": property_id, "user_id": user_id})
+    if result.deleted_count == 0:
+        raise HTTPException(status_code=404, detail="Property not found")
+    
+    # Also delete related documents, fixtures, and measurements
+    await db.documents.delete_many({"property_id": property_id})
+    await db.fixtures.delete_many({"property_id": property_id})
+    await db.measurements.delete_many({"property_id": property_id})
+    
+    return {"message": "Property deleted successfully"}
+
+# ============= DOCUMENT ENDPOINTS =============
+
+@api_router.post("/properties/{property_id}/documents", response_model=Document)
+async def create_document(
+    property_id: str,
+    document: DocumentCreate,
+    user_id: str = Depends(get_current_user)
+):
+    # Verify property ownership
+    property_doc = await db.properties.find_one({"id": property_id, "user_id": user_id})
+    if not property_doc:
+        raise HTTPException(status_code=404, detail="Property not found")
+    
+    doc_obj = Document(
+        property_id=property_id,
+        name=document.name,
+        file_data=document.file_data,
+        file_type=document.file_type
+    )
+    await db.documents.insert_one(doc_obj.dict())
+    return doc_obj
+
+@api_router.get("/properties/{property_id}/documents", response_model=List[Document])
+async def get_documents(property_id: str, user_id: str = Depends(get_current_user)):
+    # Verify property ownership
+    property_doc = await db.properties.find_one({"id": property_id, "user_id": user_id})
+    if not property_doc:
+        raise HTTPException(status_code=404, detail="Property not found")
+    
+    documents = await db.documents.find({"property_id": property_id}).to_list(1000)
+    return [Document(**doc) for doc in documents]
+
+@api_router.delete("/properties/{property_id}/documents/{document_id}")
+async def delete_document(
+    property_id: str,
+    document_id: str,
+    user_id: str = Depends(get_current_user)
+):
+    # Verify property ownership
+    property_doc = await db.properties.find_one({"id": property_id, "user_id": user_id})
+    if not property_doc:
+        raise HTTPException(status_code=404, detail="Property not found")
+    
+    result = await db.documents.delete_one({"id": document_id, "property_id": property_id})
+    if result.deleted_count == 0:
+        raise HTTPException(status_code=404, detail="Document not found")
+    
+    return {"message": "Document deleted successfully"}
+
+# ============= FIXTURE ENDPOINTS =============
+
+@api_router.post("/properties/{property_id}/fixtures", response_model=Fixture)
+async def create_fixture(
+    property_id: str,
+    fixture: FixtureCreate,
+    user_id: str = Depends(get_current_user)
+):
+    # Verify property ownership
+    property_doc = await db.properties.find_one({"id": property_id, "user_id": user_id})
+    if not property_doc:
+        raise HTTPException(status_code=404, detail="Property not found")
+    
+    fixture_obj = Fixture(
+        property_id=property_id,
+        **fixture.dict()
+    )
+    await db.fixtures.insert_one(fixture_obj.dict())
+    return fixture_obj
+
+@api_router.get("/properties/{property_id}/fixtures", response_model=List[Fixture])
+async def get_fixtures(property_id: str, user_id: str = Depends(get_current_user)):
+    # Verify property ownership
+    property_doc = await db.properties.find_one({"id": property_id, "user_id": user_id})
+    if not property_doc:
+        raise HTTPException(status_code=404, detail="Property not found")
+    
+    fixtures = await db.fixtures.find({"property_id": property_id}).to_list(1000)
+    return [Fixture(**fix) for fix in fixtures]
+
+@api_router.get("/properties/{property_id}/fixtures/{fixture_id}", response_model=Fixture)
+async def get_fixture(
+    property_id: str,
+    fixture_id: str,
+    user_id: str = Depends(get_current_user)
+):
+    # Verify property ownership
+    property_doc = await db.properties.find_one({"id": property_id, "user_id": user_id})
+    if not property_doc:
+        raise HTTPException(status_code=404, detail="Property not found")
+    
+    fixture_doc = await db.fixtures.find_one({"id": fixture_id, "property_id": property_id})
+    if not fixture_doc:
+        raise HTTPException(status_code=404, detail="Fixture not found")
+    
+    return Fixture(**fixture_doc)
+
+@api_router.put("/properties/{property_id}/fixtures/{fixture_id}", response_model=Fixture)
+async def update_fixture(
+    property_id: str,
+    fixture_id: str,
+    fixture: FixtureCreate,
+    user_id: str = Depends(get_current_user)
+):
+    # Verify property ownership
+    property_doc = await db.properties.find_one({"id": property_id, "user_id": user_id})
+    if not property_doc:
+        raise HTTPException(status_code=404, detail="Property not found")
+    
+    # Update fixture
+    update_data = fixture.dict(exclude_unset=True)
+    result = await db.fixtures.update_one(
+        {"id": fixture_id, "property_id": property_id},
+        {"$set": update_data}
+    )
+    
+    if result.matched_count == 0:
+        raise HTTPException(status_code=404, detail="Fixture not found")
+    
+    # Return updated fixture
+    updated_fixture = await db.fixtures.find_one({"id": fixture_id, "property_id": property_id})
+    return Fixture(**updated_fixture)
+
+@api_router.delete("/properties/{property_id}/fixtures/{fixture_id}")
+async def delete_fixture(
+    property_id: str,
+    fixture_id: str,
+    user_id: str = Depends(get_current_user)
+):
+    # Verify property ownership
+    property_doc = await db.properties.find_one({"id": property_id, "user_id": user_id})
+    if not property_doc:
+        raise HTTPException(status_code=404, detail="Property not found")
+    
+    result = await db.fixtures.delete_one({"id": fixture_id, "property_id": property_id})
+    if result.deleted_count == 0:
+        raise HTTPException(status_code=404, detail="Fixture not found")
+    
+    return {"message": "Fixture deleted successfully"}
+
+# ============= MEASUREMENT ENDPOINTS =============
+
+@api_router.post("/properties/{property_id}/measurements", response_model=Measurement)
+async def create_measurement(
+    property_id: str,
+    measurement: MeasurementCreate,
+    user_id: str = Depends(get_current_user)
+):
+    # Verify property ownership
+    property_doc = await db.properties.find_one({"id": property_id, "user_id": user_id})
+    if not property_doc:
+        raise HTTPException(status_code=404, detail="Property not found")
+    
+    measurement_obj = Measurement(
+        property_id=property_id,
+        **measurement.dict()
+    )
+    await db.measurements.insert_one(measurement_obj.dict())
+    return measurement_obj
+
+@api_router.get("/properties/{property_id}/measurements", response_model=List[Measurement])
+async def get_measurements(property_id: str, user_id: str = Depends(get_current_user)):
+    # Verify property ownership
+    property_doc = await db.properties.find_one({"id": property_id, "user_id": user_id})
+    if not property_doc:
+        raise HTTPException(status_code=404, detail="Property not found")
+    
+    measurements = await db.measurements.find({"property_id": property_id}).to_list(1000)
+    return [Measurement(**m) for m in measurements]
+
+@api_router.delete("/properties/{property_id}/measurements/{measurement_id}")
+async def delete_measurement(
+    property_id: str,
+    measurement_id: str,
+    user_id: str = Depends(get_current_user)
+):
+    # Verify property ownership
+    property_doc = await db.properties.find_one({"id": property_id, "user_id": user_id})
+    if not property_doc:
+        raise HTTPException(status_code=404, detail="Property not found")
+    
+    result = await db.measurements.delete_one({"id": measurement_id, "property_id": property_id})
+    if result.deleted_count == 0:
+        raise HTTPException(status_code=404, detail="Measurement not found")
+    
+    return {"message": "Measurement deleted successfully"}
+
+# ============= AI FLOOR PLAN ANALYSIS =============
+
+@api_router.post("/measurements/analyze-floorplan")
+async def analyze_floorplan(
+    analysis_data: FloorPlanAnalysis,
+    user_id: str = Depends(get_current_user)
+):
+    try:
+        from emergentintegrations.llm.chat import LlmChat, UserMessage, ImageContent
+        
+        # Get API key
+        api_key = os.environ.get('EMERGENT_LLM_KEY')
+        if not api_key:
+            raise HTTPException(status_code=500, detail="API key not configured")
+        
+        # Initialize LLM chat with vision model
+        chat = LlmChat(
+            api_key=api_key,
+            session_id=f"floorplan_{user_id}_{uuid.uuid4()}",
+            system_message="You are an expert in analyzing architectural floor plans and extracting room dimensions. Analyze the floor plan image and extract dimensions for different rooms."
+        ).with_model("openai", "gpt-4o")
+        
+        # Create message with image
+        user_message = UserMessage(
+            text="""Analyze this floor plan image and extract the dimensions for the following room types if present:
+            - Master Bedroom
+            - Living Area
+            - Kitchen
+            - Bathrooms
+            - Dining Area
+            
+            For each room found, provide:
+            1. Room type
+            2. Length (if visible)
+            3. Width (if visible)
+            4. Any notes about the measurements
+            
+            Return the information in a structured format. If measurements are not clearly visible, indicate that in the notes.""",
+            file_contents=[ImageContent(image_base64=analysis_data.floor_plan_image)]
+        )
+        
+        # Get AI response
+        response = await chat.send_message(user_message)
+        
+        return {
+            "analysis": response,
+            "message": "Floor plan analyzed successfully. Please review the extracted dimensions and create measurements manually."
+        }
+        
+    except Exception as e:
+        logger.error(f"Error analyzing floor plan: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Error analyzing floor plan: {str(e)}")
+
+# ============= ROOT ENDPOINTS =============
+
+@api_router.get("/")
+async def root():
+    return {"message": "Property Manager API"}
+
+@api_router.get("/health")
+async def health_check():
+    return {"status": "healthy"}
+
+# Include the router in the main app
+app.include_router(api_router)
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_credentials=True,
+    allow_origins=["*"],
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+@app.on_event("shutdown")
+async def shutdown_db_client():
+    client.close()
