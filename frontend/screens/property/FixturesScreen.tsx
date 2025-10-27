@@ -390,11 +390,19 @@ export default function FixturesScreen({ propertyId }: FixturesScreenProps) {
             />
 
             <Text style={styles.label}>Warranty Expiry Date (Optional)</Text>
-            <TextInput
-              style={styles.input}
-              placeholder="YYYY-MM-DD (e.g., 2025-12-31)"
-              value={warrantyExpiryDate}
-              onChangeText={setWarrantyExpiryDate}
+            <TouchableOpacity style={styles.datePickerButton} onPress={showDatePicker}>
+              <Ionicons name="calendar-outline" size={20} color="#007AFF" />
+              <Text style={[styles.datePickerText, !warrantyExpiryDate && styles.datePickerPlaceholder]}>
+                {warrantyExpiryDate || 'Select date'}
+              </Text>
+            </TouchableOpacity>
+
+            <DateTimePickerModal
+              isVisible={isDatePickerVisible}
+              mode="date"
+              onConfirm={handleConfirmDate}
+              onCancel={hideDatePicker}
+              minimumDate={new Date()}
             />
 
             <Text style={styles.label}>Photo (Optional)</Text>
