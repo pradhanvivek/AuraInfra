@@ -210,6 +210,9 @@ export default function DocumentsScreen({ propertyId }: DocumentsScreenProps) {
         <Text style={styles.documentDate}>
           {new Date(item.uploaded_at).toLocaleDateString()}
         </Text>
+        {item.file_type === 'application/pdf' && (
+          <Text style={styles.pdfBadge}>Tap to open in PDF viewer</Text>
+        )}
       </View>
       <TouchableOpacity
         style={styles.deleteButton}
