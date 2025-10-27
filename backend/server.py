@@ -1056,21 +1056,25 @@ Please be specific and practical in your recommendations."""
         raise HTTPException(status_code=500, detail=f"Error analyzing {geomancy_type}: {str(e)}")
 
 @api_router.get("/properties/{property_id}/vastu", response_model=List[VastuAnalysis])
-async def get_vastu_analyses(property_id: str, user_id: str = Depends(get_current_user)):
+async def get_vastu_analyses(
+    property_id: str, 
+    geomancy_type: Optional[str] = None,
+    user_id: str = Depends(get_current_user)
+):
     # Verify property ownership
     property_doc = await db.properties.find_one({"id": property_id, "user_id": user_id})
     if not property_doc:
         raise HTTPException(status_code=404, detail="Property not found")
     
-    # Get user's current geomancy preference
-    user_doc = await db.users.find_one({"id": user_id})
-    geomancy_preference = user_doc.get("geomancy_preference", "vastu") if user_doc else "vastu"
+    # Build query
+    query = {"property_id": property_id}
     
-    # Filter analyses by geomancy type matching user's current preference
-    analyses = await db.vastu_analysis.find({
-        "property_id": property_id,
-        "geomancy_type": geomancy_preference
-    }).to_list(1000)
+    # Filter by geomancy type if provided
+    if geomancy_type:
+        query["geomancy_type"] = geomancy_type
+    
+    # Get analyses
+    analyses = await db.vastu_analysis.find(query).to_list(1000)
     
     return [VastuAnalysis(**a) for a in analyses]
 
