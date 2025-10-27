@@ -58,6 +58,17 @@ class Token(BaseModel):
     user_id: str
     username: str
 
+class UserProfile(BaseModel):
+    id: str
+    username: str
+    email: Optional[str] = None
+    phone: Optional[str] = None
+    created_at: datetime
+
+class UserProfileUpdate(BaseModel):
+    email: Optional[str] = None
+    phone: Optional[str] = None
+
 class Property(BaseModel):
     id: str = Field(default_factory=lambda: str(uuid.uuid4()))
     name: str
