@@ -206,3 +206,31 @@ export const measurementApi = {
     return response.data;
   },
 };
+
+// Vastu API
+export const vastuApi = {
+  getAll: async (token: string, propertyId: string) => {
+    const response = await axios.get(
+      `${API_URL}/api/properties/${propertyId}/vastu`,
+      getAuthHeaders(token)
+    );
+    return response.data;
+  },
+
+  create: async (token: string, propertyId: string, imageBase64: string) => {
+    const response = await axios.post(
+      `${API_URL}/api/properties/${propertyId}/vastu`,
+      { floor_plan_image: imageBase64 },
+      getAuthHeaders(token)
+    );
+    return response.data;
+  },
+
+  delete: async (token: string, propertyId: string, vastuId: string) => {
+    const response = await axios.delete(
+      `${API_URL}/api/properties/${propertyId}/vastu/${vastuId}`,
+      getAuthHeaders(token)
+    );
+    return response.data;
+  },
+};
