@@ -315,6 +315,21 @@ export default function FixturesScreen({ propertyId }: FixturesScreenProps) {
                 </View>
               )}
             </TouchableOpacity>
+
+            <Text style={styles.label}>Invoice (Optional)</Text>
+            <TouchableOpacity style={styles.photoButton} onPress={handlePickInvoice}>
+              {invoice ? (
+                <Image
+                  source={{ uri: `data:image/jpeg;base64,${invoice}` }}
+                  style={styles.photoPreview}
+                />
+              ) : (
+                <View style={styles.photoPlaceholder}>
+                  <Ionicons name="document-text-outline" size={32} color="#8E8E93" />
+                  <Text style={styles.photoPlaceholderText}>Add Invoice</Text>
+                </View>
+              )}
+            </TouchableOpacity>
           </ScrollView>
         </KeyboardAvoidingView>
       </Modal>
@@ -379,6 +394,16 @@ export default function FixturesScreen({ propertyId }: FixturesScreenProps) {
                 <Text style={styles.detailsLabel}>Warranty Information</Text>
                 <Text style={styles.detailsValue}>{selectedFixture.warranty_info}</Text>
               </View>
+            )}
+
+            {selectedFixture?.invoice && (
+              <>
+                <Text style={styles.detailsLabel}>Invoice</Text>
+                <Image
+                  source={{ uri: `data:image/jpeg;base64,${selectedFixture.invoice}` }}
+                  style={styles.detailsPhoto}
+                />
+              </>
             )}
           </ScrollView>
         </View>
