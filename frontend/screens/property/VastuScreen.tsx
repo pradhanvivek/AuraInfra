@@ -168,7 +168,7 @@ export default function VastuScreen({ propertyId, geomancyType = 'vastu' }: Vast
                 <View style={styles.headerLeft}>
                   <Ionicons name="stats-chart" size={24} color="#007AFF" />
                   <View style={styles.headerInfo}>
-                    <Text style={styles.cardTitle}>Vastu Analysis</Text>
+                    <Text style={styles.cardTitle}>{geomancyTitle} Analysis</Text>
                     <Text style={styles.cardDate}>
                       {new Date(analysis.created_at).toLocaleDateString()}
                     </Text>
@@ -196,7 +196,9 @@ export default function VastuScreen({ propertyId, geomancyType = 'vastu' }: Vast
                     <Text style={styles.scoreOutOf}>/100</Text>
                   </View>
                   <View style={styles.scoreInfo}>
-                    <Text style={styles.scoreLabel}>Compliance Score</Text>
+                    <Text style={styles.scoreLabel}>
+                      {geomancyType === 'feng_shui' ? 'Harmony Score' : 'Compliance Score'}
+                    </Text>
                     <Text
                       style={[
                         styles.scoreStatus,
