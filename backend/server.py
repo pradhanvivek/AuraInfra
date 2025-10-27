@@ -75,12 +75,22 @@ class Property(BaseModel):
     id: str = Field(default_factory=lambda: str(uuid.uuid4()))
     name: str
     address: str
+    latitude: Optional[float] = None
+    longitude: Optional[float] = None
     user_id: str
     created_at: datetime = Field(default_factory=datetime.utcnow)
 
 class PropertyCreate(BaseModel):
     name: str
     address: str
+    latitude: Optional[float] = None
+    longitude: Optional[float] = None
+
+class PropertyUpdate(BaseModel):
+    name: Optional[str] = None
+    address: Optional[str] = None
+    latitude: Optional[float] = None
+    longitude: Optional[float] = None
 
 class Document(BaseModel):
     id: str = Field(default_factory=lambda: str(uuid.uuid4()))
