@@ -129,6 +129,7 @@ export default function EditPropertyScreen() {
                 placeholder="Search for address..."
                 minLength={2}
                 fetchDetails={true}
+                predefinedPlaces={[]}
                 onPress={(data, details = null) => {
                   if (details) {
                     setAddress(data.description);
