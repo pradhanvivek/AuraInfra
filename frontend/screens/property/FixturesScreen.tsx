@@ -78,8 +78,40 @@ export default function FixturesScreen({ propertyId }: FixturesScreenProps) {
     setModel('');
     setSerialNumber('');
     setWarrantyInfo('');
+    setWarrantyExpiryDate('');
     setPhoto('');
     setInvoice('');
+  };
+
+  const getWarrantyStatus = (expiryDate?: string) => {
+    if (!expiryDate) return null;
+    const today = new Date();
+    const expiry = new Date(expiryDate);
+    return expiry >= today;
+  };
+
+  const getWarrantyBadge = (fixture: Fixture) => {
+    if (!fixture.warranty_info && !fixture.warranty_expiry_date) return null;
+    
+    const isActive = getWarrantyStatus(fixture.warranty_expiry_date);
+    
+    if (isActive === null) {
+      return (
+        <View style={styles.warrantyBadge}>
+          <Ionicons name="shield-checkmark" size={12} color="#8E8E93" />
+          <Text style={[styles.warrantyBadgeText, { color: '#8E8E93' }]}>Warranty</Text>
+        </View>
+      );
+    }
+    
+    return (
+      <View style={[styles.warrantyBadge, isActive ? styles.warrantyBadgeActive : styles.warrantyBadgeExpired]}>
+        <Ionicons name={isActive ? "shield-checkmark" : "shield-outline"} size={12} color={isActive ? "#34C759" : "#FF3B30"} />
+        <Text style={[styles.warrantyBadgeText, { color: isActive ? "#34C759" : "#FF3B30" }]}>
+          {isActive ? "In Warranty" : "Warranty Expired"}
+        </Text>
+      </View>
+    );
   };
 
   const handleAddFixture = async () => {
