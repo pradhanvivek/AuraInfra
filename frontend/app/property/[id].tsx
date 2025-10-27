@@ -1,8 +1,5 @@
 import { createMaterialTopTabNavigator } from '@react-navigation/material-top-tabs';
 import { useLocalSearchParams } from 'expo-router';
-import { useState, useEffect } from 'react';
-import { useAuth } from '../../contexts/AuthContext';
-import { authApi } from '../../services/api';
 import DocumentsScreen from '../../screens/property/DocumentsScreen';
 import FixturesScreen from '../../screens/property/FixturesScreen';
 import MeasurementsScreen from '../../screens/property/MeasurementsScreen';
@@ -14,30 +11,6 @@ const Tab = createMaterialTopTabNavigator();
 
 export default function PropertyDetails() {
   const { id } = useLocalSearchParams<{ id: string }>();
-  const { token } = useAuth();
-  const [geomancyPreference, setGeomancyPreference] = useState<'vastu' | 'feng_shui'>('vastu');
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    fetchUserPreference();
-  }, []);
-
-  const fetchUserPreference = async () => {
-    try {
-      const profile = await authApi.getProfile(token!);
-      setGeomancyPreference(profile.geomancy_preference || 'vastu');
-    } catch (error) {
-      console.error('Failed to fetch user preference:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const geomancyTabName = geomancyPreference === 'vastu' ? 'Vastu' : 'Feng Shui';
-
-  if (loading) {
-    return null; // or a loading spinner
-  }
 
   return (
     <Tab.Navigator
@@ -76,8 +49,12 @@ export default function PropertyDetails() {
         children={() => <MeasurementsScreen propertyId={id!} />}
       />
       <Tab.Screen
-        name={geomancyTabName}
-        children={() => <VastuScreen propertyId={id!} geomancyType={geomancyPreference} />}
+        name="Vastu"
+        children={() => <VastuScreen propertyId={id!} geomancyType="vastu" />}
+      />
+      <Tab.Screen
+        name="Feng Shui"
+        children={() => <VastuScreen propertyId={id!} geomancyType="feng_shui" />}
       />
       <Tab.Screen
         name="Near Me"
