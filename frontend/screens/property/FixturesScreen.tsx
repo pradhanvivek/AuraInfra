@@ -386,15 +386,39 @@ export default function FixturesScreen({ propertyId }: FixturesScreenProps) {
         visible={detailsModalVisible}
         animationType="slide"
         presentationStyle="pageSheet"
-        onRequestClose={() => setDetailsModalVisible(false)}
+        onRequestClose={() => {
+          setDetailsModalVisible(false);
+          setEditingDetails(false);
+        }}
       >
         <View style={styles.modalContainer}>
           <View style={styles.modalHeader}>
-            <TouchableOpacity onPress={() => setDetailsModalVisible(false)}>
+            <TouchableOpacity onPress={() => {
+              setDetailsModalVisible(false);
+              setEditingDetails(false);
+            }}>
               <Text style={styles.cancelButton}>Close</Text>
             </TouchableOpacity>
             <Text style={styles.modalTitle}>Fixture Details</Text>
-            <View style={{ width: 50 }} />
+            <TouchableOpacity onPress={() => {
+              setDetailsModalVisible(false);
+              setEditingDetails(false);
+              // Open in edit mode - populate form with current data
+              if (selectedFixture) {
+                setName(selectedFixture.name);
+                setCategory(selectedFixture.category);
+                setMake(selectedFixture.make || '');
+                setModel(selectedFixture.model || '');
+                setSerialNumber(selectedFixture.serial_number || '');
+                setWarrantyInfo(selectedFixture.warranty_info || '');
+                setWarrantyExpiryDate(selectedFixture.warranty_expiry_date || '');
+                setPhoto(selectedFixture.photo || '');
+                setInvoice(selectedFixture.invoice || '');
+                setModalVisible(true);
+              }
+            }}>
+              <Ionicons name="create-outline" size={24} color="#007AFF" />
+            </TouchableOpacity>
           </View>
 
           <ScrollView style={styles.modalContent}>
@@ -440,6 +464,18 @@ export default function FixturesScreen({ propertyId }: FixturesScreenProps) {
               <View style={styles.detailsRow}>
                 <Text style={styles.detailsLabel}>Warranty Information</Text>
                 <Text style={styles.detailsValue}>{selectedFixture.warranty_info}</Text>
+              </View>
+            )}
+
+            {selectedFixture?.warranty_expiry_date && (
+              <View style={styles.detailsRow}>
+                <Text style={styles.detailsLabel}>Warranty Expiry Date</Text>
+                <View style={styles.detailsValueRow}>
+                  <Text style={styles.detailsValue}>
+                    {new Date(selectedFixture.warranty_expiry_date).toLocaleDateString()}
+                  </Text>
+                  {getWarrantyBadge(selectedFixture)}
+                </View>
               </View>
             )}
 
