@@ -65,7 +65,7 @@ export default function HealthScoreScreen({ propertyId }: HealthScoreScreenProps
 
   const getCategoryName = (category: string) => {
     if (category === 'vastu') {
-      return geomancyLabel;
+      return 'Geomancy';
     }
     return category.charAt(0).toUpperCase() + category.slice(1);
   };
