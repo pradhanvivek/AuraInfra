@@ -1044,15 +1044,16 @@ Please be specific and practical in your recommendations."""
             floor_plan_image=vastu_data.floor_plan_image,
             analysis_text=analysis_response,
             compliance_score=compliance_score,
-            recommendations=analysis_response
+            recommendations=analysis_response,
+            geomancy_type=geomancy_type  # Store which type of analysis was performed
         )
         
         await db.vastu_analysis.insert_one(vastu_obj.dict())
         return vastu_obj
         
     except Exception as e:
-        logger.error(f"Error analyzing Vastu: {str(e)}")
-        raise HTTPException(status_code=500, detail=f"Error analyzing Vastu: {str(e)}")
+        logger.error(f"Error analyzing {geomancy_type}: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Error analyzing {geomancy_type}: {str(e)}")
 
 @api_router.get("/properties/{property_id}/vastu", response_model=List[VastuAnalysis])
 async def get_vastu_analyses(property_id: str, user_id: str = Depends(get_current_user)):
