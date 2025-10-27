@@ -126,6 +126,23 @@ export default function Profile() {
         </View>
 
         <View style={styles.section}>
+          <Text style={styles.sectionTitle}>Preferences</Text>
+
+          <View style={styles.infoCard}>
+            <View style={styles.infoIcon}>
+              <Ionicons name="time-outline" size={24} color="#007AFF" />
+            </View>
+            <View style={styles.infoContent}>
+              <Text style={styles.infoLabel}>Warranty Reminder</Text>
+              <Text style={styles.infoValue}>
+                {profile?.warranty_reminder_days} days before expiry
+              </Text>
+            </View>
+            <Ionicons name="chevron-forward" size={20} color="#C7C7CC" />
+          </View>
+        </View>
+
+        <View style={styles.section}>
           <Text style={styles.sectionTitle}>Contact Information</Text>
 
           <TouchableOpacity
