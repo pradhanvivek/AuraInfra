@@ -36,6 +36,8 @@ export default function Profile() {
   const [editField, setEditField] = useState<'email' | 'phone' | null>(null);
   const [editValue, setEditValue] = useState('');
   const [saving, setSaving] = useState(false);
+  const [warrantyModalVisible, setWarrantyModalVisible] = useState(false);
+  const [selectedReminderDays, setSelectedReminderDays] = useState(30);
 
   useEffect(() => {
     fetchProfile();
