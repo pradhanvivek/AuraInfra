@@ -29,6 +29,11 @@ export default function DocumentsScreen({ propertyId }: DocumentsScreenProps) {
   const [documents, setDocuments] = useState<Document[]>([]);
   const [loading, setLoading] = useState(true);
   const [uploading, setUploading] = useState(false);
+  const [viewModalVisible, setViewModalVisible] = useState(false);
+  const [selectedDocument, setSelectedDocument] = useState<Document | null>(null);
+  const [nameModalVisible, setNameModalVisible] = useState(false);
+  const [tempFileData, setTempFileData] = useState<{base64: string, type: string} | null>(null);
+  const [documentName, setDocumentName] = useState('');
 
   useEffect(() => {
     fetchDocuments();
