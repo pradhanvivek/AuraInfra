@@ -719,4 +719,9 @@ const styles = StyleSheet.create({
     color: '#000',
     fontWeight: '500',
   },
+  detailsValueRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
 });
