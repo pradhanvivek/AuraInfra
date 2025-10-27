@@ -189,7 +189,10 @@ class PropertyManagerAPITester:
             self.log_result(f"Invalid Warranty Days - {invalid_days}", True, f"Correctly rejected invalid warranty_reminder_days: {invalid_days}")
             return True
         else:
-            self.log_result(f"Invalid Warranty Days - {invalid_days}", False, f"Expected 400 error for invalid value {invalid_days}, got {response.status_code if response else 'None'}")
+            # Debug information
+            status = response.status_code if response else 'None'
+            response_text = response.text if response else 'No response'
+            self.log_result(f"Invalid Warranty Days - {invalid_days}", False, f"Expected 400 error for invalid value {invalid_days}, got {status}. Response: {response_text}")
         
         return False
     
