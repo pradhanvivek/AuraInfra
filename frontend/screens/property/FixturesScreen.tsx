@@ -46,6 +46,8 @@ export default function FixturesScreen({ propertyId }: FixturesScreenProps) {
   const [selectedFixture, setSelectedFixture] = useState<Fixture | null>(null);
   const [saving, setSaving] = useState(false);
   const [editingDetails, setEditingDetails] = useState(false);
+  const [isEditMode, setIsEditMode] = useState(false);
+  const [editingFixtureId, setEditingFixtureId] = useState<string | null>(null);
 
   // Form state
   const [name, setName] = useState('');
