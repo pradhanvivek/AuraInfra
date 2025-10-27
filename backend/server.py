@@ -92,6 +92,7 @@ class Fixture(BaseModel):
     serial_number: Optional[str] = None
     warranty_info: Optional[str] = None
     photo: Optional[str] = None  # base64 encoded photo
+    invoice: Optional[str] = None  # base64 encoded invoice
     created_at: datetime = Field(default_factory=datetime.utcnow)
 
 class FixtureCreate(BaseModel):
@@ -102,6 +103,7 @@ class FixtureCreate(BaseModel):
     serial_number: Optional[str] = None
     warranty_info: Optional[str] = None
     photo: Optional[str] = None
+    invoice: Optional[str] = None
 
 class Measurement(BaseModel):
     id: str = Field(default_factory=lambda: str(uuid.uuid4()))
