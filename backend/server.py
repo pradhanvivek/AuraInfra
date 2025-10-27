@@ -1269,20 +1269,21 @@ async def get_property_health_score(property_id: str, user_id: str = Depends(get
     measurements = await db.measurements.find({"property_id": property_id}).to_list(1000)
     expected_rooms = 5  # Master bedroom, living, kitchen, bathroom, dining
     
-    if measurements:
-        measurement_doc = measurements[0]
-        measured_rooms = 0
+    if measurements and len(measurements) > 0:
+        # Count unique room types
+        unique_rooms = set()
+        for measurement in measurements:
+            room_type = measurement.get("room_type")
+            if room_type:
+                unique_rooms.add(room_type)
         
-        for room in ["master_bedroom", "living_area", "kitchen", "bathroom", "dining_area"]:
-            if measurement_doc.get(room):
-                measured_rooms += 1
-        
-        scores["measurements"] = (measured_rooms / expected_rooms) * 100
+        measured_rooms = len(unique_rooms)
+        scores["measurements"] = min(100, (measured_rooms / expected_rooms) * 100)
         
         if measured_rooms < expected_rooms:
             recommendations.append({
                 "category": "measurements",
-                "message": f"Add measurements for {expected_rooms - measured_rooms} more room(s)",
+                "message": f"Add measurements for {expected_rooms - measured_rooms} more room type(s)",
                 "priority": "medium"
             })
     else:
