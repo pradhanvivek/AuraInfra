@@ -780,6 +780,21 @@ const styles = StyleSheet.create({
     marginBottom: 8,
     marginTop: 16,
   },
+  sectionHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginTop: 24,
+    marginBottom: 8,
+    paddingBottom: 12,
+    borderBottomWidth: 1,
+    borderBottomColor: '#E5E5EA',
+  },
+  sectionHeaderText: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#007AFF',
+    marginLeft: 8,
+  },
   input: {
     backgroundColor: '#fff',
     borderRadius: 12,
