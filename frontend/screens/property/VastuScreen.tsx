@@ -81,8 +81,8 @@ export default function VastuScreen({ propertyId, geomancyType = 'vastu' }: Vast
 
     setAnalyzing(true);
     try {
-      await vastuApi.create(token!, propertyId, base64Data);
-      Alert.alert('Success', 'Vastu analysis completed successfully');
+      await vastuApi.create(token!, propertyId, base64Data, geomancyType);
+      Alert.alert('Success', `${geomancyTitle} analysis completed successfully`);
       fetchAnalyses();
     } catch (error: any) {
       Alert.alert('Error', error.message || 'Failed to analyze floor plan');
