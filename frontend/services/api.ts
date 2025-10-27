@@ -138,9 +138,31 @@ export const measurementApi = {
     return response.data;
   },
 
+  getById: async (token: string, propertyId: string, measurementId: string) => {
+    const response = await axios.get(
+      `${API_URL}/api/properties/${propertyId}/measurements/${measurementId}`,
+      getAuthHeaders(token)
+    );
+    return response.data;
+  },
+
   create: async (token: string, propertyId: string, data: any) => {
     const response = await axios.post(
       `${API_URL}/api/properties/${propertyId}/measurements`,
+      data,
+      getAuthHeaders(token)
+    );
+    return response.data;
+  },
+
+  update: async (
+    token: string,
+    propertyId: string,
+    measurementId: string,
+    data: any
+  ) => {
+    const response = await axios.put(
+      `${API_URL}/api/properties/${propertyId}/measurements/${measurementId}`,
       data,
       getAuthHeaders(token)
     );
