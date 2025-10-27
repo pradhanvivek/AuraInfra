@@ -48,9 +48,18 @@ export const propertyApi = {
     return response.data;
   },
 
-  create: async (token: string, data: { name: string; address: string }) => {
+  create: async (token: string, data: { name: string; address: string; latitude?: number; longitude?: number }) => {
     const response = await axios.post(
       `${API_URL}/api/properties`,
+      data,
+      getAuthHeaders(token)
+    );
+    return response.data;
+  },
+
+  update: async (token: string, id: string, data: { name?: string; address?: string; latitude?: number; longitude?: number }) => {
+    const response = await axios.put(
+      `${API_URL}/api/properties/${id}`,
       data,
       getAuthHeaders(token)
     );
