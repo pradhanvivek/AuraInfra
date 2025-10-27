@@ -11,7 +11,7 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useAuth } from '../../contexts/AuthContext';
-import { propertyApi } from '../../services/api';
+import { propertyApi, authApi } from '../../services/api';
 
 interface HealthScoreScreenProps {
   propertyId: string;
@@ -22,10 +22,27 @@ export default function HealthScoreScreen({ propertyId }: HealthScoreScreenProps
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [healthData, setHealthData] = useState<any>(null);
+  const [geomancyPreference, setGeomancyPreference] = useState<'vastu' | 'feng_shui'>('vastu');
 
   useEffect(() => {
-    fetchHealthScore();
+    fetchUserPreferenceAndHealthScore();
   }, []);
+
+  const fetchUserPreferenceAndHealthScore = async () => {
+    try {
+      // Fetch user preference first
+      const profile = await authApi.getProfile(token!);
+      setGeomancyPreference(profile.geomancy_preference || 'vastu');
+      
+      // Then fetch health score
+      const data = await propertyApi.getHealthScore(token!, propertyId);
+      setHealthData(data);
+    } catch (error: any) {
+      Alert.alert('Error', 'Failed to load health score');
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const fetchHealthScore = async () => {
     try {
@@ -43,6 +60,8 @@ export default function HealthScoreScreen({ propertyId }: HealthScoreScreenProps
     await fetchHealthScore();
     setRefreshing(false);
   };
+
+  const geomancyLabel = geomancyPreference === 'vastu' ? 'Vastu' : 'Feng Shui';
 
   const getCategoryIcon = (category: string) => {
     const icons: { [key: string]: string } = {
