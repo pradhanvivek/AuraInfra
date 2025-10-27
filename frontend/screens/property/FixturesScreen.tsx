@@ -172,7 +172,15 @@ export default function FixturesScreen({ propertyId }: FixturesScreenProps) {
         <Ionicons name={getCategoryIcon(item.category)} size={24} color="#007AFF" />
       </View>
       <View style={styles.fixtureInfo}>
-        <Text style={styles.fixtureName}>{item.name}</Text>
+        <View style={styles.fixtureNameRow}>
+          <Text style={styles.fixtureName}>{item.name}</Text>
+          {item.warranty_info && (
+            <View style={styles.warrantyBadge}>
+              <Ionicons name="shield-checkmark" size={12} color="#34C759" />
+              <Text style={styles.warrantyBadgeText}>Warranty</Text>
+            </View>
+          )}
+        </View>
         <Text style={styles.fixtureCategory}>{item.category}</Text>
       </View>
       <Ionicons name="chevron-forward" size={20} color="#C7C7CC" />
