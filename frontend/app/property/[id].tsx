@@ -3,6 +3,7 @@ import { useLocalSearchParams } from 'expo-router';
 import DocumentsScreen from '../../screens/property/DocumentsScreen';
 import FixturesScreen from '../../screens/property/FixturesScreen';
 import MeasurementsScreen from '../../screens/property/MeasurementsScreen';
+import VastuScreen from '../../screens/property/VastuScreen';
 
 const Tab = createMaterialTopTabNavigator();
 
@@ -22,10 +23,11 @@ export default function PropertyDetails() {
           backgroundColor: '#fff',
         },
         tabBarLabelStyle: {
-          fontSize: 14,
+          fontSize: 13,
           fontWeight: '600',
           textTransform: 'none',
         },
+        tabBarScrollEnabled: true,
       }}
     >
       <Tab.Screen
@@ -39,6 +41,10 @@ export default function PropertyDetails() {
       <Tab.Screen
         name="Measurements"
         children={() => <MeasurementsScreen propertyId={id!} />}
+      />
+      <Tab.Screen
+        name="Vastu"
+        children={() => <VastuScreen propertyId={id!} />}
       />
     </Tab.Navigator>
   );
