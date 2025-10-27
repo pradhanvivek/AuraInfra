@@ -139,6 +139,85 @@ class PropertyManagerAPITester:
         
         return False
     
+    # ============= PROFILE/WARRANTY REMINDER TESTS =============
+    
+    def test_get_profile_default_warranty_days(self):
+        """Test GET /api/auth/profile returns default warranty_reminder_days of 30"""
+        response = self.make_request("GET", "/auth/profile")
+        
+        if response and response.status_code == 200:
+            profile = response.json()
+            warranty_days = profile.get("warranty_reminder_days")
+            
+            if warranty_days == 30:
+                self.log_result("Get Profile - Default Warranty Days", True, f"Profile returns default warranty_reminder_days: {warranty_days}")
+                return True
+            else:
+                self.log_result("Get Profile - Default Warranty Days", False, f"Expected warranty_reminder_days=30, got {warranty_days}")
+        else:
+            error_msg = response.json().get("detail", "Unknown error") if response else "No response"
+            self.log_result("Get Profile - Default Warranty Days", False, f"Status: {response.status_code if response else 'None'}, Error: {error_msg}")
+        
+        return False
+    
+    def test_update_warranty_days_valid(self, days):
+        """Test PUT /api/auth/profile with valid warranty_reminder_days"""
+        data = {"warranty_reminder_days": days}
+        response = self.make_request("PUT", "/auth/profile", data)
+        
+        if response and response.status_code == 200:
+            profile = response.json()
+            updated_days = profile.get("warranty_reminder_days")
+            
+            if updated_days == days:
+                self.log_result(f"Update Warranty Days - {days} days", True, f"Successfully updated warranty_reminder_days to {days}")
+                return True
+            else:
+                self.log_result(f"Update Warranty Days - {days} days", False, f"Expected {days}, got {updated_days}")
+        else:
+            error_msg = response.json().get("detail", "Unknown error") if response else "No response"
+            self.log_result(f"Update Warranty Days - {days} days", False, f"Status: {response.status_code if response else 'None'}, Error: {error_msg}")
+        
+        return False
+    
+    def test_update_warranty_days_invalid(self, invalid_days):
+        """Test PUT /api/auth/profile with invalid warranty_reminder_days (should return 400)"""
+        data = {"warranty_reminder_days": invalid_days}
+        response = self.make_request("PUT", "/auth/profile", data)
+        
+        if response and response.status_code == 400:
+            self.log_result(f"Invalid Warranty Days - {invalid_days}", True, f"Correctly rejected invalid warranty_reminder_days: {invalid_days}")
+            return True
+        else:
+            self.log_result(f"Invalid Warranty Days - {invalid_days}", False, f"Expected 400 error for invalid value {invalid_days}, got {response.status_code if response else 'None'}")
+        
+        return False
+    
+    def test_warranty_days_persistence(self, test_days):
+        """Test that warranty_reminder_days value persists after update"""
+        # First update to test_days
+        update_success = self.test_update_warranty_days_valid(test_days)
+        if not update_success:
+            return False
+        
+        # Then fetch profile again to verify persistence
+        response = self.make_request("GET", "/auth/profile")
+        
+        if response and response.status_code == 200:
+            profile = response.json()
+            persisted_days = profile.get("warranty_reminder_days")
+            
+            if persisted_days == test_days:
+                self.log_result(f"Warranty Days Persistence - {test_days} days", True, f"Value {test_days} persisted correctly after update")
+                return True
+            else:
+                self.log_result(f"Warranty Days Persistence - {test_days} days", False, f"Expected persisted value {test_days}, got {persisted_days}")
+        else:
+            error_msg = response.json().get("detail", "Unknown error") if response else "No response"
+            self.log_result(f"Warranty Days Persistence - {test_days} days", False, f"Status: {response.status_code if response else 'None'}, Error: {error_msg}")
+        
+        return False
+    
     # ============= PROPERTY TESTS =============
     
     def test_create_property(self):
