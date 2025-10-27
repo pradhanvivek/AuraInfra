@@ -63,6 +63,13 @@ export default function HealthScoreScreen({ propertyId }: HealthScoreScreenProps
 
   const geomancyLabel = geomancyPreference === 'vastu' ? 'Vastu' : 'Feng Shui';
 
+  const getCategoryName = (category: string) => {
+    if (category === 'vastu') {
+      return geomancyLabel;
+    }
+    return category.charAt(0).toUpperCase() + category.slice(1);
+  };
+
   const getCategoryIcon = (category: string) => {
     const icons: { [key: string]: string } = {
       documents: 'document-text',
