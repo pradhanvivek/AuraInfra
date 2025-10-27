@@ -874,6 +874,214 @@ async def health_check():
     return {"status": "healthy"}
 
 # Include the router in the main app
+
+# Health Score Endpoint
+@api_router.get("/properties/{property_id}/health-score")
+async def get_property_health_score(property_id: str, user_id: str = Depends(get_current_user)):
+    # Verify property ownership
+    property_doc = await db.properties.find_one({"id": property_id, "user_id": user_id})
+    if not property_doc:
+        raise HTTPException(status_code=404, detail="Property not found")
+    
+    # Initialize score components
+    scores = {
+        "documents": 0,
+        "fixtures": 0,
+        "measurements": 0,
+        "vastu": 0,
+        "overall": 0
+    }
+    
+    recommendations = []
+    
+    # 1. Document Score (25% weight) - Based on having at least 5 key documents
+    documents = await db.documents.find({"property_id": property_id}).to_list(1000)
+    doc_count = len(documents)
+    expected_docs = 5  # Ownership, insurance, warranties, maintenance records, etc.
+    scores["documents"] = min(100, (doc_count / expected_docs) * 100)
+    
+    if doc_count < expected_docs:
+        recommendations.append({
+            "category": "documents",
+            "message": f"Add {expected_docs - doc_count} more document(s) to reach optimal level",
+            "priority": "medium" if doc_count >= 2 else "high"
+        })
+    
+    # 2. Fixtures Score (30% weight) - Based on warranty status
+    fixtures = await db.fixtures.find({"property_id": property_id}).to_list(1000)
+    fixture_count = len(fixtures)
+    
+    if fixture_count > 0:
+        fixtures_with_warranty = 0
+        fixtures_under_warranty = 0
+        fixtures_expired = 0
+        today = datetime.utcnow()
+        
+        for fixture in fixtures:
+            if fixture.get("warranty_info") or fixture.get("warranty_expiry_date"):
+                fixtures_with_warranty += 1
+                
+                # Check if warranty is still valid
+                if fixture.get("warranty_expiry_date"):
+                    try:
+                        # Try multiple date formats
+                        expiry_str = fixture["warranty_expiry_date"]
+                        try:
+                            expiry_date = datetime.fromisoformat(expiry_str)
+                        except:
+                            try:
+                                from datetime import datetime as dt
+                                expiry_date = dt.strptime(expiry_str, "%m/%d/%Y")
+                            except:
+                                try:
+                                    expiry_date = dt.strptime(expiry_str, "%Y-%m-%d")
+                                except:
+                                    continue
+                        
+                        if expiry_date >= today:
+                            fixtures_under_warranty += 1
+                        else:
+                            fixtures_expired += 1
+                    except:
+                        pass
+        
+        # Score: 50% for having warranty info, 50% for active warranties
+        warranty_info_score = (fixtures_with_warranty / fixture_count) * 50
+        active_warranty_score = (fixtures_under_warranty / fixture_count) * 50 if fixture_count > 0 else 0
+        scores["fixtures"] = warranty_info_score + active_warranty_score
+        
+        if fixtures_with_warranty < fixture_count:
+            recommendations.append({
+                "category": "fixtures",
+                "message": f"Add warranty information for {fixture_count - fixtures_with_warranty} fixture(s)",
+                "priority": "high"
+            })
+        
+        if fixtures_expired > 0:
+            recommendations.append({
+                "category": "fixtures",
+                "message": f"{fixtures_expired} fixture(s) have expired warranties - consider renewal",
+                "priority": "medium"
+            })
+    else:
+        scores["fixtures"] = 0
+        recommendations.append({
+            "category": "fixtures",
+            "message": "Add fixtures/appliances to track their maintenance and warranties",
+            "priority": "high"
+        })
+    
+    # 3. Measurements Score (25% weight) - Based on room coverage
+    measurements = await db.measurements.find({"property_id": property_id}).to_list(1000)
+    expected_rooms = 5  # Master bedroom, living, kitchen, bathroom, dining
+    
+    if measurements:
+        measurement_doc = measurements[0]
+        measured_rooms = 0
+        
+        for room in ["master_bedroom", "living_area", "kitchen", "bathroom", "dining_area"]:
+            if measurement_doc.get(room):
+                measured_rooms += 1
+        
+        scores["measurements"] = (measured_rooms / expected_rooms) * 100
+        
+        if measured_rooms < expected_rooms:
+            recommendations.append({
+                "category": "measurements",
+                "message": f"Add measurements for {expected_rooms - measured_rooms} more room(s)",
+                "priority": "medium"
+            })
+    else:
+        scores["measurements"] = 0
+        recommendations.append({
+            "category": "measurements",
+            "message": "Add property measurements for all rooms",
+            "priority": "high"
+        })
+    
+    # 4. Vastu Score (20% weight) - Based on vastu analysis
+    vastu_results = await db.measurements.find({"property_id": property_id, "vastu_analysis": {"$exists": True}}).to_list(1000)
+    
+    if vastu_results and vastu_results[0].get("vastu_analysis"):
+        # If vastu analysis exists, give full score (can be enhanced with actual compliance check)
+        scores["vastu"] = 100
+    else:
+        scores["vastu"] = 0
+        recommendations.append({
+            "category": "vastu",
+            "message": "Upload floor plan for Vastu analysis",
+            "priority": "low"
+        })
+    
+    # Calculate overall weighted score
+    weights = {
+        "documents": 0.25,
+        "fixtures": 0.30,
+        "measurements": 0.25,
+        "vastu": 0.20
+    }
+    
+    scores["overall"] = (
+        scores["documents"] * weights["documents"] +
+        scores["fixtures"] * weights["fixtures"] +
+        scores["measurements"] * weights["measurements"] +
+        scores["vastu"] * weights["vastu"]
+    )
+    
+    # Determine grade
+    if scores["overall"] >= 90:
+        grade = "A"
+        grade_color = "#34C759"  # Green
+    elif scores["overall"] >= 80:
+        grade = "B"
+        grade_color = "#5856D6"  # Purple
+    elif scores["overall"] >= 70:
+        grade = "C"
+        grade_color = "#FF9500"  # Orange
+    elif scores["overall"] >= 60:
+        grade = "D"
+        grade_color = "#FF9500"  # Orange
+    else:
+        grade = "F"
+        grade_color = "#FF3B30"  # Red
+    
+    # Sort recommendations by priority
+    priority_order = {"high": 1, "medium": 2, "low": 3}
+    recommendations.sort(key=lambda x: priority_order[x["priority"]])
+    
+    return {
+        "property_id": property_id,
+        "score": round(scores["overall"], 1),
+        "grade": grade,
+        "grade_color": grade_color,
+        "breakdown": {
+            "documents": {
+                "score": round(scores["documents"], 1),
+                "weight": weights["documents"] * 100,
+                "count": doc_count,
+                "expected": expected_docs
+            },
+            "fixtures": {
+                "score": round(scores["fixtures"], 1),
+                "weight": weights["fixtures"] * 100,
+                "count": fixture_count
+            },
+            "measurements": {
+                "score": round(scores["measurements"], 1),
+                "weight": weights["measurements"] * 100,
+                "measured_rooms": len([m for m in measurements[0].keys() if m in ["master_bedroom", "living_area", "kitchen", "bathroom", "dining_area"]]) if measurements else 0,
+                "expected_rooms": expected_rooms
+            },
+            "vastu": {
+                "score": round(scores["vastu"], 1),
+                "weight": weights["vastu"] * 100,
+                "analyzed": len(vastu_results) > 0
+            }
+        },
+        "recommendations": recommendations
+    }
+
+
 app.include_router(api_router)
 
 app.add_middleware(
