@@ -63,11 +63,13 @@ class UserProfile(BaseModel):
     username: str
     email: Optional[str] = None
     phone: Optional[str] = None
+    warranty_reminder_days: int = 30
     created_at: datetime
 
 class UserProfileUpdate(BaseModel):
     email: Optional[str] = None
     phone: Optional[str] = None
+    warranty_reminder_days: Optional[int] = None
 
 class Property(BaseModel):
     id: str = Field(default_factory=lambda: str(uuid.uuid4()))
