@@ -61,7 +61,7 @@ export default function DocumentsScreen({ propertyId }: DocumentsScreenProps) {
       }
 
       const result = await ImagePicker.launchImageLibraryAsync({
-        mediaTypes: ImagePicker.MediaTypeOptions.All,
+        mediaTypes: ['images'],
         allowsEditing: false,
         quality: 0.8,
         base64: true,
@@ -71,39 +71,64 @@ export default function DocumentsScreen({ propertyId }: DocumentsScreenProps) {
         return;
       }
 
-      setUploading(true);
       const file = result.assets[0];
-
-      try {
-        // Get base64 data
-        const base64Data = file.base64;
-        
-        if (!base64Data) {
-          throw new Error('Unable to process file. Please try again with an image or photo.');
-        }
-
-        // Determine file name and type
-        const fileName = file.fileName || file.uri.split('/').pop() || 'document';
-        const fileType = file.type === 'image' ? 'image/jpeg' : 'application/octet-stream';
-
-        await documentApi.create(token!, propertyId, {
-          name: fileName,
-          file_data: base64Data,
-          file_type: fileType,
-        });
-
-        Alert.alert('Success', 'Document uploaded successfully');
-        await fetchDocuments();
-      } catch (uploadError: any) {
-        console.error('Upload error:', uploadError);
-        throw uploadError;
+      const base64Data = file.base64;
+      
+      if (!base64Data) {
+        Alert.alert('Error', 'Unable to process file. Please try again with an image or photo.');
+        return;
       }
+
+      // Determine file type
+      const fileType = file.type === 'image' ? 'image/jpeg' : 'application/octet-stream';
+      
+      // Store temp data and show name modal
+      setTempFileData({ base64: base64Data, type: fileType });
+      setDocumentName('');
+      setNameModalVisible(true);
+
     } catch (error: any) {
       console.error('Document picker error:', error);
-      Alert.alert('Error', error.message || 'Failed to upload document. Please try with an image or photo.');
+      Alert.alert('Error', error.message || 'Failed to select document');
+    }
+  };
+
+  const handleSaveDocument = async () => {
+    if (!documentName.trim()) {
+      Alert.alert('Error', 'Please enter a document name');
+      return;
+    }
+
+    if (!tempFileData) {
+      Alert.alert('Error', 'No file selected');
+      return;
+    }
+
+    setUploading(true);
+    setNameModalVisible(false);
+
+    try {
+      await documentApi.create(token!, propertyId, {
+        name: documentName.trim(),
+        file_data: tempFileData.base64,
+        file_type: tempFileData.type,
+      });
+
+      Alert.alert('Success', 'Document uploaded successfully');
+      setTempFileData(null);
+      setDocumentName('');
+      await fetchDocuments();
+    } catch (error: any) {
+      console.error('Upload error:', error);
+      Alert.alert('Error', error.message || 'Failed to upload document');
     } finally {
       setUploading(false);
     }
+  };
+
+  const handleViewDocument = (doc: Document) => {
+    setSelectedDocument(doc);
+    setViewModalVisible(true);
   };
 
   const handleDeleteDocument = (doc: Document) => {
