@@ -288,10 +288,42 @@ export default function DocumentsScreen({ propertyId }: DocumentsScreenProps) {
                     style={styles.documentImage}
                     resizeMode="contain"
                   />
+                ) : selectedDocument.file_type === 'application/pdf' ? (
+                  <View style={styles.pdfContainer}>
+                    <WebView
+                      source={{ 
+                        html: `
+                          <!DOCTYPE html>
+                          <html>
+                            <head>
+                              <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+                              <style>
+                                body { margin: 0; padding: 0; background: #000; }
+                                iframe { border: none; width: 100%; height: 100vh; }
+                              </style>
+                            </head>
+                            <body>
+                              <iframe src="data:application/pdf;base64,${selectedDocument.file_data}"></iframe>
+                            </body>
+                          </html>
+                        `
+                      }}
+                      style={styles.webview}
+                      javaScriptEnabled={true}
+                      domStorageEnabled={true}
+                      startInLoadingState={true}
+                      renderLoading={() => (
+                        <View style={styles.loadingContainer}>
+                          <ActivityIndicator size="large" color="#007AFF" />
+                          <Text style={styles.loadingText}>Loading PDF...</Text>
+                        </View>
+                      )}
+                    />
+                  </View>
                 ) : (
                   <View style={styles.pdfPlaceholder}>
                     <Ionicons name="document-text" size={64} color="#007AFF" />
-                    <Text style={styles.pdfText}>PDF Document</Text>
+                    <Text style={styles.pdfText}>Document</Text>
                     <Text style={styles.pdfSubtext}>File preview not available</Text>
                   </View>
                 )}
