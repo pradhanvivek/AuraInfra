@@ -283,7 +283,10 @@ export const vastuApi = {
         floor_plan_image: imageBase64,
         geomancy_type: geomancyType
       },
-      getAuthHeaders(token)
+      {
+        ...getAuthHeaders(token),
+        timeout: 120000, // 2 minute timeout for AI processing
+      }
     );
     return response.data;
   },
