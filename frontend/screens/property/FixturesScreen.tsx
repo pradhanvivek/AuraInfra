@@ -77,6 +77,7 @@ export default function FixturesScreen({ propertyId }: FixturesScreenProps) {
     setSerialNumber('');
     setWarrantyInfo('');
     setPhoto('');
+    setInvoice('');
   };
 
   const handleAddFixture = async () => {
