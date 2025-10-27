@@ -192,6 +192,19 @@ export default function EditPropertyScreen() {
                   value: address,
                   onChangeText: setAddress,
                 }}
+                listViewDisplayed="auto"
+                keyboardShouldPersistTaps="handled"
+                nestedScrollEnabled={true}
+                renderRow={(rowData) => {
+                  const title = rowData.structured_formatting.main_text;
+                  const address = rowData.structured_formatting.secondary_text;
+                  return (
+                    <View>
+                      <Text style={{ fontSize: 14, fontWeight: '600' }}>{title}</Text>
+                      <Text style={{ fontSize: 12, color: '#8E8E93' }}>{address}</Text>
+                    </View>
+                  );
+                }}
                 enablePoweredByContainer={false}
                 debounce={300}
                 onFail={(error) => console.error('Google Places Error:', error)}
