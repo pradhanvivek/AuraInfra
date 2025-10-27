@@ -77,10 +77,14 @@ export default function NearMeScreen({ propertyId }: NearMeScreenProps) {
       const propertyData = await propertyApi.getById(token!, propertyId);
       setProperty(propertyData);
       
-      if (propertyData.address) {
-        await fetchNearbyPlaces(propertyData.address);
+      // Check if property has coordinates stored
+      if (propertyData.latitude && propertyData.longitude) {
+        await fetchNearbyPlaces(propertyData.latitude, propertyData.longitude);
+      } else if (propertyData.address) {
+        // Fallback: Geocode the address if coordinates not stored
+        await geocodeAndFetchPlaces(propertyData.address);
       } else {
-        Alert.alert('Info', 'Property address is required to find nearby places');
+        Alert.alert('Info', 'Property address and coordinates are required to find nearby places');
       }
     } catch (error: any) {
       Alert.alert('Error', 'Failed to load property details');
@@ -89,7 +93,27 @@ export default function NearMeScreen({ propertyId }: NearMeScreenProps) {
     }
   };
 
-  const fetchNearbyPlaces = async (address: string) => {
+  const geocodeAndFetchPlaces = async (address: string) => {
+    try {
+      const geocodeResponse = await fetch(
+        `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(address)}`
+      );
+      const geocodeData = await geocodeResponse.json();
+      
+      if (geocodeData.length === 0) {
+        Alert.alert('Error', 'Could not find coordinates for this address');
+        return;
+      }
+
+      const { lat, lon } = geocodeData[0];
+      await fetchNearbyPlaces(parseFloat(lat), parseFloat(lon));
+    } catch (error: any) {
+      console.error('Error geocoding address:', error);
+      Alert.alert('Error', 'Failed to find location. Please add coordinates to the property.');
+    }
+  };
+
+  const fetchNearbyPlaces = async (lat: number, lon: number) => {
     try {
       // First, geocode the address to get coordinates
       const geocodeResponse = await fetch(
