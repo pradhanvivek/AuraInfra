@@ -95,6 +95,10 @@ export default function FixturesScreen({ propertyId }: FixturesScreenProps) {
     setWarrantyExpiryDate('');
     setPhoto('');
     setInvoice('');
+    setVendorName('');
+    setVendorContact('');
+    setVendorEmail('');
+    setMaintenanceFrequency('');
     setIsEditMode(false);
     setEditingFixtureId(null);
   };
