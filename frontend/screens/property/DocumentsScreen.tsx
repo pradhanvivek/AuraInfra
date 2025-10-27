@@ -259,7 +259,7 @@ export default function DocumentsScreen({ propertyId }: DocumentsScreenProps) {
         presentationStyle="fullScreen"
         onRequestClose={() => setViewModalVisible(false)}
       >
-        <View style={styles.viewModalContainer}>
+        <SafeAreaView style={styles.viewModalContainer} edges={['top', 'bottom']}>
           <View style={styles.viewModalHeader}>
             <TouchableOpacity 
               style={styles.closeButton}
@@ -276,14 +276,23 @@ export default function DocumentsScreen({ propertyId }: DocumentsScreenProps) {
           <ScrollView 
             style={styles.viewModalContent}
             contentContainerStyle={styles.viewModalContentContainer}
+            bounces={false}
           >
             {selectedDocument && (
               <>
-                <Image
-                  source={{ uri: `data:${selectedDocument.file_type};base64,${selectedDocument.file_data}` }}
-                  style={styles.documentImage}
-                  resizeMode="contain"
-                />
+                {selectedDocument.file_type.startsWith('image') ? (
+                  <Image
+                    source={{ uri: `data:${selectedDocument.file_type};base64,${selectedDocument.file_data}` }}
+                    style={styles.documentImage}
+                    resizeMode="contain"
+                  />
+                ) : (
+                  <View style={styles.pdfPlaceholder}>
+                    <Ionicons name="document-text" size={64} color="#007AFF" />
+                    <Text style={styles.pdfText}>PDF Document</Text>
+                    <Text style={styles.pdfSubtext}>File preview not available</Text>
+                  </View>
+                )}
                 <View style={styles.documentDetails}>
                   <Text style={styles.detailsLabel}>Name</Text>
                   <Text style={styles.detailsValue}>{selectedDocument.name}</Text>
@@ -299,7 +308,7 @@ export default function DocumentsScreen({ propertyId }: DocumentsScreenProps) {
               </>
             )}
           </ScrollView>
-        </View>
+        </SafeAreaView>
       </Modal>
     </View>
   );
