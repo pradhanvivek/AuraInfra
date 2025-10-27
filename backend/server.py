@@ -778,6 +778,121 @@ async def analyze_floorplan(
         logger.error(f"Error analyzing floor plan: {str(e)}")
         raise HTTPException(status_code=500, detail=f"Error analyzing floor plan: {str(e)}")
 
+@api_router.post("/measurements/analyze-floorplan-comprehensive", response_model=ComprehensiveFloorPlanAnalysis)
+async def analyze_floorplan_comprehensive(
+    analysis_data: FloorPlanAnalysis,
+    user_id: str = Depends(get_current_user)
+):
+    """
+    Comprehensive floor plan analysis using Gemini 2.5 Pro.
+    Extracts house type, number of rooms, and detailed measurements for each room.
+    """
+    try:
+        from emergentintegrations.llm.chat import LlmChat, UserMessage, ImageContent
+        import json
+        
+        # Get API key
+        api_key = os.environ.get('EMERGENT_LLM_KEY')
+        if not api_key:
+            raise HTTPException(status_code=500, detail="API key not configured")
+        
+        # Initialize LLM chat with Gemini 2.5 Pro
+        chat = LlmChat(
+            api_key=api_key,
+            session_id=f"comprehensive_floorplan_{user_id}_{uuid.uuid4()}",
+            system_message="""You are an expert architectural analyst specializing in floor plan analysis. 
+            Your task is to analyze floor plans and extract comprehensive information about the property."""
+        ).with_model("gemini", "gemini-2.5-pro-preview-05-06")
+        
+        # Create comprehensive analysis prompt
+        user_message = UserMessage(
+            text="""Analyze this floor plan image comprehensively and provide the following information in JSON format:
+
+1. **House Type Classification**: Identify the type of property from these categories:
+   - "Studio" (single open space)
+   - "1 BHK Apartment", "2 BHK Apartment", "3 BHK Apartment", "4 BHK Apartment", etc. (based on bedroom count)
+   - "Villa"
+   - "Duplex"
+   - "Bungalow"
+
+2. **Room Count Summary**:
+   - Total number of bedrooms
+   - Total number of bathrooms
+   - Total number of rooms overall
+
+3. **Individual Room Analysis**: For EACH room visible in the floor plan, provide:
+   - room_name: Specific name (e.g., "Master Bedroom", "Bedroom 2", "Living Room", "Kitchen", "Bathroom 1")
+   - room_type: Category (master_bedroom, bedroom, living_area, kitchen, bathroom, dining_area, balcony, utility, study, etc.)
+   - length: Length in feet (if visible/measurable)
+   - width: Width in feet (if visible/measurable)
+   - area: Area in square feet (if calculable or mentioned)
+   - ceiling_height: Height in feet (if visible)
+   - windows: Number of windows (if visible)
+   - notes: Any additional observations (e.g., "attached bathroom", "has wardrobe", "open to balcony")
+
+Return ONLY a valid JSON object with this exact structure:
+{
+  "house_type": "string",
+  "total_bedrooms": number,
+  "total_bathrooms": number,
+  "total_rooms": number,
+  "rooms": [
+    {
+      "room_name": "string",
+      "room_type": "string",
+      "length": number or null,
+      "width": number or null,
+      "area": number or null,
+      "ceiling_height": number or null,
+      "windows": number or null,
+      "notes": "string or null"
+    }
+  ],
+  "overall_notes": "string or null"
+}
+
+Important:
+- Be thorough and analyze ALL visible rooms
+- If dimensions are marked on the floor plan, extract them accurately
+- If dimensions are not visible, estimate based on standard room sizes and proportions
+- Provide realistic measurements (bedrooms: 10-15 ft, living rooms: 12-20 ft, kitchens: 8-12 ft, bathrooms: 5-8 ft)
+- Return ONLY the JSON object, no additional text""",
+            file_contents=[ImageContent(image_base64=analysis_data.floor_plan_image)]
+        )
+        
+        # Get AI response
+        response = await chat.send_message(user_message)
+        logger.info(f"Gemini response: {response}")
+        
+        # Parse the JSON response
+        try:
+            # Try to find JSON in the response
+            json_start = response.find('{')
+            json_end = response.rfind('}') + 1
+            if json_start != -1 and json_end > json_start:
+                json_str = response[json_start:json_end]
+                analysis_result = json.loads(json_str)
+            else:
+                # If no JSON found, try parsing the entire response
+                analysis_result = json.loads(response)
+            
+            # Validate and create the response model
+            return ComprehensiveFloorPlanAnalysis(**analysis_result)
+            
+        except json.JSONDecodeError as je:
+            logger.error(f"JSON parsing error: {str(je)}, Response: {response}")
+            raise HTTPException(
+                status_code=500, 
+                detail=f"Failed to parse AI response. Please try again or upload a clearer floor plan image."
+            )
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error in comprehensive floor plan analysis: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Error analyzing floor plan: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Error analyzing floor plan: {str(e)}")
+
 # ============= VASTU ANALYSIS ENDPOINTS =============
 
 @api_router.post("/properties/{property_id}/vastu", response_model=VastuAnalysis)
