@@ -192,7 +192,7 @@ export default function DocumentsScreen({ propertyId }: DocumentsScreenProps) {
   }
 
   return (
-    <View style={styles.container}>
+    <SafeAreaView style={styles.container} edges={['bottom']}>
       {documents.length === 0 ? (
         <View style={styles.emptyContainer}>
           <Ionicons name="document-outline" size={64} color="#C7C7CC" />
@@ -205,6 +205,7 @@ export default function DocumentsScreen({ propertyId }: DocumentsScreenProps) {
           renderItem={renderDocument}
           keyExtractor={(item) => item.id}
           contentContainerStyle={styles.listContent}
+          style={styles.flatList}
         />
       )}
 
