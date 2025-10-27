@@ -47,6 +47,10 @@ export default function PropertyDetails() {
         name="Vastu"
         children={() => <VastuScreen propertyId={id!} />}
       />
+      <Tab.Screen
+        name="Near Me"
+        children={() => <NearMeScreen propertyId={id!} />}
+      />
     </Tab.Navigator>
   );
 }
