@@ -28,6 +28,7 @@ interface Fixture {
   serial_number?: string;
   warranty_info?: string;
   photo?: string;
+  invoice?: string;
 }
 
 interface FixturesScreenProps {
