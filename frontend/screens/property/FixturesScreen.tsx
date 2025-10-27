@@ -130,6 +130,7 @@ export default function FixturesScreen({ propertyId }: FixturesScreenProps) {
         model: model || undefined,
         serial_number: serialNumber || undefined,
         warranty_info: warrantyInfo || undefined,
+        warranty_expiry_date: warrantyExpiryDate || undefined,
         photo: photo || undefined,
         invoice: invoice || undefined,
       });
