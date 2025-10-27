@@ -191,6 +191,7 @@ class VastuAnalysis(BaseModel):
     analysis_text: str
     compliance_score: Optional[int] = None  # 0-100
     recommendations: Optional[str] = None
+    geomancy_type: str = "vastu"  # "vastu" or "feng_shui" - stores which type of analysis was performed
     created_at: datetime = Field(default_factory=datetime.utcnow)
 
 class VastuAnalysisCreate(BaseModel):
