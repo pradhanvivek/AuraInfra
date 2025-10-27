@@ -23,6 +23,7 @@ interface UserProfile {
   username: string;
   email?: string;
   phone?: string;
+  warranty_reminder_days: number;
   created_at: string;
 }
 
