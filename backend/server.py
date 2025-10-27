@@ -803,13 +803,13 @@ async def analyze_floorplan_comprehensive(
         if not api_key:
             raise HTTPException(status_code=500, detail="API key not configured")
         
-        # Initialize LLM chat with Gemini 2.5 Pro
+        # Initialize LLM chat with Gemini 2.0 Flash (available model)
         chat = LlmChat(
             api_key=api_key,
             session_id=f"comprehensive_floorplan_{user_id}_{uuid.uuid4()}",
             system_message="""You are an expert architectural analyst specializing in floor plan analysis. 
             Your task is to analyze floor plans and extract comprehensive information about the property."""
-        ).with_model("gemini", "gemini-2.5-pro-preview-05-06")
+        ).with_model("gemini", "gemini-2.0-flash")
         
         # Create comprehensive analysis prompt
         user_message = UserMessage(
