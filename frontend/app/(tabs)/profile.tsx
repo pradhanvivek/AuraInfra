@@ -24,6 +24,7 @@ interface UserProfile {
   email?: string;
   phone?: string;
   warranty_reminder_days: number;
+  geomancy_preference: string;
   created_at: string;
 }
 
