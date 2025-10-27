@@ -89,6 +89,33 @@ export default function EditPropertyScreen() {
     }
   };
 
+  const handleDelete = async () => {
+    Alert.alert(
+      'Delete Property',
+      'Are you sure you want to delete this property? This will also delete all documents, fixtures, and measurements.',
+      [
+        {
+          text: 'Cancel',
+          style: 'cancel',
+        },
+        {
+          text: 'Delete',
+          style: 'destructive',
+          onPress: async () => {
+            try {
+              await propertyApi.delete(token!, id!);
+              Alert.alert('Success', 'Property deleted successfully', [
+                { text: 'OK', onPress: () => router.replace('/(tabs)/properties') }
+              ]);
+            } catch (error: any) {
+              Alert.alert('Error', error.message || 'Failed to delete property');
+            }
+          },
+        },
+      ]
+    );
+  };
+
   if (loading) {
     return (
       <View style={styles.centerContainer}>
