@@ -424,6 +424,95 @@ export default function Profile() {
           </View>
         </View>
       </Modal>
+
+      {/* Geomancy Preference Modal */}
+      <Modal
+        visible={geomancyModalVisible}
+        animationType="slide"
+        presentationStyle="pageSheet"
+        onRequestClose={() => setGeomancyModalVisible(false)}
+      >
+        <View style={styles.modalContainer}>
+          <View style={styles.modalHeader}>
+            <TouchableOpacity onPress={() => setGeomancyModalVisible(false)}>
+              <Text style={styles.cancelButton}>Cancel</Text>
+            </TouchableOpacity>
+            <Text style={styles.modalTitle}>Geomancy Preference</Text>
+            <View style={{ width: 60 }} />
+          </View>
+
+          <View style={styles.modalContent}>
+            <Text style={styles.modalDescription}>
+              Choose your preferred geomancy system for property analysis
+            </Text>
+
+            <TouchableOpacity
+              style={[
+                styles.optionCard,
+                selectedGeomancy === 'vastu' && styles.optionCardSelected,
+              ]}
+              onPress={() => handleGeomancyChange('vastu')}
+              disabled={saving}
+            >
+              <View style={styles.optionContent}>
+                <Ionicons
+                  name="compass-outline"
+                  size={24}
+                  color={selectedGeomancy === 'vastu' ? '#007AFF' : '#8E8E93'}
+                />
+                <View style={styles.optionText}>
+                  <Text style={[
+                    styles.optionTitle,
+                    selectedGeomancy === 'vastu' && styles.optionTitleSelected,
+                  ]}>
+                    Vastu Shastra
+                  </Text>
+                  <Text style={styles.optionSubtitle}>Ancient Indian architectural science</Text>
+                </View>
+              </View>
+              {selectedGeomancy === 'vastu' && (
+                <Ionicons name="checkmark-circle" size={24} color="#007AFF" />
+              )}
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              style={[
+                styles.optionCard,
+                selectedGeomancy === 'feng_shui' && styles.optionCardSelected,
+              ]}
+              onPress={() => handleGeomancyChange('feng_shui')}
+              disabled={saving}
+            >
+              <View style={styles.optionContent}>
+                <Ionicons
+                  name="flower-outline"
+                  size={24}
+                  color={selectedGeomancy === 'feng_shui' ? '#007AFF' : '#8E8E93'}
+                />
+                <View style={styles.optionText}>
+                  <Text style={[
+                    styles.optionTitle,
+                    selectedGeomancy === 'feng_shui' && styles.optionTitleSelected,
+                  ]}>
+                    Feng Shui
+                  </Text>
+                  <Text style={styles.optionSubtitle}>Chinese philosophical system of harmonizing</Text>
+                </View>
+              </View>
+              {selectedGeomancy === 'feng_shui' && (
+                <Ionicons name="checkmark-circle" size={24} color="#007AFF" />
+              )}
+            </TouchableOpacity>
+
+            {saving && (
+              <View style={styles.savingIndicator}>
+                <ActivityIndicator size="small" color="#007AFF" />
+                <Text style={styles.savingText}>Updating...</Text>
+              </View>
+            )}
+          </View>
+        </View>
+      </Modal>
     </SafeAreaView>
   );
 }
