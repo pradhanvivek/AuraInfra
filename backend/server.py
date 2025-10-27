@@ -914,6 +914,8 @@ async def create_vastu_analysis(
     if not property_doc:
         raise HTTPException(status_code=404, detail="Property not found")
     
+    geomancy_type = vastu_data.geomancy_type or "vastu"
+    
     try:
         from emergentintegrations.llm.chat import LlmChat, UserMessage, ImageContent
         
@@ -922,40 +924,104 @@ async def create_vastu_analysis(
         if not api_key:
             raise HTTPException(status_code=500, detail="API key not configured")
         
-        # Initialize LLM chat with vision model for Vastu analysis
-        chat = LlmChat(
-            api_key=api_key,
-            session_id=f"vastu_{user_id}_{uuid.uuid4()}",
-            system_message="You are an expert in Vastu Shastra, the ancient Indian science of architecture and spatial design. Analyze floor plans for Vastu compliance and provide detailed recommendations."
-        ).with_model("openai", "gpt-4o")
-        
-        # Create message with image
-        user_message = UserMessage(
-            text="""Analyze this floor plan according to Vastu Shastra principles. Please provide:
+        # Different prompts and system messages for Vastu vs Feng Shui
+        if geomancy_type == "feng_shui":
+            system_message = """You are an expert in Feng Shui, the ancient Chinese practice of harmonizing individuals with their surrounding environment. Analyze floor plans for Feng Shui principles and provide detailed recommendations."""
+            
+            analysis_prompt = """Analyze this floor plan according to Feng Shui principles. Please provide:
+
+1. **Overall Feng Shui Score** (0-100): Rate the overall harmony and chi flow
+
+2. **Bagua Map Analysis**: Overlay the Bagua map on this floor plan and analyze each area:
+   - Wealth & Prosperity (Southeast)
+   - Fame & Reputation (South)
+   - Love & Relationships (Southwest)
+   - Family & Health (East)
+   - Center (Tai Chi)
+   - Children & Creativity (West)
+   - Knowledge & Self-Cultivation (Northeast)
+   - Career & Life Path (North)
+   - Helpful People & Travel (Northwest)
+
+3. **Chi Flow Assessment**:
+   - Entrance and chi entry points
+   - Flow of energy through the space
+   - Areas of stagnant or rushed chi
+   - Balance of yin and yang energies
+
+4. **Five Elements Analysis** (Wood, Fire, Earth, Metal, Water):
+   - Current element distribution
+   - Element balance in each room
+   - Missing or excessive elements
+
+5. **Key Observations**:
+   - Positive Feng Shui features
+   - Problem areas or energy blockages
+   - Command positions for beds and desks
+
+6. **Detailed Recommendations**:
+   - Placement of furniture for optimal chi flow
+   - Color schemes based on five elements
+   - Remedies for problem areas (mirrors, crystals, plants, etc.)
+   - Enhancements for specific life areas using Bagua
+
+7. **Priority Actions**: List 3-5 most important changes to improve Feng Shui
+
+Please be specific and practical in your recommendations."""
+        else:  # vastu
+            system_message = """You are an expert in Vastu Shastra, the ancient Indian science of architecture and spatial design. Analyze floor plans for Vastu compliance and provide detailed recommendations."""
+            
+            analysis_prompt = """Analyze this floor plan according to Vastu Shastra principles. Please provide:
 
 1. **Overall Vastu Compliance Score** (0-100): Rate the overall adherence to Vastu principles
+
 2. **Direction Analysis**: Analyze the placement of rooms based on cardinal directions
    - Main entrance direction and its significance
    - Master bedroom placement (ideally South-West)
-   - Kitchen placement (ideally South-East)
-   - Pooja/Prayer room (ideally North-East)
+   - Kitchen placement (ideally South-East - Agni corner)
+   - Pooja/Prayer room (ideally North-East - Ishanya corner)
    - Bathrooms and toilets placement
    - Living room placement (ideally North or East)
+   - Dining area (ideally West or North-West)
 
-3. **Key Observations**:
+3. **Five Elements (Pancha Mahabhuta) Analysis**:
+   - Earth (Prithvi) - Southwest
+   - Water (Jal) - Northeast
+   - Fire (Agni) - Southeast
+   - Air (Vayu) - Northwest
+   - Space (Akasha) - Center (Brahmasthan)
+
+4. **Energy Flow Assessment**:
+   - Positive energy zones
+   - Areas of concern or doshas (defects)
+   - Brahmasthan (center) analysis
+
+5. **Key Observations**:
    - Positive aspects that align with Vastu
-   - Areas of concern or non-compliance
-   - Energy flow assessment
+   - Areas of non-compliance or Vastu doshas
+   - Impact on health, wealth, and prosperity
 
-4. **Detailed Recommendations**:
-   - Specific corrections or remedies
-   - Color recommendations for different rooms
+6. **Detailed Recommendations**:
+   - Specific corrections or remedies for doshas
+   - Color recommendations for different rooms based on directions
    - Placement of furniture and fixtures
-   - Remedial measures for any Vastu defects
+   - Remedial measures (yantras, plants, mirrors, pyramids)
+   - Slope and level considerations
 
-5. **Priority Actions**: List 3-5 most important changes in order of priority
+7. **Priority Actions**: List 3-5 most important changes in order of priority
 
-Please be specific and practical in your recommendations.""",
+Please be specific and practical in your recommendations."""
+        
+        # Initialize LLM chat with vision model
+        chat = LlmChat(
+            api_key=api_key,
+            session_id=f"{geomancy_type}_{user_id}_{uuid.uuid4()}",
+            system_message=system_message
+        ).with_model("gemini", "gemini-2.0-flash")
+        
+        # Create message with image
+        user_message = UserMessage(
+            text=analysis_prompt,
             file_contents=[ImageContent(image_base64=vastu_data.floor_plan_image)]
         )
         
