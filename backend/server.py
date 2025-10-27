@@ -164,6 +164,24 @@ class MeasurementCreate(BaseModel):
 class FloorPlanAnalysis(BaseModel):
     floor_plan_image: str  # base64 encoded
 
+class RoomAnalysis(BaseModel):
+    room_name: str  # e.g., "Master Bedroom", "Living Room", "Kitchen"
+    room_type: str  # master_bedroom, bedroom, living_area, kitchen, bathroom, dining_area, balcony, etc.
+    length: Optional[float] = None
+    width: Optional[float] = None
+    area: Optional[float] = None
+    ceiling_height: Optional[float] = None
+    windows: Optional[int] = None
+    notes: Optional[str] = None
+
+class ComprehensiveFloorPlanAnalysis(BaseModel):
+    house_type: str  # e.g., "3 BHK Apartment", "Villa", "Duplex", "Studio", "Bungalow"
+    total_bedrooms: int
+    total_bathrooms: int
+    total_rooms: int
+    rooms: List[RoomAnalysis]
+    overall_notes: Optional[str] = None
+
 class VastuAnalysis(BaseModel):
     id: str = Field(default_factory=lambda: str(uuid.uuid4()))
     property_id: str
