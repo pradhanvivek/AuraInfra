@@ -301,7 +301,7 @@ const styles = StyleSheet.create({
   content: {
     flex: 1,
   },
-  scrollView: {
+  formContainer: {
     flex: 1,
   },
   section: {
