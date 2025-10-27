@@ -44,7 +44,7 @@ export default function VastuScreen({ propertyId, geomancyType = 'vastu' }: Vast
 
   const fetchAnalyses = async () => {
     try {
-      const data = await vastuApi.getAll(token!, propertyId);
+      const data = await vastuApi.getAll(token!, propertyId, geomancyType);
       setAnalyses(data);
     } catch (error: any) {
       Alert.alert('Error', error.message || `Failed to load ${geomancyTitle} analyses`);
