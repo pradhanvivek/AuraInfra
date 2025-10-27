@@ -49,9 +49,13 @@ class PropertyManagerAPITester:
         
         # Add auth header if token exists
         if self.auth_token and headers is None:
-            headers = {"Authorization": f"Bearer {self.auth_token}"}
+            headers = {"Authorization": f"Bearer {self.auth_token}", "Content-Type": "application/json"}
         elif self.auth_token and headers:
             headers["Authorization"] = f"Bearer {self.auth_token}"
+            if "Content-Type" not in headers:
+                headers["Content-Type"] = "application/json"
+        elif headers is None:
+            headers = {"Content-Type": "application/json"}
         
         try:
             if method.upper() == "GET":
