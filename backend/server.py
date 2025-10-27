@@ -315,6 +315,8 @@ async def create_property(property_data: PropertyCreate, user_id: str = Depends(
     property_obj = Property(
         name=property_data.name,
         address=property_data.address,
+        latitude=property_data.latitude,
+        longitude=property_data.longitude,
         user_id=user_id
     )
     await db.properties.insert_one(property_obj.dict())
@@ -331,6 +333,38 @@ async def get_property(property_id: str, user_id: str = Depends(get_current_user
     if not property_doc:
         raise HTTPException(status_code=404, detail="Property not found")
     return Property(**property_doc)
+
+@api_router.put("/properties/{property_id}", response_model=Property)
+async def update_property(
+    property_id: str,
+    property_data: PropertyUpdate,
+    user_id: str = Depends(get_current_user)
+):
+    # Verify property ownership
+    property_doc = await db.properties.find_one({"id": property_id, "user_id": user_id})
+    if not property_doc:
+        raise HTTPException(status_code=404, detail="Property not found")
+    
+    # Build update data
+    update_data = {}
+    if property_data.name is not None:
+        update_data["name"] = property_data.name
+    if property_data.address is not None:
+        update_data["address"] = property_data.address
+    if property_data.latitude is not None:
+        update_data["latitude"] = property_data.latitude
+    if property_data.longitude is not None:
+        update_data["longitude"] = property_data.longitude
+    
+    if update_data:
+        await db.properties.update_one(
+            {"id": property_id},
+            {"$set": update_data}
+        )
+    
+    # Return updated property
+    updated_property = await db.properties.find_one({"id": property_id})
+    return Property(**updated_property)
 
 @api_router.delete("/properties/{property_id}")
 async def delete_property(property_id: str, user_id: str = Depends(get_current_user)):
