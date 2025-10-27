@@ -167,6 +167,22 @@ export default function Profile() {
             </View>
             <Ionicons name="chevron-forward" size={20} color="#C7C7CC" />
           </TouchableOpacity>
+
+          <TouchableOpacity
+            style={styles.infoCard}
+            onPress={() => setGeomancyModalVisible(true)}
+          >
+            <View style={styles.infoIcon}>
+              <Ionicons name="compass-outline" size={24} color="#007AFF" />
+            </View>
+            <View style={styles.infoContent}>
+              <Text style={styles.infoLabel}>Geomancy Preference</Text>
+              <Text style={styles.infoValue}>
+                {selectedGeomancy === 'vastu' ? 'Vastu Shastra' : 'Feng Shui'}
+              </Text>
+            </View>
+            <Ionicons name="chevron-forward" size={20} color="#C7C7CC" />
+          </TouchableOpacity>
         </View>
 
         <View style={styles.section}>
