@@ -1,361 +1,405 @@
+diff --git a/frontend/app/property/edit/[id].tsx b/frontend/app/property/edit/[id].tsx
+index ff7e104..f8abfdf 100644
+--- a/frontend/app/property/edit/[id].tsx
++++ b/frontend/app/property/edit/[id].tsx
+@@ -117,7 +117,7 @@ export default function EditPropertyScreen() {
+         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+         style={styles.content}
+       >
+-        <ScrollView style={styles.scrollView} keyboardShouldPersistTaps="handled">
++        <View style={styles.formContainer}>
+           <View style={styles.section}>
+             <Text style={styles.label}>Property Name</Text>
+             <TextInput
+@@ -177,6 +177,7 @@ export default function EditPropertyScreen() {
+                     shadowOffset: { width: 0, height: 2 },
+                     shadowOpacity: 0.1,
+                     shadowRadius: 4,
++                    maxHeight: 200,
+                   },
+                   row: {
+                     backgroundColor: '#fff',
+@@ -251,7 +252,7 @@ export default function EditPropertyScreen() {
+               Select an address from the dropdown to automatically capture coordinates for accurate nearby place suggestions.
+             </Text>
+           </View>
+-        </ScrollView>
++        </View>
+       </KeyboardAvoidingView>
+     </SafeAreaView>
+   );
+@@ -300,7 +301,7 @@ const styles = StyleSheet.create({
+   content: {
+     flex: 1,
+   },
+-  scrollView: {
++  formContainer: {
+     flex: 1,
+   },
+   section: {
 diff --git a/model.patch b/model.patch
-index 6f8e1fe..e69de29 100644
+index ff73702..e69de29 100644
 --- a/model.patch
 +++ b/model.patch
-@@ -1,321 +0,0 @@
--diff --git a/frontend/app/(tabs)/profile.tsx b/frontend/app/(tabs)/profile.tsx
--index 98455cf..718232d 100644
----- a/frontend/app/(tabs)/profile.tsx
--+++ b/frontend/app/(tabs)/profile.tsx
--@@ -125,6 +125,23 @@ export default function Profile() {
--           </Text>
--         </View>
-- 
--+        <View style={styles.section}>
--+          <Text style={styles.sectionTitle}>Preferences</Text>
--+
--+          <View style={styles.infoCard}>
--+            <View style={styles.infoIcon}>
--+              <Ionicons name="time-outline" size={24} color="#007AFF" />
--+            </View>
--+            <View style={styles.infoContent}>
--+              <Text style={styles.infoLabel}>Warranty Reminder</Text>
--+              <Text style={styles.infoValue}>
--+                {profile?.warranty_reminder_days} days before expiry
--+              </Text>
--+            </View>
--+            <Ionicons name="chevron-forward" size={20} color="#C7C7CC" />
--+          </View>
--+        </View>
--+
--         <View style={styles.section}>
--           <Text style={styles.sectionTitle}>Contact Information</Text>
-- 
+@@ -1,361 +0,0 @@
 -diff --git a/model.patch b/model.patch
--index 6fa8970..e69de29 100644
+-index 6f8e1fe..e69de29 100644
 ---- a/model.patch
 -+++ b/model.patch
--@@ -1,288 +0,0 @@
---diff --git a/frontend/screens/property/FixturesScreen.tsx b/frontend/screens/property/FixturesScreen.tsx
---index d5799ba..bc35882 100644
------ a/frontend/screens/property/FixturesScreen.tsx
---+++ b/frontend/screens/property/FixturesScreen.tsx
---@@ -547,8 +547,22 @@ const styles = StyleSheet.create({
---     alignItems: 'center',
---     backgroundColor: '#fff',
---     borderRadius: 12,
----    padding: 16,
---     marginBottom: 12,
---+    shadowColor: '#000',
---+    shadowOffset: { width: 0, height: 1 },
---+    shadowOpacity: 0.05,
---+    shadowRadius: 2,
---+    elevation: 2,
---+  },
---+  fixtureCardContent: {
---+    flex: 1,
---+    flexDirection: 'row',
---+    alignItems: 'center',
---+    padding: 16,
---+  },
---+  deleteIconButton: {
---+    padding: 16,
---+    paddingLeft: 8,
---   },
---   fixtureIcon: {
---     width: 44,
+-@@ -1,321 +0,0 @@
+--diff --git a/frontend/app/(tabs)/profile.tsx b/frontend/app/(tabs)/profile.tsx
+--index 98455cf..718232d 100644
+----- a/frontend/app/(tabs)/profile.tsx
+--+++ b/frontend/app/(tabs)/profile.tsx
+--@@ -125,6 +125,23 @@ export default function Profile() {
+--           </Text>
+--         </View>
+-- 
+--+        <View style={styles.section}>
+--+          <Text style={styles.sectionTitle}>Preferences</Text>
+--+
+--+          <View style={styles.infoCard}>
+--+            <View style={styles.infoIcon}>
+--+              <Ionicons name="time-outline" size={24} color="#007AFF" />
+--+            </View>
+--+            <View style={styles.infoContent}>
+--+              <Text style={styles.infoLabel}>Warranty Reminder</Text>
+--+              <Text style={styles.infoValue}>
+--+                {profile?.warranty_reminder_days} days before expiry
+--+              </Text>
+--+            </View>
+--+            <Ionicons name="chevron-forward" size={20} color="#C7C7CC" />
+--+          </View>
+--+        </View>
+--+
+--         <View style={styles.section}>
+--           <Text style={styles.sectionTitle}>Contact Information</Text>
+-- 
 --diff --git a/model.patch b/model.patch
---index f927284..e69de29 100644
+--index 6fa8970..e69de29 100644
 ----- a/model.patch
 --+++ b/model.patch
---@@ -1,255 +0,0 @@
+--@@ -1,288 +0,0 @@
+---diff --git a/frontend/screens/property/FixturesScreen.tsx b/frontend/screens/property/FixturesScreen.tsx
+---index d5799ba..bc35882 100644
+------ a/frontend/screens/property/FixturesScreen.tsx
+---+++ b/frontend/screens/property/FixturesScreen.tsx
+---@@ -547,8 +547,22 @@ const styles = StyleSheet.create({
+---     alignItems: 'center',
+---     backgroundColor: '#fff',
+---     borderRadius: 12,
+----    padding: 16,
+---     marginBottom: 12,
+---+    shadowColor: '#000',
+---+    shadowOffset: { width: 0, height: 1 },
+---+    shadowOpacity: 0.05,
+---+    shadowRadius: 2,
+---+    elevation: 2,
+---+  },
+---+  fixtureCardContent: {
+---+    flex: 1,
+---+    flexDirection: 'row',
+---+    alignItems: 'center',
+---+    padding: 16,
+---+  },
+---+  deleteIconButton: {
+---+    padding: 16,
+---+    paddingLeft: 8,
+---   },
+---   fixtureIcon: {
+---     width: 44,
 ---diff --git a/model.patch b/model.patch
----index e145535..e69de29 100644
+---index f927284..e69de29 100644
 ------ a/model.patch
 ---+++ b/model.patch
----@@ -1,250 +0,0 @@
-----diff --git a/test_result.md b/test_result.md
-----index 187cba4..da3ecfa 100644
-------- a/test_result.md
-----+++ b/test_result.md
-----@@ -100,4 +100,242 @@
----- 
----- #====================================================================================================
----- # Testing Data - Main Agent and testing sub agent both should log testing data below this section
------#====================================================================================================
-----\ No newline at end of file
-----+#====================================================================================================
-----+
-----+user_problem_statement: "Backend Testing Task for Property Manager API - Test all authentication, property, document, fixture, measurement, and AI analysis endpoints"
-----+
-----+backend:
-----+  - task: "User Authentication - Register"
-----+    implemented: true
-----+    working: true
-----+    file: "backend/server.py"
-----+    stuck_count: 0
-----+    priority: "high"
-----+    needs_retesting: false
-----+    status_history:
-----+      - working: true
-----+        agent: "testing"
-----+        comment: "POST /api/auth/register endpoint tested successfully. User registration with username and password works correctly. Returns access_token, user_id, and username. Proper password hashing with bcrypt implemented."
-----+
-----+  - task: "User Authentication - Login"
-----+    implemented: true
-----+    working: true
-----+    file: "backend/server.py"
-----+    stuck_count: 0
-----+    priority: "high"
-----+    needs_retesting: false
-----+    status_history:
-----+      - working: true
-----+        agent: "testing"
-----+        comment: "POST /api/auth/login endpoint tested successfully. User login with registered credentials works correctly. Returns JWT access token for authenticated requests."
-----+
-----+  - task: "Property Management - Create Property"
-----+    implemented: true
-----+    working: true
-----+    file: "backend/server.py"
-----+    stuck_count: 0
-----+    priority: "high"
-----+    needs_retesting: false
-----+    status_history:
-----+      - working: true
-----+        agent: "testing"
-----+        comment: "POST /api/properties endpoint tested successfully. Property creation with name and address works correctly. Proper JWT authentication required and user ownership implemented."
-----+
-----+  - task: "Property Management - Get All Properties"
-----+    implemented: true
-----+    working: true
-----+    file: "backend/server.py"
-----+    stuck_count: 0
-----+    priority: "high"
-----+    needs_retesting: false
-----+    status_history:
-----+      - working: true
-----+        agent: "testing"
-----+        comment: "GET /api/properties endpoint tested successfully. Returns all properties for authenticated user. Proper user isolation implemented."
-----+
-----+  - task: "Property Management - Get Property by ID"
-----+    implemented: true
-----+    working: true
-----+    file: "backend/server.py"
-----+    stuck_count: 0
-----+    priority: "high"
-----+    needs_retesting: false
-----+    status_history:
-----+      - working: true
-----+        agent: "testing"
-----+        comment: "GET /api/properties/{id} endpoint tested successfully. Returns specific property by ID with proper ownership validation."
-----+
-----+  - task: "Property Management - Delete Property"
-----+    implemented: true
-----+    working: true
-----+    file: "backend/server.py"
-----+    stuck_count: 0
-----+    priority: "high"
-----+    needs_retesting: false
-----+    status_history:
-----+      - working: true
-----+        agent: "testing"
-----+        comment: "DELETE /api/properties/{id} endpoint tested successfully. Property deletion works correctly with cascade deletion of related documents, fixtures, and measurements."
-----+
-----+  - task: "Document Management - Upload Document"
-----+    implemented: true
-----+    working: true
-----+    file: "backend/server.py"
-----+    stuck_count: 0
-----+    priority: "high"
-----+    needs_retesting: false
-----+    status_history:
-----+      - working: true
-----+        agent: "testing"
-----+        comment: "POST /api/properties/{id}/documents endpoint tested successfully. Document upload with base64 file_data works correctly. Proper property ownership validation implemented."
-----+
-----+  - task: "Document Management - Get Documents"
-----+    implemented: true
-----+    working: true
-----+    file: "backend/server.py"
-----+    stuck_count: 0
-----+    priority: "high"
-----+    needs_retesting: false
-----+    status_history:
-----+      - working: true
-----+        agent: "testing"
-----+        comment: "GET /api/properties/{id}/documents endpoint tested successfully. Returns all documents for a property with proper authentication and ownership validation."
-----+
-----+  - task: "Document Management - Delete Document"
-----+    implemented: true
-----+    working: true
-----+    file: "backend/server.py"
-----+    stuck_count: 0
-----+    priority: "high"
-----+    needs_retesting: false
-----+    status_history:
-----+      - working: true
-----+        agent: "testing"
-----+        comment: "DELETE /api/properties/{id}/documents/{doc_id} endpoint tested successfully. Document deletion works correctly with proper ownership validation."
-----+
-----+  - task: "Fixture Management - Create Fixture"
-----+    implemented: true
-----+    working: true
-----+    file: "backend/server.py"
-----+    stuck_count: 0
-----+    priority: "high"
-----+    needs_retesting: false
-----+    status_history:
-----+      - working: true
-----+        agent: "testing"
-----+        comment: "POST /api/properties/{id}/fixtures endpoint tested successfully. Fixture creation with name, category, make, model, serial_number, warranty_info, and optional photo works correctly."
-----+
-----+  - task: "Fixture Management - Get All Fixtures"
-----+    implemented: true
-----+    working: true
-----+    file: "backend/server.py"
-----+    stuck_count: 0
-----+    priority: "high"
-----+    needs_retesting: false
-----+    status_history:
-----+      - working: true
-----+        agent: "testing"
-----+        comment: "GET /api/properties/{id}/fixtures endpoint tested successfully. Returns all fixtures for a property with proper authentication and ownership validation."
-----+
-----+  - task: "Fixture Management - Get Fixture by ID"
-----+    implemented: true
-----+    working: true
-----+    file: "backend/server.py"
-----+    stuck_count: 0
-----+    priority: "high"
-----+    needs_retesting: false
-----+    status_history:
-----+      - working: true
-----+        agent: "testing"
-----+        comment: "GET /api/properties/{id}/fixtures/{fixture_id} endpoint tested successfully. Returns specific fixture by ID with proper ownership validation."
-----+
-----+  - task: "Fixture Management - Update Fixture"
-----+    implemented: true
-----+    working: true
-----+    file: "backend/server.py"
-----+    stuck_count: 0
-----+    priority: "high"
-----+    needs_retesting: false
-----+    status_history:
-----+      - working: true
-----+        agent: "testing"
-----+        comment: "PUT /api/properties/{id}/fixtures/{fixture_id} endpoint tested successfully. Fixture update works correctly with proper data validation and ownership checks."
-----+
-----+  - task: "Fixture Management - Delete Fixture"
-----+    implemented: true
-----+    working: true
-----+    file: "backend/server.py"
-----+    stuck_count: 0
-----+    priority: "high"
-----+    needs_retesting: false
-----+    status_history:
-----+      - working: true
-----+        agent: "testing"
-----+        comment: "DELETE /api/properties/{id}/fixtures/{fixture_id} endpoint tested successfully. Fixture deletion works correctly with proper ownership validation."
-----+
-----+  - task: "Measurement Management - Create Measurement"
-----+    implemented: true
-----+    working: true
-----+    file: "backend/server.py"
-----+    stuck_count: 0
-----+    priority: "high"
-----+    needs_retesting: false
-----+    status_history:
-----+      - working: true
-----+        agent: "testing"
-----+        comment: "POST /api/properties/{id}/measurements endpoint tested successfully. Measurement creation with room_type, dimensions, unit, floor_plan_image, and notes works correctly."
-----+
-----+  - task: "Measurement Management - Get Measurements"
-----+    implemented: true
-----+    working: true
-----+    file: "backend/server.py"
-----+    stuck_count: 0
-----+    priority: "high"
-----+    needs_retesting: false
-----+    status_history:
-----+      - working: true
-----+        agent: "testing"
-----+        comment: "GET /api/properties/{id}/measurements endpoint tested successfully. Returns all measurements for a property with proper authentication and ownership validation."
-----+
-----+  - task: "Measurement Management - Delete Measurement"
-----+    implemented: true
-----+    working: true
-----+    file: "backend/server.py"
-----+    stuck_count: 0
-----+    priority: "high"
-----+    needs_retesting: false
-----+    status_history:
-----+      - working: true
-----+        agent: "testing"
-----+        comment: "DELETE /api/properties/{id}/measurements/{measurement_id} endpoint tested successfully. Measurement deletion works correctly with proper ownership validation."
-----+
-----+  - task: "AI Floor Plan Analysis"
-----+    implemented: true
-----+    working: true
-----+    file: "backend/server.py"
-----+    stuck_count: 0
-----+    priority: "high"
-----+    needs_retesting: false
-----+    status_history:
-----+      - working: true
-----+        agent: "testing"
-----+        comment: "POST /api/measurements/analyze-floorplan endpoint tested successfully. AI analysis of floor plan images works correctly using emergentintegrations LLM with GPT-4o vision model. Returns structured analysis of room dimensions."
-----+
-----+frontend:
-----+  # No frontend testing performed as per instructions
-----+
-----+metadata:
-----+  created_by: "testing_agent"
-----+  version: "1.0"
-----+  test_sequence: 1
-----+  run_ui: false
-----+
-----+test_plan:
-----+  current_focus: []
-----+  stuck_tasks: []
-----+  test_all: true
-----+  test_priority: "high_first"
-----+
-----+agent_communication:
-----+  - agent: "testing"
-----+    message: "Comprehensive backend API testing completed successfully. All 18 backend endpoints tested with 100% success rate. Authentication, property management, document management, fixture management, measurement management, and AI floor plan analysis all working correctly. JWT authentication properly implemented with user isolation. Base64 file uploads working for documents, fixture photos, and floor plan images. AI integration with emergentintegrations LLM working correctly for floor plan analysis."
-----\ No newline at end of file
-diff --git a/test_result.md b/test_result.md
-index 53d783f..0be6dfd 100644
---- a/test_result.md
-+++ b/test_result.md
-@@ -321,6 +321,20 @@ backend:
-         agent: "testing"
-         comment: "POST /api/measurements/analyze-floorplan endpoint tested successfully. AI analysis of floor plan images works correctly using emergentintegrations LLM with GPT-4o vision model. Returns structured analysis of room dimensions."
- 
-+frontend:
-+backend:
-+  - task: "Profile - Warranty Reminder Settings Backend"
-+    implemented: true
-+    working: true
-+    file: "backend/server.py"
-+    stuck_count: 0
-+    priority: "high"
-+    needs_retesting: false
-+    status_history:
-+      - working: true
-+        agent: "testing"
-+        comment: "Comprehensive testing of warranty reminder settings backend functionality completed successfully. All test objectives met: 1) GET /api/auth/profile correctly returns default warranty_reminder_days of 30, 2) PUT /api/auth/profile successfully accepts and validates warranty_reminder_days parameter (accepts 7, 14, 30 and rejects invalid values with 400 error), 3) Values persist correctly after updates. Tested 18 scenarios with 100% success rate including valid updates, invalid value rejection, and data persistence verification."
-+
- frontend:
-   - task: "Profile - Warranty Reminder Settings"
-     implemented: true
-@@ -365,4 +379,6 @@ agent_communication:
-   - agent: "testing"
-     message: "Comprehensive backend API testing completed successfully. All 18 backend endpoints tested with 100% success rate. Authentication, property management, document management, fixture management, measurement management, and AI floor plan analysis all working correctly. JWT authentication properly implemented with user isolation. Base64 file uploads working for documents, fixture photos, and floor plan images. AI integration with emergentintegrations LLM working correctly for floor plan analysis."
-   - agent: "main"
--    message: "Implemented two new features: 1) Warranty reminder settings in profile page - Users can now select 7, 14, or 30 days notification preference before warranty expiry. 2) 'Near Me' feature - Added as a new tab in property details that shows nearby places (hospitals, schools, malls, restaurants, etc.) using OpenStreetMap APIs. The feature geocodes the property address and finds places within 2km radius, displays them with distance, and allows navigation via Google Maps. Backend already supports warranty_reminder_days field. Ready for testing."
-\ No newline at end of file
-+    message: "Implemented two new features: 1) Warranty reminder settings in profile page - Users can now select 7, 14, or 30 days notification preference before warranty expiry. 2) 'Near Me' feature - Added as a new tab in property details that shows nearby places (hospitals, schools, malls, restaurants, etc.) using OpenStreetMap APIs. The feature geocodes the property address and finds places within 2km radius, displays them with distance, and allows navigation via Google Maps. Backend already supports warranty_reminder_days field. Ready for testing."
-+  - agent: "testing"
-+    message: "WARRANTY REMINDER BACKEND TESTING COMPLETED: Thoroughly tested warranty reminder settings functionality with 18 test scenarios achieving 100% success rate. Backend correctly handles GET /api/auth/profile (returns default 30 days), PUT /api/auth/profile with warranty_reminder_days validation (accepts 7/14/30, rejects invalid values with 400 error), and data persistence. All test objectives from review request fully satisfied. Backend implementation is robust and production-ready."
-\ No newline at end of file
+---@@ -1,255 +0,0 @@
+----diff --git a/model.patch b/model.patch
+----index e145535..e69de29 100644
+------- a/model.patch
+----+++ b/model.patch
+----@@ -1,250 +0,0 @@
+-----diff --git a/test_result.md b/test_result.md
+-----index 187cba4..da3ecfa 100644
+-------- a/test_result.md
+-----+++ b/test_result.md
+-----@@ -100,4 +100,242 @@
+----- 
+----- #====================================================================================================
+----- # Testing Data - Main Agent and testing sub agent both should log testing data below this section
+------#====================================================================================================
+-----\ No newline at end of file
+-----+#====================================================================================================
+-----+
+-----+user_problem_statement: "Backend Testing Task for Property Manager API - Test all authentication, property, document, fixture, measurement, and AI analysis endpoints"
+-----+
+-----+backend:
+-----+  - task: "User Authentication - Register"
+-----+    implemented: true
+-----+    working: true
+-----+    file: "backend/server.py"
+-----+    stuck_count: 0
+-----+    priority: "high"
+-----+    needs_retesting: false
+-----+    status_history:
+-----+      - working: true
+-----+        agent: "testing"
+-----+        comment: "POST /api/auth/register endpoint tested successfully. User registration with username and password works correctly. Returns access_token, user_id, and username. Proper password hashing with bcrypt implemented."
+-----+
+-----+  - task: "User Authentication - Login"
+-----+    implemented: true
+-----+    working: true
+-----+    file: "backend/server.py"
+-----+    stuck_count: 0
+-----+    priority: "high"
+-----+    needs_retesting: false
+-----+    status_history:
+-----+      - working: true
+-----+        agent: "testing"
+-----+        comment: "POST /api/auth/login endpoint tested successfully. User login with registered credentials works correctly. Returns JWT access token for authenticated requests."
+-----+
+-----+  - task: "Property Management - Create Property"
+-----+    implemented: true
+-----+    working: true
+-----+    file: "backend/server.py"
+-----+    stuck_count: 0
+-----+    priority: "high"
+-----+    needs_retesting: false
+-----+    status_history:
+-----+      - working: true
+-----+        agent: "testing"
+-----+        comment: "POST /api/properties endpoint tested successfully. Property creation with name and address works correctly. Proper JWT authentication required and user ownership implemented."
+-----+
+-----+  - task: "Property Management - Get All Properties"
+-----+    implemented: true
+-----+    working: true
+-----+    file: "backend/server.py"
+-----+    stuck_count: 0
+-----+    priority: "high"
+-----+    needs_retesting: false
+-----+    status_history:
+-----+      - working: true
+-----+        agent: "testing"
+-----+        comment: "GET /api/properties endpoint tested successfully. Returns all properties for authenticated user. Proper user isolation implemented."
+-----+
+-----+  - task: "Property Management - Get Property by ID"
+-----+    implemented: true
+-----+    working: true
+-----+    file: "backend/server.py"
+-----+    stuck_count: 0
+-----+    priority: "high"
+-----+    needs_retesting: false
+-----+    status_history:
+-----+      - working: true
+-----+        agent: "testing"
+-----+        comment: "GET /api/properties/{id} endpoint tested successfully. Returns specific property by ID with proper ownership validation."
+-----+
+-----+  - task: "Property Management - Delete Property"
+-----+    implemented: true
+-----+    working: true
+-----+    file: "backend/server.py"
+-----+    stuck_count: 0
+-----+    priority: "high"
+-----+    needs_retesting: false
+-----+    status_history:
+-----+      - working: true
+-----+        agent: "testing"
+-----+        comment: "DELETE /api/properties/{id} endpoint tested successfully. Property deletion works correctly with cascade deletion of related documents, fixtures, and measurements."
+-----+
+-----+  - task: "Document Management - Upload Document"
+-----+    implemented: true
+-----+    working: true
+-----+    file: "backend/server.py"
+-----+    stuck_count: 0
+-----+    priority: "high"
+-----+    needs_retesting: false
+-----+    status_history:
+-----+      - working: true
+-----+        agent: "testing"
+-----+        comment: "POST /api/properties/{id}/documents endpoint tested successfully. Document upload with base64 file_data works correctly. Proper property ownership validation implemented."
+-----+
+-----+  - task: "Document Management - Get Documents"
+-----+    implemented: true
+-----+    working: true
+-----+    file: "backend/server.py"
+-----+    stuck_count: 0
+-----+    priority: "high"
+-----+    needs_retesting: false
+-----+    status_history:
+-----+      - working: true
+-----+        agent: "testing"
+-----+        comment: "GET /api/properties/{id}/documents endpoint tested successfully. Returns all documents for a property with proper authentication and ownership validation."
+-----+
+-----+  - task: "Document Management - Delete Document"
+-----+    implemented: true
+-----+    working: true
+-----+    file: "backend/server.py"
+-----+    stuck_count: 0
+-----+    priority: "high"
+-----+    needs_retesting: false
+-----+    status_history:
+-----+      - working: true
+-----+        agent: "testing"
+-----+        comment: "DELETE /api/properties/{id}/documents/{doc_id} endpoint tested successfully. Document deletion works correctly with proper ownership validation."
+-----+
+-----+  - task: "Fixture Management - Create Fixture"
+-----+    implemented: true
+-----+    working: true
+-----+    file: "backend/server.py"
+-----+    stuck_count: 0
+-----+    priority: "high"
+-----+    needs_retesting: false
+-----+    status_history:
+-----+      - working: true
+-----+        agent: "testing"
+-----+        comment: "POST /api/properties/{id}/fixtures endpoint tested successfully. Fixture creation with name, category, make, model, serial_number, warranty_info, and optional photo works correctly."
+-----+
+-----+  - task: "Fixture Management - Get All Fixtures"
+-----+    implemented: true
+-----+    working: true
+-----+    file: "backend/server.py"
+-----+    stuck_count: 0
+-----+    priority: "high"
+-----+    needs_retesting: false
+-----+    status_history:
+-----+      - working: true
+-----+        agent: "testing"
+-----+        comment: "GET /api/properties/{id}/fixtures endpoint tested successfully. Returns all fixtures for a property with proper authentication and ownership validation."
+-----+
+-----+  - task: "Fixture Management - Get Fixture by ID"
+-----+    implemented: true
+-----+    working: true
+-----+    file: "backend/server.py"
+-----+    stuck_count: 0
+-----+    priority: "high"
+-----+    needs_retesting: false
+-----+    status_history:
+-----+      - working: true
+-----+        agent: "testing"
+-----+        comment: "GET /api/properties/{id}/fixtures/{fixture_id} endpoint tested successfully. Returns specific fixture by ID with proper ownership validation."
+-----+
+-----+  - task: "Fixture Management - Update Fixture"
+-----+    implemented: true
+-----+    working: true
+-----+    file: "backend/server.py"
+-----+    stuck_count: 0
+-----+    priority: "high"
+-----+    needs_retesting: false
+-----+    status_history:
+-----+      - working: true
+-----+        agent: "testing"
+-----+        comment: "PUT /api/properties/{id}/fixtures/{fixture_id} endpoint tested successfully. Fixture update works correctly with proper data validation and ownership checks."
+-----+
+-----+  - task: "Fixture Management - Delete Fixture"
+-----+    implemented: true
+-----+    working: true
+-----+    file: "backend/server.py"
+-----+    stuck_count: 0
+-----+    priority: "high"
+-----+    needs_retesting: false
+-----+    status_history:
+-----+      - working: true
+-----+        agent: "testing"
+-----+        comment: "DELETE /api/properties/{id}/fixtures/{fixture_id} endpoint tested successfully. Fixture deletion works correctly with proper ownership validation."
+-----+
+-----+  - task: "Measurement Management - Create Measurement"
+-----+    implemented: true
+-----+    working: true
+-----+    file: "backend/server.py"
+-----+    stuck_count: 0
+-----+    priority: "high"
+-----+    needs_retesting: false
+-----+    status_history:
+-----+      - working: true
+-----+        agent: "testing"
+-----+        comment: "POST /api/properties/{id}/measurements endpoint tested successfully. Measurement creation with room_type, dimensions, unit, floor_plan_image, and notes works correctly."
+-----+
+-----+  - task: "Measurement Management - Get Measurements"
+-----+    implemented: true
+-----+    working: true
+-----+    file: "backend/server.py"
+-----+    stuck_count: 0
+-----+    priority: "high"
+-----+    needs_retesting: false
+-----+    status_history:
+-----+      - working: true
+-----+        agent: "testing"
+-----+        comment: "GET /api/properties/{id}/measurements endpoint tested successfully. Returns all measurements for a property with proper authentication and ownership validation."
+-----+
+-----+  - task: "Measurement Management - Delete Measurement"
+-----+    implemented: true
+-----+    working: true
+-----+    file: "backend/server.py"
+-----+    stuck_count: 0
+-----+    priority: "high"
+-----+    needs_retesting: false
+-----+    status_history:
+-----+      - working: true
+-----+        agent: "testing"
+-----+        comment: "DELETE /api/properties/{id}/measurements/{measurement_id} endpoint tested successfully. Measurement deletion works correctly with proper ownership validation."
+-----+
+-----+  - task: "AI Floor Plan Analysis"
+-----+    implemented: true
+-----+    working: true
+-----+    file: "backend/server.py"
+-----+    stuck_count: 0
+-----+    priority: "high"
+-----+    needs_retesting: false
+-----+    status_history:
+-----+      - working: true
+-----+        agent: "testing"
+-----+        comment: "POST /api/measurements/analyze-floorplan endpoint tested successfully. AI analysis of floor plan images works correctly using emergentintegrations LLM with GPT-4o vision model. Returns structured analysis of room dimensions."
+-----+
+-----+frontend:
+-----+  # No frontend testing performed as per instructions
+-----+
+-----+metadata:
+-----+  created_by: "testing_agent"
+-----+  version: "1.0"
+-----+  test_sequence: 1
+-----+  run_ui: false
+-----+
+-----+test_plan:
+-----+  current_focus: []
+-----+  stuck_tasks: []
+-----+  test_all: true
+-----+  test_priority: "high_first"
+-----+
+-----+agent_communication:
+-----+  - agent: "testing"
+-----+    message: "Comprehensive backend API testing completed successfully. All 18 backend endpoints tested with 100% success rate. Authentication, property management, document management, fixture management, measurement management, and AI floor plan analysis all working correctly. JWT authentication properly implemented with user isolation. Base64 file uploads working for documents, fixture photos, and floor plan images. AI integration with emergentintegrations LLM working correctly for floor plan analysis."
+-----\ No newline at end of file
+-diff --git a/test_result.md b/test_result.md
+-index 53d783f..0be6dfd 100644
+---- a/test_result.md
+-+++ b/test_result.md
+-@@ -321,6 +321,20 @@ backend:
+-         agent: "testing"
+-         comment: "POST /api/measurements/analyze-floorplan endpoint tested successfully. AI analysis of floor plan images works correctly using emergentintegrations LLM with GPT-4o vision model. Returns structured analysis of room dimensions."
+- 
+-+frontend:
+-+backend:
+-+  - task: "Profile - Warranty Reminder Settings Backend"
+-+    implemented: true
+-+    working: true
+-+    file: "backend/server.py"
+-+    stuck_count: 0
+-+    priority: "high"
+-+    needs_retesting: false
+-+    status_history:
+-+      - working: true
+-+        agent: "testing"
+-+        comment: "Comprehensive testing of warranty reminder settings backend functionality completed successfully. All test objectives met: 1) GET /api/auth/profile correctly returns default warranty_reminder_days of 30, 2) PUT /api/auth/profile successfully accepts and validates warranty_reminder_days parameter (accepts 7, 14, 30 and rejects invalid values with 400 error), 3) Values persist correctly after updates. Tested 18 scenarios with 100% success rate including valid updates, invalid value rejection, and data persistence verification."
+-+
+- frontend:
+-   - task: "Profile - Warranty Reminder Settings"
+-     implemented: true
+-@@ -365,4 +379,6 @@ agent_communication:
+-   - agent: "testing"
+-     message: "Comprehensive backend API testing completed successfully. All 18 backend endpoints tested with 100% success rate. Authentication, property management, document management, fixture management, measurement management, and AI floor plan analysis all working correctly. JWT authentication properly implemented with user isolation. Base64 file uploads working for documents, fixture photos, and floor plan images. AI integration with emergentintegrations LLM working correctly for floor plan analysis."
+-   - agent: "main"
+--    message: "Implemented two new features: 1) Warranty reminder settings in profile page - Users can now select 7, 14, or 30 days notification preference before warranty expiry. 2) 'Near Me' feature - Added as a new tab in property details that shows nearby places (hospitals, schools, malls, restaurants, etc.) using OpenStreetMap APIs. The feature geocodes the property address and finds places within 2km radius, displays them with distance, and allows navigation via Google Maps. Backend already supports warranty_reminder_days field. Ready for testing."
+-\ No newline at end of file
+-+    message: "Implemented two new features: 1) Warranty reminder settings in profile page - Users can now select 7, 14, or 30 days notification preference before warranty expiry. 2) 'Near Me' feature - Added as a new tab in property details that shows nearby places (hospitals, schools, malls, restaurants, etc.) using OpenStreetMap APIs. The feature geocodes the property address and finds places within 2km radius, displays them with distance, and allows navigation via Google Maps. Backend already supports warranty_reminder_days field. Ready for testing."
+-+  - agent: "testing"
+-+    message: "WARRANTY REMINDER BACKEND TESTING COMPLETED: Thoroughly tested warranty reminder settings functionality with 18 test scenarios achieving 100% success rate. Backend correctly handles GET /api/auth/profile (returns default 30 days), PUT /api/auth/profile with warranty_reminder_days validation (accepts 7/14/30, rejects invalid values with 400 error), and data persistence. All test objectives from review request fully satisfied. Backend implementation is robust and production-ready."
+-\ No newline at end of file
