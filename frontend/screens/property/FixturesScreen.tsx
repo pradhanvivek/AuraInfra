@@ -208,12 +208,7 @@ export default function FixturesScreen({ propertyId }: FixturesScreenProps) {
       <View style={styles.fixtureInfo}>
         <View style={styles.fixtureNameRow}>
           <Text style={styles.fixtureName}>{item.name}</Text>
-          {item.warranty_info && (
-            <View style={styles.warrantyBadge}>
-              <Ionicons name="shield-checkmark" size={12} color="#34C759" />
-              <Text style={styles.warrantyBadgeText}>Warranty</Text>
-            </View>
-          )}
+          {getWarrantyBadge(item)}
         </View>
         <Text style={styles.fixtureCategory}>{item.category}</Text>
       </View>
