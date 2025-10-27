@@ -148,7 +148,10 @@ export default function Profile() {
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Preferences</Text>
 
-          <View style={styles.infoCard}>
+          <TouchableOpacity
+            style={styles.infoCard}
+            onPress={() => setWarrantyModalVisible(true)}
+          >
             <View style={styles.infoIcon}>
               <Ionicons name="time-outline" size={24} color="#007AFF" />
             </View>
@@ -159,7 +162,7 @@ export default function Profile() {
               </Text>
             </View>
             <Ionicons name="chevron-forward" size={20} color="#C7C7CC" />
-          </View>
+          </TouchableOpacity>
         </View>
 
         <View style={styles.section}>
