@@ -5,6 +5,7 @@ import FixturesScreen from '../../screens/property/FixturesScreen';
 import MeasurementsScreen from '../../screens/property/MeasurementsScreen';
 import VastuScreen from '../../screens/property/VastuScreen';
 import NearMeScreen from '../../screens/property/NearMeScreen';
+import HealthScoreScreen from '../../screens/property/HealthScoreScreen';
 
 const Tab = createMaterialTopTabNavigator();
 
