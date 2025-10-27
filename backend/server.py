@@ -413,6 +413,49 @@ async def get_measurements(property_id: str, user_id: str = Depends(get_current_
     measurements = await db.measurements.find({"property_id": property_id}).to_list(1000)
     return [Measurement(**m) for m in measurements]
 
+@api_router.get("/properties/{property_id}/measurements/{measurement_id}", response_model=Measurement)
+async def get_measurement(
+    property_id: str,
+    measurement_id: str,
+    user_id: str = Depends(get_current_user)
+):
+    # Verify property ownership
+    property_doc = await db.properties.find_one({"id": property_id, "user_id": user_id})
+    if not property_doc:
+        raise HTTPException(status_code=404, detail="Property not found")
+    
+    measurement_doc = await db.measurements.find_one({"id": measurement_id, "property_id": property_id})
+    if not measurement_doc:
+        raise HTTPException(status_code=404, detail="Measurement not found")
+    
+    return Measurement(**measurement_doc)
+
+@api_router.put("/properties/{property_id}/measurements/{measurement_id}", response_model=Measurement)
+async def update_measurement(
+    property_id: str,
+    measurement_id: str,
+    measurement: MeasurementCreate,
+    user_id: str = Depends(get_current_user)
+):
+    # Verify property ownership
+    property_doc = await db.properties.find_one({"id": property_id, "user_id": user_id})
+    if not property_doc:
+        raise HTTPException(status_code=404, detail="Property not found")
+    
+    # Update measurement
+    update_data = measurement.dict(exclude_unset=True)
+    result = await db.measurements.update_one(
+        {"id": measurement_id, "property_id": property_id},
+        {"$set": update_data}
+    )
+    
+    if result.matched_count == 0:
+        raise HTTPException(status_code=404, detail="Measurement not found")
+    
+    # Return updated measurement
+    updated_measurement = await db.measurements.find_one({"id": measurement_id, "property_id": property_id})
+    return Measurement(**updated_measurement)
+
 @api_router.delete("/properties/{property_id}/measurements/{measurement_id}")
 async def delete_measurement(
     property_id: str,
