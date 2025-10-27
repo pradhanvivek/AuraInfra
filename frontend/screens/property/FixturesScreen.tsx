@@ -217,6 +217,102 @@ export default function FixturesScreen({ propertyId }: FixturesScreenProps) {
     }
   };
 
+  const handleScanReceipt = async () => {
+    Alert.alert(
+      'Scan Receipt',
+      'Choose an option',
+      [
+        {
+          text: 'Take Photo',
+          onPress: async () => {
+            const { status } = await ImagePicker.requestCameraPermissionsAsync();
+            if (status !== 'granted') {
+              Alert.alert('Permission Required', 'Please grant camera permissions');
+              return;
+            }
+
+            const result = await ImagePicker.launchCameraAsync({
+              mediaTypes: ['images'],
+              allowsEditing: true,
+              quality: 0.8,
+              base64: true,
+            });
+
+            if (!result.canceled && result.assets[0].base64) {
+              await analyzeReceipt(result.assets[0].base64);
+            }
+          },
+        },
+        {
+          text: 'Choose from Gallery',
+          onPress: async () => {
+            const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+            if (status !== 'granted') {
+              Alert.alert('Permission Required', 'Please grant gallery permissions');
+              return;
+            }
+
+            const result = await ImagePicker.launchImageLibraryAsync({
+              mediaTypes: ['images'],
+              allowsEditing: true,
+              quality: 0.8,
+              base64: true,
+            });
+
+            if (!result.canceled && result.assets[0].base64) {
+              await analyzeReceipt(result.assets[0].base64);
+            }
+          },
+        },
+        {
+          text: 'Cancel',
+          style: 'cancel',
+        },
+      ]
+    );
+  };
+
+  const analyzeReceipt = async (base64Image: string) => {
+    setScanningReceipt(true);
+    try {
+      const response = await fetch('https://aurainfra.preview.emergentagent.com/api/analyze-receipt', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+        body: JSON.stringify({ image: base64Image }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to analyze receipt');
+      }
+
+      const data = await response.json();
+      
+      // Auto-populate fields
+      if (data.name) setName(data.name);
+      if (data.make) setMake(data.make);
+      if (data.model) setModel(data.model);
+      if (data.serial_number) setSerialNumber(data.serial_number);
+      if (data.vendor_name) setVendorName(data.vendor_name);
+      if (data.vendor_contact) setVendorContact(data.vendor_contact);
+      if (data.vendor_email) setVendorEmail(data.vendor_email);
+      if (data.warranty_info) setWarrantyInfo(data.warranty_info);
+      if (data.warranty_expiry_date) setWarrantyExpiryDate(data.warranty_expiry_date);
+      
+      // Also set the invoice photo
+      setInvoice(base64Image);
+      
+      Alert.alert('Success', 'Receipt analyzed! Please review and edit the details if needed.');
+    } catch (error: any) {
+      Alert.alert('Error', error.message || 'Failed to analyze receipt. Please enter details manually.');
+    } finally {
+      setScanningReceipt(false);
+    }
+  };
+
+
   const showDatePicker = () => {
     setDatePickerVisibility(true);
   };
