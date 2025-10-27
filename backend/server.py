@@ -1010,10 +1010,10 @@ async def get_property_health_score(property_id: str, user_id: str = Depends(get
         })
     
     # 4. Vastu Score (20% weight) - Based on vastu analysis
-    vastu_results = await db.measurements.find({"property_id": property_id, "vastu_analysis": {"$exists": True}}).to_list(1000)
+    vastu_results = await db.vastu_analysis.find({"property_id": property_id}).to_list(1000)
     
-    if vastu_results and vastu_results[0].get("vastu_analysis"):
-        # If vastu analysis exists, give full score (can be enhanced with actual compliance check)
+    if vastu_results and len(vastu_results) > 0:
+        # If vastu analysis exists, give full score
         scores["vastu"] = 100
     else:
         scores["vastu"] = 0
