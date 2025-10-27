@@ -264,10 +264,14 @@ export const notificationApi = {
 
 // Vastu API
 export const vastuApi = {
-  getAll: async (token: string, propertyId: string) => {
+  getAll: async (token: string, propertyId: string, geomancyType?: string) => {
+    const params = geomancyType ? { geomancy_type: geomancyType } : {};
     const response = await axios.get(
       `${API_URL}/api/properties/${propertyId}/vastu`,
-      getAuthHeaders(token)
+      {
+        ...getAuthHeaders(token),
+        params,
+      }
     );
     return response.data;
   },
