@@ -156,6 +156,14 @@ export default function EditPropertyScreen() {
 
           <View style={styles.section}>
             <Text style={styles.label}>Address</Text>
+            {address && Platform.OS !== 'web' && (
+              <View style={styles.currentAddressNote}>
+                <Ionicons name="information-circle" size={16} color="#007AFF" />
+                <Text style={styles.currentAddressText}>
+                  Current: {address}
+                </Text>
+              </View>
+            )}
             {GOOGLE_MAPS_API_KEY && GooglePlacesAutocomplete && Platform.OS !== 'web' ? (
               <View>
                 <GooglePlacesAutocomplete
