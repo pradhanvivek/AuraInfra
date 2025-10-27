@@ -64,12 +64,14 @@ class UserProfile(BaseModel):
     email: Optional[str] = None
     phone: Optional[str] = None
     warranty_reminder_days: int = 30
+    geomancy_preference: str = "vastu"  # "vastu" or "feng_shui"
     created_at: datetime
 
 class UserProfileUpdate(BaseModel):
     email: Optional[str] = None
     phone: Optional[str] = None
     warranty_reminder_days: Optional[int] = None
+    geomancy_preference: Optional[str] = None  # "vastu" or "feng_shui"
 
 class Property(BaseModel):
     id: str = Field(default_factory=lambda: str(uuid.uuid4()))
