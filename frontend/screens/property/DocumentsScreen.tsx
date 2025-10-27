@@ -60,18 +60,9 @@ export default function DocumentsScreen({ propertyId }: DocumentsScreenProps) {
 
   const handleUploadDocument = async () => {
     try {
-      const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
-      
-      if (status !== 'granted') {
-        Alert.alert('Permission Required', 'Please grant photo library permissions to upload files');
-        return;
-      }
-
-      const result = await ImagePicker.launchImageLibraryAsync({
-        mediaTypes: ['images'],
-        allowsEditing: false,
-        quality: 0.8,
-        base64: true,
+      const result = await DocumentPicker.getDocumentAsync({
+        type: '*/*',
+        copyToCacheDirectory: true,
       });
 
       if (result.canceled || !result.assets || result.assets.length === 0) {
@@ -79,17 +70,16 @@ export default function DocumentsScreen({ propertyId }: DocumentsScreenProps) {
       }
 
       const file = result.assets[0];
-      const base64Data = file.base64;
       
-      if (!base64Data) {
-        Alert.alert('Error', 'Unable to process file. Please try again with an image or photo.');
-        return;
-      }
-
-      const fileType = file.type === 'image' ? 'image/jpeg' : 'application/octet-stream';
+      // Read file as base64
+      const base64 = await FileSystem.readAsStringAsync(file.uri, {
+        encoding: 'base64',
+      });
       
-      setTempFileData({ base64: base64Data, type: fileType });
-      setDocumentName('');
+      const fileType = file.mimeType || 'application/octet-stream';
+      
+      setTempFileData({ base64: base64, type: fileType });
+      setDocumentName(file.name || 'Document');
       setNameModalVisible(true);
 
     } catch (error: any) {
