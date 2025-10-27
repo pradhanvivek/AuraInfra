@@ -10,9 +10,16 @@ export default function RootLayout() {
           <Stack.Screen name="index" />
           <Stack.Screen name="auth/login" />
           <Stack.Screen name="auth/register" />
-          <Stack.Screen name="(tabs)" />
+          <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
           <Stack.Screen name="property/add" options={{ presentation: 'modal', headerShown: true, title: 'Add Property' }} />
-          <Stack.Screen name="property/[id]" options={{ headerShown: true, title: 'Property Details' }} />
+          <Stack.Screen 
+            name="property/[id]" 
+            options={{ 
+              headerShown: true, 
+              title: 'Property Details',
+              headerBackTitle: 'Back'
+            }} 
+          />
         </Stack>
       </AuthProvider>
     </GestureHandlerRootView>
