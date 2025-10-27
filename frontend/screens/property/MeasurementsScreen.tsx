@@ -193,14 +193,23 @@ export default function MeasurementsScreen({ propertyId }: MeasurementsScreenPro
     try {
       const result = await measurementApi.analyzeFloorPlan(token!, floorPlanImage);
       
+      // Auto-create measurements from AI analysis
       Alert.alert(
         'AI Analysis Complete',
-        result.analysis + '\n\n' + result.message,
+        'Would you like to automatically create measurements from the floor plan analysis?',
         [
           {
-            text: 'OK',
+            text: 'Cancel',
+            style: 'cancel',
             onPress: () => {
               setNotes(result.analysis);
+            },
+          },
+          {
+            text: 'Auto-Create',
+            onPress: async () => {
+              // Try to parse the AI response and create measurements
+              await autoCreateMeasurements(result.analysis);
             },
           },
         ]
@@ -209,6 +218,76 @@ export default function MeasurementsScreen({ propertyId }: MeasurementsScreenPro
       Alert.alert('Error', error.message || 'Failed to analyze floor plan');
     } finally {
       setAnalyzingFloorPlan(false);
+    }
+  };
+
+  const autoCreateMeasurements = async (analysisText: string) => {
+    try {
+      // Parse the analysis text to extract room measurements
+      const roomMapping: { [key: string]: string } = {
+        'master bedroom': 'master_bedroom',
+        'bedroom': 'master_bedroom',
+        'living room': 'living_area',
+        'living area': 'living_area',
+        'living': 'living_area',
+        'kitchen': 'kitchen',
+        'bathroom': 'bathroom',
+        'bath': 'bathroom',
+        'dining room': 'dining_area',
+        'dining area': 'dining_area',
+        'dining': 'dining_area',
+      };
+
+      const lines = analysisText.toLowerCase().split('\n');
+      let createdCount = 0;
+
+      for (const line of lines) {
+        // Look for room mentions with dimensions
+        for (const [roomName, roomType] of Object.entries(roomMapping)) {
+          if (line.includes(roomName)) {
+            // Try to extract dimensions (e.g., "12x15", "12 x 15", "12ft x 15ft")
+            const dimensionMatch = line.match(/(\d+\.?\d*)\s*[xX×]\s*(\d+\.?\d*)/);
+            
+            if (dimensionMatch) {
+              const length = parseFloat(dimensionMatch[1]);
+              const width = parseFloat(dimensionMatch[2]);
+              
+              // Create measurement for this room
+              try {
+                await measurementApi.create(token!, propertyId, {
+                  room_type: roomType,
+                  length,
+                  width,
+                  unit: 'feet',
+                  floor_plan_image: floorPlanImage,
+                  notes: `Auto-generated from AI analysis: ${line.trim()}`,
+                });
+                createdCount++;
+              } catch (err) {
+                console.log(`Failed to create measurement for ${roomName}`);
+              }
+              
+              break; // Move to next line after finding a match
+            }
+          }
+        }
+      }
+
+      if (createdCount > 0) {
+        Alert.alert('Success', `Created ${createdCount} measurement(s) from the floor plan`);
+        setModalVisible(false);
+        resetForm();
+        fetchMeasurements();
+      } else {
+        Alert.alert(
+          'No Dimensions Found',
+          'Could not automatically extract dimensions. Please review the analysis and enter measurements manually:\n\n' + analysisText
+        );
+        setNotes(analysisText);
+      }
+    } catch (error: any) {
+      Alert.alert('Error', 'Failed to create measurements automatically');
+      setNotes(analysisText);
     }
   };
 
