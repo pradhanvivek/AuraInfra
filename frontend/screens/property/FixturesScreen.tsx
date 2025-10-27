@@ -96,6 +96,7 @@ export default function FixturesScreen({ propertyId }: FixturesScreenProps) {
         serial_number: serialNumber || undefined,
         warranty_info: warrantyInfo || undefined,
         photo: photo || undefined,
+        invoice: invoice || undefined,
       });
 
       Alert.alert('Success', 'Fixture added successfully');
@@ -117,7 +118,7 @@ export default function FixturesScreen({ propertyId }: FixturesScreenProps) {
     }
 
     const result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      mediaTypes: ['images'],
       allowsEditing: true,
       quality: 0.7,
       base64: true,
@@ -125,6 +126,25 @@ export default function FixturesScreen({ propertyId }: FixturesScreenProps) {
 
     if (!result.canceled && result.assets[0].base64) {
       setPhoto(result.assets[0].base64);
+    }
+  };
+
+  const handlePickInvoice = async () => {
+    const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+    if (status !== 'granted') {
+      Alert.alert('Permission Required', 'Please grant camera roll permissions');
+      return;
+    }
+
+    const result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ['images'],
+      allowsEditing: false,
+      quality: 0.8,
+      base64: true,
+    });
+
+    if (!result.canceled && result.assets[0].base64) {
+      setInvoice(result.assets[0].base64);
     }
   };
 
