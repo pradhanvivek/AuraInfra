@@ -693,21 +693,21 @@ export default function MeasurementsScreen({ propertyId }: MeasurementsScreenPro
                       <Text style={styles.roomCardTitle}>{room.room_name}</Text>
                     </View>
                     <View style={styles.roomCardContent}>
-                      {room.length && room.width && (
+                      {(room.length && room.width) ? (
                         <Text style={styles.roomCardDimension}>
                           📏 {room.length} × {room.width} ft
-                          {room.area && ` (${room.area} sq ft)`}
+                          {room.area ? ` (${room.area} sq ft)` : ''}
                         </Text>
-                      )}
-                      {room.ceiling_height && (
+                      ) : null}
+                      {room.ceiling_height ? (
                         <Text style={styles.roomCardDetail}>📐 Height: {room.ceiling_height} ft</Text>
-                      )}
-                      {room.windows && room.windows > 0 && (
+                      ) : null}
+                      {(room.windows && room.windows > 0) ? (
                         <Text style={styles.roomCardDetail}>🪟 Windows: {room.windows}</Text>
-                      )}
-                      {room.notes && (
+                      ) : null}
+                      {room.notes ? (
                         <Text style={styles.roomCardNotes}>💡 {room.notes}</Text>
-                      )}
+                      ) : null}
                     </View>
                   </View>
                 ))}
