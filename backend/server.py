@@ -184,6 +184,8 @@ async def register(user: UserRegister):
         "id": user_id,
         "username": user.username,
         "password": hashed_password.decode('utf-8'),
+        "email": None,
+        "phone": None,
         "created_at": datetime.utcnow()
     }
     
@@ -218,6 +220,45 @@ async def login(user: UserLogin):
         token_type="bearer",
         user_id=user_doc["id"],
         username=user_doc["username"]
+    )
+
+@api_router.get("/auth/profile", response_model=UserProfile)
+async def get_profile(user_id: str = Depends(get_current_user)):
+    user_doc = await db.users.find_one({"id": user_id})
+    if not user_doc:
+        raise HTTPException(status_code=404, detail="User not found")
+    
+    return UserProfile(
+        id=user_doc["id"],
+        username=user_doc["username"],
+        email=user_doc.get("email"),
+        phone=user_doc.get("phone"),
+        created_at=user_doc["created_at"]
+    )
+
+@api_router.put("/auth/profile", response_model=UserProfile)
+async def update_profile(profile: UserProfileUpdate, user_id: str = Depends(get_current_user)):
+    # Update user profile
+    update_data = {}
+    if profile.email is not None:
+        update_data["email"] = profile.email
+    if profile.phone is not None:
+        update_data["phone"] = profile.phone
+    
+    if update_data:
+        await db.users.update_one(
+            {"id": user_id},
+            {"$set": update_data}
+        )
+    
+    # Return updated profile
+    user_doc = await db.users.find_one({"id": user_id})
+    return UserProfile(
+        id=user_doc["id"],
+        username=user_doc["username"],
+        email=user_doc.get("email"),
+        phone=user_doc.get("phone"),
+        created_at=user_doc["created_at"]
     )
 
 # ============= PROPERTY ENDPOINTS =============
