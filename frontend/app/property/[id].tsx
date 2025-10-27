@@ -33,6 +33,10 @@ export default function PropertyDetails() {
       }}
     >
       <Tab.Screen
+        name="Health"
+        children={() => <HealthScoreScreen propertyId={id!} />}
+      />
+      <Tab.Screen
         name="Documents"
         children={() => <DocumentsScreen propertyId={id!} />}
       />
