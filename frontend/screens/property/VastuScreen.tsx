@@ -141,9 +141,9 @@ export default function VastuScreen({ propertyId, geomancyType = 'vastu' }: Vast
       {analyses.length === 0 ? (
         <View style={styles.emptyContainer}>
           <Ionicons name="analytics-outline" size={64} color="#C7C7CC" />
-          <Text style={styles.emptyText}>No Vastu Analysis Yet</Text>
+          <Text style={styles.emptyText}>No {geomancyTitle} Analysis Yet</Text>
           <Text style={styles.emptySubtext}>
-            Upload a floor plan to get Vastu compliance analysis
+            Upload a floor plan to get {geomancyTitle} analysis
           </Text>
           <TouchableOpacity
             style={styles.emptyButton}
