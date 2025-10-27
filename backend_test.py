@@ -12,7 +12,7 @@ from datetime import datetime
 import os
 
 # Get backend URL from environment
-BACKEND_URL = "https://estatehub-38.preview.emergentagent.com/api"
+BACKEND_URL = "https://aurainfra.preview.emergentagent.com/api"
 
 class PropertyManagerAPITester:
     def __init__(self):
