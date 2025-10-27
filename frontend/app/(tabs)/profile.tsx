@@ -269,6 +269,124 @@ export default function Profile() {
           </View>
         </KeyboardAvoidingView>
       </Modal>
+
+      {/* Warranty Reminder Modal */}
+      <Modal
+        visible={warrantyModalVisible}
+        animationType="slide"
+        presentationStyle="pageSheet"
+        onRequestClose={() => setWarrantyModalVisible(false)}
+      >
+        <View style={styles.modalContainer}>
+          <View style={styles.modalHeader}>
+            <TouchableOpacity onPress={() => setWarrantyModalVisible(false)}>
+              <Text style={styles.cancelButton}>Cancel</Text>
+            </TouchableOpacity>
+            <Text style={styles.modalTitle}>Warranty Reminder</Text>
+            <View style={{ width: 60 }} />
+          </View>
+
+          <View style={styles.modalContent}>
+            <Text style={styles.reminderDescription}>
+              Choose when you want to be notified before a warranty expires
+            </Text>
+
+            <TouchableOpacity
+              style={[
+                styles.optionCard,
+                selectedReminderDays === 7 && styles.optionCardSelected,
+              ]}
+              onPress={() => handleWarrantyReminderChange(7)}
+              disabled={saving}
+            >
+              <View style={styles.optionContent}>
+                <Ionicons
+                  name="notifications-outline"
+                  size={24}
+                  color={selectedReminderDays === 7 ? '#007AFF' : '#8E8E93'}
+                />
+                <View style={styles.optionText}>
+                  <Text style={[
+                    styles.optionTitle,
+                    selectedReminderDays === 7 && styles.optionTitleSelected,
+                  ]}>
+                    7 Days Before
+                  </Text>
+                  <Text style={styles.optionSubtitle}>Get notified 1 week early</Text>
+                </View>
+              </View>
+              {selectedReminderDays === 7 && (
+                <Ionicons name="checkmark-circle" size={24} color="#007AFF" />
+              )}
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              style={[
+                styles.optionCard,
+                selectedReminderDays === 14 && styles.optionCardSelected,
+              ]}
+              onPress={() => handleWarrantyReminderChange(14)}
+              disabled={saving}
+            >
+              <View style={styles.optionContent}>
+                <Ionicons
+                  name="notifications-outline"
+                  size={24}
+                  color={selectedReminderDays === 14 ? '#007AFF' : '#8E8E93'}
+                />
+                <View style={styles.optionText}>
+                  <Text style={[
+                    styles.optionTitle,
+                    selectedReminderDays === 14 && styles.optionTitleSelected,
+                  ]}>
+                    14 Days Before
+                  </Text>
+                  <Text style={styles.optionSubtitle}>Get notified 2 weeks early</Text>
+                </View>
+              </View>
+              {selectedReminderDays === 14 && (
+                <Ionicons name="checkmark-circle" size={24} color="#007AFF" />
+              )}
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              style={[
+                styles.optionCard,
+                selectedReminderDays === 30 && styles.optionCardSelected,
+              ]}
+              onPress={() => handleWarrantyReminderChange(30)}
+              disabled={saving}
+            >
+              <View style={styles.optionContent}>
+                <Ionicons
+                  name="notifications-outline"
+                  size={24}
+                  color={selectedReminderDays === 30 ? '#007AFF' : '#8E8E93'}
+                />
+                <View style={styles.optionText}>
+                  <Text style={[
+                    styles.optionTitle,
+                    selectedReminderDays === 30 && styles.optionTitleSelected,
+                  ]}>
+                    30 Days Before
+                  </Text>
+                  <Text style={styles.optionSubtitle}>Get notified 1 month early</Text>
+                </View>
+              </View>
+              {selectedReminderDays === 30 && (
+                <Ionicons name="checkmark-circle" size={24} color="#007AFF" />
+              )}
+            </TouchableOpacity>
+
+            {saving && (
+              <View style={styles.savingIndicator}>
+                <ActivityIndicator size="small" color="#007AFF" />
+                <Text style={styles.savingText}>Updating...</Text>
+              </View>
+            )}
+          </View>
+        </View>
+      </Modal>
     </SafeAreaView>
   );
 }
