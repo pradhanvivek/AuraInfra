@@ -31,6 +31,11 @@ interface Fixture {
   warranty_expiry_date?: string;
   photo?: string;
   invoice?: string;
+  vendor_name?: string;
+  vendor_contact?: string;
+  vendor_email?: string;
+  maintenance_frequency?: string;
+  last_maintenance_date?: string;
 }
 
 interface FixturesScreenProps {
