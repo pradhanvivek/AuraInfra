@@ -481,6 +481,31 @@ export default function FixturesScreen({ propertyId }: FixturesScreenProps) {
               ))}
             </View>
 
+            {/* Scan Receipt Button */}
+            <TouchableOpacity 
+              style={styles.scanButton}
+              onPress={handleScanReceipt}
+              disabled={scanningReceipt}
+            >
+              <Ionicons name="scan" size={20} color="#fff" />
+              <Text style={styles.scanButtonText}>
+                {scanningReceipt ? 'Analyzing Receipt...' : 'Scan Receipt to Auto-Fill'}
+              </Text>
+            </TouchableOpacity>
+            
+            {scanningReceipt && (
+              <View style={styles.scanningIndicator}>
+                <ActivityIndicator size="small" color="#007AFF" />
+                <Text style={styles.scanningText}>AI is analyzing your receipt...</Text>
+              </View>
+            )}
+
+            <View style={styles.divider}>
+              <View style={styles.dividerLine} />
+              <Text style={styles.dividerText}>OR ENTER MANUALLY</Text>
+              <View style={styles.dividerLine} />
+            </View>
+
             <Text style={styles.label}>Make</Text>
             <TextInput
               style={styles.input}
