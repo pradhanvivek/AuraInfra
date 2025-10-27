@@ -264,6 +264,7 @@ async def get_profile(user_id: str = Depends(get_current_user)):
         username=user_doc["username"],
         email=user_doc.get("email"),
         phone=user_doc.get("phone"),
+        warranty_reminder_days=user_doc.get("warranty_reminder_days", 30),
         created_at=user_doc["created_at"]
     )
 
@@ -275,6 +276,10 @@ async def update_profile(profile: UserProfileUpdate, user_id: str = Depends(get_
         update_data["email"] = profile.email
     if profile.phone is not None:
         update_data["phone"] = profile.phone
+    if profile.warranty_reminder_days is not None:
+        if profile.warranty_reminder_days not in [7, 14, 30]:
+            raise HTTPException(status_code=400, detail="warranty_reminder_days must be 7, 14, or 30")
+        update_data["warranty_reminder_days"] = profile.warranty_reminder_days
     
     if update_data:
         await db.users.update_one(
@@ -289,6 +294,7 @@ async def update_profile(profile: UserProfileUpdate, user_id: str = Depends(get_
         username=user_doc["username"],
         email=user_doc.get("email"),
         phone=user_doc.get("phone"),
+        warranty_reminder_days=user_doc.get("warranty_reminder_days", 30),
         created_at=user_doc["created_at"]
     )
 
