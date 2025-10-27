@@ -435,6 +435,47 @@ export default function FixturesScreen({ propertyId }: FixturesScreenProps) {
               minimumDate={new Date()}
             />
 
+            {/* Vendor Information Section */}
+            <View style={styles.sectionHeader}>
+              <Ionicons name="build-outline" size={20} color="#007AFF" />
+              <Text style={styles.sectionHeaderText}>Vendor & Maintenance</Text>
+            </View>
+
+            <Text style={styles.label}>Vendor Name (Optional)</Text>
+            <TextInput
+              style={styles.input}
+              placeholder="e.g., ABC Services"
+              value={vendorName}
+              onChangeText={setVendorName}
+            />
+
+            <Text style={styles.label}>Vendor Contact (Optional)</Text>
+            <TextInput
+              style={styles.input}
+              placeholder="e.g., +1 234 567 8900"
+              value={vendorContact}
+              onChangeText={setVendorContact}
+              keyboardType="phone-pad"
+            />
+
+            <Text style={styles.label}>Vendor Email (Optional)</Text>
+            <TextInput
+              style={styles.input}
+              placeholder="e.g., contact@vendor.com"
+              value={vendorEmail}
+              onChangeText={setVendorEmail}
+              keyboardType="email-address"
+              autoCapitalize="none"
+            />
+
+            <Text style={styles.label}>Maintenance Frequency (Optional)</Text>
+            <TextInput
+              style={styles.input}
+              placeholder="e.g., Quarterly, Annually"
+              value={maintenanceFrequency}
+              onChangeText={setMaintenanceFrequency}
+            />
+
             <Text style={styles.label}>Photo (Optional)</Text>
             <TouchableOpacity style={styles.photoButton} onPress={handlePickImage}>
               {photo ? (
