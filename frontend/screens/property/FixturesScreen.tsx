@@ -544,6 +544,10 @@ export default function FixturesScreen({ propertyId }: FixturesScreenProps) {
                 setWarrantyExpiryDate(selectedFixture.warranty_expiry_date || '');
                 setPhoto(selectedFixture.photo || '');
                 setInvoice(selectedFixture.invoice || '');
+                setVendorName(selectedFixture.vendor_name || '');
+                setVendorContact(selectedFixture.vendor_contact || '');
+                setVendorEmail(selectedFixture.vendor_email || '');
+                setMaintenanceFrequency(selectedFixture.maintenance_frequency || '');
                 setModalVisible(true);
               }
             }}>
