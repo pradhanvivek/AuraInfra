@@ -45,6 +45,14 @@ export default function Login() {
         style={styles.keyboardView}
       >
         <View style={styles.content}>
+          <View style={styles.logoContainer}>
+            <View style={styles.logoBox}>
+              <Text style={styles.logoText}>A</Text>
+            </View>
+            <Text style={styles.appName}>AuraInfra.ai</Text>
+            <Text style={styles.tagline}>Property Management Made Simple</Text>
+          </View>
+
           <Text style={styles.title}>Welcome Back</Text>
           <Text style={styles.subtitle}>Sign in to continue</Text>
 
