@@ -8,6 +8,7 @@ import {
   ActivityIndicator,
   Alert,
   RefreshControl,
+  TextInput,
 } from 'react-native';
 import { useRouter, useFocusEffect } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
@@ -26,13 +27,16 @@ export default function Properties() {
   const router = useRouter();
   const { token } = useAuth();
   const [properties, setProperties] = useState<Property[]>([]);
+  const [filteredProperties, setFilteredProperties] = useState<Property[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
 
   const fetchProperties = async () => {
     try {
       const data = await propertyApi.getAll(token!);
       setProperties(data);
+      setFilteredProperties(data);
     } catch (error: any) {
       Alert.alert('Error', error.message || 'Failed to load properties');
     } finally {
@@ -46,6 +50,27 @@ export default function Properties() {
       fetchProperties();
     }, [token])
   );
+
+  const handleSearch = (query: string) => {
+    setSearchQuery(query);
+    
+    if (query.trim() === '') {
+      setFilteredProperties(properties);
+    } else {
+      const lowercasedQuery = query.toLowerCase();
+      const filtered = properties.filter(
+        (property) =>
+          property.name.toLowerCase().includes(lowercasedQuery) ||
+          property.address.toLowerCase().includes(lowercasedQuery)
+      );
+      setFilteredProperties(filtered);
+    }
+  };
+
+  const clearSearch = () => {
+    setSearchQuery('');
+    setFilteredProperties(properties);
+  };
 
   const onRefresh = () => {
     setRefreshing(true);
