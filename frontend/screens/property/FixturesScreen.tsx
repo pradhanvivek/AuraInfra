@@ -53,6 +53,7 @@ export default function FixturesScreen({ propertyId }: FixturesScreenProps) {
   const [editingDetails, setEditingDetails] = useState(false);
   const [isEditMode, setIsEditMode] = useState(false);
   const [editingFixtureId, setEditingFixtureId] = useState<string | null>(null);
+  const [scanningReceipt, setScanningReceipt] = useState(false);
 
   // Form state
   const [name, setName] = useState('');
