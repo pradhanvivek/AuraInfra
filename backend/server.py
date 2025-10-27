@@ -117,6 +117,11 @@ class Fixture(BaseModel):
     warranty_expiry_date: Optional[str] = None  # ISO date string
     photo: Optional[str] = None  # base64 encoded photo
     invoice: Optional[str] = None  # base64 encoded invoice
+    vendor_name: Optional[str] = None
+    vendor_contact: Optional[str] = None
+    vendor_email: Optional[str] = None
+    maintenance_frequency: Optional[str] = None  # e.g., "Quarterly", "Annually"
+    last_maintenance_date: Optional[str] = None  # ISO date string
     created_at: datetime = Field(default_factory=datetime.utcnow)
 
 class FixtureCreate(BaseModel):
@@ -129,6 +134,11 @@ class FixtureCreate(BaseModel):
     warranty_expiry_date: Optional[str] = None
     photo: Optional[str] = None
     invoice: Optional[str] = None
+    vendor_name: Optional[str] = None
+    vendor_contact: Optional[str] = None
+    vendor_email: Optional[str] = None
+    maintenance_frequency: Optional[str] = None
+    last_maintenance_date: Optional[str] = None
 
 class Measurement(BaseModel):
     id: str = Field(default_factory=lambda: str(uuid.uuid4()))
