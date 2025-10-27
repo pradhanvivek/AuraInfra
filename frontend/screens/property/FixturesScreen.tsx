@@ -340,6 +340,14 @@ export default function FixturesScreen({ propertyId }: FixturesScreenProps) {
               textAlignVertical="top"
             />
 
+            <Text style={styles.label}>Warranty Expiry Date (Optional)</Text>
+            <TextInput
+              style={styles.input}
+              placeholder="YYYY-MM-DD (e.g., 2025-12-31)"
+              value={warrantyExpiryDate}
+              onChangeText={setWarrantyExpiryDate}
+            />
+
             <Text style={styles.label}>Photo (Optional)</Text>
             <TouchableOpacity style={styles.photoButton} onPress={handlePickImage}>
               {photo ? (
