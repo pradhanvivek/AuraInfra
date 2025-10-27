@@ -140,7 +140,7 @@ export default function HealthScoreScreen({ propertyId }: HealthScoreScreenProps
                 <Ionicons name={getCategoryIcon(key) as any} size={24} color="#007AFF" />
                 <View style={styles.categoryTextContainer}>
                   <Text style={styles.categoryTitle}>
-                    {key.charAt(0).toUpperCase() + key.slice(1)}
+                    {getCategoryName(key)}
                   </Text>
                   <Text style={styles.categoryWeight}>Weight: {data.weight}%</Text>
                 </View>
