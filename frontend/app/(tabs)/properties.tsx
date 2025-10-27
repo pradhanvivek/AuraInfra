@@ -57,19 +57,27 @@ export default function Properties() {
   };
 
   const renderProperty = ({ item }: { item: Property }) => (
-    <TouchableOpacity
-      style={styles.propertyCard}
-      onPress={() => handlePropertyPress(item)}
-    >
-      <View style={styles.propertyIcon}>
-        <Ionicons name="home" size={24} color="#007AFF" />
-      </View>
-      <View style={styles.propertyInfo}>
-        <Text style={styles.propertyName}>{item.name}</Text>
-        <Text style={styles.propertyAddress}>{item.address}</Text>
-      </View>
-      <Ionicons name="chevron-forward" size={20} color="#C7C7CC" />
-    </TouchableOpacity>
+    <View style={styles.propertyCard}>
+      <TouchableOpacity
+        style={styles.propertyMain}
+        onPress={() => handlePropertyPress(item)}
+      >
+        <View style={styles.propertyIcon}>
+          <Ionicons name="home" size={24} color="#007AFF" />
+        </View>
+        <View style={styles.propertyInfo}>
+          <Text style={styles.propertyName}>{item.name}</Text>
+          <Text style={styles.propertyAddress}>{item.address}</Text>
+        </View>
+        <Ionicons name="chevron-forward" size={20} color="#C7C7CC" />
+      </TouchableOpacity>
+      <TouchableOpacity
+        style={styles.editButton}
+        onPress={() => router.push(`/property/edit/${item.id}`)}
+      >
+        <Ionicons name="create-outline" size={20} color="#007AFF" />
+      </TouchableOpacity>
+    </View>
   );
 
   if (loading) {
