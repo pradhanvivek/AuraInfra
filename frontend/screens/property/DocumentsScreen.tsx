@@ -345,7 +345,7 @@ export default function DocumentsScreen({ propertyId }: DocumentsScreenProps) {
           </ScrollView>
         </SafeAreaView>
       </Modal>
-    </View>
+    </SafeAreaView>
   );
 }
 
