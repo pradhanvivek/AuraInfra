@@ -10,6 +10,26 @@ const getAuthHeaders = (token: string) => ({
   },
 });
 
+// Auth API
+export const authApi = {
+  getProfile: async (token: string) => {
+    const response = await axios.get(
+      `${API_URL}/api/auth/profile`,
+      getAuthHeaders(token)
+    );
+    return response.data;
+  },
+
+  updateProfile: async (token: string, data: { email?: string; phone?: string }) => {
+    const response = await axios.put(
+      `${API_URL}/api/auth/profile`,
+      data,
+      getAuthHeaders(token)
+    );
+    return response.data;
+  },
+};
+
 // Property API
 export const propertyApi = {
   getAll: async (token: string) => {
