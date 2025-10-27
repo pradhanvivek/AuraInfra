@@ -48,10 +48,19 @@ export default function DocumentsScreen({ propertyId }: DocumentsScreenProps) {
 
   const handleUploadDocument = async () => {
     try {
-      const result = await DocumentPicker.getDocumentAsync({
-        type: '*/*',
-        copyToCacheDirectory: true,
-        multiple: false,
+      // First try with images using ImagePicker for better mobile support
+      const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+      
+      if (status !== 'granted') {
+        Alert.alert('Permission Required', 'Please grant photo library permissions to upload files');
+        return;
+      }
+
+      const result = await ImagePicker.launchImageLibraryAsync({
+        mediaTypes: ImagePicker.MediaTypeOptions.All,
+        allowsEditing: false,
+        quality: 0.8,
+        base64: true,
       });
 
       if (result.canceled || !result.assets || result.assets.length === 0) {
@@ -62,15 +71,33 @@ export default function DocumentsScreen({ propertyId }: DocumentsScreenProps) {
       const file = result.assets[0];
 
       try {
-        // Read file as base64
-        const base64 = await FileSystem.readAsStringAsync(file.uri, {
-          encoding: FileSystem.EncodingType.Base64,
-        });
+        // Use base64 if available, otherwise read from URI
+        let base64Data = file.base64;
+        
+        if (!base64Data && file.uri) {
+          // Try to read from file system
+          try {
+            base64Data = await FileSystem.readAsStringAsync(file.uri, {
+              encoding: FileSystem.EncodingType.Base64,
+            });
+          } catch (fsError) {
+            console.error('FileSystem read error:', fsError);
+            throw new Error('Unable to read file. Please try a different file.');
+          }
+        }
+
+        if (!base64Data) {
+          throw new Error('Unable to process file. Please try again.');
+        }
+
+        // Determine file name and type
+        const fileName = file.fileName || file.uri.split('/').pop() || 'document';
+        const fileType = file.type === 'image' ? 'image/jpeg' : 'application/octet-stream';
 
         await documentApi.create(token!, propertyId, {
-          name: file.name,
-          file_data: base64,
-          file_type: file.mimeType || 'application/octet-stream',
+          name: fileName,
+          file_data: base64Data,
+          file_type: fileType,
         });
 
         Alert.alert('Success', 'Document uploaded successfully');
