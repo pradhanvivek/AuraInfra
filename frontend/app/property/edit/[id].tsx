@@ -136,14 +136,14 @@ export default function EditPropertyScreen() {
 
           <View style={styles.section}>
             <Text style={styles.label}>Address</Text>
-            {GOOGLE_MAPS_API_KEY ? (
+            {GOOGLE_MAPS_API_KEY && GooglePlacesAutocomplete && Platform.OS !== 'web' ? (
               <GooglePlacesAutocomplete
                 ref={autocompleteRef}
                 placeholder="Search for address..."
                 minLength={2}
                 fetchDetails={true}
                 predefinedPlaces={[]}
-                onPress={(data, details = null) => {
+                onPress={(data: any, details: any = null) => {
                   if (details) {
                     setAddress(data.description);
                     setLatitude(details.geometry.location.lat);
