@@ -167,7 +167,7 @@ export default function MeasurementsScreen({ propertyId }: MeasurementsScreenPro
       case 'master_bedroom':
         return 'bed-outline';
       case 'living_area':
-        return 'television-outline';
+        return 'tv-outline';
       case 'kitchen':
         return 'restaurant-outline';
       case 'bathroom':
