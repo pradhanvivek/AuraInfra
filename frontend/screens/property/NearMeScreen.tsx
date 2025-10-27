@@ -11,6 +11,7 @@ import {
   RefreshControl,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import Constants from 'expo-constants';
 import { useAuth } from '../../contexts/AuthContext';
 import { propertyApi } from '../../services/api';
 
