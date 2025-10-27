@@ -51,27 +51,36 @@ export default function DocumentsScreen({ propertyId }: DocumentsScreenProps) {
       const result = await DocumentPicker.getDocumentAsync({
         type: '*/*',
         copyToCacheDirectory: true,
+        multiple: false,
       });
 
-      if (result.canceled) return;
+      if (result.canceled || !result.assets || result.assets.length === 0) {
+        return;
+      }
 
       setUploading(true);
       const file = result.assets[0];
 
-      // Read file as base64
-      const base64 = await FileSystem.readAsStringAsync(file.uri, {
-        encoding: FileSystem.EncodingType.Base64,
-      });
+      try {
+        // Read file as base64
+        const base64 = await FileSystem.readAsStringAsync(file.uri, {
+          encoding: FileSystem.EncodingType.Base64,
+        });
 
-      await documentApi.create(token!, propertyId, {
-        name: file.name,
-        file_data: base64,
-        file_type: file.mimeType || 'application/octet-stream',
-      });
+        await documentApi.create(token!, propertyId, {
+          name: file.name,
+          file_data: base64,
+          file_type: file.mimeType || 'application/octet-stream',
+        });
 
-      Alert.alert('Success', 'Document uploaded successfully');
-      fetchDocuments();
+        Alert.alert('Success', 'Document uploaded successfully');
+        await fetchDocuments();
+      } catch (uploadError: any) {
+        console.error('Upload error:', uploadError);
+        throw uploadError;
+      }
     } catch (error: any) {
+      console.error('Document picker error:', error);
       Alert.alert('Error', error.message || 'Failed to upload document');
     } finally {
       setUploading(false);
