@@ -195,6 +195,7 @@ class VastuAnalysis(BaseModel):
 
 class VastuAnalysisCreate(BaseModel):
     floor_plan_image: str  # base64 encoded
+    geomancy_type: str = "vastu"  # "vastu" or "feng_shui"
 
 class Notification(BaseModel):
     id: str = Field(default_factory=lambda: str(uuid.uuid4()))
