@@ -222,6 +222,15 @@ export const measurementApi = {
     );
     return response.data;
   },
+
+  analyzeFloorPlanComprehensive: async (token: string, imageBase64: string) => {
+    const response = await axios.post(
+      `${API_URL}/api/measurements/analyze-floorplan-comprehensive`,
+      { floor_plan_image: imageBase64 },
+      getAuthHeaders(token)
+    );
+    return response.data;
+  },
 };
 
 // Notification API
