@@ -131,6 +131,7 @@ export default function EditPropertyScreen() {
             <Text style={styles.label}>Address</Text>
             {GOOGLE_MAPS_API_KEY && GooglePlacesAutocomplete && Platform.OS !== 'web' ? (
               <GooglePlacesAutocomplete
+                key={address} // Force re-render when address changes
                 ref={autocompleteRef}
                 placeholder="Search for address..."
                 minLength={2}
