@@ -152,6 +152,10 @@ export default function FixturesScreen({ propertyId }: FixturesScreenProps) {
         warranty_expiry_date: warrantyExpiryDate || undefined,
         photo: photo || undefined,
         invoice: invoice || undefined,
+        vendor_name: vendorName || undefined,
+        vendor_contact: vendorContact || undefined,
+        vendor_email: vendorEmail || undefined,
+        maintenance_frequency: maintenanceFrequency || undefined,
       };
 
       if (isEditMode && editingFixtureId) {
