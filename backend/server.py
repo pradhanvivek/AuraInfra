@@ -140,6 +140,18 @@ class MeasurementCreate(BaseModel):
 class FloorPlanAnalysis(BaseModel):
     floor_plan_image: str  # base64 encoded
 
+class VastuAnalysis(BaseModel):
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    property_id: str
+    floor_plan_image: str  # base64 encoded
+    analysis_text: str
+    compliance_score: Optional[int] = None  # 0-100
+    recommendations: Optional[str] = None
+    created_at: datetime = Field(default_factory=datetime.utcnow)
+
+class VastuAnalysisCreate(BaseModel):
+    floor_plan_image: str  # base64 encoded
+
 # ============= HELPER FUNCTIONS =============
 
 def create_access_token(data: dict):
