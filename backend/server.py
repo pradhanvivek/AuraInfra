@@ -102,6 +102,7 @@ class Fixture(BaseModel):
     model: Optional[str] = None
     serial_number: Optional[str] = None
     warranty_info: Optional[str] = None
+    warranty_expiry_date: Optional[str] = None  # ISO date string
     photo: Optional[str] = None  # base64 encoded photo
     invoice: Optional[str] = None  # base64 encoded invoice
     created_at: datetime = Field(default_factory=datetime.utcnow)
@@ -113,6 +114,7 @@ class FixtureCreate(BaseModel):
     model: Optional[str] = None
     serial_number: Optional[str] = None
     warranty_info: Optional[str] = None
+    warranty_expiry_date: Optional[str] = None
     photo: Optional[str] = None
     invoice: Optional[str] = None
 
