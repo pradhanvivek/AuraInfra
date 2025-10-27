@@ -52,6 +52,7 @@ export default function FixturesScreen({ propertyId }: FixturesScreenProps) {
   const [model, setModel] = useState('');
   const [serialNumber, setSerialNumber] = useState('');
   const [warrantyInfo, setWarrantyInfo] = useState('');
+  const [warrantyExpiryDate, setWarrantyExpiryDate] = useState('');
   const [photo, setPhoto] = useState('');
   const [invoice, setInvoice] = useState('');
 
