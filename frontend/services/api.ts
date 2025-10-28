@@ -223,11 +223,14 @@ export const measurementApi = {
     return response.data;
   },
 
-  analyzeFloorPlanComprehensive: async (token: string, imageBase64: string) => {
+  analyzeFloorPlanComprehensive: async (token: string, floorPlans: Array<{floor_number: number, image: string}>) => {
     const response = await axios.post(
       `${API_URL}/api/measurements/analyze-floorplan-comprehensive`,
-      { floor_plan_image: imageBase64 },
-      getAuthHeaders(token)
+      { floor_plans: floorPlans },
+      { 
+        ...getAuthHeaders(token),
+        timeout: 120000 // 120 seconds for multi-floor analysis
+      }
     );
     return response.data;
   },
