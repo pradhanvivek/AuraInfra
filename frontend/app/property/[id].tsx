@@ -45,16 +45,16 @@ export default function PropertyDetails() {
 
   if (loading) {
     return (
-      <SafeAreaView style={styles.container} edges={['top']}>
+      <View style={styles.container}>
         <View style={styles.loadingContainer}>
           <ActivityIndicator size="large" color="#007AFF" />
         </View>
-      </SafeAreaView>
+      </View>
     );
   }
 
   return (
-    <SafeAreaView style={styles.container} edges={['top']}>
+    <View style={styles.container}>
       {/* Property Header */}
       <View style={styles.header}>
         <TouchableOpacity 
@@ -125,7 +125,7 @@ export default function PropertyDetails() {
           children={() => <NearMeScreen propertyId={id!} />}
         />
       </Tab.Navigator>
-    </SafeAreaView>
+    </View>
   );
 }
 
