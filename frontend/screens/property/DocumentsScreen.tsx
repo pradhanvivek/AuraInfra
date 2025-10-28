@@ -299,10 +299,13 @@ export default function DocumentsScreen({ propertyId }: DocumentsScreenProps) {
       <Modal
         visible={viewModalVisible}
         animationType="slide"
-        presentationStyle="fullScreen"
+        presentationStyle="pageSheet"
         onRequestClose={() => setViewModalVisible(false)}
       >
-        <SafeAreaView style={styles.viewModalContainer} edges={['top', 'bottom']}>
+        <KeyboardAvoidingView
+          behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+          style={styles.viewModalContainer}
+        >
           <View style={styles.viewModalHeader}>
             <TouchableOpacity 
               style={styles.closeButton}
