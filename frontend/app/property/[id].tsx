@@ -68,55 +68,57 @@ export default function PropertyDetails() {
         </View>
       </View>
 
-      {/* Tabs */}
-      <Tab.Navigator
-        screenOptions={{
-          tabBarActiveTintColor: '#007AFF',
-          tabBarInactiveTintColor: '#8E8E93',
-          tabBarIndicatorStyle: {
-            backgroundColor: '#007AFF',
-            height: 3,
-          },
-          tabBarStyle: {
-            backgroundColor: '#fff',
-          },
-          tabBarLabelStyle: {
-            fontSize: 13,
-            fontWeight: '600',
-            textTransform: 'none',
-          },
-          tabBarScrollEnabled: true,
-        }}
-      >
-        <Tab.Screen
-          name="Health"
-          children={() => <HealthScoreScreen propertyId={id!} />}
-        />
-        <Tab.Screen
-          name="Documents"
-          children={() => <DocumentsScreen propertyId={id!} />}
-        />
-        <Tab.Screen
-          name="Fixtures"
-          children={() => <FixturesScreen propertyId={id!} />}
-        />
-        <Tab.Screen
-          name="Measurements"
-          children={() => <MeasurementsScreen propertyId={id!} />}
-        />
-        <Tab.Screen
-          name="Vastu"
-          children={() => <VastuScreen propertyId={id!} geomancyType="vastu" />}
-        />
-        <Tab.Screen
-          name="Feng Shui"
-          children={() => <VastuScreen propertyId={id!} geomancyType="feng_shui" />}
-        />
-        <Tab.Screen
-          name="Near Me"
-          children={() => <NearMeScreen propertyId={id!} />}
-        />
-      </Tab.Navigator>
+      {/* Tabs Container */}
+      <View style={styles.tabsContainer}>
+        <Tab.Navigator
+          screenOptions={{
+            tabBarActiveTintColor: '#007AFF',
+            tabBarInactiveTintColor: '#8E8E93',
+            tabBarIndicatorStyle: {
+              backgroundColor: '#007AFF',
+              height: 3,
+            },
+            tabBarStyle: {
+              backgroundColor: '#fff',
+            },
+            tabBarLabelStyle: {
+              fontSize: 13,
+              fontWeight: '600',
+              textTransform: 'none',
+            },
+            tabBarScrollEnabled: true,
+          }}
+        >
+          <Tab.Screen
+            name="Health"
+            children={() => <HealthScoreScreen propertyId={id!} />}
+          />
+          <Tab.Screen
+            name="Documents"
+            children={() => <DocumentsScreen propertyId={id!} />}
+          />
+          <Tab.Screen
+            name="Fixtures"
+            children={() => <FixturesScreen propertyId={id!} />}
+          />
+          <Tab.Screen
+            name="Measurements"
+            children={() => <MeasurementsScreen propertyId={id!} />}
+          />
+          <Tab.Screen
+            name="Vastu"
+            children={() => <VastuScreen propertyId={id!} geomancyType="vastu" />}
+          />
+          <Tab.Screen
+            name="Feng Shui"
+            children={() => <VastuScreen propertyId={id!} geomancyType="feng_shui" />}
+          />
+          <Tab.Screen
+            name="Near Me"
+            children={() => <NearMeScreen propertyId={id!} />}
+          />
+        </Tab.Navigator>
+      </View>
     </View>
   );
 }
