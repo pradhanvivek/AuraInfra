@@ -780,6 +780,143 @@ Return ONLY the JSON object, no additional text.""",
         logger.error(f"Wall scan error: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))
 
+@api_router.post("/paint-estimation/analyze-room")
+async def analyze_room_for_painting(
+    room_data: dict,
+    user_id: str = Depends(get_current_user)
+):
+    """
+    Analyze multiple wall images and optional ceiling for complete room painting estimation
+    """
+    try:
+        from emergentintegrations.llm.chat import LlmChat, UserMessage, ImageContent
+        import json
+        
+        api_key = os.environ.get('EMERGENT_LLM_KEY')
+        if not api_key:
+            raise HTTPException(status_code=500, detail="API key not configured")
+        
+        wall_images = room_data.get('wall_images', [])
+        ceiling_image = room_data.get('ceiling_image')
+        include_ceiling = room_data.get('include_ceiling', False)
+        
+        if not wall_images:
+            raise HTTPException(status_code=400, detail="At least one wall image is required")
+        
+        chat = LlmChat(
+            api_key=api_key,
+            session_id=f"room_scan_{user_id}_{uuid.uuid4()}",
+            system_message="You are an expert in analyzing room dimensions and calculating complete room paint requirements."
+        ).with_model("gemini", "gemini-2.0-flash")
+        
+        # Prepare image contents
+        image_contents = [ImageContent(image_base64=img) for img in wall_images]
+        if ceiling_image:
+            image_contents.append(ImageContent(image_base64=ceiling_image))
+        
+        prompt_text = f"""Analyze these {len(wall_images)} wall images{' and ceiling image' if ceiling_image else ''} from a single room.
+
+Return ONLY a valid JSON object with this structure:
+{{
+  "walls": [
+    {{
+      "wall_width": 12.0,
+      "wall_height": 10.0,
+      "doors": 1,
+      "windows": 2
+    }}
+  ],
+  "ceiling_width": 12.0,
+  "ceiling_length": 14.0
+}}
+
+Instructions:
+- Analyze each wall image separately
+- Estimate dimensions in feet (walls can be 8-15 feet tall)
+- Count doors (standard door = 20 sq ft)
+- Count windows (standard window = 15 sq ft)
+- For ceiling, estimate room dimensions
+- Be accurate with tall walls (10-15 feet)
+- Provide realistic measurements
+
+Return ONLY the JSON object, no additional text."""
+        
+        user_message = UserMessage(
+            text=prompt_text,
+            file_contents=image_contents
+        )
+        
+        response = await chat.send_message(user_message)
+        logger.info(f"Room scan response: {response}")
+        
+        # Parse JSON response
+        try:
+            json_start = response.find('{')
+            json_end = response.rfind('}') + 1
+            if json_start != -1 and json_end > json_start:
+                json_str = response[json_start:json_end]
+                room_data_parsed = json.loads(json_str)
+            else:
+                room_data_parsed = json.loads(response)
+            
+            # Calculate wall painting
+            total_wall_area = 0
+            door_area = 0
+            window_area = 0
+            
+            for wall in room_data_parsed.get('walls', []):
+                wall_area = wall['wall_width'] * wall['wall_height']
+                total_wall_area += wall_area
+                door_area += wall.get('doors', 0) * 20
+                window_area += wall.get('windows', 0) * 15
+            
+            paintable_wall_area = total_wall_area - door_area - window_area
+            
+            # Calculate ceiling painting
+            ceiling_area = 0
+            paintable_ceiling_area = 0
+            if include_ceiling and ceiling_image:
+                ceiling_width = room_data_parsed.get('ceiling_width', 0)
+                ceiling_length = room_data_parsed.get('ceiling_length', 0)
+                ceiling_area = ceiling_width * ceiling_length
+                paintable_ceiling_area = ceiling_area  # Ceilings usually have no obstructions
+            
+            # Total paintable area
+            total_paintable_area = paintable_wall_area + paintable_ceiling_area
+            
+            # Calculate paint needed (350 sq ft per gallon, 2 coats)
+            paint_gallons = (total_paintable_area * 2) / 350
+            
+            # Calculate costs
+            paint_cost = paint_gallons * 35
+            labor_cost_low = total_paintable_area * 1.5
+            labor_cost_high = total_paintable_area * 2.5
+            
+            estimated_cost_low = paint_cost + labor_cost_low
+            estimated_cost_high = paint_cost + labor_cost_high
+            
+            return {
+                "total_wall_area": round(total_wall_area, 2),
+                "ceiling_area": round(ceiling_area, 2),
+                "paintable_wall_area": round(paintable_wall_area, 2),
+                "paintable_ceiling_area": round(paintable_ceiling_area, 2),
+                "total_paintable_area": round(total_paintable_area, 2),
+                "paint_gallons_needed": round(paint_gallons, 2),
+                "estimated_cost_low": round(estimated_cost_low, 2),
+                "estimated_cost_high": round(estimated_cost_high, 2),
+                "walls": room_data_parsed.get('walls', [])
+            }
+            
+        except json.JSONDecodeError as je:
+            logger.error(f"JSON parsing error: {str(je)}")
+            raise HTTPException(status_code=500, detail="Failed to parse AI response")
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Room scan error: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
 @api_router.post("/properties/{property_id}/paint-estimations")
 async def save_paint_estimation(
     property_id: str,
