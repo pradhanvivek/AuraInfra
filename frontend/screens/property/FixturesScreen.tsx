@@ -300,7 +300,7 @@ export default function FixturesScreen({ propertyId }: FixturesScreenProps) {
   const analyzeReceipt = async (base64Image: string) => {
     setScanningReceipt(true);
     try {
-      const response = await fetch('https://aurafix-mobile.preview.emergentagent.com/api/analyze-receipt', {
+      const response = await fetch('https://prophealth-app.preview.emergentagent.com/api/analyze-receipt', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
