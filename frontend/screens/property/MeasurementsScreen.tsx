@@ -1266,4 +1266,33 @@ const styles = StyleSheet.create({
     fontSize: 17,
     fontWeight: '700',
   },
+  floorCountContainer: {
+    flexDirection: 'row',
+    gap: 12,
+    marginBottom: 16,
+  },
+  floorCountButton: {
+    flex: 1,
+    paddingVertical: 12,
+    borderRadius: 12,
+    backgroundColor: '#fff',
+    borderWidth: 2,
+    borderColor: '#E5E5EA',
+    alignItems: 'center',
+  },
+  floorCountButtonActive: {
+    backgroundColor: '#007AFF',
+    borderColor: '#007AFF',
+  },
+  floorCountButtonText: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#000',
+  },
+  floorCountButtonTextActive: {
+    color: '#fff',
+  },
+  floorPlanSection: {
+    marginBottom: 16,
+  },
 });
