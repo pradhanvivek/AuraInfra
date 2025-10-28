@@ -607,6 +607,217 @@ async def delete_fixture(
     
     return {"message": "Fixture deleted successfully"}
 
+# ============= APPLIANCE SCANNER ENDPOINT =============
+
+@api_router.post("/fixtures/scan-appliance", response_model=ApplianceScanResult)
+async def scan_appliance(
+    scan_request: ApplianceScanRequest,
+    user_id: str = Depends(get_current_user)
+):
+    """
+    Use Gemini Vision AI to identify appliance from image
+    """
+    try:
+        from emergentintegrations.llm.chat import LlmChat, UserMessage, ImageContent
+        import json
+        
+        api_key = os.environ.get('EMERGENT_LLM_KEY')
+        if not api_key:
+            raise HTTPException(status_code=500, detail="API key not configured")
+        
+        chat = LlmChat(
+            api_key=api_key,
+            session_id=f"appliance_scan_{user_id}_{uuid.uuid4()}",
+            system_message="You are an expert in identifying home appliances and electrical fixtures."
+        ).with_model("gemini", "gemini-2.0-flash")
+        
+        user_message = UserMessage(
+            text="""Analyze this image and identify the appliance or electrical fixture. 
+            
+Return ONLY a valid JSON object with this structure:
+{
+  "name": "Specific name (e.g., 'Ceiling Fan', 'LED TV', 'Refrigerator')",
+  "category": "Category (lights, fans, electrical appliances)",
+  "make": "Brand name if visible (e.g., 'Samsung', 'LG', 'Crompton')",
+  "model": "Model number if visible",
+  "serial_number": "Serial number if visible",
+  "confidence": 0.95
+}
+
+If you can't identify the item clearly, set confidence lower. 
+Return ONLY the JSON object, no additional text.""",
+            file_contents=[ImageContent(image_base64=scan_request.image)]
+        )
+        
+        response = await chat.send_message(user_message)
+        logger.info(f"Appliance scan response: {response}")
+        
+        # Parse JSON response
+        try:
+            json_start = response.find('{')
+            json_end = response.rfind('}') + 1
+            if json_start != -1 and json_end > json_start:
+                json_str = response[json_start:json_end]
+                result = json.loads(json_str)
+            else:
+                result = json.loads(response)
+            
+            return ApplianceScanResult(**result)
+            
+        except json.JSONDecodeError as je:
+            logger.error(f"JSON parsing error: {str(je)}")
+            raise HTTPException(status_code=500, detail="Failed to parse AI response")
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Appliance scan error: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+# ============= PAINT ESTIMATION ENDPOINTS =============
+
+@api_router.post("/paint-estimation/analyze-wall", response_model=PaintEstimate)
+async def analyze_wall_for_painting(
+    scan_request: WallScanRequest,
+    user_id: str = Depends(get_current_user)
+):
+    """
+    Use Gemini Vision AI to estimate wall dimensions and calculate paint requirements
+    """
+    try:
+        from emergentintegrations.llm.chat import LlmChat, UserMessage, ImageContent
+        import json
+        
+        api_key = os.environ.get('EMERGENT_LLM_KEY')
+        if not api_key:
+            raise HTTPException(status_code=500, detail="API key not configured")
+        
+        chat = LlmChat(
+            api_key=api_key,
+            session_id=f"wall_scan_{user_id}_{uuid.uuid4()}",
+            system_message="You are an expert in analyzing room dimensions and calculating paint requirements."
+        ).with_model("gemini", "gemini-2.0-flash")
+        
+        user_message = UserMessage(
+            text="""Analyze this room image and estimate the wall dimensions.
+
+Return ONLY a valid JSON object with this structure:
+{
+  "walls": [
+    {
+      "wall_width": 12.0,
+      "wall_height": 9.0,
+      "doors": 1,
+      "windows": 2
+    }
+  ]
+}
+
+Instructions:
+- Estimate dimensions in feet
+- Count all visible doors (standard door = 20 sq ft)
+- Count all visible windows (standard window = 15 sq ft)
+- If you see multiple walls, include all of them
+- Provide realistic estimates based on standard room sizes
+
+Return ONLY the JSON object, no additional text.""",
+            file_contents=[ImageContent(image_base64=scan_request.image)]
+        )
+        
+        response = await chat.send_message(user_message)
+        logger.info(f"Wall scan response: {response}")
+        
+        # Parse JSON response
+        try:
+            json_start = response.find('{')
+            json_end = response.rfind('}') + 1
+            if json_start != -1 and json_end > json_start:
+                json_str = response[json_start:json_end]
+                wall_data = json.loads(json_str)
+            else:
+                wall_data = json.loads(response)
+            
+            # Calculate paint requirements
+            total_wall_area = 0
+            door_area = 0
+            window_area = 0
+            
+            for wall in wall_data['walls']:
+                wall_area = wall['wall_width'] * wall['wall_height']
+                total_wall_area += wall_area
+                door_area += wall.get('doors', 0) * 20  # 20 sq ft per door
+                window_area += wall.get('windows', 0) * 15  # 15 sq ft per window
+            
+            paintable_area = total_wall_area - door_area - window_area
+            
+            # Calculate paint needed (350 sq ft per gallon, 2 coats)
+            paint_gallons = (paintable_area * 2) / 350
+            
+            # Mock vendor quotes ($25-40 per gallon + labor)
+            paint_cost = paint_gallons * 35  # Average paint cost
+            labor_cost_low = paintable_area * 1.5  # $1.5 per sq ft
+            labor_cost_high = paintable_area * 2.5  # $2.5 per sq ft
+            
+            estimated_cost_low = paint_cost + labor_cost_low
+            estimated_cost_high = paint_cost + labor_cost_high
+            
+            return PaintEstimate(
+                total_wall_area=round(total_wall_area, 2),
+                paintable_area=round(paintable_area, 2),
+                paint_gallons_needed=round(paint_gallons, 2),
+                estimated_cost_low=round(estimated_cost_low, 2),
+                estimated_cost_high=round(estimated_cost_high, 2),
+                walls=[WallDimensions(**wall) for wall in wall_data['walls']]
+            )
+            
+        except json.JSONDecodeError as je:
+            logger.error(f"JSON parsing error: {str(je)}")
+            raise HTTPException(status_code=500, detail="Failed to parse AI response")
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Wall scan error: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@api_router.post("/properties/{property_id}/paint-estimations")
+async def save_paint_estimation(
+    property_id: str,
+    estimation_data: dict,
+    user_id: str = Depends(get_current_user)
+):
+    """Save paint estimation for a property"""
+    # Verify property ownership
+    property_doc = await db.properties.find_one({"id": property_id, "user_id": user_id})
+    if not property_doc:
+        raise HTTPException(status_code=404, detail="Property not found")
+    
+    estimation = PaintEstimation(
+        property_id=property_id,
+        **estimation_data
+    )
+    
+    await db.paint_estimations.insert_one(estimation.dict())
+    return estimation
+
+@api_router.get("/properties/{property_id}/paint-estimations")
+async def get_paint_estimations(
+    property_id: str,
+    user_id: str = Depends(get_current_user)
+):
+    """Get all paint estimations for a property"""
+    # Verify property ownership
+    property_doc = await db.properties.find_one({"id": property_id, "user_id": user_id})
+    if not property_doc:
+        raise HTTPException(status_code=404, detail="Property not found")
+    
+    estimations = []
+    async for doc in db.paint_estimations.find({"property_id": property_id}):
+        doc.pop('_id', None)
+        estimations.append(doc)
+    
+    return estimations
+
 # ============= MEASUREMENT ENDPOINTS =============
 
 @api_router.post("/properties/{property_id}/measurements", response_model=Measurement)
