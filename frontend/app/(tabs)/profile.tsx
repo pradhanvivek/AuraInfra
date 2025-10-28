@@ -512,7 +512,7 @@ export default function Profile() {
           </View>
         </View>
       </Modal>
-    </SafeAreaView>
+    </View>
   );
 }
 
