@@ -381,7 +381,7 @@ export default function MeasurementsScreen({ propertyId }: MeasurementsScreenPro
         visible={modalVisible}
         animationType="slide"
         presentationStyle="fullScreen"
-        onRequestClose={() => setModalVisible(false)}
+        onRequestClose={handleCloseModal}
       >
         <SafeAreaView style={styles.modalContainer} edges={['top', 'bottom']}>
           <KeyboardAvoidingView
@@ -389,7 +389,7 @@ export default function MeasurementsScreen({ propertyId }: MeasurementsScreenPro
             style={styles.keyboardView}
           >
             <View style={styles.modalHeader}>
-            <TouchableOpacity onPress={() => setModalVisible(false)}>
+            <TouchableOpacity onPress={handleCloseModal}>
               <Text style={styles.cancelButton}>Cancel</Text>
             </TouchableOpacity>
             <Text style={styles.modalTitle}>
