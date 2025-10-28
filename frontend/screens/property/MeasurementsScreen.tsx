@@ -754,6 +754,10 @@ export default function MeasurementsScreen({ propertyId }: MeasurementsScreenPro
 
                   <View style={styles.statsContainer}>
                     <View style={styles.statItem}>
+                      <Text style={styles.statValue}>{aiAnalysisResult.total_floors}</Text>
+                      <Text style={styles.statLabel}>Floors</Text>
+                    </View>
+                    <View style={styles.statItem}>
                       <Text style={styles.statValue}>{aiAnalysisResult.total_bedrooms}</Text>
                       <Text style={styles.statLabel}>Bedrooms</Text>
                     </View>
@@ -780,7 +784,9 @@ export default function MeasurementsScreen({ propertyId }: MeasurementsScreenPro
                   <View key={index} style={styles.roomCard}>
                     <View style={styles.roomCardHeader}>
                       <Ionicons name={getRoomIcon(room.room_type)} size={20} color="#007AFF" />
-                      <Text style={styles.roomCardTitle}>{room.room_name}</Text>
+                      <Text style={styles.roomCardTitle}>
+                        Floor {room.floor_number} - {room.room_name}
+                      </Text>
                     </View>
                     <View style={styles.roomCardContent}>
                       {(room.length && room.width) ? (
