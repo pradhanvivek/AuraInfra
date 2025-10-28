@@ -554,6 +554,13 @@ export default function FixturesScreen({ propertyId }: FixturesScreenProps) {
               minimumDate={new Date()}
             />
 
+            {/* Warranty Status Display */}
+            {warrantyExpiryDate && (
+              <View style={styles.warrantyStatusDisplay}>
+                {renderWarrantyBadge(warrantyExpiryDate)}
+              </View>
+            )}
+
             {/* Vendor Information Section */}
             <View style={styles.sectionHeader}>
               <Ionicons name="build-outline" size={20} color="#007AFF" />
