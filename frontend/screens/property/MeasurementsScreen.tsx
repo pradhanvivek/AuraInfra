@@ -399,7 +399,7 @@ export default function MeasurementsScreen({ propertyId }: MeasurementsScreenPro
               {editMode && (
                 <TouchableOpacity 
                   onPress={() => {
-                    setModalVisible(false);
+                    handleCloseModal();
                     selectedMeasurement && handleDeleteMeasurement(selectedMeasurement);
                   }}
                   style={styles.deleteHeaderButton}
