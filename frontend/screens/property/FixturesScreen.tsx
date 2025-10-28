@@ -515,6 +515,13 @@ export default function FixturesScreen({ propertyId }: FixturesScreenProps) {
       )}
 
       <TouchableOpacity
+        style={styles.quickScanFab}
+        onPress={handleQuickScan}
+      >
+        <Ionicons name="camera" size={24} color="#fff" />
+      </TouchableOpacity>
+
+      <TouchableOpacity
         style={styles.fab}
         onPress={() => setModalVisible(true)}
       >
