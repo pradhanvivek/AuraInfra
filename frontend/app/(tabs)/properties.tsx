@@ -246,7 +246,6 @@ const styles = StyleSheet.create({
   },
   listContent: {
     paddingHorizontal: 16,
-    paddingTop: 16,
     paddingBottom: 16,
   },
   propertyCard: {
