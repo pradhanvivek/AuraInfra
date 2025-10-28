@@ -383,12 +383,8 @@ export default function MeasurementsScreen({ propertyId }: MeasurementsScreenPro
         presentationStyle="fullScreen"
         onRequestClose={handleCloseModal}
       >
-        <SafeAreaView style={styles.modalContainer} edges={['top', 'bottom']}>
-          <KeyboardAvoidingView
-            behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-            style={styles.keyboardView}
-          >
-            <View style={styles.modalHeader}>
+        <SafeAreaView style={styles.modalContainer} edges={['top']}>
+          <View style={styles.modalHeader}>
             <TouchableOpacity onPress={handleCloseModal}>
               <Text style={styles.cancelButton}>Cancel</Text>
             </TouchableOpacity>
