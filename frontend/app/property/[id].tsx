@@ -143,6 +143,9 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     borderBottomColor: '#E5E5EA',
   },
+  tabsContainer: {
+    flex: 1,
+  },
   headerTextContainer: {
     alignItems: 'center',
   },
