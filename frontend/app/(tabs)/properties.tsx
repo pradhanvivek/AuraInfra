@@ -245,7 +245,9 @@ const styles = StyleSheet.create({
     padding: 4,
   },
   listContent: {
-    padding: 16,
+    paddingHorizontal: 16,
+    paddingTop: 16,
+    paddingBottom: 16,
   },
   propertyCard: {
     flexDirection: 'row',
