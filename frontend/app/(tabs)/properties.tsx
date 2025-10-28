@@ -185,7 +185,7 @@ export default function Properties() {
           }
         />
       )}
-    </SafeAreaView>
+    </View>
   );
 }
 
