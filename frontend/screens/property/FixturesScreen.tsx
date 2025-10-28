@@ -829,16 +829,24 @@ const styles = StyleSheet.create({
   warrantyBadge: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'center',
-    width: 24,
-    height: 24,
+    paddingHorizontal: 8,
+    paddingVertical: 4,
     borderRadius: 12,
+    gap: 4,
   },
   warrantyBadgeActive: {
     backgroundColor: '#E8F5E9',
   },
   warrantyBadgeExpired: {
     backgroundColor: '#FFEBEE',
+  },
+  warrantyBadgeText: {
+    fontSize: 12,
+    fontWeight: '600',
+  },
+  warrantyStatusDisplay: {
+    marginTop: 8,
+    marginBottom: 16,
   },
   fixtureCategory: {
     fontSize: 14,
