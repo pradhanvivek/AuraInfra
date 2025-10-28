@@ -348,6 +348,65 @@ export default function FixturesScreen({ propertyId }: FixturesScreenProps) {
     }
   };
 
+  const handleQuickScan = async () => {
+    if (!permission?.granted) {
+      const result = await requestPermission();
+      if (!result.granted) {
+        Alert.alert('Permission Required', 'Camera permission is needed to scan appliances');
+        return;
+      }
+    }
+    setCameraVisible(true);
+  };
+
+  const handleTakePicture = async () => {
+    if (!cameraRef) return;
+
+    try {
+      const photo = await cameraRef.takePictureAsync({ base64: true, quality: 0.7 });
+      setCameraVisible(false);
+      await analyzeAppliance(photo.base64);
+    } catch (error: any) {
+      Alert.alert('Error', 'Failed to capture image');
+    }
+  };
+
+  const analyzeAppliance = async (base64Image: string) => {
+    setScanningAppliance(true);
+    try {
+      const response = await axios.post(
+        `${API_URL}/api/fixtures/scan-appliance`,
+        { image: base64Image },
+        { 
+          headers: { Authorization: `Bearer ${token}` },
+          timeout: 60000
+        }
+      );
+
+      const data = response.data;
+      
+      // Auto-populate fields
+      if (data.name) setName(data.name);
+      if (data.category) setCategory(data.category);
+      if (data.make) setMake(data.make);
+      if (data.model) setModel(data.model);
+      if (data.serial_number) setSerialNumber(data.serial_number);
+      setPhoto(base64Image);
+      
+      // Open the modal with pre-filled data
+      setModalVisible(true);
+      
+      Alert.alert(
+        'Appliance Detected!',
+        `${data.name || 'Appliance'} identified with ${Math.round(data.confidence * 100)}% confidence. Please review and add warranty details.`
+      );
+    } catch (error: any) {
+      Alert.alert('Error', error.response?.data?.detail || 'Failed to identify appliance. Please add manually.');
+    } finally {
+      setScanningAppliance(false);
+    }
+  };
+
 
   const showDatePicker = () => {
     setDatePickerVisibility(true);
