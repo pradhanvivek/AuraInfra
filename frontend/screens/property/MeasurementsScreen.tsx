@@ -236,19 +236,38 @@ export default function MeasurementsScreen({ propertyId }: MeasurementsScreenPro
   };
 
   const handleAIAnalyzeFloorPlan = async () => {
-    if (!floorPlanImage) {
-      Alert.alert('Error', 'Please upload a floor plan first');
+    const floorCount = parseInt(numberOfFloors);
+    
+    // Check if all floor plans are uploaded
+    const missingFloors = [];
+    for (let i = 1; i <= floorCount; i++) {
+      if (!floorPlans[i]) {
+        missingFloors.push(i);
+      }
+    }
+    
+    if (missingFloors.length > 0) {
+      Alert.alert('Error', `Please upload floor plan(s) for floor(s): ${missingFloors.join(', ')}`);
       return;
     }
 
     setAnalyzingFloorPlan(true);
     try {
-      const result = await measurementApi.analyzeFloorPlanComprehensive(token!, floorPlanImage);
+      // Prepare floor plans array
+      const floorPlansArray = [];
+      for (let i = 1; i <= floorCount; i++) {
+        floorPlansArray.push({
+          floor_number: i,
+          image: floorPlans[i]
+        });
+      }
+      
+      const result = await measurementApi.analyzeFloorPlanComprehensive(token!, floorPlansArray);
       
       setAiAnalysisResult(result);
       setShowAiResults(true);
     } catch (error: any) {
-      Alert.alert('Error', error.message || 'Failed to analyze floor plan. Please try again.');
+      Alert.alert('Error', error.message || 'Failed to analyze floor plans. Please try again.');
     } finally {
       setAnalyzingFloorPlan(false);
     }
@@ -263,13 +282,17 @@ export default function MeasurementsScreen({ propertyId }: MeasurementsScreenPro
 
     for (const room of aiAnalysisResult.rooms) {
       try {
+        // Get the floor plan image for this room's floor
+        const roomFloorPlanImage = floorPlans[room.floor_number] || '';
+        
         await measurementApi.create(token!, propertyId, {
           room_type: room.room_type,
+          floor_number: room.floor_number,
           length: room.length,
           width: room.width,
           height: room.ceiling_height,
           unit: 'feet',
-          floor_plan_image: floorPlanImage,
+          floor_plan_image: roomFloorPlanImage,
           notes: `${room.room_name}${room.notes ? ` - ${room.notes}` : ''}${room.windows ? ` - ${room.windows} window(s)` : ''}`,
         });
         successCount++;
