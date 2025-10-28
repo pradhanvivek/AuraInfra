@@ -639,26 +639,75 @@ export default function MeasurementsScreen({ propertyId }: MeasurementsScreenPro
               <>
                 <Text style={styles.sectionTitle}>AI Floor Plan Analysis</Text>
                 <Text style={styles.aiDescription}>
-                  Upload a floor plan image and our AI will automatically identify the house type, 
-                  number of rooms, and extract measurements for each room.
+                  Upload floor plan images and our AI will automatically identify the house type, 
+                  number of rooms, and extract measurements for each room across all floors.
                 </Text>
 
-                <TouchableOpacity style={styles.photoButton} onPress={handlePickFloorPlan}>
-                  {floorPlanImage ? (
-                    <Image
-                      source={{ uri: `data:image/jpeg;base64,${floorPlanImage}` }}
-                      style={styles.photoPreview}
-                    />
-                  ) : (
-                    <View style={styles.photoPlaceholder}>
-                      <Ionicons name="image-outline" size={48} color="#8E8E93" />
-                      <Text style={styles.photoPlaceholderText}>Upload Floor Plan Image</Text>
-                      <Text style={styles.photoPlaceholderSubtext}>Tap to select from gallery</Text>
-                    </View>
-                  )}
-                </TouchableOpacity>
+                <Text style={styles.label}>Number of Floors *</Text>
+                <View style={styles.floorCountContainer}>
+                  {[1, 2, 3, 4, 5].map((num) => (
+                    <TouchableOpacity
+                      key={num}
+                      style={[
+                        styles.floorCountButton,
+                        numberOfFloors === num.toString() && styles.floorCountButtonActive,
+                      ]}
+                      onPress={() => setNumberOfFloors(num.toString())}
+                    >
+                      <Text
+                        style={[
+                          styles.floorCountButtonText,
+                          numberOfFloors === num.toString() && styles.floorCountButtonTextActive,
+                        ]}
+                      >
+                        {num}
+                      </Text>
+                    </TouchableOpacity>
+                  ))}
+                </View>
 
-                {floorPlanImage && (
+                {/* Floor Plan Images */}
+                {Array.from({ length: parseInt(numberOfFloors) || 1 }, (_, i) => i + 1).map((floorNum) => (
+                  <View key={floorNum} style={styles.floorPlanSection}>
+                    <Text style={styles.label}>Floor {floorNum} Plan *</Text>
+                    <TouchableOpacity 
+                      style={styles.photoButton} 
+                      onPress={async () => {
+                        const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+                        if (status !== 'granted') {
+                          Alert.alert('Permission Required', 'Please grant camera roll permissions');
+                          return;
+                        }
+
+                        const result = await ImagePicker.launchImageLibraryAsync({
+                          mediaTypes: ['images'],
+                          allowsEditing: true,
+                          quality: 0.7,
+                          base64: true,
+                        });
+
+                        if (!result.canceled && result.assets[0].base64) {
+                          setFloorPlans(prev => ({ ...prev, [floorNum]: result.assets[0].base64! }));
+                        }
+                      }}
+                    >
+                      {floorPlans[floorNum] ? (
+                        <Image
+                          source={{ uri: `data:image/jpeg;base64,${floorPlans[floorNum]}` }}
+                          style={styles.photoPreview}
+                        />
+                      ) : (
+                        <View style={styles.photoPlaceholder}>
+                          <Ionicons name="image-outline" size={48} color="#8E8E93" />
+                          <Text style={styles.photoPlaceholderText}>Upload Floor {floorNum} Plan</Text>
+                          <Text style={styles.photoPlaceholderSubtext}>Tap to select from gallery</Text>
+                        </View>
+                      )}
+                    </TouchableOpacity>
+                  </View>
+                ))}
+
+                {Object.keys(floorPlans).length === parseInt(numberOfFloors) && (
                   <TouchableOpacity
                     style={[styles.aiAnalyzeButton, analyzingFloorPlan && styles.aiButtonDisabled]}
                     onPress={handleAIAnalyzeFloorPlan}
@@ -672,7 +721,7 @@ export default function MeasurementsScreen({ propertyId }: MeasurementsScreenPro
                     ) : (
                       <>
                         <Ionicons name="sparkles" size={20} color="#fff" />
-                        <Text style={styles.aiButtonText}>  Analyze Floor Plan</Text>
+                        <Text style={styles.aiButtonText}>  Analyze Floor Plans</Text>
                       </>
                     )}
                   </TouchableOpacity>
