@@ -127,10 +127,7 @@ export default function FixturesScreen({ propertyId }: FixturesScreenProps) {
     
     return (
       <View style={[styles.warrantyBadge, isActive ? styles.warrantyBadgeActive : styles.warrantyBadgeExpired]}>
-        <Ionicons name={isActive ? "shield-checkmark" : "shield-outline"} size={12} color={isActive ? "#34C759" : "#FF3B30"} />
-        <Text style={[styles.warrantyBadgeText, { color: isActive ? "#34C759" : "#FF3B30" }]}>
-          {isActive ? "In Warranty" : "Warranty Expired"}
-        </Text>
+        <Ionicons name={isActive ? "shield-checkmark" : "alert-circle"} size={16} color={isActive ? "#34C759" : "#FF3B30"} />
       </View>
     );
   };
