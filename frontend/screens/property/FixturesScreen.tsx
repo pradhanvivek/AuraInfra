@@ -762,7 +762,7 @@ export default function FixturesScreen({ propertyId }: FixturesScreenProps) {
                   <Text style={styles.detailsValue}>
                     {new Date(selectedFixture.warranty_expiry_date).toLocaleDateString()}
                   </Text>
-                  {getWarrantyBadge(selectedFixture)}
+                  {getWarrantyBadge(selectedFixture, true)}
                 </View>
               </View>
             )}
