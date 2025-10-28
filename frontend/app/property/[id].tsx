@@ -107,6 +107,10 @@ export default function PropertyDetails() {
             children={() => <MeasurementsScreen propertyId={id!} />}
           />
           <Tab.Screen
+            name="Paint"
+            children={() => <PaintEstimationScreen propertyId={id!} />}
+          />
+          <Tab.Screen
             name="Vastu"
             children={() => <VastuScreen propertyId={id!} geomancyType="vastu" />}
           />
