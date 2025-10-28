@@ -850,7 +850,10 @@ const styles = StyleSheet.create({
   },
   modalContent: {
     flex: 1,
+  },
+  modalContentContainer: {
     padding: 16,
+    paddingBottom: 100,
   },
   sectionTitle: {
     fontSize: 18,
