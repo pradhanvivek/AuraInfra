@@ -113,7 +113,7 @@ export default function Properties() {
   }
 
   return (
-    <SafeAreaView style={styles.container} edges={['top']}>
+    <View style={styles.container}>
       <View style={styles.header}>
         <Text style={styles.headerTitle}>My Properties</Text>
         <TouchableOpacity
