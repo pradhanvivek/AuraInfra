@@ -1086,4 +1086,8 @@ const styles = StyleSheet.create({
     color: '#8E8E93',
     fontWeight: '600',
   },
+  warrantyStatusDisplay: {
+    marginTop: 12,
+    alignItems: 'center',
+  },
 });
