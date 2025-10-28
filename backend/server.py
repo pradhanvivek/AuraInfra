@@ -163,12 +163,17 @@ class MeasurementCreate(BaseModel):
     floor_plan_image: Optional[str] = None
     notes: Optional[str] = None
 
+class FloorPlanImage(BaseModel):
+    floor_number: int
+    image: str  # base64 encoded
+
 class FloorPlanAnalysis(BaseModel):
-    floor_plan_image: str  # base64 encoded
+    floor_plans: List[FloorPlanImage]  # Multiple floor plans with floor numbers
 
 class RoomAnalysis(BaseModel):
     room_name: str  # e.g., "Master Bedroom", "Living Room", "Kitchen"
     room_type: str  # master_bedroom, bedroom, living_area, kitchen, bathroom, dining_area, balcony, etc.
+    floor_number: int  # Which floor this room is on
     length: Optional[float] = None
     width: Optional[float] = None
     area: Optional[float] = None
@@ -181,6 +186,7 @@ class ComprehensiveFloorPlanAnalysis(BaseModel):
     total_bedrooms: int
     total_bathrooms: int
     total_rooms: int
+    total_floors: int  # Total number of floors analyzed
     rooms: List[RoomAnalysis]
     overall_notes: Optional[str] = None
 
