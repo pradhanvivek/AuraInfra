@@ -381,7 +381,7 @@ export default function FixturesScreen({ propertyId }: FixturesScreenProps) {
         <View style={styles.fixtureInfo}>
           <View style={styles.fixtureNameRow}>
             <Text style={styles.fixtureName}>{item.name}</Text>
-            {getWarrantyBadge(item)}
+            {getWarrantyBadge(item, false)}
           </View>
           <Text style={styles.fixtureCategory}>{item.category}</Text>
         </View>
