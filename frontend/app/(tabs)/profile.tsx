@@ -16,7 +16,6 @@ import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { useAuth } from '../../contexts/AuthContext';
 import { authApi } from '../../services/api';
-import { SafeAreaView } from 'react-native-safe-area-context';
 
 interface UserProfile {
   id: string;
