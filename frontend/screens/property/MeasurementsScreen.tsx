@@ -736,6 +736,7 @@ export default function MeasurementsScreen({ propertyId }: MeasurementsScreenPro
             )}
           </ScrollView>
         </KeyboardAvoidingView>
+      </SafeAreaView>
       </Modal>
     </View>
   );
