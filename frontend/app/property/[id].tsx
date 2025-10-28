@@ -11,6 +11,7 @@ import MeasurementsScreen from '../../screens/property/MeasurementsScreen';
 import VastuScreen from '../../screens/property/VastuScreen';
 import NearMeScreen from '../../screens/property/NearMeScreen';
 import HealthScoreScreen from '../../screens/property/HealthScoreScreen';
+import PaintEstimationScreen from '../../screens/property/PaintEstimationScreen';
 
 const Tab = createMaterialTopTabNavigator();
 
