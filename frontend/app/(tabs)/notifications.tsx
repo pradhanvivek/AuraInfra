@@ -11,7 +11,6 @@ import {
 import { Ionicons } from '@expo/vector-icons';
 import { useAuth } from '../../contexts/AuthContext';
 import { notificationApi } from '../../services/api';
-import { SafeAreaView } from 'react-native-safe-area-context';
 
 interface Notification {
   id: string;
