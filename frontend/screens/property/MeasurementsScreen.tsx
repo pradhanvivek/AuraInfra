@@ -378,11 +378,12 @@ export default function MeasurementsScreen({ propertyId }: MeasurementsScreenPro
         presentationStyle="fullScreen"
         onRequestClose={() => setModalVisible(false)}
       >
-        <KeyboardAvoidingView
-          behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-          style={styles.modalContainer}
-        >
-          <View style={styles.modalHeader}>
+        <SafeAreaView style={styles.modalContainer} edges={['top', 'bottom']}>
+          <KeyboardAvoidingView
+            behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+            style={styles.keyboardView}
+          >
+            <View style={styles.modalHeader}>
             <TouchableOpacity onPress={() => setModalVisible(false)}>
               <Text style={styles.cancelButton}>Cancel</Text>
             </TouchableOpacity>
