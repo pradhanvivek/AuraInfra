@@ -111,39 +111,51 @@ export default function FixturesScreen({ propertyId }: FixturesScreenProps) {
     return expiry >= today;
   };
 
-  const getWarrantyBadge = (fixture: Fixture) => {
+  const getWarrantyBadge = (fixture: Fixture, showText: boolean = false) => {
     if (!fixture.warranty_info && !fixture.warranty_expiry_date) return null;
     
     const isActive = getWarrantyStatus(fixture.warranty_expiry_date);
     
     if (isActive === null) {
       return (
-        <View style={styles.warrantyBadge}>
-          <Ionicons name="shield-checkmark" size={12} color="#8E8E93" />
-          <Text style={[styles.warrantyBadgeText, { color: '#8E8E93' }]}>Warranty</Text>
+        <View style={[styles.warrantyBadge, !showText && styles.warrantyBadgeIconOnly]}>
+          <Ionicons name="shield-checkmark" size={16} color="#8E8E93" />
+          {showText && <Text style={[styles.warrantyBadgeText, { color: '#8E8E93' }]}>Warranty</Text>}
         </View>
       );
     }
     
     return (
-      <View style={[styles.warrantyBadge, isActive ? styles.warrantyBadgeActive : styles.warrantyBadgeExpired]}>
+      <View style={[
+        styles.warrantyBadge, 
+        isActive ? styles.warrantyBadgeActive : styles.warrantyBadgeExpired,
+        !showText && styles.warrantyBadgeIconOnly
+      ]}>
         <Ionicons name={isActive ? "shield-checkmark" : "alert-circle"} size={16} color={isActive ? "#34C759" : "#FF3B30"} />
-        <Text style={[styles.warrantyBadgeText, { color: isActive ? "#34C759" : "#FF3B30" }]}>
-          {isActive ? "In Warranty" : "Warranty Expired"}
-        </Text>
+        {showText && (
+          <Text style={[styles.warrantyBadgeText, { color: isActive ? "#34C759" : "#FF3B30" }]}>
+            {isActive ? "In Warranty" : "Warranty Expired"}
+          </Text>
+        )}
       </View>
     );
   };
 
-  const renderWarrantyBadge = (expiryDate: string) => {
+  const renderWarrantyBadge = (expiryDate: string, showText: boolean = true) => {
     const isActive = new Date(expiryDate) > new Date();
     
     return (
-      <View style={[styles.warrantyBadge, isActive ? styles.warrantyBadgeActive : styles.warrantyBadgeExpired]}>
+      <View style={[
+        styles.warrantyBadge, 
+        isActive ? styles.warrantyBadgeActive : styles.warrantyBadgeExpired,
+        !showText && styles.warrantyBadgeIconOnly
+      ]}>
         <Ionicons name={isActive ? "shield-checkmark" : "alert-circle"} size={16} color={isActive ? "#34C759" : "#FF3B30"} />
-        <Text style={[styles.warrantyBadgeText, { color: isActive ? "#34C759" : "#FF3B30" }]}>
-          {isActive ? "In Warranty" : "Warranty Expired"}
-        </Text>
+        {showText && (
+          <Text style={[styles.warrantyBadgeText, { color: isActive ? "#34C759" : "#FF3B30" }]}>
+            {isActive ? "In Warranty" : "Warranty Expired"}
+          </Text>
+        )}
       </View>
     );
   };
