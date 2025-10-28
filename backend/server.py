@@ -146,6 +146,7 @@ class Measurement(BaseModel):
     id: str = Field(default_factory=lambda: str(uuid.uuid4()))
     property_id: str
     room_type: str  # master_bedroom, living_area, kitchen, bathroom, dining_area
+    floor_number: Optional[int] = 1  # Which floor this room is on, defaults to 1
     length: Optional[float] = None
     width: Optional[float] = None
     height: Optional[float] = None
@@ -156,6 +157,7 @@ class Measurement(BaseModel):
 
 class MeasurementCreate(BaseModel):
     room_type: str
+    floor_number: Optional[int] = 1  # Which floor this room is on, defaults to 1
     length: Optional[float] = None
     width: Optional[float] = None
     height: Optional[float] = None
