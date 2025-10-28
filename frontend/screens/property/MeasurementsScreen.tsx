@@ -403,7 +403,11 @@ export default function MeasurementsScreen({ propertyId }: MeasurementsScreenPro
             </View>
           </View>
 
-          <ScrollView style={styles.modalContent}>
+          <ScrollView 
+            style={styles.modalContent}
+            contentContainerStyle={styles.modalContentContainer}
+            keyboardShouldPersistTaps="handled"
+          >
             {!editMode && !showAiResults && (
               <>
                 <Text style={styles.sectionTitle}>Choose Input Method</Text>
