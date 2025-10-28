@@ -76,6 +76,12 @@ export default function FixturesScreen({ propertyId }: FixturesScreenProps) {
   const [invoice, setInvoice] = useState('');
   const [isDatePickerVisible, setDatePickerVisibility] = useState(false);
 
+  // Camera scan state
+  const [cameraVisible, setCameraVisible] = useState(false);
+  const [scanningAppliance, setScanningAppliance] = useState(false);
+  const [cameraRef, setCameraRef] = useState<any>(null);
+  const [permission, requestPermission] = useCameraPermissions();
+
   useEffect(() => {
     fetchFixtures();
   }, []);
