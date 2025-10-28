@@ -809,20 +809,16 @@ const styles = StyleSheet.create({
   warrantyBadge: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: 6,
-    paddingVertical: 2,
-    borderRadius: 4,
-    gap: 4,
+    justifyContent: 'center',
+    width: 24,
+    height: 24,
+    borderRadius: 12,
   },
   warrantyBadgeActive: {
     backgroundColor: '#E8F5E9',
   },
   warrantyBadgeExpired: {
     backgroundColor: '#FFEBEE',
-  },
-  warrantyBadgeText: {
-    fontSize: 10,
-    fontWeight: '600',
   },
   fixtureCategory: {
     fontSize: 14,
