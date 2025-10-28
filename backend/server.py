@@ -1379,7 +1379,7 @@ async def get_property_health_score(property_id: str, user_id: str = Depends(get
             "measurements": {
                 "score": round(scores["measurements"], 1),
                 "weight": weights["measurements"] * 100,
-                "measured_rooms": len([m for m in measurements[0].keys() if m in ["master_bedroom", "living_area", "kitchen", "bathroom", "dining_area"]]) if measurements else 0,
+                "measured_rooms": measured_rooms if measurements else 0,
                 "expected_rooms": expected_rooms
             },
             "vastu": {
