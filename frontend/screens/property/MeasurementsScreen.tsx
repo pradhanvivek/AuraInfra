@@ -126,6 +126,11 @@ export default function MeasurementsScreen({ propertyId }: MeasurementsScreenPro
     setShowAiResults(false);
   };
 
+  const handleCloseModal = () => {
+    setModalVisible(false);
+    resetForm();
+  };
+
   const handleAddNew = () => {
     resetForm();
     setModalVisible(true);
