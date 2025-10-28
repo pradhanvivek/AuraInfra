@@ -218,6 +218,50 @@ class Notification(BaseModel):
     is_read: bool = False
     created_at: datetime = Field(default_factory=datetime.utcnow)
 
+# Appliance Scanner Models
+class ApplianceScanRequest(BaseModel):
+    image: str  # base64 encoded
+
+class ApplianceScanResult(BaseModel):
+    name: str
+    category: str
+    make: Optional[str] = None
+    model: Optional[str] = None
+    serial_number: Optional[str] = None
+    confidence: float  # 0-1 confidence score
+
+# Paint Estimation Models
+class WallScanRequest(BaseModel):
+    image: str  # base64 encoded
+    room_name: Optional[str] = None
+
+class WallDimensions(BaseModel):
+    wall_width: float  # in feet
+    wall_height: float  # in feet
+    doors: int = 0
+    windows: int = 0
+
+class PaintEstimate(BaseModel):
+    total_wall_area: float  # in sq ft
+    paintable_area: float  # in sq ft (excluding doors/windows)
+    paint_gallons_needed: float  # for 2 coats
+    estimated_cost_low: float  # mock vendor quote
+    estimated_cost_high: float  # mock vendor quote
+    walls: List[WallDimensions]
+
+class PaintEstimation(BaseModel):
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    property_id: str
+    room_name: str
+    scan_image: str  # base64 encoded
+    total_wall_area: float
+    paintable_area: float
+    paint_gallons_needed: float
+    estimated_cost_low: float
+    estimated_cost_high: float
+    walls_data: str  # JSON string of wall dimensions
+    created_at: datetime = Field(default_factory=datetime.utcnow)
+
 class UserSettings(BaseModel):
     warranty_reminder_days: int = 30  # 7, 14, or 30 days
 
