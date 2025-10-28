@@ -856,6 +856,49 @@ export default function FixturesScreen({ propertyId }: FixturesScreenProps) {
           </ScrollView>
         </View>
       </Modal>
+
+      {/* Camera Modal for Appliance Scanning */}
+      <Modal
+        visible={cameraVisible}
+        animationType="slide"
+        presentationStyle="fullScreen"
+      >
+        <View style={styles.cameraContainer}>
+          <CameraView
+            style={styles.camera}
+            ref={(ref) => setCameraRef(ref)}
+            facing="back"
+          >
+            <View style={styles.cameraControls}>
+              <TouchableOpacity
+                style={styles.closeCamera}
+                onPress={() => setCameraVisible(false)}
+              >
+                <Ionicons name="close" size={32} color="#fff" />
+              </TouchableOpacity>
+              <View style={styles.cameraInstructions}>
+                <Text style={styles.cameraInstructionsText}>Point at an appliance to identify it</Text>
+              </View>
+              <TouchableOpacity
+                style={styles.captureButton}
+                onPress={handleTakePicture}
+              >
+                <View style={styles.captureButtonInner} />
+              </TouchableOpacity>
+            </View>
+          </CameraView>
+        </View>
+      </Modal>
+
+      {/* Scanning Overlay */}
+      {scanningAppliance && (
+        <View style={styles.scanningOverlay}>
+          <View style={styles.scanningCard}>
+            <ActivityIndicator size="large" color="#007AFF" />
+            <Text style={styles.scanningText}>Identifying appliance...</Text>
+          </View>
+        </View>
+      )}
     </View>
   );
 }
