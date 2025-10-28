@@ -128,6 +128,8 @@ export default function MeasurementsScreen({ propertyId }: MeasurementsScreenPro
     setEditMode(false);
     setSelectedMeasurement(null);
     setInputMode('manual');
+    setNumberOfFloors('1');
+    setFloorPlans({});
     setAiAnalysisResult(null);
     setShowAiResults(false);
   };
