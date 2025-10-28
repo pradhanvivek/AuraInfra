@@ -22,6 +22,7 @@ import { measurementApi } from '../../services/api';
 interface Measurement {
   id: string;
   room_type: string;
+  floor_number?: number;
   length?: number;
   width?: number;
   height?: number;
@@ -33,6 +34,7 @@ interface Measurement {
 interface RoomAnalysis {
   room_name: string;
   room_type: string;
+  floor_number: number;
   length?: number;
   width?: number;
   area?: number;
@@ -46,6 +48,7 @@ interface ComprehensiveAnalysis {
   total_bedrooms: number;
   total_bathrooms: number;
   total_rooms: number;
+  total_floors: number;
   rooms: RoomAnalysis[];
   overall_notes?: string;
 }
@@ -75,6 +78,10 @@ export default function MeasurementsScreen({ propertyId }: MeasurementsScreenPro
   const [unit, setUnit] = useState('feet');
   const [notes, setNotes] = useState('');
   const [floorPlanImage, setFloorPlanImage] = useState('');
+  
+  // Multi-floor state
+  const [numberOfFloors, setNumberOfFloors] = useState('1');
+  const [floorPlans, setFloorPlans] = useState<{[key: number]: string}>({});
 
   // AI Analysis state
   const [aiAnalysisResult, setAiAnalysisResult] = useState<ComprehensiveAnalysis | null>(null);
