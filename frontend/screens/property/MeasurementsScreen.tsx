@@ -825,9 +825,6 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#F2F2F7',
   },
-  keyboardView: {
-    flex: 1,
-  },
   modalHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
