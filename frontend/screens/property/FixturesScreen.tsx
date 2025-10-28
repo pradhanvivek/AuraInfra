@@ -132,6 +132,19 @@ export default function FixturesScreen({ propertyId }: FixturesScreenProps) {
     );
   };
 
+  const renderWarrantyBadge = (expiryDate: string) => {
+    const isActive = new Date(expiryDate) > new Date();
+    
+    return (
+      <View style={[styles.warrantyBadge, isActive ? styles.warrantyBadgeActive : styles.warrantyBadgeExpired]}>
+        <Ionicons name={isActive ? "shield-checkmark" : "alert-circle"} size={16} color={isActive ? "#34C759" : "#FF3B30"} />
+        <Text style={[styles.warrantyBadgeText, { color: isActive ? "#34C759" : "#FF3B30" }]}>
+          {isActive ? "In Warranty" : "Warranty Expired"}
+        </Text>
+      </View>
+    );
+  };
+
   const handleAddFixture = async () => {
     if (!name) {
       Alert.alert('Error', 'Please enter a name');
