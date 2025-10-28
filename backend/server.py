@@ -799,8 +799,8 @@ async def analyze_floorplan_comprehensive(
     user_id: str = Depends(get_current_user)
 ):
     """
-    Comprehensive floor plan analysis using Gemini 2.5 Pro.
-    Extracts house type, number of rooms, and detailed measurements for each room.
+    Comprehensive multi-floor plan analysis using Gemini 2.0 Flash.
+    Extracts house type, number of rooms, and detailed measurements for each room across all floors.
     """
     try:
         from emergentintegrations.llm.chat import LlmChat, UserMessage, ImageContent
@@ -811,17 +811,27 @@ async def analyze_floorplan_comprehensive(
         if not api_key:
             raise HTTPException(status_code=500, detail="API key not configured")
         
-        # Initialize LLM chat with Gemini 2.0 Flash (available model)
+        # Initialize LLM chat with Gemini 2.0 Flash
         chat = LlmChat(
             api_key=api_key,
             session_id=f"comprehensive_floorplan_{user_id}_{uuid.uuid4()}",
             system_message="""You are an expert architectural analyst specializing in floor plan analysis. 
-            Your task is to analyze floor plans and extract comprehensive information about the property."""
+            Your task is to analyze floor plans (potentially multiple floors) and extract comprehensive information about the property."""
         ).with_model("gemini", "gemini-2.0-flash")
         
+        # Prepare image contents with floor information
+        image_contents = []
+        floor_info_text = ""
+        
+        for floor_plan in analysis_data.floor_plans:
+            image_contents.append(ImageContent(image_base64=floor_plan.image))
+            floor_info_text += f"\n- Floor {floor_plan.floor_number} plan image attached"
+        
         # Create comprehensive analysis prompt
-        user_message = UserMessage(
-            text="""Analyze this floor plan image comprehensively and provide the following information in JSON format:
+        prompt_text = f"""Analyze these floor plan images comprehensively. There are {len(analysis_data.floor_plans)} floor(s) in this property.
+{floor_info_text}
+
+Provide the following information in JSON format:
 
 1. **House Type Classification**: Identify the type of property from these categories:
    - "Studio" (single open space)
@@ -831,13 +841,14 @@ async def analyze_floorplan_comprehensive(
    - "Bungalow"
 
 2. **Room Count Summary**:
-   - Total number of bedrooms
-   - Total number of bathrooms
+   - Total number of bedrooms (across all floors)
+   - Total number of bathrooms (across all floors)
    - Total number of rooms overall
 
-3. **Individual Room Analysis**: For EACH room visible in the floor plan, provide:
+3. **Individual Room Analysis**: For EACH room visible in ALL floor plans, provide:
    - room_name: Specific name (e.g., "Master Bedroom", "Bedroom 2", "Living Room", "Kitchen", "Bathroom 1")
    - room_type: Category (master_bedroom, bedroom, living_area, kitchen, bathroom, dining_area, balcony, utility, study, etc.)
+   - floor_number: Which floor this room is on (1, 2, 3, etc.) - IMPORTANT: Match to the image number provided
    - length: Length in feet (if visible/measurable)
    - width: Width in feet (if visible/measurable)
    - area: Area in square feet (if calculable or mentioned)
@@ -846,33 +857,39 @@ async def analyze_floorplan_comprehensive(
    - notes: Any additional observations (e.g., "attached bathroom", "has wardrobe", "open to balcony")
 
 Return ONLY a valid JSON object with this exact structure:
-{
+{{
   "house_type": "string",
   "total_bedrooms": number,
   "total_bathrooms": number,
   "total_rooms": number,
+  "total_floors": {len(analysis_data.floor_plans)},
   "rooms": [
-    {
+    {{
       "room_name": "string",
       "room_type": "string",
+      "floor_number": number,
       "length": number or null,
       "width": number or null,
       "area": number or null,
       "ceiling_height": number or null,
       "windows": number or null,
       "notes": "string or null"
-    }
+    }}
   ],
   "overall_notes": "string or null"
-}
+}}
 
 Important:
-- Be thorough and analyze ALL visible rooms
+- Be thorough and analyze ALL visible rooms across ALL floors
+- Correctly assign floor_number to each room based on which image it appears in
 - If dimensions are marked on the floor plan, extract them accurately
 - If dimensions are not visible, estimate based on standard room sizes and proportions
 - Provide realistic measurements (bedrooms: 10-15 ft, living rooms: 12-20 ft, kitchens: 8-12 ft, bathrooms: 5-8 ft)
-- Return ONLY the JSON object, no additional text""",
-            file_contents=[ImageContent(image_base64=analysis_data.floor_plan_image)]
+- Return ONLY the JSON object, no additional text"""
+        
+        user_message = UserMessage(
+            text=prompt_text,
+            file_contents=image_contents
         )
         
         # Get AI response
@@ -898,7 +915,7 @@ Important:
             logger.error(f"JSON parsing error: {str(je)}, Response: {response}")
             raise HTTPException(
                 status_code=500, 
-                detail=f"Failed to parse AI response. Please try again or upload a clearer floor plan image."
+                detail=f"Failed to parse AI response. Please try again or upload clearer floor plan images."
             )
         
     except HTTPException:
