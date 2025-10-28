@@ -861,7 +861,7 @@ export default function FixturesScreen({ propertyId }: FixturesScreenProps) {
       <Modal
         visible={cameraVisible}
         animationType="slide"
-        presentationStyle="fullScreen"
+        presentationStyle="pageSheet"
       >
         <View style={styles.cameraContainer}>
           <CameraView
