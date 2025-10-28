@@ -849,6 +849,13 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     gap: 4,
   },
+  warrantyBadgeIconOnly: {
+    width: 28,
+    height: 28,
+    paddingHorizontal: 6,
+    paddingVertical: 6,
+    justifyContent: 'center',
+  },
   warrantyBadgeActive: {
     backgroundColor: '#E8F5E9',
   },
