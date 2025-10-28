@@ -386,7 +386,7 @@ export default function DocumentsScreen({ propertyId }: DocumentsScreenProps) {
               </>
             )}
           </ScrollView>
-        </SafeAreaView>
+        </KeyboardAvoidingView>
       </Modal>
     </SafeAreaView>
   );
