@@ -134,30 +134,26 @@ const styles = StyleSheet.create({
   header: {
     flexDirection: 'row',
     alignItems: 'center',
+    justifyContent: 'center',
     paddingHorizontal: 16,
     paddingVertical: 12,
     backgroundColor: '#fff',
     borderBottomWidth: 1,
     borderBottomColor: '#E5E5EA',
   },
-  backButton: {
-    padding: 4,
-    marginRight: 12,
-  },
   headerTextContainer: {
-    flex: 1,
+    alignItems: 'center',
   },
   propertyName: {
     fontSize: 18,
     fontWeight: '700',
     color: '#000',
     marginBottom: 2,
+    textAlign: 'center',
   },
   propertyAddress: {
     fontSize: 13,
     color: '#8E8E93',
-  },
-  headerRight: {
-    width: 40,
+    textAlign: 'center',
   },
 });
