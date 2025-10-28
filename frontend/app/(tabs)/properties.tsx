@@ -14,7 +14,6 @@ import { useRouter, useFocusEffect } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { useAuth } from '../../contexts/AuthContext';
 import { propertyApi } from '../../services/api';
-import { SafeAreaView } from 'react-native-safe-area-context';
 
 interface Property {
   id: string;
