@@ -250,6 +250,9 @@ class JewelryScanRequest(BaseModel):
 class ReceiptScanRequest(BaseModel):
     image: str  # base64 encoded receipt image
 
+class ImageScanRequest(BaseModel):
+    image: str  # base64 encoded image
+
 class ReceiptScanResult(BaseModel):
     vendor_name: Optional[str] = None
     purchase_date: Optional[str] = None  # ISO format date
