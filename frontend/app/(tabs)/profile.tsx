@@ -57,6 +57,16 @@ export default function Profile() {
       setProfile(data);
       setSelectedReminderDays(data.warranty_reminder_days || 30);
       setSelectedGeomancy(data.geomancy_preference || 'vastu');
+      setSelectedCurrency(data.currency_preference || 'INR');
+      setSelectedMeasurement(data.measurement_system || 'metric');
+      
+      // Store preferences in AsyncStorage for localeUtils
+      if (data.currency_preference) {
+        await AsyncStorage.setItem('user_currency_preference', data.currency_preference);
+      }
+      if (data.measurement_system) {
+        await AsyncStorage.setItem('user_measurement_preference', data.measurement_system);
+      }
     } catch (error: any) {
       Alert.alert('Error', 'Failed to load profile');
     } finally {
