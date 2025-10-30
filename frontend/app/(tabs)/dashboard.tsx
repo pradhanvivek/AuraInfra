@@ -44,6 +44,8 @@ export default function DashboardScreen() {
         vehicles_count: 0,
         appliances_count: 0,
         jewelry_count: 0,
+        furniture_count: 0,
+        art_count: 0,
       });
     } finally {
       setLoading(false);
