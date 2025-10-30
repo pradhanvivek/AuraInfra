@@ -12,8 +12,9 @@ load_dotenv()
 async def migrate_geomancy_type():
     # Connect to MongoDB
     mongo_url = os.environ.get('MONGO_URL', 'mongodb://localhost:27017')
+    db_name = os.environ.get('DB_NAME', 'aurainfra')
     client = AsyncIOMotorClient(mongo_url)
-    db = client.aurainfra
+    db = client[db_name]
     
     # Update all existing vastu_analysis documents that don't have geomancy_type
     result = await db.vastu_analysis.update_many(
