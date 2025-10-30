@@ -153,14 +153,26 @@ export default function AppliancesScreen() {
 
       <TouchableOpacity
         style={styles.scanFab}
-        onPress={() => router.push('/appliance/add?mode=scan' as any)}
+        onPress={() => {
+          Alert.alert(
+            'AI Scan',
+            'Camera-based appliance scanning will be available soon. Use the + button to add manually.',
+            [{ text: 'OK' }]
+          );
+        }}
       >
         <Ionicons name="camera" size={24} color="#fff" />
       </TouchableOpacity>
 
       <TouchableOpacity
         style={styles.fab}
-        onPress={() => router.push('/appliance/add' as any)}
+        onPress={() => {
+          Alert.alert(
+            'Add Appliance',
+            'Manual appliance entry form coming soon! This will allow you to add appliance details including brand, model, serial number, warranty, and maintenance tracking.',
+            [{ text: 'OK' }]
+          );
+        }}
       >
         <Ionicons name="add" size={28} color="#fff" />
       </TouchableOpacity>
