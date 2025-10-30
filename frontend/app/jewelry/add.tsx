@@ -124,6 +124,62 @@ export default function AddJewelryScreen() {
     }
   };
 
+  const handleScanReceipt = async () => {
+    if (!permission?.granted) {
+      const result = await requestPermission();
+      if (!result.granted) {
+        Alert.alert('Permission Required', 'Camera permission needed');
+        return;
+      }
+    }
+    setReceiptCameraVisible(true);
+  };
+
+  const handleTakeReceiptPicture = async () => {
+    if (!receiptCameraRef) return;
+
+    try {
+      const photo = await receiptCameraRef.takePictureAsync({ base64: true, quality: 0.7 });
+      setReceiptCameraVisible(false);
+      setScanningReceipt(true);
+
+      const response = await axios.post(
+        `${API_URL}/api/scan-receipt`,
+        { image: photo.base64 },
+        { 
+          headers: { Authorization: `Bearer ${token}` },
+          timeout: 60000
+        }
+      );
+
+      const data = response.data;
+      // Auto-populate form fields from receipt data
+      if (data.item_name && !name) setName(data.item_name);
+      if (data.purchase_date) setPurchaseDate(data.purchase_date);
+      if (data.purchase_cost) setPurchaseCost(data.purchase_cost.toString());
+      if (data.warranty_info) setWarrantyInfo(data.warranty_info);
+      if (data.warranty_months && data.purchase_date) {
+        // Calculate warranty expiry from purchase date + warranty months
+        const purchaseD = new Date(data.purchase_date);
+        purchaseD.setMonth(purchaseD.getMonth() + data.warranty_months);
+        setWarrantyExpiry(purchaseD.toISOString().split('T')[0]);
+      }
+      
+      // Store the receipt photo as certificate
+      setCertificate(photo.base64!);
+      
+      Alert.alert(
+        'Receipt Scanned!',
+        `Purchase details extracted. Confidence: ${Math.round(data.confidence * 100)}%\n\nPlease review and complete the details.`,
+        [{ text: 'OK' }]
+      );
+    } catch (error: any) {
+      Alert.alert('Error', 'Failed to scan receipt. Please enter details manually.');
+    } finally {
+      setScanningReceipt(false);
+    }
+  };
+
   const handleAddPhoto = async () => {
     const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
     if (status !== 'granted') {
