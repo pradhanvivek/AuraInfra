@@ -88,6 +88,18 @@ const measurementSystem: { [key: string]: 'imperial' | 'metric' } = {
 
 // Get currency info for device location
 export const getCurrencyInfo = () => {
+  // First check user's manual preference
+  const userPref = getUserCurrencyPreference();
+  if (userPref) {
+    // Find the currency config by code
+    for (const country in currencyConfig) {
+      if (currencyConfig[country].code === userPref) {
+        return currencyConfig[country];
+      }
+    }
+  }
+  
+  // Fall back to device locale
   const countryCode = getCountryCode();
   return currencyConfig[countryCode] || currencyConfig['US']; // Default to USD
 };
