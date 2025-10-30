@@ -151,8 +151,13 @@ export default function Profile() {
       setProfile(updatedProfile);
       setSelectedCurrency(currency);
       await AsyncStorage.setItem('user_currency_preference', currency);
+      
+      // Reinitialize cache
+      const { initializePreferences } = await import('../../utils/localeUtils');
+      await initializePreferences();
+      
       setCurrencyModalVisible(false);
-      Alert.alert('Success', `Currency updated to ${currency}`);
+      Alert.alert('Success', `Currency updated to ${currency}. App will now display prices in ${currency}.`);
     } catch (error: any) {
       Alert.alert('Error', error.message || 'Failed to update currency');
     } finally {
@@ -169,6 +174,11 @@ export default function Profile() {
       setProfile(updatedProfile);
       setSelectedMeasurement(system);
       await AsyncStorage.setItem('user_measurement_preference', system);
+      
+      // Reinitialize cache
+      const { initializePreferences } = await import('../../utils/localeUtils');
+      await initializePreferences();
+      
       setMeasurementModalVisible(false);
       Alert.alert('Success', `Measurement system updated to ${system === 'metric' ? 'Metric' : 'Imperial'}`);
     } catch (error: any) {
