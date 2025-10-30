@@ -112,7 +112,7 @@ export default function VehicleDetailsScreen() {
 
   if (loading) {
     return (
-      <View style={styles.container}>
+      <View style={styles.centerContainer}>
         <ActivityIndicator size="large" color="#007AFF" />
       </View>
     );
@@ -120,7 +120,7 @@ export default function VehicleDetailsScreen() {
 
   if (!vehicle) {
     return (
-      <View style={styles.container}>
+      <View style={styles.centerContainer}>
         <Text style={styles.errorText}>Vehicle not found</Text>
         <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
           <Text style={styles.backButtonText}>Go Back</Text>
