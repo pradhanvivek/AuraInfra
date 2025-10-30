@@ -36,9 +36,15 @@ export default function AddFurnitureScreen() {
   const placeholderColor = colorScheme === 'dark' ? '#999999' : '#666666';
   const editId = params.id as string | undefined;
   const isEditing = !!editId;
+  const scanMode = params.mode === 'scan';
 
   const [loading, setLoading] = useState(isEditing);
   const [saving, setSaving] = useState(false);
+  const [scanning, setScanning] = useState(false);
+  const [cameraVisible, setCameraVisible] = useState(scanMode);
+  const [permission, requestPermission] = useCameraPermissions();
+  const [cameraRef, setCameraRef] = useState<any>(null);
+  
   const [name, setName] = useState('');
   const [category, setCategory] = useState('Sofa');
   const [brand, setBrand] = useState('');
