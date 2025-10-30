@@ -48,6 +48,8 @@ export default function JewelryDetailsScreen() {
   const [jewelry, setJewelry] = useState<Jewelry | null>(null);
   const [loading, setLoading] = useState(true);
   const [deleting, setDeleting] = useState(false);
+  const [imageViewerVisible, setImageViewerVisible] = useState(false);
+  const [selectedImageUri, setSelectedImageUri] = useState('');
 
   useEffect(() => {
     fetchJewelry();
