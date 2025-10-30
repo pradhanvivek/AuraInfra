@@ -667,6 +667,8 @@ export default function AddJewelryScreen() {
           </View>
         </View>
       )}
+        </>
+      )}
     </View>
   );
 }
