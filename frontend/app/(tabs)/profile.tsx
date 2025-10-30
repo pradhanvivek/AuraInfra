@@ -66,16 +66,14 @@ export default function Profile() {
       setSelectedMeasurement(data.measurement_system || 'metric');
       
       // Store preferences using the helper functions from localeUtils
+      const { setCurrencyPreference, setMeasurementPreference } = await import('../../utils/localeUtils');
+      
       if (data.currency_preference) {
-        await AsyncStorage.setItem('user_currency_preference', data.currency_preference);
+        await setCurrencyPreference(data.currency_preference);
       }
       if (data.measurement_system) {
-        await AsyncStorage.setItem('user_measurement_preference', data.measurement_system);
+        await setMeasurementPreference(data.measurement_system);
       }
-      
-      // Initialize the preferences cache in localeUtils
-      const { initializePreferences } = await import('../../utils/localeUtils');
-      await initializePreferences();
     } catch (error: any) {
       Alert.alert('Error', 'Failed to load profile');
     } finally {
