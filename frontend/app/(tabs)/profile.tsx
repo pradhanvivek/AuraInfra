@@ -25,6 +25,7 @@ interface UserProfile {
   username: string;
   email?: string;
   phone?: string;
+  avatar?: string;
   warranty_reminder_days: number;
   geomancy_preference: string;
   currency_preference?: string;
@@ -49,6 +50,7 @@ export default function Profile() {
   const [selectedCurrency, setSelectedCurrency] = useState('INR');
   const [measurementModalVisible, setMeasurementModalVisible] = useState(false);
   const [selectedMeasurement, setSelectedMeasurement] = useState<'metric' | 'imperial'>('metric');
+  const [uploadingAvatar, setUploadingAvatar] = useState(false);
 
   useEffect(() => {
     fetchProfile();
