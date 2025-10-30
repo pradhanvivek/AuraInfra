@@ -92,10 +92,10 @@ export const getCurrencyInfo = () => {
   return currencyConfig[countryCode] || currencyConfig['US']; // Default to USD
 };
 
-// Get currency code based on user preference or locale
-export const getCurrencyCode = async (): Promise<string> => {
-  // First, check user's manual preference
-  const userPref = await getUserCurrencyPreference();
+// Get currency code based on user preference or locale (synchronous)
+export const getCurrencyCode = (): string => {
+  // First, check user's manual preference from cache
+  const userPref = getUserCurrencyPreference();
   if (userPref) {
     return userPref;
   }
