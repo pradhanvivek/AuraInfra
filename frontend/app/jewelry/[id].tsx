@@ -102,7 +102,7 @@ export default function JewelryDetailsScreen() {
   };
 
   const handleEdit = () => {
-    router.push(`/jewelry/edit/${id}`);
+    router.push(`/jewelry/add?id=${id}`);
   };
 
   if (loading) {
