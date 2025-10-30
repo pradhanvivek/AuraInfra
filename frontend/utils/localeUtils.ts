@@ -1,22 +1,39 @@
 import { Platform, NativeModules } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
-// Get user's saved currency preference
-const getUserCurrencyPreference = async (): Promise<string | null> => {
+// Cache for user preferences (loaded once at app start)
+let cachedCurrencyPreference: string | null = null;
+let cachedMeasurementPreference: string | null = null;
+
+// Initialize preferences cache (call this on app start)
+export const initializePreferences = async (): Promise<void> => {
   try {
-    return await AsyncStorage.getItem('user_currency_preference');
-  } catch {
-    return null;
+    cachedCurrencyPreference = await AsyncStorage.getItem('user_currency_preference');
+    cachedMeasurementPreference = await AsyncStorage.getItem('user_measurement_preference');
+  } catch (error) {
+    console.error('Failed to load preferences:', error);
   }
 };
 
-// Get user's saved measurement preference  
-const getUserMeasurementPreference = async (): Promise<string | null> => {
-  try {
-    return await AsyncStorage.getItem('user_measurement_preference');
-  } catch {
-    return null;
-  }
+// Get user's saved currency preference (synchronous from cache)
+const getUserCurrencyPreference = (): string | null => {
+  return cachedCurrencyPreference;
+};
+
+// Get user's saved measurement preference (synchronous from cache)
+const getUserMeasurementPreference = (): string | null => {
+  return cachedMeasurementPreference;
+};
+
+// Update cache when preference changes
+export const setCurrencyPreference = async (currency: string): Promise<void> => {
+  cachedCurrencyPreference = currency;
+  await AsyncStorage.setItem('user_currency_preference', currency);
+};
+
+export const setMeasurementPreference = async (measurement: string): Promise<void> => {
+  cachedMeasurementPreference = measurement;
+  await AsyncStorage.setItem('user_measurement_preference', measurement);
 };
 
 // Get device locale
