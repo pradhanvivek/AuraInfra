@@ -579,14 +579,14 @@ export default function AddApplianceScreen() {
       </Modal>
 
       {/* Receipt Camera Modal */}
-      <Modal visible={receiptCameraVisible} animationType="slide" presentationStyle="pageSheet">
+      <Modal visible={receiptCameraVisible} animationType="slide" presentationStyle="fullScreen">
         <View style={styles.cameraContainer}>
           <CameraView
             style={styles.camera}
             ref={(ref) => setReceiptCameraRef(ref)}
             facing="back"
-          >
-            <View style={styles.cameraOverlay}>
+          />
+          <View style={styles.cameraOverlay}>
               <TouchableOpacity
                 style={styles.closeCamera}
                 onPress={() => setReceiptCameraVisible(false)}
