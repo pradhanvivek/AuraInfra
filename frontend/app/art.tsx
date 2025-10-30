@@ -144,6 +144,13 @@ export default function ArtScreen() {
       >
         <Ionicons name="add" size={28} color="#fff" />
       </TouchableOpacity>
+
+      <TouchableOpacity
+        style={[styles.fab, { bottom: 96, backgroundColor: '#FF9500' }]}
+        onPress={() => router.push('/art/add?mode=scan' as any)}
+      >
+        <Ionicons name="scan" size={28} color="#fff" />
+      </TouchableOpacity>
     </View>
   );
 }
