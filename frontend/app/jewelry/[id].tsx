@@ -155,10 +155,7 @@ export default function JewelryDetailsScreen() {
               {jewelry.photos.map((photo, index) => (
                 <TouchableOpacity
                   key={index}
-                  onPress={() => {
-                    setSelectedImageUri(`data:image/jpeg;base64,${photo}`);
-                    setImageViewerVisible(true);
-                  }}
+                  onPress={() => setSelectedImageIndex(index)}
                 >
                   <Image
                     source={{ uri: `data:image/jpeg;base64,${photo}` }}
