@@ -41,27 +41,29 @@ export default function ImageViewer({ visible = true, images, imageUri, initialI
         const filename = FileSystem.documentDirectory + `share_${Date.now()}.jpg`;
         const base64Data = currentImageUri.split(',')[1];
         
+        // Write file with base64 encoding
         await FileSystem.writeAsStringAsync(filename, base64Data, {
-          encoding: FileSystem.EncodingType.Base64,
+          encoding: 'base64', // Use string literal instead of FileSystem.EncodingType.Base64
         });
 
-        if (Platform.OS === 'ios') {
-          await Share.share({ url: filename });
+        // Share the file
+        const canShare = await Sharing.isAvailableAsync();
+        if (canShare) {
+          await Sharing.shareAsync(filename, {
+            mimeType: 'image/jpeg',
+            dialogTitle: 'Share Image',
+            UTI: 'public.jpeg',
+          });
         } else {
-          const canShare = await Sharing.isAvailableAsync();
-          if (canShare) {
-            await Sharing.shareAsync(filename);
-          } else {
-            Alert.alert('Error', 'Sharing is not available on this device');
-          }
+          Alert.alert('Error', 'Sharing is not available on this device');
         }
       } else {
         // For regular URLs
         await Share.share({ url: currentImageUri });
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error sharing image:', error);
-      Alert.alert('Error', 'Failed to share image');
+      Alert.alert('Error', `Failed to share image: ${error.message}`);
     }
   };
 
