@@ -75,6 +75,44 @@ export const getCurrencyInfo = () => {
   return currencyConfig[countryCode] || currencyConfig['US']; // Default to USD
 };
 
+// Get currency code based on user preference or locale
+export const getCurrencyCode = async (): Promise<string> => {
+  // First, check user's manual preference
+  const userPref = await getUserCurrencyPreference();
+  if (userPref) {
+    return userPref;
+  }
+
+  // Fall back to device locale
+  const locale = getDeviceLocale();
+  const countryCode = locale.split(/[-_]/)[1] || locale.split(/[-_]/)[0];
+
+  const currencyMap: { [key: string]: string } = {
+    US: 'USD',
+    IN: 'INR',
+    GB: 'GBP',
+    EU: 'EUR',
+    JP: 'JPY',
+    CN: 'CNY',
+    AU: 'AUD',
+    CA: 'CAD',
+    CH: 'CHF',
+    SE: 'SEK',
+    NO: 'NOK',
+    DK: 'DKK',
+    NZ: 'NZD',
+    SG: 'SGD',
+    HK: 'HKD',
+    KR: 'KRW',
+    BR: 'BRL',
+    MX: 'MXN',
+    ZA: 'ZAR',
+    AE: 'AED',
+  };
+
+  return currencyMap[countryCode.toUpperCase()] || 'USD';
+};
+
 // Format currency based on locale
 export const formatCurrency = (amount: number, showCode: boolean = false): string => {
   const currency = getCurrencyInfo();
