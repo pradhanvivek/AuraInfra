@@ -156,9 +156,6 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     borderBottomColor: '#E5E5EA',
   },
-  backBtn: {
-    padding: 8,
-  },
   editBtn: {
     padding: 8,
   },
