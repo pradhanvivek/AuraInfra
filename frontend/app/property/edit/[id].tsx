@@ -18,6 +18,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import Constants from 'expo-constants';
 import { useAuth } from '../../../contexts/AuthContext';
 import { propertyApi } from '../../../services/api';
+import { getCurrencyInfo } from '../../../utils/localeUtils';
 
 // Conditional import for GooglePlacesAutocomplete (mobile only)
 let GooglePlacesAutocomplete: any = null;
