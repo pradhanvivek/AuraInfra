@@ -39,6 +39,10 @@ export default function AddJewelryScreen() {
   const { token } = useAuth();
   const params = useLocalSearchParams();
   const scanMode = params.mode === 'scan';
+  const colorScheme = useColorScheme();
+  
+  // Dynamic placeholder color based on theme
+  const placeholderColor = colorScheme === 'dark' ? '#999999' : '#666666';
 
   const [name, setName] = useState('');
   const [type, setType] = useState('Ring');
