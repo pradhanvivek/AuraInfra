@@ -216,4 +216,15 @@ const styles = StyleSheet.create({
     fontSize: 14,
     marginTop: 8,
   },
+  footer: {
+    position: 'absolute',
+    bottom: 24,
+    left: 0,
+    right: 0,
+    alignItems: 'center',
+  },
+  companyName: {
+    fontSize: 12,
+    textAlign: 'center',
+  },
 });
