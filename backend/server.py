@@ -262,6 +262,155 @@ class PaintEstimation(BaseModel):
     walls_data: str  # JSON string of wall dimensions
     created_at: datetime = Field(default_factory=datetime.utcnow)
 
+# ============= ASSET MANAGEMENT MODELS =============
+
+# Vehicle Models
+class Vehicle(BaseModel):
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    user_id: str
+    name: str  # e.g., "My BMW 3 Series"
+    make: Optional[str] = None  # BMW, Toyota, etc.
+    model: Optional[str] = None  # 3 Series, Camry, etc.
+    year: Optional[int] = None
+    vin: Optional[str] = None
+    registration_number: Optional[str] = None
+    insurance_provider: Optional[str] = None
+    insurance_policy: Optional[str] = None
+    insurance_expiry: Optional[str] = None
+    purchase_date: Optional[str] = None
+    purchase_cost: Optional[float] = None
+    current_value: Optional[float] = None
+    photos: List[str] = []  # base64 encoded images
+    notes: Optional[str] = None
+    last_maintenance_date: Optional[str] = None
+    next_maintenance_date: Optional[str] = None
+    maintenance_frequency_months: Optional[int] = None  # e.g., 6 months
+    created_at: datetime = Field(default_factory=datetime.utcnow)
+
+class VehicleCreate(BaseModel):
+    name: str
+    make: Optional[str] = None
+    model: Optional[str] = None
+    year: Optional[int] = None
+    vin: Optional[str] = None
+    registration_number: Optional[str] = None
+    insurance_provider: Optional[str] = None
+    insurance_policy: Optional[str] = None
+    insurance_expiry: Optional[str] = None
+    purchase_date: Optional[str] = None
+    purchase_cost: Optional[float] = None
+    current_value: Optional[float] = None
+    photos: List[str] = []
+    notes: Optional[str] = None
+    last_maintenance_date: Optional[str] = None
+    next_maintenance_date: Optional[str] = None
+    maintenance_frequency_months: Optional[int] = None
+
+# Jewelry Models
+class Jewelry(BaseModel):
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    user_id: str
+    name: str  # e.g., "Wedding Ring"
+    type: Optional[str] = None  # Ring, Necklace, Bracelet, Earrings
+    metal: Optional[str] = None  # Gold, Silver, Platinum
+    stones: Optional[str] = None  # Diamond, Ruby, Emerald
+    number_of_stones: Optional[int] = None
+    weight: Optional[float] = None  # in grams
+    purchase_date: Optional[str] = None
+    purchase_cost: Optional[float] = None
+    appraisal_value: Optional[float] = None
+    appraisal_date: Optional[str] = None
+    certificate_number: Optional[str] = None
+    certificate_photo: Optional[str] = None  # base64 encoded
+    photos: List[str] = []  # base64 encoded images
+    notes: Optional[str] = None
+    warranty_info: Optional[str] = None
+    warranty_expiry_date: Optional[str] = None
+    created_at: datetime = Field(default_factory=datetime.utcnow)
+
+class JewelryCreate(BaseModel):
+    name: str
+    type: Optional[str] = None
+    metal: Optional[str] = None
+    stones: Optional[str] = None
+    number_of_stones: Optional[int] = None
+    weight: Optional[float] = None
+    purchase_date: Optional[str] = None
+    purchase_cost: Optional[float] = None
+    appraisal_value: Optional[float] = None
+    appraisal_date: Optional[str] = None
+    certificate_number: Optional[str] = None
+    certificate_photo: Optional[str] = None
+    photos: List[str] = []
+    notes: Optional[str] = None
+    warranty_info: Optional[str] = None
+    warranty_expiry_date: Optional[str] = None
+
+# Generic Appliance/Electronics Models
+class Appliance(BaseModel):
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    user_id: str
+    name: str
+    category: str  # TV, Laptop, Refrigerator, Washing Machine, etc.
+    brand: Optional[str] = None
+    model: Optional[str] = None
+    serial_number: Optional[str] = None
+    purchase_date: Optional[str] = None
+    purchase_cost: Optional[float] = None
+    current_value: Optional[float] = None
+    warranty_info: Optional[str] = None
+    warranty_expiry_date: Optional[str] = None
+    photos: List[str] = []  # base64 encoded images
+    invoice: Optional[str] = None  # base64 encoded
+    notes: Optional[str] = None
+    last_maintenance_date: Optional[str] = None
+    next_maintenance_date: Optional[str] = None
+    maintenance_frequency_months: Optional[int] = None
+    created_at: datetime = Field(default_factory=datetime.utcnow)
+
+class ApplianceCreate(BaseModel):
+    name: str
+    category: str
+    brand: Optional[str] = None
+    model: Optional[str] = None
+    serial_number: Optional[str] = None
+    purchase_date: Optional[str] = None
+    purchase_cost: Optional[float] = None
+    current_value: Optional[float] = None
+    warranty_info: Optional[str] = None
+    warranty_expiry_date: Optional[str] = None
+    photos: List[str] = []
+    invoice: Optional[str] = None
+    notes: Optional[str] = None
+    last_maintenance_date: Optional[str] = None
+    next_maintenance_date: Optional[str] = None
+    maintenance_frequency_months: Optional[int] = None
+
+# AI Scan Results
+class VehicleScanResult(BaseModel):
+    make: str
+    model: str
+    year: Optional[int] = None
+    confidence: float
+
+class JewelryScanResult(BaseModel):
+    type: str
+    metal: Optional[str] = None
+    estimated_value: Optional[float] = None
+    confidence: float
+
+# Portfolio Summary
+class PortfolioSummary(BaseModel):
+    total_value: float
+    properties_value: float
+    vehicles_value: float
+    appliances_value: float
+    jewelry_value: float
+    properties_count: int
+    vehicles_count: int
+    appliances_count: int
+    jewelry_count: int
+
 class UserSettings(BaseModel):
     warranty_reminder_days: int = 30  # 7, 14, or 30 days
 
