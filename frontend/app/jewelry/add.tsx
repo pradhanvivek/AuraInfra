@@ -308,19 +308,25 @@ export default function AddJewelryScreen() {
 
   return (
     <View style={styles.container}>
-      <View style={styles.header}>
-        <TouchableOpacity onPress={() => router.back()}>
-          <Ionicons name="close" size={28} color="#007AFF" />
-        </TouchableOpacity>
-        <Text style={styles.headerTitle}>Add Jewelry</Text>
-        <TouchableOpacity onPress={handleSave} disabled={saving}>
-          {saving ? (
-            <ActivityIndicator color="#007AFF" />
-          ) : (
-            <Text style={styles.saveButton}>Save</Text>
-          )}
-        </TouchableOpacity>
-      </View>
+      {loading ? (
+        <View style={styles.loadingContainer}>
+          <ActivityIndicator size="large" color="#007AFF" />
+        </View>
+      ) : (
+        <>
+          <View style={styles.header}>
+            <TouchableOpacity onPress={() => router.back()}>
+              <Ionicons name="close" size={28} color="#007AFF" />
+            </TouchableOpacity>
+            <Text style={styles.headerTitle}>{isEditing ? 'Edit Jewelry' : 'Add Jewelry'}</Text>
+            <TouchableOpacity onPress={handleSave} disabled={saving}>
+              {saving ? (
+                <ActivityIndicator color="#007AFF" />
+              ) : (
+                <Text style={styles.saveButton}>Save</Text>
+              )}
+            </TouchableOpacity>
+          </View>
 
       <ScrollView contentContainerStyle={styles.content}>
         {!scanMode && (
