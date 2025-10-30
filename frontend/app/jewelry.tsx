@@ -56,7 +56,7 @@ export default function JewelryScreen() {
   const renderJewelry = ({ item }: { item: Jewelry }) => (
     <TouchableOpacity
       style={styles.jewelryCard}
-      onPress={() => router.push(`/jewelry-item/${item.id}` as any)}
+      onPress={() => router.push(`/jewelry/${item.id}` as any)}
     >
       {item.photos && item.photos.length > 0 ? (
         <Image
