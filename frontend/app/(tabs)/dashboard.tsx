@@ -18,6 +18,8 @@ interface PortfolioData {
   vehicles_count: number;
   appliances_count: number;
   jewelry_count: number;
+  furniture_count: number;
+  art_count: number;
 }
 
 export default function DashboardScreen() {
