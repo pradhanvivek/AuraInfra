@@ -649,6 +649,7 @@ export default function FixturesScreen({ propertyId }: FixturesScreenProps) {
             <TextInput
               style={[styles.input, styles.textArea]}
               placeholder="Warranty details"
+              placeholderTextColor={placeholderColor}
               value={warrantyInfo}
               onChangeText={setWarrantyInfo}
               multiline
