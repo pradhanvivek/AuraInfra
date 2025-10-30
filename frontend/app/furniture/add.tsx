@@ -104,6 +104,81 @@ export default function AddFurnitureScreen() {
     }
   };
 
+  const handleScan = async () => {
+    try {
+      if (!permission) {
+        Alert.alert('Error', 'Camera permission not initialized');
+        return;
+      }
+      
+      if (!permission.granted) {
+        const result = await requestPermission();
+        if (!result.granted) {
+          Alert.alert('Permission Required', 'Camera permission is required to scan furniture');
+          return;
+        }
+      }
+      
+      setCameraVisible(true);
+    } catch (error) {
+      console.error('Camera permission error:', error);
+      Alert.alert('Error', 'Failed to access camera');
+    }
+  };
+
+  const handleTakePicture = async () => {
+    if (!cameraRef) {
+      Alert.alert('Error', 'Camera not ready');
+      return;
+    }
+
+    try {
+      setScanning(true);
+      const photo = await cameraRef.takePictureAsync({ base64: true });
+      setCameraVisible(false);
+
+      const response = await axios.post(
+        `${API_URL}/api/furniture/scan`,
+        { image: photo.base64 },
+        { 
+          headers: { Authorization: `Bearer ${token}` },
+          timeout: 60000
+        }
+      );
+
+      const data = response.data;
+      
+      // Populate form fields from scan results
+      if (data.name) setName(data.name);
+      if (data.category) setCategory(data.category);
+      if (data.brand) setBrand(data.brand);
+      if (data.material) setMaterial(data.material);
+      if (data.condition) setCondition(data.condition);
+      
+      // Append additional info to notes
+      let scanNotes = '';
+      if (data.style) scanNotes += `Style: ${data.style}\n`;
+      if (data.estimated_age) scanNotes += `Estimated Age: ${data.estimated_age}\n`;
+      if (scanNotes) setNotes((prev) => (prev ? `${prev}\n\n${scanNotes}` : scanNotes));
+      
+      // Add photo to gallery
+      if (photo.base64) {
+        setPhotos([photo.base64]);
+      }
+
+      Alert.alert(
+        'Scan Complete',
+        `Furniture identified with ${Math.round((data.confidence || 0) * 100)}% confidence. Please review and adjust the details.`,
+        [{ text: 'OK' }]
+      );
+    } catch (error: any) {
+      console.error('Scan error:', error);
+      Alert.alert('Error', 'Failed to scan furniture. Please try again or enter details manually.');
+    } finally {
+      setScanning(false);
+    }
+  };
+
   const handleSave = async () => {
     if (!name.trim()) {
       Alert.alert('Error', 'Please enter furniture name');
