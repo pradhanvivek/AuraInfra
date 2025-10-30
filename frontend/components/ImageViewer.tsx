@@ -34,16 +34,24 @@ export default function ImageViewer({ visible = true, images, imageUri, initialI
 
   const handleShare = async () => {
     try {
-      if (!currentImageUri) return;
+      if (!currentImageUri) {
+        Alert.alert('Error', 'No image to share');
+        return;
+      }
       
       // For base64 images, we need to save to file first
       if (currentImageUri.startsWith('data:image')) {
         const base64Data = currentImageUri.split(',')[1];
-        const filename = `share_${Date.now()}.jpg`;
         
+        if (!base64Data) {
+          Alert.alert('Error', 'Invalid image format');
+          return;
+        }
+        
+        const filename = `share_${Date.now()}.jpg`;
         const fileUri = FileSystem.documentDirectory + filename;
         
-        // Write file using the new API
+        // Write file using the FileSystem API
         await FileSystem.writeAsStringAsync(fileUri, base64Data, {
           encoding: FileSystem.EncodingType.Base64,
         });
@@ -59,12 +67,36 @@ export default function ImageViewer({ visible = true, images, imageUri, initialI
         } else {
           Alert.alert('Error', 'Sharing is not available on this device');
         }
-      } else {
-        // For regular URLs
+      } else if (currentImageUri.startsWith('http')) {
+        // For HTTP URLs - try to share directly
         await Share.share({ url: currentImageUri });
+      } else {
+        // For base64 without data:image prefix
+        const filename = `share_${Date.now()}.jpg`;
+        const fileUri = FileSystem.documentDirectory + filename;
+        
+        await FileSystem.writeAsStringAsync(fileUri, currentImageUri, {
+          encoding: FileSystem.EncodingType.Base64,
+        });
+
+        const canShare = await Sharing.isAvailableAsync();
+        if (canShare) {
+          await Sharing.shareAsync(fileUri, {
+            mimeType: 'image/jpeg',
+            dialogTitle: 'Share Image',
+          });
+        } else {
+          Alert.alert('Error', 'Sharing is not available on this device');
+        }
       }
     } catch (error: any) {
       console.error('Error sharing image:', error);
+      console.error('Error details:', {
+        message: error.message,
+        stack: error.stack,
+        FileSystem: typeof FileSystem,
+        EncodingType: typeof FileSystem?.EncodingType,
+      });
       Alert.alert('Error', `Failed to share image: ${error.message}`);
     }
   };
