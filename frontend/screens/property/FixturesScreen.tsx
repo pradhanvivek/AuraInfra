@@ -720,6 +720,7 @@ export default function FixturesScreen({ propertyId }: FixturesScreenProps) {
             <TextInput
               style={styles.input}
               placeholder="e.g., Quarterly, Annually"
+              placeholderTextColor={placeholderColor}
               value={maintenanceFrequency}
               onChangeText={setMaintenanceFrequency}
             />
