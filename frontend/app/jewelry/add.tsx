@@ -116,25 +116,14 @@ export default function AddJewelryScreen() {
     }
   };
   const handleScan = async () => {
-    try {
-      if (!permission) {
-        Alert.alert('Error', 'Camera permission not initialized');
+    if (!permission?.granted) {
+      const result = await requestPermission();
+      if (!result.granted) {
+        Alert.alert('Permission Required', 'Camera permission is needed to scan jewelry');
         return;
       }
-      
-      if (!permission.granted) {
-        const result = await requestPermission();
-        if (!result.granted) {
-          Alert.alert('Permission Required', 'Camera permission is required to scan jewelry');
-          return;
-        }
-      }
-      
-      setCameraVisible(true);
-    } catch (error) {
-      console.error('Camera permission error:', error);
-      Alert.alert('Error', 'Failed to access camera');
     }
+    setCameraVisible(true);
   };
 
   const handleTakePicture = async () => {
