@@ -344,7 +344,8 @@ export default function AddApplianceScreen() {
         <Text style={styles.label}>Maintenance Frequency (months)</Text>
         <TextInput
           style={styles.input}
-          placeholder=" placeholderTextColor="#666666" e.g., 12"
+          placeholder="e.g., 12"
+          placeholderTextColor="#666666"
           value={maintenanceFrequency}
           onChangeText={setMaintenanceFrequency}
           keyboardType="numeric"
