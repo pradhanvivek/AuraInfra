@@ -48,6 +48,7 @@ export default function ApplianceDetailsScreen() {
   const [appliance, setAppliance] = useState<Appliance | null>(null);
   const [loading, setLoading] = useState(true);
   const [deleting, setDeleting] = useState(false);
+  const [selectedImageIndex, setSelectedImageIndex] = useState<number | null>(null);
 
   useEffect(() => {
     fetchAppliance();
