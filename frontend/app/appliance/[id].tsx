@@ -102,7 +102,7 @@ export default function ApplianceDetailsScreen() {
   };
 
   const handleEdit = () => {
-    router.push(`/appliance/edit/${id}`);
+    router.push(`/appliance/add?id=${id}`);
   };
 
   if (loading) {
