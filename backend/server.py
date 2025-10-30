@@ -419,6 +419,82 @@ class ApplianceCreate(BaseModel):
     next_maintenance_date: Optional[str] = None
     maintenance_frequency_months: Optional[int] = None
 
+# Furniture Models
+class Furniture(BaseModel):
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    user_id: str
+    name: str
+    category: str  # Sofa, Table, Chair, Bed, Cabinet, etc.
+    brand: Optional[str] = None
+    material: Optional[str] = None  # Wood, Metal, Fabric, Leather, etc.
+    dimensions: Optional[str] = None  # e.g., "L: 200cm x W: 100cm x H: 80cm"
+    room_location: Optional[str] = None  # Living Room, Bedroom, etc.
+    condition: Optional[str] = None  # Excellent, Good, Fair, Poor
+    purchase_date: Optional[str] = None
+    purchase_cost: Optional[float] = None
+    current_value: Optional[float] = None
+    warranty_info: Optional[str] = None
+    warranty_expiry_date: Optional[str] = None
+    photos: List[str] = []  # base64 encoded images
+    invoice: Optional[str] = None  # base64 encoded
+    notes: Optional[str] = None
+    created_at: datetime = Field(default_factory=datetime.utcnow)
+
+class FurnitureCreate(BaseModel):
+    name: str
+    category: str
+    brand: Optional[str] = None
+    material: Optional[str] = None
+    dimensions: Optional[str] = None
+    room_location: Optional[str] = None
+    condition: Optional[str] = None
+    purchase_date: Optional[str] = None
+    purchase_cost: Optional[float] = None
+    current_value: Optional[float] = None
+    warranty_info: Optional[str] = None
+    warranty_expiry_date: Optional[str] = None
+    photos: List[str] = []
+    invoice: Optional[str] = None
+    notes: Optional[str] = None
+
+# Art Models
+class Art(BaseModel):
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    user_id: str
+    name: str
+    type: str  # Painting, Sculpture, Print, Photograph, etc.
+    artist: Optional[str] = None
+    medium: Optional[str] = None  # Oil, Watercolor, Bronze, etc.
+    dimensions: Optional[str] = None  # e.g., "H: 100cm x W: 80cm"
+    year_created: Optional[int] = None
+    purchase_date: Optional[str] = None
+    purchase_cost: Optional[float] = None
+    current_value: Optional[float] = None
+    appraisal_value: Optional[float] = None
+    appraisal_date: Optional[str] = None
+    authenticity_certificate: Optional[str] = None  # base64 encoded
+    provenance: Optional[str] = None  # History of ownership
+    photos: List[str] = []  # base64 encoded images
+    notes: Optional[str] = None
+    created_at: datetime = Field(default_factory=datetime.utcnow)
+
+class ArtCreate(BaseModel):
+    name: str
+    type: str
+    artist: Optional[str] = None
+    medium: Optional[str] = None
+    dimensions: Optional[str] = None
+    year_created: Optional[int] = None
+    purchase_date: Optional[str] = None
+    purchase_cost: Optional[float] = None
+    current_value: Optional[float] = None
+    appraisal_value: Optional[float] = None
+    appraisal_date: Optional[str] = None
+    authenticity_certificate: Optional[str] = None
+    provenance: Optional[str] = None
+    photos: List[str] = []
+    notes: Optional[str] = None
+
 # AI Scan Results
 class VehicleScanResult(BaseModel):
     make: str
