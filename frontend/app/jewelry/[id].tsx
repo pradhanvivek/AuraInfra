@@ -104,7 +104,7 @@ export default function JewelryDetailsScreen() {
 
   if (loading) {
     return (
-      <View style={styles.container}>
+      <View style={styles.centerContainer}>
         <ActivityIndicator size="large" color="#007AFF" />
       </View>
     );
@@ -112,7 +112,7 @@ export default function JewelryDetailsScreen() {
 
   if (!jewelry) {
     return (
-      <View style={styles.container}>
+      <View style={styles.centerContainer}>
         <Text style={styles.errorText}>Jewelry item not found</Text>
         <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
           <Text style={styles.backButtonText}>Go Back</Text>
