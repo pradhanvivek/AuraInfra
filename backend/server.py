@@ -1202,6 +1202,106 @@ Return ONLY the JSON object, no additional text.""",
         logger.error(f"Jewelry scan error: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))
 
+# ============= FURNITURE ENDPOINTS =============
+
+@api_router.post("/furniture")
+async def create_furniture(furniture_data: FurnitureCreate, user_id: str = Depends(get_current_user)):
+    """Create a new furniture item"""
+    furniture = Furniture(user_id=user_id, **furniture_data.dict())
+    await db.furniture.insert_one(furniture.dict())
+    return furniture
+
+@api_router.get("/furniture")
+async def get_furniture(user_id: str = Depends(get_current_user)):
+    """Get all furniture for user"""
+    furniture_items = []
+    async for doc in db.furniture.find({"user_id": user_id}):
+        doc.pop('_id', None)
+        furniture_items.append(doc)
+    return furniture_items
+
+@api_router.get("/furniture/{furniture_id}")
+async def get_furniture_item(furniture_id: str, user_id: str = Depends(get_current_user)):
+    """Get a specific furniture item"""
+    furniture = await db.furniture.find_one({"id": furniture_id, "user_id": user_id})
+    if not furniture:
+        raise HTTPException(status_code=404, detail="Furniture not found")
+    furniture.pop('_id', None)
+    return furniture
+
+@api_router.put("/furniture/{furniture_id}")
+async def update_furniture(
+    furniture_id: str,
+    furniture_data: FurnitureCreate,
+    user_id: str = Depends(get_current_user)
+):
+    """Update a furniture item"""
+    result = await db.furniture.update_one(
+        {"id": furniture_id, "user_id": user_id},
+        {"$set": furniture_data.dict()}
+    )
+    if result.matched_count == 0:
+        raise HTTPException(status_code=404, detail="Furniture not found")
+    return {"message": "Furniture updated successfully"}
+
+@api_router.delete("/furniture/{furniture_id}")
+async def delete_furniture(furniture_id: str, user_id: str = Depends(get_current_user)):
+    """Delete a furniture item"""
+    result = await db.furniture.delete_one({"id": furniture_id, "user_id": user_id})
+    if result.deleted_count == 0:
+        raise HTTPException(status_code=404, detail="Furniture not found")
+    return {"message": "Furniture deleted successfully"}
+
+# ============= ART ENDPOINTS =============
+
+@api_router.post("/art")
+async def create_art(art_data: ArtCreate, user_id: str = Depends(get_current_user)):
+    """Create a new art item"""
+    art = Art(user_id=user_id, **art_data.dict())
+    await db.art.insert_one(art.dict())
+    return art
+
+@api_router.get("/art")
+async def get_art(user_id: str = Depends(get_current_user)):
+    """Get all art for user"""
+    art_items = []
+    async for doc in db.art.find({"user_id": user_id}):
+        doc.pop('_id', None)
+        art_items.append(doc)
+    return art_items
+
+@api_router.get("/art/{art_id}")
+async def get_art_item(art_id: str, user_id: str = Depends(get_current_user)):
+    """Get a specific art item"""
+    art = await db.art.find_one({"id": art_id, "user_id": user_id})
+    if not art:
+        raise HTTPException(status_code=404, detail="Art not found")
+    art.pop('_id', None)
+    return art
+
+@api_router.put("/art/{art_id}")
+async def update_art(
+    art_id: str,
+    art_data: ArtCreate,
+    user_id: str = Depends(get_current_user)
+):
+    """Update an art item"""
+    result = await db.art.update_one(
+        {"id": art_id, "user_id": user_id},
+        {"$set": art_data.dict()}
+    )
+    if result.matched_count == 0:
+        raise HTTPException(status_code=404, detail="Art not found")
+    return {"message": "Art updated successfully"}
+
+@api_router.delete("/art/{art_id}")
+async def delete_art(art_id: str, user_id: str = Depends(get_current_user)):
+    """Delete an art item"""
+    result = await db.art.delete_one({"id": art_id, "user_id": user_id})
+    if result.deleted_count == 0:
+        raise HTTPException(status_code=404, detail="Art not found")
+    return {"message": "Art deleted successfully"}
+
 # ============= RECEIPT SCANNER ENDPOINT =============
 
 @api_router.post("/scan-receipt", response_model=ReceiptScanResult)
