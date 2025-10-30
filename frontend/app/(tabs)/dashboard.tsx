@@ -26,10 +26,6 @@ export default function DashboardScreen() {
   const [portfolioData, setPortfolioData] = useState<PortfolioData | null>(null);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    fetchPortfolioSummary();
-  }, []);
-
   const fetchPortfolioSummary = async () => {
     try {
       const response = await axios.get(
@@ -51,6 +47,12 @@ export default function DashboardScreen() {
       setLoading(false);
     }
   };
+
+  useFocusEffect(
+    useCallback(() => {
+      fetchPortfolioSummary();
+    }, [token])
+  );
 
   const categories = [
     {
