@@ -210,7 +210,8 @@ export default function AddApplianceScreen() {
         <Text style={styles.label}>Name *</Text>
         <TextInput
           style={styles.input}
-          placeholder=" placeholderTextColor="#666666" e.g., Living Room TV"
+          placeholder="e.g., Living Room TV"
+          placeholderTextColor="#666666"
           value={name}
           onChangeText={setName}
         />
@@ -229,7 +230,8 @@ export default function AddApplianceScreen() {
             <Text style={styles.label}>Brand</Text>
             <TextInput
               style={styles.input}
-              placeholder=" placeholderTextColor="#666666" e.g., Samsung"
+              placeholder="e.g., Samsung"
+              placeholderTextColor="#666666"
               value={brand}
               onChangeText={setBrand}
             />
@@ -238,7 +240,8 @@ export default function AddApplianceScreen() {
             <Text style={styles.label}>Model</Text>
             <TextInput
               style={styles.input}
-              placeholder=" placeholderTextColor="#666666" e.g., UN55"
+              placeholder="e.g., UN55"
+              placeholderTextColor="#666666"
               value={model}
               onChangeText={setModel}
             />
@@ -248,7 +251,8 @@ export default function AddApplianceScreen() {
         <Text style={styles.label}>Serial Number</Text>
         <TextInput
           style={styles.input}
-          placeholder=" placeholderTextColor="#666666" Serial #"
+          placeholder="Serial #"
+          placeholderTextColor="#666666"
           value={serialNumber}
           onChangeText={setSerialNumber}
         />
@@ -258,7 +262,8 @@ export default function AddApplianceScreen() {
         <Text style={styles.label}>Warranty Information</Text>
         <TextInput
           style={styles.input}
-          placeholder=" placeholderTextColor="#666666" e.g., 2 year manufacturer warranty"
+          placeholder="e.g., 2 year manufacturer warranty"
+          placeholderTextColor="#666666"
           value={warrantyInfo}
           onChangeText={setWarrantyInfo}
         />
