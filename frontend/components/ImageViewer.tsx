@@ -36,13 +36,11 @@ export default function ImageViewer({ visible = true, images, imageUri, initialI
     try {
       if (!currentImageUri) return;
       
-      // For base64 images, we need to save to file first using new File API
+      // For base64 images, we need to save to file first
       if (currentImageUri.startsWith('data:image')) {
         const base64Data = currentImageUri.split(',')[1];
         const filename = `share_${Date.now()}.jpg`;
         
-        // Use the new File API from expo-file-system
-        const FileSystem = require('expo-file-system');
         const fileUri = FileSystem.documentDirectory + filename;
         
         // Write file using the new API
