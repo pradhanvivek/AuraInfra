@@ -537,8 +537,11 @@ async def get_profile(user_id: str = Depends(get_current_user)):
         username=user_doc["username"],
         email=user_doc.get("email"),
         phone=user_doc.get("phone"),
+        avatar=user_doc.get("avatar"),
         warranty_reminder_days=user_doc.get("warranty_reminder_days", 30),
         geomancy_preference=user_doc.get("geomancy_preference", "vastu"),
+        currency_preference=user_doc.get("currency_preference"),
+        measurement_system=user_doc.get("measurement_system"),
         created_at=user_doc["created_at"]
     )
 
