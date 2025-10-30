@@ -150,18 +150,26 @@ const styles = StyleSheet.create({
   header: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'center',
+    justifyContent: 'space-between',
     paddingHorizontal: 16,
     paddingVertical: 12,
     backgroundColor: '#fff',
     borderBottomWidth: 1,
     borderBottomColor: '#E5E5EA',
   },
+  backBtn: {
+    padding: 8,
+  },
+  editBtn: {
+    padding: 8,
+  },
   tabsContainer: {
     flex: 1,
   },
   headerTextContainer: {
+    flex: 1,
     alignItems: 'center',
+    marginHorizontal: 8,
   },
   propertyName: {
     fontSize: 18,
