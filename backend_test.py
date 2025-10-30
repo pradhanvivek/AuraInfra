@@ -1095,6 +1095,16 @@ class PropertyManagerAPITester:
         print("-" * 30)
         self.test_ai_floorplan_analysis()
         
+        # Appliance AI Scanner Tests
+        print("\n🔍 APPLIANCE AI SCANNER TESTS")
+        print("-" * 30)
+        self.test_appliance_scanner_endpoint_exists()
+        self.test_appliance_scanner_authentication()
+        self.test_appliance_scanner_request_validation()
+        self.test_appliance_scanner_functionality()
+        self.test_appliance_scanner_gemini_integration()
+        self.test_appliance_scanner_response_structure()
+        
         # Jewelry Tests
         print("\n💎 JEWELRY TESTS")
         print("-" * 30)
