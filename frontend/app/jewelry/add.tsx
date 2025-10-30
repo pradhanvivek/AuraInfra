@@ -883,4 +883,9 @@ const styles = StyleSheet.create({
     color: '#000',
     fontWeight: '600',
   },
+  scanningSubtext: {
+    marginTop: 4,
+    fontSize: 14,
+    color: '#666',
+  },
 });
