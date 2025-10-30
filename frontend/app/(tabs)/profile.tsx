@@ -595,6 +595,166 @@ export default function Profile() {
           </View>
         </View>
       </Modal>
+
+      {/* Currency Preference Modal */}
+      <Modal
+        visible={currencyModalVisible}
+        animationType="slide"
+        presentationStyle="pageSheet"
+        onRequestClose={() => setCurrencyModalVisible(false)}
+      >
+        <View style={styles.modalContainer}>
+          <View style={styles.modalHeader}>
+            <TouchableOpacity onPress={() => setCurrencyModalVisible(false)}>
+              <Text style={styles.cancelButton}>Cancel</Text>
+            </TouchableOpacity>
+            <Text style={styles.modalTitle}>Currency</Text>
+            <View style={{ width: 60 }} />
+          </View>
+
+          <ScrollView style={styles.modalContent}>
+            <Text style={styles.modalDescription}>
+              Choose your preferred currency for displaying values
+            </Text>
+
+            {['INR', 'USD', 'EUR', 'GBP', 'JPY', 'AUD', 'CAD', 'CHF', 'CNY', 'SGD'].map((currency) => (
+              <TouchableOpacity
+                key={currency}
+                style={[
+                  styles.optionCard,
+                  selectedCurrency === currency && styles.optionCardSelected,
+                ]}
+                onPress={() => handleCurrencyChange(currency)}
+                disabled={saving}
+              >
+                <View style={styles.optionContent}>
+                  <Ionicons
+                    name="cash-outline"
+                    size={24}
+                    color={selectedCurrency === currency ? '#007AFF' : '#8E8E93'}
+                  />
+                  <View style={styles.optionText}>
+                    <Text style={[
+                      styles.optionTitle,
+                      selectedCurrency === currency && styles.optionTitleSelected,
+                    ]}>
+                      {currency === 'INR' && '₹ Indian Rupee (INR)'}
+                      {currency === 'USD' && '$ US Dollar (USD)'}
+                      {currency === 'EUR' && '€ Euro (EUR)'}
+                      {currency === 'GBP' && '£ British Pound (GBP)'}
+                      {currency === 'JPY' && '¥ Japanese Yen (JPY)'}
+                      {currency === 'AUD' && '$ Australian Dollar (AUD)'}
+                      {currency === 'CAD' && '$ Canadian Dollar (CAD)'}
+                      {currency === 'CHF' && 'Fr Swiss Franc (CHF)'}
+                      {currency === 'CNY' && '¥ Chinese Yuan (CNY)'}
+                      {currency === 'SGD' && '$ Singapore Dollar (SGD)'}
+                    </Text>
+                  </View>
+                </View>
+                {selectedCurrency === currency && (
+                  <Ionicons name="checkmark-circle" size={24} color="#007AFF" />
+                )}
+              </TouchableOpacity>
+            ))}
+
+            {saving && (
+              <View style={styles.savingIndicator}>
+                <ActivityIndicator size="small" color="#007AFF" />
+                <Text style={styles.savingText}>Updating...</Text>
+              </View>
+            )}
+          </ScrollView>
+        </View>
+      </Modal>
+
+      {/* Measurement System Modal */}
+      <Modal
+        visible={measurementModalVisible}
+        animationType="slide"
+        presentationStyle="pageSheet"
+        onRequestClose={() => setMeasurementModalVisible(false)}
+      >
+        <View style={styles.modalContainer}>
+          <View style={styles.modalHeader}>
+            <TouchableOpacity onPress={() => setMeasurementModalVisible(false)}>
+              <Text style={styles.cancelButton}>Cancel</Text>
+            </TouchableOpacity>
+            <Text style={styles.modalTitle}>Measurement System</Text>
+            <View style={{ width: 60 }} />
+          </View>
+
+          <View style={styles.modalContent}>
+            <Text style={styles.modalDescription}>
+              Choose your preferred measurement system
+            </Text>
+
+            <TouchableOpacity
+              style={[
+                styles.optionCard,
+                selectedMeasurement === 'metric' && styles.optionCardSelected,
+              ]}
+              onPress={() => handleMeasurementChange('metric')}
+              disabled={saving}
+            >
+              <View style={styles.optionContent}>
+                <Ionicons
+                  name="resize-outline"
+                  size={24}
+                  color={selectedMeasurement === 'metric' ? '#007AFF' : '#8E8E93'}
+                />
+                <View style={styles.optionText}>
+                  <Text style={[
+                    styles.optionTitle,
+                    selectedMeasurement === 'metric' && styles.optionTitleSelected,
+                  ]}>
+                    Metric
+                  </Text>
+                  <Text style={styles.optionSubtitle}>Meters, kilograms, liters</Text>
+                </View>
+              </View>
+              {selectedMeasurement === 'metric' && (
+                <Ionicons name="checkmark-circle" size={24} color="#007AFF" />
+              )}
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              style={[
+                styles.optionCard,
+                selectedMeasurement === 'imperial' && styles.optionCardSelected,
+              ]}
+              onPress={() => handleMeasurementChange('imperial')}
+              disabled={saving}
+            >
+              <View style={styles.optionContent}>
+                <Ionicons
+                  name="resize-outline"
+                  size={24}
+                  color={selectedMeasurement === 'imperial' ? '#007AFF' : '#8E8E93'}
+                />
+                <View style={styles.optionText}>
+                  <Text style={[
+                    styles.optionTitle,
+                    selectedMeasurement === 'imperial' && styles.optionTitleSelected,
+                  ]}>
+                    Imperial
+                  </Text>
+                  <Text style={styles.optionSubtitle}>Feet, pounds, gallons</Text>
+                </View>
+              </View>
+              {selectedMeasurement === 'imperial' && (
+                <Ionicons name="checkmark-circle" size={24} color="#007AFF" />
+              )}
+            </TouchableOpacity>
+
+            {saving && (
+              <View style={styles.savingIndicator}>
+                <ActivityIndicator size="small" color="#007AFF" />
+                <Text style={styles.savingText}>Updating...</Text>
+              </View>
+            )}
+          </View>
+        </View>
+      </Modal>
     </View>
   );
 }
