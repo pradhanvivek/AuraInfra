@@ -220,6 +220,7 @@ export default function AddJewelryScreen() {
         <TextInput
           style={styles.input}
           placeholder="e.g., Diamond Engagement Ring"
+          placeholderTextColor="#666666"
           value={name}
           onChangeText={setName}
         />
