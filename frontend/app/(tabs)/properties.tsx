@@ -9,6 +9,7 @@ import {
   Alert,
   RefreshControl,
   TextInput,
+  useColorScheme,
 } from 'react-native';
 import { useRouter, useFocusEffect } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
@@ -25,11 +26,15 @@ interface Property {
 export default function Properties() {
   const router = useRouter();
   const { token } = useAuth();
+  const colorScheme = useColorScheme();
   const [properties, setProperties] = useState<Property[]>([]);
   const [filteredProperties, setFilteredProperties] = useState<Property[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
+  
+  // Dynamic placeholder color
+  const placeholderColor = colorScheme === 'dark' ? '#999999' : '#666666';
 
   const fetchProperties = async () => {
     try {
