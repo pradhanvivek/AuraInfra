@@ -238,6 +238,15 @@ export default function VehicleDetailsScreen() {
 
         <View style={styles.bottomPadding} />
       </ScrollView>
+
+      {/* Image Viewer Modal */}
+      {selectedImageIndex !== null && vehicle?.photos && (
+        <ImageViewer
+          images={vehicle.photos.map(photo => `data:image/jpeg;base64,${photo}`)}
+          initialIndex={selectedImageIndex}
+          onClose={() => setSelectedImageIndex(null)}
+        />
+      )}
     </SafeAreaView>
   );
 }
