@@ -12,7 +12,6 @@ import {
   ScrollView,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import * as FileSystem from 'expo-file-system';
 import * as Sharing from 'expo-sharing';
 
 interface ImageViewerProps {
@@ -36,20 +35,24 @@ export default function ImageViewer({ visible = true, images, imageUri, initialI
     try {
       if (!currentImageUri) return;
       
-      // For base64 images, we need to save to file first
+      // For base64 images, we need to save to file first using new File API
       if (currentImageUri.startsWith('data:image')) {
-        const filename = FileSystem.documentDirectory + `share_${Date.now()}.jpg`;
         const base64Data = currentImageUri.split(',')[1];
+        const filename = `share_${Date.now()}.jpg`;
         
-        // Write file with base64 encoding
-        await FileSystem.writeAsStringAsync(filename, base64Data, {
-          encoding: 'base64', // Use string literal instead of FileSystem.EncodingType.Base64
+        // Use the new File API from expo-file-system
+        const FileSystem = require('expo-file-system');
+        const fileUri = FileSystem.documentDirectory + filename;
+        
+        // Write file using the new API
+        await FileSystem.writeAsStringAsync(fileUri, base64Data, {
+          encoding: FileSystem.EncodingType.Base64,
         });
 
         // Share the file
         const canShare = await Sharing.isAvailableAsync();
         if (canShare) {
-          await Sharing.shareAsync(filename, {
+          await Sharing.shareAsync(fileUri, {
             mimeType: 'image/jpeg',
             dialogTitle: 'Share Image',
             UTI: 'public.jpeg',
