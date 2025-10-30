@@ -821,20 +821,29 @@ async def get_portfolio_summary(user_id: str = Depends(get_current_user)):
         properties = await properties_cursor.to_list(length=1000)
         properties_value = sum(safe_float(p.get('price', 0)) for p in properties)
         
-        # Get vehicles
+        # Get vehicles - use current_value or fall back to purchase_cost
         vehicles_cursor = db.vehicles.find({"user_id": user_id})
         vehicles = await vehicles_cursor.to_list(length=1000)
-        vehicles_value = sum(safe_float(v.get('current_value', 0)) for v in vehicles)
+        vehicles_value = sum(
+            safe_float(v.get('current_value')) or safe_float(v.get('purchase_cost', 0)) 
+            for v in vehicles
+        )
         
-        # Get appliances
+        # Get appliances - use current_value or fall back to purchase_cost
         appliances_cursor = db.appliances.find({"user_id": user_id})
         appliances = await appliances_cursor.to_list(length=1000)
-        appliances_value = sum(safe_float(a.get('current_value', 0)) for a in appliances)
+        appliances_value = sum(
+            safe_float(a.get('current_value')) or safe_float(a.get('purchase_cost', 0)) 
+            for a in appliances
+        )
         
-        # Get jewelry
+        # Get jewelry - use appraisal_value or fall back to purchase_cost
         jewelry_cursor = db.jewelry.find({"user_id": user_id})
         jewelry = await jewelry_cursor.to_list(length=1000)
-        jewelry_value = sum(safe_float(j.get('appraisal_value', 0)) for j in jewelry)
+        jewelry_value = sum(
+            safe_float(j.get('appraisal_value')) or safe_float(j.get('purchase_cost', 0)) 
+            for j in jewelry
+        )
         
         total = properties_value + vehicles_value + appliances_value + jewelry_value
         
