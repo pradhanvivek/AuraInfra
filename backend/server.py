@@ -550,6 +550,8 @@ async def update_profile(profile: UserProfileUpdate, user_id: str = Depends(get_
         update_data["email"] = profile.email
     if profile.phone is not None:
         update_data["phone"] = profile.phone
+    if profile.avatar is not None:
+        update_data["avatar"] = profile.avatar
     if profile.warranty_reminder_days is not None:
         if profile.warranty_reminder_days not in [7, 14, 30]:
             raise HTTPException(status_code=400, detail="warranty_reminder_days must be 7, 14, or 30")
@@ -558,6 +560,12 @@ async def update_profile(profile: UserProfileUpdate, user_id: str = Depends(get_
         if profile.geomancy_preference not in ["vastu", "feng_shui"]:
             raise HTTPException(status_code=400, detail="geomancy_preference must be 'vastu' or 'feng_shui'")
         update_data["geomancy_preference"] = profile.geomancy_preference
+    if profile.currency_preference is not None:
+        update_data["currency_preference"] = profile.currency_preference
+    if profile.measurement_system is not None:
+        if profile.measurement_system not in ["metric", "imperial"]:
+            raise HTTPException(status_code=400, detail="measurement_system must be 'metric' or 'imperial'")
+        update_data["measurement_system"] = profile.measurement_system
     
     if update_data:
         await db.users.update_one(
@@ -572,6 +580,7 @@ async def update_profile(profile: UserProfileUpdate, user_id: str = Depends(get_
         username=user_doc["username"],
         email=user_doc.get("email"),
         phone=user_doc.get("phone"),
+        avatar=user_doc.get("avatar"),
         warranty_reminder_days=user_doc.get("warranty_reminder_days", 30),
         created_at=user_doc["created_at"]
     )
