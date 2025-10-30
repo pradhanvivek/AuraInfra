@@ -539,7 +539,7 @@ export default function MeasurementsScreen({ propertyId }: MeasurementsScreenPro
                       value={length}
                       onChangeText={setLength}
                       keyboardType="decimal-pad"
-                      placeholderTextColor="#666666"
+                      placeholderTextColor={placeholderColor}
                     />
                   </View>
 
@@ -551,7 +551,7 @@ export default function MeasurementsScreen({ propertyId }: MeasurementsScreenPro
                       value={width}
                       onChangeText={setWidth}
                       keyboardType="decimal-pad"
-                      placeholderTextColor="#666666"
+                      placeholderTextColor={placeholderColor}
                     />
                   </View>
                 </View>
@@ -565,7 +565,7 @@ export default function MeasurementsScreen({ propertyId }: MeasurementsScreenPro
                       value={height}
                       onChangeText={setHeight}
                       keyboardType="decimal-pad"
-                      placeholderTextColor="#666666"
+                      placeholderTextColor={placeholderColor}
                     />
                   </View>
 
@@ -609,7 +609,7 @@ export default function MeasurementsScreen({ propertyId }: MeasurementsScreenPro
                   value={windows}
                   onChangeText={setWindows}
                   keyboardType="number-pad"
-                  placeholderTextColor="#666666"
+                  placeholderTextColor={placeholderColor}
                 />
 
                 <Text style={styles.label}>Notes</Text>
@@ -621,7 +621,7 @@ export default function MeasurementsScreen({ propertyId }: MeasurementsScreenPro
                   multiline
                   numberOfLines={4}
                   textAlignVertical="top"
-                  placeholderTextColor="#666666"
+                  placeholderTextColor={placeholderColor}
                 />
 
                 <TouchableOpacity
