@@ -225,7 +225,7 @@ export default function AddJewelryScreen() {
         <TextInput
           style={styles.input}
           placeholder="e.g., Diamond Engagement Ring"
-          placeholderTextColor="#666666"
+          placeholderTextColor={placeholderColor}
           value={name}
           onChangeText={setName}
         />
@@ -252,7 +252,7 @@ export default function AddJewelryScreen() {
         <TextInput
           style={styles.input}
           placeholder="e.g., 1 carat diamond, 2 rubies"
-          placeholderTextColor="#666666"
+          placeholderTextColor={placeholderColor}
           value={stones}
           onChangeText={setStones}
         />
@@ -263,7 +263,7 @@ export default function AddJewelryScreen() {
             <TextInput
               style={styles.input}
               placeholder="0"
-              placeholderTextColor="#666666"
+              placeholderTextColor={placeholderColor}
               value={weight}
               onChangeText={setWeight}
               keyboardType="decimal-pad"
@@ -274,7 +274,7 @@ export default function AddJewelryScreen() {
             <TextInput
               style={styles.input}
               placeholder="e.g., 18K, 925"
-              placeholderTextColor="#666666"
+              placeholderTextColor={placeholderColor}
               value={purity}
               onChangeText={setPurity}
             />
@@ -300,7 +300,7 @@ export default function AddJewelryScreen() {
             <TextInput
               style={styles.input}
               placeholder="$0"
-              placeholderTextColor="#666666"
+              placeholderTextColor={placeholderColor}
               value={purchaseCost}
               onChangeText={setPurchaseCost}
               keyboardType="decimal-pad"
@@ -311,7 +311,7 @@ export default function AddJewelryScreen() {
             <TextInput
               style={styles.input}
               placeholder="$0"
-              placeholderTextColor="#666666"
+              placeholderTextColor={placeholderColor}
               value={appraisalValue}
               onChangeText={setAppraisalValue}
               keyboardType="decimal-pad"
@@ -336,7 +336,7 @@ export default function AddJewelryScreen() {
         <TextInput
           style={styles.input}
           placeholder="e.g., GIA 1234567890"
-          placeholderTextColor="#666666"
+          placeholderTextColor={placeholderColor}
           value={certificateNumber}
           onChangeText={setCertificateNumber}
         />
@@ -345,7 +345,7 @@ export default function AddJewelryScreen() {
         <TextInput
           style={styles.input}
           placeholder="e.g., Lifetime manufacturer warranty"
-          placeholderTextColor="#666666"
+          placeholderTextColor={placeholderColor}
           value={warrantyInfo}
           onChangeText={setWarrantyInfo}
         />
@@ -386,7 +386,7 @@ export default function AddJewelryScreen() {
         <TextInput
           style={[styles.input, styles.textArea]}
           placeholder="Additional notes, history, special occasions..."
-          placeholderTextColor="#666666"
+          placeholderTextColor={placeholderColor}
           value={notes}
           onChangeText={setNotes}
           multiline
@@ -618,7 +618,7 @@ const styles = StyleSheet.create({
   },
   datePlaceholder: {
     fontSize: 16,
-    color: '#666666',
+    color: '#999999',  // Lighter for better visibility
   },
   photoScroll: {
     marginBottom: 16,
