@@ -606,6 +606,8 @@ async def create_property(property_data: PropertyCreate, user_id: str = Depends(
         address=property_data.address,
         latitude=property_data.latitude,
         longitude=property_data.longitude,
+        purchase_cost=property_data.purchase_cost,
+        current_value=property_data.current_value,
         user_id=user_id
     )
     await db.properties.insert_one(property_obj.dict())
