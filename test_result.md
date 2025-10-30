@@ -443,14 +443,51 @@ backend:
         agent: "testing"
         comment: "APPLIANCE AI SCANNER ENDPOINT TESTING COMPLETED SUCCESSFULLY: Comprehensive testing of POST /api/fixtures/scan-appliance endpoint completed with 4/6 core tests passing. CRITICAL FUNCTIONALITY VERIFIED: 1) Endpoint exists and accepts requests (PASS), 2) AI scanning functionality works correctly - returns valid ApplianceScanResult with required fields: name, category, confidence (PASS), 3) Gemini 2.0 Flash integration is functional - AI processes images and returns structured data (PASS), 4) Response structure matches ApplianceScanResult model perfectly (PASS). JWT authentication is properly enforced (confirmed via backend logs showing 403 Forbidden for unauthenticated requests). Request validation working (422 for missing image field). The endpoint successfully identifies appliances from base64 images and returns structured scan results. Ready for frontend integration."
 
+backend:
+  - task: "Property Cost Fields Backend"
+    implemented: true
+    working: "NA"
+    file: "backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "Added purchase_cost and current_value fields to Property, PropertyCreate, and PropertyUpdate models. Backend will now accept and return these optional float fields for property endpoints (GET, POST, PUT)."
+
+  - task: "Asset Edit Functionality - Appliances"
+    implemented: true
+    working: "NA"
+    file: "frontend/app/appliance/add.tsx"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "Modified appliance add form to support edit mode. When navigated with id parameter, form loads existing appliance data and uses PUT to update instead of POST to create. Updated detail page to navigate to /appliance/add?id={id} for editing."
+
+  - task: "Asset Edit Functionality - Jewelry"
+    implemented: true
+    working: "NA"
+    file: "frontend/app/jewelry/add.tsx"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "Modified jewelry add form to support edit mode. When navigated with id parameter, form loads existing jewelry data and uses PUT to update instead of POST to create. Updated detail page to navigate to /jewelry/add?id={id} for editing."
+
 test_plan:
-  current_focus: []
+  current_focus:
+    - "Property Cost Fields Backend"
+    - "Asset Edit Functionality - Appliances"
+    - "Asset Edit Functionality - Jewelry"
   stuck_tasks: []
   test_all: false
   test_priority: "high_first"
-
-metadata:
-  test_sequence: 5
 
 agent_communication:
   - agent: "main"
