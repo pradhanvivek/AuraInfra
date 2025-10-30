@@ -518,10 +518,14 @@ class PortfolioSummary(BaseModel):
     vehicles_value: float
     appliances_value: float
     jewelry_value: float
+    furniture_value: float
+    art_value: float
     properties_count: int
     vehicles_count: int
     appliances_count: int
     jewelry_count: int
+    furniture_count: int
+    art_count: int
 
 class UserSettings(BaseModel):
     warranty_reminder_days: int = 30  # 7, 14, or 30 days
