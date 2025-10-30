@@ -43,7 +43,10 @@ export default function AddJewelryScreen() {
   
   // Dynamic placeholder color based on theme
   const placeholderColor = colorScheme === 'dark' ? '#999999' : '#666666';
+  const editId = params.id as string | undefined;
+  const isEditing = !!editId;
 
+  const [loading, setLoading] = useState(isEditing);
   const [name, setName] = useState('');
   const [type, setType] = useState('Ring');
   const [metal, setMetal] = useState('Gold');
@@ -74,6 +77,43 @@ export default function AddJewelryScreen() {
   const [datePickerVisible, setDatePickerVisible] = useState(false);
   const [datePickerMode, setDatePickerMode] = useState<'purchase' | 'appraisal' | 'warranty'>('purchase');
 
+  useEffect(() => {
+    if (isEditing) {
+      fetchJewelry();
+    }
+  }, [editId]);
+
+  const fetchJewelry = async () => {
+    try {
+      const response = await axios.get(
+        `${API_URL}/api/jewelry/${editId}`,
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      const data = response.data;
+      setName(data.name || '');
+      setType(data.type || 'Ring');
+      setMetal(data.metal || 'Gold');
+      setStones(data.stones || '');
+      setWeight(data.weight ? data.weight.toString() : '');
+      setPurity(data.purity || '');
+      setPurchaseDate(data.purchase_date || '');
+      setPurchaseCost(data.purchase_cost ? data.purchase_cost.toString() : '');
+      setAppraisalValue(data.appraisal_value ? data.appraisal_value.toString() : '');
+      setAppraisalDate(data.appraisal_date || '');
+      setCertificateNumber(data.certificate_number || '');
+      setPhotos(data.photos || []);
+      setCertificate(data.certificate || '');
+      setNotes(data.notes || '');
+      setWarrantyInfo(data.warranty_info || '');
+      setWarrantyExpiry(data.warranty_expiry || '');
+    } catch (error: any) {
+      console.error('Failed to fetch jewelry:', error);
+      Alert.alert('Error', 'Failed to load jewelry details');
+      router.back();
+    } finally {
+      setLoading(false);
+    }
+  };
   const handleScan = async () => {
     if (!permission?.granted) {
       const result = await requestPermission();
