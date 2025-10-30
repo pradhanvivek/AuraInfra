@@ -207,7 +207,7 @@ export default function AddVehicleScreen() {
         <Text style={styles.label}>Name *</Text>
         <TextInput
           style={styles.input}
-          placeholder="e.g., My BMW"
+          placeholder=" placeholderTextColor="#666666" e.g., My BMW"
           value={name}
           onChangeText={setName}
         />
@@ -217,7 +217,7 @@ export default function AddVehicleScreen() {
             <Text style={styles.label}>Make</Text>
             <TextInput
               style={styles.input}
-              placeholder="e.g., BMW"
+              placeholder=" placeholderTextColor="#666666" e.g., BMW"
               value={make}
               onChangeText={setMake}
             />
@@ -226,7 +226,7 @@ export default function AddVehicleScreen() {
             <Text style={styles.label}>Model</Text>
             <TextInput
               style={styles.input}
-              placeholder="e.g., 3 Series"
+              placeholder=" placeholderTextColor="#666666" e.g., 3 Series"
               value={model}
               onChangeText={setModel}
             />
@@ -238,7 +238,7 @@ export default function AddVehicleScreen() {
             <Text style={styles.label}>Year</Text>
             <TextInput
               style={styles.input}
-              placeholder="2020"
+              placeholder=" placeholderTextColor="#666666" 2020"
               value={year}
               onChangeText={setYear}
               keyboardType="numeric"
@@ -248,7 +248,7 @@ export default function AddVehicleScreen() {
             <Text style={styles.label}>VIN</Text>
             <TextInput
               style={styles.input}
-              placeholder="17 characters"
+              placeholder=" placeholderTextColor="#666666" 17 characters"
               value={vin}
               onChangeText={setVin}
             />
@@ -258,7 +258,7 @@ export default function AddVehicleScreen() {
         <Text style={styles.label}>Registration Number</Text>
         <TextInput
           style={styles.input}
-          placeholder="e.g., ABC-1234"
+          placeholder=" placeholderTextColor="#666666" e.g., ABC-1234"
           value={registration}
           onChangeText={setRegistration}
         />
@@ -268,7 +268,7 @@ export default function AddVehicleScreen() {
         <Text style={styles.label}>Insurance Provider</Text>
         <TextInput
           style={styles.input}
-          placeholder="e.g., Geico"
+          placeholder=" placeholderTextColor="#666666" e.g., Geico"
           value={insuranceProvider}
           onChangeText={setInsuranceProvider}
         />
@@ -276,7 +276,7 @@ export default function AddVehicleScreen() {
         <Text style={styles.label}>Policy Number</Text>
         <TextInput
           style={styles.input}
-          placeholder="Policy #"
+          placeholder=" placeholderTextColor="#666666" Policy #"
           value={insurancePolicy}
           onChangeText={setInsurancePolicy}
         />
@@ -310,7 +310,7 @@ export default function AddVehicleScreen() {
             <Text style={styles.label}>Purchase Cost</Text>
             <TextInput
               style={styles.input}
-              placeholder="$0"
+              placeholder=" placeholderTextColor="#666666" $0"
               value={purchaseCost}
               onChangeText={setPurchaseCost}
               keyboardType="decimal-pad"
@@ -320,7 +320,7 @@ export default function AddVehicleScreen() {
             <Text style={styles.label}>Current Value</Text>
             <TextInput
               style={styles.input}
-              placeholder="$0"
+              placeholder=" placeholderTextColor="#666666" $0"
               value={currentValue}
               onChangeText={setCurrentValue}
               keyboardType="decimal-pad"
@@ -355,7 +355,7 @@ export default function AddVehicleScreen() {
         <Text style={styles.label}>Maintenance Frequency (months)</Text>
         <TextInput
           style={styles.input}
-          placeholder="e.g., 6"
+          placeholder=" placeholderTextColor="#666666" e.g., 6"
           value={maintenanceFrequency}
           onChangeText={setMaintenanceFrequency}
           keyboardType="numeric"
@@ -385,7 +385,7 @@ export default function AddVehicleScreen() {
         <Text style={styles.sectionTitle}>Notes</Text>
         <TextInput
           style={[styles.input, styles.textArea]}
-          placeholder="Additional notes..."
+          placeholder=" placeholderTextColor="#666666" Additional notes..."
           value={notes}
           onChangeText={setNotes}
           multiline

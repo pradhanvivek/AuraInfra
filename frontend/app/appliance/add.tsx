@@ -210,7 +210,7 @@ export default function AddApplianceScreen() {
         <Text style={styles.label}>Name *</Text>
         <TextInput
           style={styles.input}
-          placeholder="e.g., Living Room TV"
+          placeholder=" placeholderTextColor="#666666" e.g., Living Room TV"
           value={name}
           onChangeText={setName}
         />
@@ -229,7 +229,7 @@ export default function AddApplianceScreen() {
             <Text style={styles.label}>Brand</Text>
             <TextInput
               style={styles.input}
-              placeholder="e.g., Samsung"
+              placeholder=" placeholderTextColor="#666666" e.g., Samsung"
               value={brand}
               onChangeText={setBrand}
             />
@@ -238,7 +238,7 @@ export default function AddApplianceScreen() {
             <Text style={styles.label}>Model</Text>
             <TextInput
               style={styles.input}
-              placeholder="e.g., UN55"
+              placeholder=" placeholderTextColor="#666666" e.g., UN55"
               value={model}
               onChangeText={setModel}
             />
@@ -248,7 +248,7 @@ export default function AddApplianceScreen() {
         <Text style={styles.label}>Serial Number</Text>
         <TextInput
           style={styles.input}
-          placeholder="Serial #"
+          placeholder=" placeholderTextColor="#666666" Serial #"
           value={serialNumber}
           onChangeText={setSerialNumber}
         />
@@ -258,7 +258,7 @@ export default function AddApplianceScreen() {
         <Text style={styles.label}>Warranty Information</Text>
         <TextInput
           style={styles.input}
-          placeholder="e.g., 2 year manufacturer warranty"
+          placeholder=" placeholderTextColor="#666666" e.g., 2 year manufacturer warranty"
           value={warrantyInfo}
           onChangeText={setWarrantyInfo}
         />
@@ -292,7 +292,7 @@ export default function AddApplianceScreen() {
             <Text style={styles.label}>Purchase Cost</Text>
             <TextInput
               style={styles.input}
-              placeholder="$0"
+              placeholder=" placeholderTextColor="#666666" $0"
               value={purchaseCost}
               onChangeText={setPurchaseCost}
               keyboardType="decimal-pad"
@@ -302,7 +302,7 @@ export default function AddApplianceScreen() {
             <Text style={styles.label}>Current Value</Text>
             <TextInput
               style={styles.input}
-              placeholder="$0"
+              placeholder=" placeholderTextColor="#666666" $0"
               value={currentValue}
               onChangeText={setCurrentValue}
               keyboardType="decimal-pad"
@@ -337,7 +337,7 @@ export default function AddApplianceScreen() {
         <Text style={styles.label}>Maintenance Frequency (months)</Text>
         <TextInput
           style={styles.input}
-          placeholder="e.g., 12"
+          placeholder=" placeholderTextColor="#666666" e.g., 12"
           value={maintenanceFrequency}
           onChangeText={setMaintenanceFrequency}
           keyboardType="numeric"
@@ -367,7 +367,7 @@ export default function AddApplianceScreen() {
         <Text style={styles.sectionTitle}>Notes</Text>
         <TextInput
           style={[styles.input, styles.textArea]}
-          placeholder="Additional notes..."
+          placeholder=" placeholderTextColor="#666666" Additional notes..."
           value={notes}
           onChangeText={setNotes}
           multiline
