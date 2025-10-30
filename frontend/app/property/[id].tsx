@@ -57,6 +57,9 @@ export default function PropertyDetails() {
     <View style={styles.container}>
       {/* Property Header */}
       <View style={styles.header}>
+        <TouchableOpacity onPress={() => router.back()} style={styles.backBtn}>
+          <Ionicons name="arrow-back" size={24} color="#007AFF" />
+        </TouchableOpacity>
         <View style={styles.headerTextContainer}>
           <Text style={styles.propertyName} numberOfLines={1}>
             {property?.name || 'Property Details'}
@@ -67,6 +70,12 @@ export default function PropertyDetails() {
             </Text>
           )}
         </View>
+        <TouchableOpacity 
+          onPress={() => router.push(`/property/edit/${id}`)} 
+          style={styles.editBtn}
+        >
+          <Ionicons name="create-outline" size={24} color="#007AFF" />
+        </TouchableOpacity>
       </View>
 
       {/* Tabs Container */}
