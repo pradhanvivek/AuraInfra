@@ -807,28 +807,41 @@ async def delete_fixture(
 async def get_portfolio_summary(user_id: str = Depends(get_current_user)):
     """Get portfolio summary with total values and counts"""
     try:
+        # Helper function to safely convert to float
+        def safe_float(value):
+            if value is None:
+                return 0.0
+            try:
+                return float(value)
+            except (ValueError, TypeError):
+                return 0.0
+        
         # Get properties
         properties_cursor = db.properties.find({"user_id": user_id})
         properties = await properties_cursor.to_list(length=1000)
-        properties_value = sum(float(p.get('price', 0)) for p in properties)
+        properties_value = sum(safe_float(p.get('price', 0)) for p in properties)
         
         # Get vehicles
         vehicles_cursor = db.vehicles.find({"user_id": user_id})
         vehicles = await vehicles_cursor.to_list(length=1000)
-        vehicles_value = sum(float(v.get('current_value', 0) or 0) for v in vehicles)
+        vehicles_value = sum(safe_float(v.get('current_value', 0)) for v in vehicles)
         
         # Get appliances
         appliances_cursor = db.appliances.find({"user_id": user_id})
         appliances = await appliances_cursor.to_list(length=1000)
-        appliances_value = sum(float(a.get('current_value', 0) or 0) for a in appliances)
+        appliances_value = sum(safe_float(a.get('current_value', 0)) for a in appliances)
         
         # Get jewelry
         jewelry_cursor = db.jewelry.find({"user_id": user_id})
         jewelry = await jewelry_cursor.to_list(length=1000)
-        jewelry_value = sum(float(j.get('appraisal_value', 0) or 0) for j in jewelry)
+        jewelry_value = sum(safe_float(j.get('appraisal_value', 0)) for j in jewelry)
+        
+        total = properties_value + vehicles_value + appliances_value + jewelry_value
+        
+        logger.info(f"Portfolio Summary - Properties: {properties_value}, Vehicles: {vehicles_value}, Appliances: {appliances_value}, Jewelry: {jewelry_value}, Total: {total}")
         
         return PortfolioSummary(
-            total_value=properties_value + vehicles_value + appliances_value + jewelry_value,
+            total_value=total,
             properties_value=properties_value,
             vehicles_value=vehicles_value,
             appliances_value=appliances_value,
