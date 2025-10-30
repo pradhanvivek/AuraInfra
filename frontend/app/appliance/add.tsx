@@ -297,7 +297,8 @@ export default function AddApplianceScreen() {
             <Text style={styles.label}>Purchase Cost</Text>
             <TextInput
               style={styles.input}
-              placeholder=" placeholderTextColor="#666666" $0"
+              placeholder="$0"
+              placeholderTextColor="#666666"
               value={purchaseCost}
               onChangeText={setPurchaseCost}
               keyboardType="decimal-pad"
@@ -307,7 +308,8 @@ export default function AddApplianceScreen() {
             <Text style={styles.label}>Current Value</Text>
             <TextInput
               style={styles.input}
-              placeholder=" placeholderTextColor="#666666" $0"
+              placeholder="$0"
+              placeholderTextColor="#666666"
               value={currentValue}
               onChangeText={setCurrentValue}
               keyboardType="decimal-pad"
