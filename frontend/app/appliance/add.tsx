@@ -572,7 +572,7 @@ const styles = StyleSheet.create({
   },
   datePlaceholder: {
     fontSize: 16,
-    color: '#8E8E93',
+    color: '#666666',
   },
   photoScroll: {
     marginBottom: 16,
