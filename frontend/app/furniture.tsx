@@ -144,7 +144,13 @@ export default function FurnitureScreen() {
         style={styles.fab}
         onPress={() => router.push('/furniture/add' as any)}
       >
-        <Ionicons name="add" size={28} color="#fff" />
+        <Ionicons name="add" size={28} color="#fff" />\n      </TouchableOpacity>
+
+      <TouchableOpacity
+        style={[styles.fab, { bottom: 96, backgroundColor: '#FF9500' }]}
+        onPress={() => router.push('/furniture/add?mode=scan' as any)}
+      >
+        <Ionicons name="scan" size={28} color="#fff" />
       </TouchableOpacity>
     </View>
   );
