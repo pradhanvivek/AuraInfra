@@ -1,4 +1,23 @@
 import { Platform, NativeModules } from 'react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+
+// Get user's saved currency preference
+const getUserCurrencyPreference = async (): Promise<string | null> => {
+  try {
+    return await AsyncStorage.getItem('user_currency_preference');
+  } catch {
+    return null;
+  }
+};
+
+// Get user's saved measurement preference  
+const getUserMeasurementPreference = async (): Promise<string | null> => {
+  try {
+    return await AsyncStorage.getItem('user_measurement_preference');
+  } catch {
+    return null;
+  }
+};
 
 // Get device locale
 export const getDeviceLocale = (): string => {
