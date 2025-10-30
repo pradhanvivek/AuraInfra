@@ -242,34 +242,46 @@ export default function AddApplianceScreen() {
 
     setSaving(true);
     try {
-      await axios.post(
-        `${API_URL}/api/appliances`,
-        {
-          name: name.trim(),
-          category,
-          brand: brand.trim() || undefined,
-          model: model.trim() || undefined,
-          serial_number: serialNumber.trim() || undefined,
-          purchase_date: purchaseDate || undefined,
-          purchase_cost: purchaseCost ? parseFloat(purchaseCost) : undefined,
-          current_value: currentValue ? parseFloat(currentValue) : undefined,
-          warranty_info: warrantyInfo.trim() || undefined,
-          warranty_expiry_date: warrantyExpiry || undefined,
-          photos,
-          invoice: invoice || undefined,
-          notes: notes.trim() || undefined,
-          last_maintenance_date: lastMaintenance || undefined,
-          next_maintenance_date: nextMaintenance || undefined,
-          maintenance_frequency_months: maintenanceFrequency ? parseInt(maintenanceFrequency) : undefined,
-        },
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
+      const payload = {
+        name: name.trim(),
+        category,
+        brand: brand.trim() || undefined,
+        model: model.trim() || undefined,
+        serial_number: serialNumber.trim() || undefined,
+        purchase_date: purchaseDate || undefined,
+        purchase_cost: purchaseCost ? parseFloat(purchaseCost) : undefined,
+        current_value: currentValue ? parseFloat(currentValue) : undefined,
+        warranty_info: warrantyInfo.trim() || undefined,
+        warranty_expiry_date: warrantyExpiry || undefined,
+        photos,
+        invoice: invoice || undefined,
+        notes: notes.trim() || undefined,
+        last_maintenance_date: lastMaintenance || undefined,
+        next_maintenance_date: nextMaintenance || undefined,
+        maintenance_frequency_months: maintenanceFrequency ? parseInt(maintenanceFrequency) : undefined,
+      };
 
-      Alert.alert('Success', 'Appliance added successfully', [
-        { text: 'OK', onPress: () => router.back() }
-      ]);
+      if (isEditing) {
+        await axios.put(
+          `${API_URL}/api/appliances/${editId}`,
+          payload,
+          { headers: { Authorization: `Bearer ${token}` } }
+        );
+        Alert.alert('Success', 'Appliance updated successfully', [
+          { text: 'OK', onPress: () => router.back() }
+        ]);
+      } else {
+        await axios.post(
+          `${API_URL}/api/appliances`,
+          payload,
+          { headers: { Authorization: `Bearer ${token}` } }
+        );
+        Alert.alert('Success', 'Appliance added successfully', [
+          { text: 'OK', onPress: () => router.back() }
+        ]);
+      }
     } catch (error) {
-      Alert.alert('Error', 'Failed to save appliance');
+      Alert.alert('Error', `Failed to ${isEditing ? 'update' : 'save'} appliance`);
     } finally {
       setSaving(false);
     }
