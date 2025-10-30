@@ -65,6 +65,8 @@ class UserProfile(BaseModel):
     phone: Optional[str] = None
     warranty_reminder_days: int = 30
     geomancy_preference: str = "vastu"  # "vastu" or "feng_shui"
+    currency_preference: Optional[str] = None  # "USD", "INR", "EUR", etc.
+    measurement_system: Optional[str] = None  # "imperial" or "metric"
     created_at: datetime
 
 class UserProfileUpdate(BaseModel):
@@ -72,6 +74,8 @@ class UserProfileUpdate(BaseModel):
     phone: Optional[str] = None
     warranty_reminder_days: Optional[int] = None
     geomancy_preference: Optional[str] = None  # "vastu" or "feng_shui"
+    currency_preference: Optional[str] = None  # "USD", "INR", "EUR", etc.
+    measurement_system: Optional[str] = None  # "imperial" or "metric"
 
 class Property(BaseModel):
     id: str = Field(default_factory=lambda: str(uuid.uuid4()))
