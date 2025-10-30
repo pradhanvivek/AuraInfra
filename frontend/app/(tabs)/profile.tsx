@@ -24,6 +24,8 @@ interface UserProfile {
   phone?: string;
   warranty_reminder_days: number;
   geomancy_preference: string;
+  currency_preference?: string;
+  measurement_system?: string;
   created_at: string;
 }
 
@@ -40,6 +42,10 @@ export default function Profile() {
   const [selectedReminderDays, setSelectedReminderDays] = useState(30);
   const [geomancyModalVisible, setGeomancyModalVisible] = useState(false);
   const [selectedGeomancy, setSelectedGeomancy] = useState<'vastu' | 'feng_shui'>('vastu');
+  const [currencyModalVisible, setCurrencyModalVisible] = useState(false);
+  const [selectedCurrency, setSelectedCurrency] = useState('INR');
+  const [measurementModalVisible, setMeasurementModalVisible] = useState(false);
+  const [selectedMeasurement, setSelectedMeasurement] = useState<'metric' | 'imperial'>('metric');
 
   useEffect(() => {
     fetchProfile();
