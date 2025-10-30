@@ -937,9 +937,25 @@ async def get_portfolio_summary(user_id: str = Depends(get_current_user)):
             for j in jewelry
         )
         
-        total = properties_value + vehicles_value + appliances_value + jewelry_value
+        # Get furniture - use current_value or fall back to purchase_cost
+        furniture_cursor = db.furniture.find({"user_id": user_id})
+        furniture = await furniture_cursor.to_list(length=1000)
+        furniture_value = sum(
+            safe_float(f.get('current_value')) or safe_float(f.get('purchase_cost', 0)) 
+            for f in furniture
+        )
         
-        logger.info(f"Portfolio Summary - Properties: {properties_value}, Vehicles: {vehicles_value}, Appliances: {appliances_value}, Jewelry: {jewelry_value}, Total: {total}")
+        # Get art - use appraisal_value or fall back to current_value or purchase_cost
+        art_cursor = db.art.find({"user_id": user_id})
+        art = await art_cursor.to_list(length=1000)
+        art_value = sum(
+            safe_float(a.get('appraisal_value')) or safe_float(a.get('current_value')) or safe_float(a.get('purchase_cost', 0)) 
+            for a in art
+        )
+        
+        total = properties_value + vehicles_value + appliances_value + jewelry_value + furniture_value + art_value
+        
+        logger.info(f"Portfolio Summary - Properties: {properties_value}, Vehicles: {vehicles_value}, Appliances: {appliances_value}, Jewelry: {jewelry_value}, Furniture: {furniture_value}, Art: {art_value}, Total: {total}")
         
         return PortfolioSummary(
             total_value=total,
@@ -947,10 +963,14 @@ async def get_portfolio_summary(user_id: str = Depends(get_current_user)):
             vehicles_value=vehicles_value,
             appliances_value=appliances_value,
             jewelry_value=jewelry_value,
+            furniture_value=furniture_value,
+            art_value=art_value,
             properties_count=len(properties),
             vehicles_count=len(vehicles),
             appliances_count=len(appliances),
-            jewelry_count=len(jewelry)
+            jewelry_count=len(jewelry),
+            furniture_count=len(furniture),
+            art_count=len(art)
         )
     except Exception as e:
         logger.error(f"Portfolio summary error: {str(e)}")
