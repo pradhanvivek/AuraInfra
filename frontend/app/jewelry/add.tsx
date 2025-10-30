@@ -65,9 +65,12 @@ export default function AddJewelryScreen() {
 
   const [saving, setSaving] = useState(false);
   const [scanning, setScanning] = useState(false);
+  const [scanningReceipt, setScanningReceipt] = useState(false);
   const [cameraVisible, setCameraVisible] = useState(scanMode);
+  const [receiptCameraVisible, setReceiptCameraVisible] = useState(false);
   const [permission, requestPermission] = useCameraPermissions();
   const [cameraRef, setCameraRef] = useState<any>(null);
+  const [receiptCameraRef, setReceiptCameraRef] = useState<any>(null);
   const [datePickerVisible, setDatePickerVisible] = useState(false);
   const [datePickerMode, setDatePickerMode] = useState<'purchase' | 'appraisal' | 'warranty'>('purchase');
 
