@@ -557,6 +557,33 @@ export default function AddJewelryScreen() {
         </View>
       </Modal>
 
+      {/* Receipt Camera Modal */}
+      <Modal visible={receiptCameraVisible} animationType="slide" presentationStyle="pageSheet">
+        <View style={styles.cameraContainer}>
+          <CameraView
+            style={styles.camera}
+            ref={(ref) => setReceiptCameraRef(ref)}
+            facing="back"
+          >
+            <View style={styles.cameraOverlay}>
+              <TouchableOpacity
+                style={styles.closeCamera}
+                onPress={() => setReceiptCameraVisible(false)}
+              >
+                <Ionicons name="close" size={32} color="#fff" />
+              </TouchableOpacity>
+              <View style={styles.cameraInstructions}>
+                <Text style={styles.instructionText}>Point at receipt/invoice</Text>
+                <Text style={styles.instructionSubtext}>Ensure text is clear and visible</Text>
+              </View>
+              <TouchableOpacity style={styles.captureButton} onPress={handleTakeReceiptPicture}>
+                <View style={styles.captureButtonInner} />
+              </TouchableOpacity>
+            </View>
+          </CameraView>
+        </View>
+      </Modal>
+
       <DateTimePickerModal
         isVisible={datePickerVisible}
         mode="date"
@@ -569,6 +596,16 @@ export default function AddJewelryScreen() {
           <View style={styles.scanningCard}>
             <ActivityIndicator size="large" color="#FF2D55" />
             <Text style={styles.scanningText}>Analyzing jewelry...</Text>
+          </View>
+        </View>
+      )}
+
+      {scanningReceipt && (
+        <View style={styles.scanningOverlay}>
+          <View style={styles.scanningCard}>
+            <ActivityIndicator size="large" color="#007AFF" />
+            <Text style={styles.scanningText}>Scanning receipt...</Text>
+            <Text style={styles.scanningSubtext}>Extracting purchase details</Text>
           </View>
         </View>
       )}
