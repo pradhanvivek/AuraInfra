@@ -153,11 +153,15 @@ export default function ApplianceDetailsScreen() {
             <Text style={styles.sectionTitle}>Photos</Text>
             <ScrollView horizontal showsHorizontalScrollIndicator={false}>
               {appliance.photos.map((photo, index) => (
-                <Image
+                <TouchableOpacity
                   key={index}
-                  source={{ uri: `data:image/jpeg;base64,${photo}` }}
-                  style={styles.photo}
-                />
+                  onPress={() => setSelectedImageIndex(index)}
+                >
+                  <Image
+                    source={{ uri: `data:image/jpeg;base64,${photo}` }}
+                    style={styles.photo}
+                  />
+                </TouchableOpacity>
               ))}
             </ScrollView>
           </View>
