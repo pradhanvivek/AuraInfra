@@ -622,6 +622,7 @@ export default function FixturesScreen({ propertyId }: FixturesScreenProps) {
             <TextInput
               style={styles.input}
               placeholder="Brand name"
+              placeholderTextColor={placeholderColor}
               value={make}
               onChangeText={setMake}
             />
