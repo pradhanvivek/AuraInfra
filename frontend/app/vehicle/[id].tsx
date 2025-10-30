@@ -233,7 +233,7 @@ export default function VehicleDetailsScreen() {
 
         <View style={styles.bottomPadding} />
       </ScrollView>
-    </View>
+    </SafeAreaView>
   );
 }
 
