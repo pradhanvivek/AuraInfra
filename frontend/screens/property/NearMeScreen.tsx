@@ -100,7 +100,7 @@ export default function NearMeScreen({ propertyId }: NearMeScreenProps) {
   const geocodeAndFetchPlaces = async (address: string) => {
     try {
       const geocodeResponse = await fetch(
-        `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(address)}`
+        `${NOMINATIM_URL}/search?format=json&q=${encodeURIComponent(address)}`
       );
       const geocodeData = await geocodeResponse.json();
       
