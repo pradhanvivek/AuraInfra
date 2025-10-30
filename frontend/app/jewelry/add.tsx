@@ -247,6 +247,7 @@ export default function AddJewelryScreen() {
         <TextInput
           style={styles.input}
           placeholder="e.g., 1 carat diamond, 2 rubies"
+          placeholderTextColor="#666666"
           value={stones}
           onChangeText={setStones}
         />
@@ -257,6 +258,7 @@ export default function AddJewelryScreen() {
             <TextInput
               style={styles.input}
               placeholder="0"
+              placeholderTextColor="#666666"
               value={weight}
               onChangeText={setWeight}
               keyboardType="decimal-pad"
@@ -267,6 +269,7 @@ export default function AddJewelryScreen() {
             <TextInput
               style={styles.input}
               placeholder="e.g., 18K, 925"
+              placeholderTextColor="#666666"
               value={purity}
               onChangeText={setPurity}
             />
@@ -292,6 +295,7 @@ export default function AddJewelryScreen() {
             <TextInput
               style={styles.input}
               placeholder="$0"
+              placeholderTextColor="#666666"
               value={purchaseCost}
               onChangeText={setPurchaseCost}
               keyboardType="decimal-pad"
@@ -302,6 +306,7 @@ export default function AddJewelryScreen() {
             <TextInput
               style={styles.input}
               placeholder="$0"
+              placeholderTextColor="#666666"
               value={appraisalValue}
               onChangeText={setAppraisalValue}
               keyboardType="decimal-pad"
@@ -326,6 +331,7 @@ export default function AddJewelryScreen() {
         <TextInput
           style={styles.input}
           placeholder="e.g., GIA 1234567890"
+          placeholderTextColor="#666666"
           value={certificateNumber}
           onChangeText={setCertificateNumber}
         />
@@ -334,6 +340,7 @@ export default function AddJewelryScreen() {
         <TextInput
           style={styles.input}
           placeholder="e.g., Lifetime manufacturer warranty"
+          placeholderTextColor="#666666"
           value={warrantyInfo}
           onChangeText={setWarrantyInfo}
         />
