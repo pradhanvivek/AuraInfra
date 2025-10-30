@@ -92,6 +92,22 @@ export default function DashboardScreen() {
       count: portfolioData?.jewelry_count || 0,
     },
     {
+      id: 'furniture',
+      title: 'Furniture',
+      icon: 'bed',
+      color: '#34C759',
+      route: '/furniture',
+      count: portfolioData?.furniture_count || 0,
+    },
+    {
+      id: 'art',
+      title: 'Art',
+      icon: 'color-palette',
+      color: '#AF52DE',
+      route: '/art',
+      count: portfolioData?.art_count || 0,
+    },
+    {
       id: 'portfolio',
       title: 'Portfolio',
       icon: 'pie-chart',
