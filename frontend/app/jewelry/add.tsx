@@ -272,10 +272,17 @@ export default function AddJewelryScreen() {
 
       <ScrollView contentContainerStyle={styles.content}>
         {!scanMode && (
-          <TouchableOpacity style={styles.scanButton} onPress={handleScan}>
-            <Ionicons name="camera" size={24} color="#fff" />
-            <Text style={styles.scanButtonText}>Scan Jewelry with AI</Text>
-          </TouchableOpacity>
+          <>
+            <TouchableOpacity style={styles.scanButton} onPress={handleScan}>
+              <Ionicons name="camera" size={24} color="#fff" />
+              <Text style={styles.scanButtonText}>Scan Jewelry with AI</Text>
+            </TouchableOpacity>
+            
+            <TouchableOpacity style={styles.receiptButton} onPress={handleScanReceipt}>
+              <Ionicons name="receipt" size={24} color="#007AFF" />
+              <Text style={styles.receiptButtonText}>Scan Receipt/Invoice</Text>
+            </TouchableOpacity>
+          </>
         )}
 
         <Text style={styles.sectionTitle}>Basic Information</Text>
