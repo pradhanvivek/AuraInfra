@@ -381,6 +381,7 @@ export default function AddJewelryScreen() {
         <TextInput
           style={[styles.input, styles.textArea]}
           placeholder="Additional notes, history, special occasions..."
+          placeholderTextColor="#666666"
           value={notes}
           onChangeText={setNotes}
           multiline
