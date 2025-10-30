@@ -51,6 +51,9 @@ interface FixturesScreenProps {
 
 export default function FixturesScreen({ propertyId }: FixturesScreenProps) {
   const { token } = useAuth();
+  const colorScheme = useColorScheme();
+  const placeholderColor = colorScheme === 'dark' ? '#999' : '#666';
+  
   const [fixtures, setFixtures] = useState<Fixture[]>([]);
   const [loading, setLoading] = useState(true);
   const [modalVisible, setModalVisible] = useState(false);
