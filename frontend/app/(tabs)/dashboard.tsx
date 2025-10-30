@@ -22,7 +22,7 @@ interface PortfolioData {
 
 export default function DashboardScreen() {
   const router = useRouter();
-  const { token, user } = useAuth();
+  const { token, username } = useAuth();
   const [portfolioData, setPortfolioData] = useState<PortfolioData | null>(null);
   const [loading, setLoading] = useState(true);
 
