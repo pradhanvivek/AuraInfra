@@ -21,6 +21,16 @@ export default function Login() {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
+  const colorScheme = useColorScheme();
+  
+  // Dynamic colors based on theme
+  const isDark = colorScheme === 'dark';
+  const backgroundColor = isDark ? '#000' : '#fff';
+  const textColor = isDark ? '#fff' : '#000';
+  const subtextColor = isDark ? '#999' : '#666';
+  const inputBgColor = isDark ? '#1C1C1E' : '#f5f5f5';
+  const inputBorderColor = isDark ? '#38383A' : '#e0e0e0';
+  const placeholderColor = isDark ? '#999' : '#666';
 
   const handleLogin = async () => {
     if (!username || !password) {
@@ -31,7 +41,7 @@ export default function Login() {
     setLoading(true);
     try {
       await login(username, password);
-      router.replace('/(tabs)/properties');
+      router.replace('/(tabs)/dashboard');
     } catch (error: any) {
       Alert.alert('Login Failed', error.message);
     } finally {
@@ -40,7 +50,7 @@ export default function Login() {
   };
 
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView style={[styles.container, { backgroundColor }]}>
       <KeyboardAvoidingView
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
         style={styles.keyboardView}
@@ -50,17 +60,22 @@ export default function Login() {
             <View style={styles.logoBox}>
               <Text style={styles.logoText}>A</Text>
             </View>
-            <Text style={styles.appName}>AuraInfra.ai</Text>
-            <Text style={styles.tagline}>Property Management Made Simple</Text>
+            <Text style={[styles.appName, { color: textColor }]}>AuraInfra.ai</Text>
+            <Text style={[styles.tagline, { color: subtextColor }]}>Your Digital Vault for Physical Assets</Text>
           </View>
 
-          <Text style={styles.title}>Welcome Back</Text>
-          <Text style={styles.subtitle}>Sign in to continue</Text>
+          <Text style={[styles.title, { color: textColor }]}>Welcome Back</Text>
+          <Text style={[styles.subtitle, { color: subtextColor }]}>Sign in to continue</Text>
 
           <View style={styles.form}>
             <TextInput
-              style={styles.input}
+              style={[styles.input, { 
+                backgroundColor: inputBgColor, 
+                borderColor: inputBorderColor,
+                color: textColor 
+              }]}
               placeholder="Username"
+              placeholderTextColor={placeholderColor}
               value={username}
               onChangeText={setUsername}
               autoCapitalize="none"
@@ -68,8 +83,13 @@ export default function Login() {
             />
 
             <TextInput
-              style={styles.input}
+              style={[styles.input, { 
+                backgroundColor: inputBgColor, 
+                borderColor: inputBorderColor,
+                color: textColor 
+              }]}
               placeholder="Password"
+              placeholderTextColor={placeholderColor}
               value={password}
               onChangeText={setPassword}
               secureTextEntry
@@ -94,6 +114,12 @@ export default function Login() {
             >
               <Text style={styles.linkText}>Don't have an account? Register</Text>
             </TouchableOpacity>
+          </View>
+
+          <View style={styles.footer}>
+            <Text style={[styles.companyName, { color: subtextColor }]}>
+              Jash Vish Infratech Private Limited
+            </Text>
           </View>
         </View>
       </KeyboardAvoidingView>
