@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
-Comprehensive Backend API Tests for Property Manager
-Tests all authentication, property, document, fixture, measurement, and AI analysis endpoints
+Backend API Testing for Property Management App
+Testing Focus: Property Cost Fields, Appliance Edit, Jewelry Edit
 """
 
 import requests
@@ -10,9 +10,14 @@ import base64
 import uuid
 from datetime import datetime
 import os
+from dotenv import load_dotenv
 
-# Get backend URL from environment variable
-BACKEND_URL = os.environ.get('BACKEND_URL', 'http://localhost:8001/api')
+# Load environment variables
+load_dotenv('/app/frontend/.env')
+
+# Configuration
+BASE_URL = os.getenv('EXPO_PUBLIC_BACKEND_URL', 'https://aurainfra-pm.preview.emergentagent.com')
+API_BASE = f"{BASE_URL}/api"
 
 class PropertyManagerAPITester:
     def __init__(self):
