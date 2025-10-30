@@ -126,7 +126,7 @@ export default function JewelryDetailsScreen() {
   }
 
   return (
-    <View style={styles.container}>
+    <SafeAreaView style={styles.container} edges={['top']}>
       {/* Header */}
       <View style={styles.header}>
         <TouchableOpacity onPress={() => router.back()} style={styles.backBtn}>
@@ -154,11 +154,18 @@ export default function JewelryDetailsScreen() {
             <Text style={styles.sectionTitle}>Photos</Text>
             <ScrollView horizontal showsHorizontalScrollIndicator={false}>
               {jewelry.photos.map((photo, index) => (
-                <Image
+                <TouchableOpacity
                   key={index}
-                  source={{ uri: `data:image/jpeg;base64,${photo}` }}
-                  style={styles.photo}
-                />
+                  onPress={() => {
+                    setSelectedImageUri(`data:image/jpeg;base64,${photo}`);
+                    setImageViewerVisible(true);
+                  }}
+                >
+                  <Image
+                    source={{ uri: `data:image/jpeg;base64,${photo}` }}
+                    style={styles.photo}
+                  />
+                </TouchableOpacity>
               ))}
             </ScrollView>
           </View>
