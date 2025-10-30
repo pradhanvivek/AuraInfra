@@ -1440,6 +1440,94 @@ Provide your best assessment based on visible artistic elements, technique, comp
         logger.error(f"Art scan error: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))
 
+# ============= FURNITURE RECEIPT SCANNER =============
+
+@api_router.post("/furniture/scan-receipt", response_model=ReceiptScanResult)
+async def scan_furniture_receipt(
+    scan_request: ReceiptScanRequest,
+    user_id: str = Depends(get_current_user)
+):
+    """
+    Use Gemini Vision AI to extract furniture purchase information from receipt/invoice images
+    """
+    try:
+        from emergentintegrations.llm.chat import LlmChat, UserMessage, ImageContent
+        import json
+        
+        api_key = os.environ.get('EMERGENT_LLM_KEY')
+        if not api_key:
+            raise HTTPException(status_code=500, detail="API key not configured")
+        
+        chat = LlmChat(
+            api_key=api_key,
+            session_id=f"furniture_receipt_{user_id}_{uuid.uuid4()}",
+            system_message="You are an expert at extracting furniture purchase information from receipts and invoices."
+        ).with_model("gemini", "gemini-2.0-flash")
+        
+        user_message = UserMessage(
+            text="""Analyze this furniture receipt/invoice image and extract all relevant purchase information.
+
+IMPORTANT: This may be an Indian receipt with DD/MM/YYYY date format, rupee currency (₹), and GST details.
+
+Instructions:
+- For dates in DD/MM/YYYY format, convert to YYYY-MM-DD format
+- If multiple furniture items are listed, focus on the PRIMARY/MAIN item (usually the most expensive or first major item)
+- Extract warranty information from any warranty cards, terms, or product details visible
+- For Indian receipts, look for: Furniture name, Brand, Model/SKU, Material, MRP/Price, GST details
+- Convert any Indian rupee amounts (₹) to numeric format without currency symbol
+- Look for warranty period mentions like "1 year", "2 years", "6 months" etc.
+- Extract furniture-specific details like material, dimensions if visible
+
+Return ONLY a valid JSON object with this exact structure (use null for fields you cannot find):
+{
+  "vendor_name": "Store or vendor name (e.g., IKEA, Pepperfry, Urban Ladder)",
+  "purchase_date": "YYYY-MM-DD format date (convert from DD/MM/YYYY if needed)",
+  "item_name": "Furniture item name (e.g., 'Sofa Set', 'Dining Table')",
+  "item_description": "Brief description including material, dimensions if visible",
+  "brand": "Brand name",
+  "model": "Model number, SKU, or product code if visible",
+  "serial_number": "Serial number if visible",
+  "purchase_cost": 0.00,
+  "warranty_info": "Warranty details if mentioned (e.g., '1 year manufacturer warranty')",
+  "warranty_months": 0,
+  "confidence": 0.95
+}
+
+Examples:
+- If date shows "30/10/2025", convert to "2025-10-30"
+- If price shows "₹45,900", extract as 45900.00
+- If item is "3-Seater Fabric Sofa" with brand "Urban Ladder", extract brand as "Urban Ladder" and item_name as "3-Seater Fabric Sofa"
+- If warranty shows "2 years", set warranty_months to 24
+
+Be precise with extracted values. Set confidence between 0.0 and 1.0 based on image quality and visibility of information.""",
+            file_contents=[ImageContent(image_base64=scan_request.image)]
+        )
+        
+        response = await chat.send_message(user_message)
+        
+        try:
+            # Try to extract JSON from response
+            json_start = response.find('{')
+            json_end = response.rfind('}') + 1
+            
+            if json_start != -1 and json_end > json_start:
+                json_str = response[json_start:json_end]
+                result_data = json.loads(json_str)
+                return ReceiptScanResult(**result_data)
+            else:
+                raise ValueError("No JSON found in response")
+                
+        except (json.JSONDecodeError, ValueError) as e:
+            logger.error(f"Failed to parse receipt scan response: {str(e)}")
+            logger.error(f"Raw response: {response}")
+            raise HTTPException(
+                status_code=500, 
+                detail=f"Failed to parse receipt data. Please ensure the image is clear and contains a valid receipt."
+            )
+    except Exception as e:
+        logger.error(f"Furniture receipt scan error: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
 # ============= RECEIPT SCANNER ENDPOINT =============
 
 @api_router.post("/scan-receipt", response_model=ReceiptScanResult)
