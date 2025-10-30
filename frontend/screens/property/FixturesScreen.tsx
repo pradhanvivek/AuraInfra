@@ -640,6 +640,7 @@ export default function FixturesScreen({ propertyId }: FixturesScreenProps) {
             <TextInput
               style={styles.input}
               placeholder="Serial number"
+              placeholderTextColor={placeholderColor}
               value={serialNumber}
               onChangeText={setSerialNumber}
             />
