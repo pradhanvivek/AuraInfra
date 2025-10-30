@@ -394,8 +394,11 @@ class VehicleScanResult(BaseModel):
     confidence: float
 
 class JewelryScanResult(BaseModel):
+    name: Optional[str] = None
     type: str
     metal: Optional[str] = None
+    stones: Optional[str] = None
+    weight: Optional[float] = None
     estimated_value: Optional[float] = None
     confidence: float
 
