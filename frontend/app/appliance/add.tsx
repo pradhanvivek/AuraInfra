@@ -10,7 +10,9 @@ import {
   ActivityIndicator,
   Modal,
   Image,
-} from 'react-native';
+} ,
+  useColorScheme,
+} from \'react-native\';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { CameraView, useCameraPermissions } from 'expo-camera';
@@ -32,6 +34,10 @@ export default function AddApplianceScreen() {
   const router = useRouter();
   const { token } = useAuth();
   const params = useLocalSearchParams();
+  const colorScheme = useColorScheme();
+  
+  // Dynamic placeholder color based on theme
+  const placeholderColor = colorScheme === 'dark' ? '#999999' : '#666666';
   const scanMode = params.mode === 'scan';
 
   const [name, setName] = useState('');
@@ -211,7 +217,7 @@ export default function AddApplianceScreen() {
         <TextInput
           style={styles.input}
           placeholder="e.g., Living Room TV"
-          placeholderTextColor="#666666"
+          placeholderTextColor={placeholderColor}
           value={name}
           onChangeText={setName}
         />
@@ -231,7 +237,7 @@ export default function AddApplianceScreen() {
             <TextInput
               style={styles.input}
               placeholder="e.g., Samsung"
-              placeholderTextColor="#666666"
+              placeholderTextColor={placeholderColor}
               value={brand}
               onChangeText={setBrand}
             />
@@ -241,7 +247,7 @@ export default function AddApplianceScreen() {
             <TextInput
               style={styles.input}
               placeholder="e.g., UN55"
-              placeholderTextColor="#666666"
+              placeholderTextColor={placeholderColor}
               value={model}
               onChangeText={setModel}
             />
@@ -252,7 +258,7 @@ export default function AddApplianceScreen() {
         <TextInput
           style={styles.input}
           placeholder="Serial #"
-          placeholderTextColor="#666666"
+          placeholderTextColor={placeholderColor}
           value={serialNumber}
           onChangeText={setSerialNumber}
         />
@@ -263,7 +269,7 @@ export default function AddApplianceScreen() {
         <TextInput
           style={styles.input}
           placeholder="e.g., 2 year manufacturer warranty"
-          placeholderTextColor="#666666"
+          placeholderTextColor={placeholderColor}
           value={warrantyInfo}
           onChangeText={setWarrantyInfo}
         />
@@ -298,7 +304,7 @@ export default function AddApplianceScreen() {
             <TextInput
               style={styles.input}
               placeholder="$0"
-              placeholderTextColor="#666666"
+              placeholderTextColor={placeholderColor}
               value={purchaseCost}
               onChangeText={setPurchaseCost}
               keyboardType="decimal-pad"
@@ -309,7 +315,7 @@ export default function AddApplianceScreen() {
             <TextInput
               style={styles.input}
               placeholder="$0"
-              placeholderTextColor="#666666"
+              placeholderTextColor={placeholderColor}
               value={currentValue}
               onChangeText={setCurrentValue}
               keyboardType="decimal-pad"
@@ -345,7 +351,7 @@ export default function AddApplianceScreen() {
         <TextInput
           style={styles.input}
           placeholder="e.g., 12"
-          placeholderTextColor="#666666"
+          placeholderTextColor={placeholderColor}
           value={maintenanceFrequency}
           onChangeText={setMaintenanceFrequency}
           keyboardType="numeric"
@@ -376,7 +382,7 @@ export default function AddApplianceScreen() {
         <TextInput
           style={[styles.input, styles.textArea]}
           placeholder="Additional notes..."
-          placeholderTextColor="#666666"
+          placeholderTextColor={placeholderColor}
           value={notes}
           onChangeText={setNotes}
           multiline
@@ -572,7 +578,7 @@ const styles = StyleSheet.create({
   },
   datePlaceholder: {
     fontSize: 16,
-    color: '#666666',
+    color: '#999999',  // Lighter for better visibility
   },
   photoScroll: {
     marginBottom: 16,
