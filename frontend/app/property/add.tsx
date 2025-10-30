@@ -34,6 +34,8 @@ export default function AddProperty() {
   const [address, setAddress] = useState('');
   const [latitude, setLatitude] = useState<number | undefined>();
   const [longitude, setLongitude] = useState<number | undefined>();
+  const [purchaseCost, setPurchaseCost] = useState('');
+  const [currentValue, setCurrentValue] = useState('');
   const [loading, setLoading] = useState(false);
   const autocompleteRef = useRef<any>(null);
 
