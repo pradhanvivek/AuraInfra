@@ -154,14 +154,18 @@ export default function Profile() {
       });
       setProfile(updatedProfile);
       setSelectedCurrency(currency);
-      await AsyncStorage.setItem('user_currency_preference', currency);
       
-      // Reinitialize cache
-      const { initializePreferences } = await import('../../utils/localeUtils');
-      await initializePreferences();
+      // Update cache using the helper function
+      const { setCurrencyPreference } = await import('../../utils/localeUtils');
+      await setCurrencyPreference(currency);
       
       setCurrencyModalVisible(false);
-      Alert.alert('Success', `Currency updated to ${currency}. App will now display prices in ${currency}.`);
+      Alert.alert('Success', `Currency updated to ${currency}. App will now display prices in ${currency}.`, [
+        { text: 'OK', onPress: () => {
+          // Force reload by navigating back and forth
+          router.replace('/(tabs)/dashboard');
+        }}
+      ]);
     } catch (error: any) {
       Alert.alert('Error', error.message || 'Failed to update currency');
     } finally {
@@ -177,11 +181,10 @@ export default function Profile() {
       });
       setProfile(updatedProfile);
       setSelectedMeasurement(system);
-      await AsyncStorage.setItem('user_measurement_preference', system);
       
-      // Reinitialize cache
-      const { initializePreferences } = await import('../../utils/localeUtils');
-      await initializePreferences();
+      // Update cache using the helper function
+      const { setMeasurementPreference } = await import('../../utils/localeUtils');
+      await setMeasurementPreference(system);
       
       setMeasurementModalVisible(false);
       Alert.alert('Success', `Measurement system updated to ${system === 'metric' ? 'Metric' : 'Imperial'}`);
