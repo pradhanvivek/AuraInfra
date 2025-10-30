@@ -208,6 +208,7 @@ export default function AddVehicleScreen() {
         <TextInput
           style={styles.input}
           placeholder="e.g., My BMW"
+          placeholderTextColor="#666666"
           value={name}
           onChangeText={setName}
         />
@@ -218,6 +219,7 @@ export default function AddVehicleScreen() {
             <TextInput
               style={styles.input}
               placeholder="e.g., BMW"
+              placeholderTextColor="#666666"
               value={make}
               onChangeText={setMake}
             />
@@ -227,6 +229,7 @@ export default function AddVehicleScreen() {
             <TextInput
               style={styles.input}
               placeholder="e.g., 3 Series"
+              placeholderTextColor="#666666"
               value={model}
               onChangeText={setModel}
             />
@@ -239,6 +242,7 @@ export default function AddVehicleScreen() {
             <TextInput
               style={styles.input}
               placeholder="2020"
+              placeholderTextColor="#666666"
               value={year}
               onChangeText={setYear}
               keyboardType="numeric"
@@ -249,6 +253,7 @@ export default function AddVehicleScreen() {
             <TextInput
               style={styles.input}
               placeholder="17 characters"
+              placeholderTextColor="#666666"
               value={vin}
               onChangeText={setVin}
             />
@@ -259,6 +264,7 @@ export default function AddVehicleScreen() {
         <TextInput
           style={styles.input}
           placeholder="e.g., ABC-1234"
+          placeholderTextColor="#666666"
           value={registration}
           onChangeText={setRegistration}
         />
@@ -269,6 +275,7 @@ export default function AddVehicleScreen() {
         <TextInput
           style={styles.input}
           placeholder="e.g., Geico"
+          placeholderTextColor="#666666"
           value={insuranceProvider}
           onChangeText={setInsuranceProvider}
         />
@@ -277,6 +284,7 @@ export default function AddVehicleScreen() {
         <TextInput
           style={styles.input}
           placeholder="Policy #"
+          placeholderTextColor="#666666"
           value={insurancePolicy}
           onChangeText={setInsurancePolicy}
         />
@@ -311,6 +319,7 @@ export default function AddVehicleScreen() {
             <TextInput
               style={styles.input}
               placeholder="$0"
+              placeholderTextColor="#666666"
               value={purchaseCost}
               onChangeText={setPurchaseCost}
               keyboardType="decimal-pad"
@@ -321,6 +330,7 @@ export default function AddVehicleScreen() {
             <TextInput
               style={styles.input}
               placeholder="$0"
+              placeholderTextColor="#666666"
               value={currentValue}
               onChangeText={setCurrentValue}
               keyboardType="decimal-pad"
@@ -356,6 +366,7 @@ export default function AddVehicleScreen() {
         <TextInput
           style={styles.input}
           placeholder="e.g., 6"
+          placeholderTextColor="#666666"
           value={maintenanceFrequency}
           onChangeText={setMaintenanceFrequency}
           keyboardType="numeric"
@@ -386,6 +397,7 @@ export default function AddVehicleScreen() {
         <TextInput
           style={[styles.input, styles.textArea]}
           placeholder="Additional notes..."
+          placeholderTextColor="#666666"
           value={notes}
           onChangeText={setNotes}
           multiline
