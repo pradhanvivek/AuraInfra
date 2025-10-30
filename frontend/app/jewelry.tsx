@@ -133,14 +133,26 @@ export default function JewelryScreen() {
 
       <TouchableOpacity
         style={styles.scanFab}
-        onPress={() => router.push('/jewelry-item/add?mode=scan' as any)}
+        onPress={() => {
+          Alert.alert(
+            'AI Scan',
+            'Camera-based jewelry scanning will be available soon. Use the + button to add manually.',
+            [{ text: 'OK' }]
+          );
+        }}
       >
         <Ionicons name="camera" size={24} color="#fff" />
       </TouchableOpacity>
 
       <TouchableOpacity
         style={styles.fab}
-        onPress={() => router.push('/jewelry-item/add' as any)}
+        onPress={() => {
+          Alert.alert(
+            'Add Jewelry',
+            'Manual jewelry entry form coming soon! This will allow you to add jewelry details including type, metal, stones, appraisal value, and certificate information.',
+            [{ text: 'OK' }]
+          );
+        }}
       >
         <Ionicons name="add" size={28} color="#fff" />
       </TouchableOpacity>
