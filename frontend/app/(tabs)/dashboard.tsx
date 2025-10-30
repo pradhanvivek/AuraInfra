@@ -97,7 +97,7 @@ export default function DashboardScreen() {
 
   const handleTilePress = (route: string) => {
     if (route === '/property-list') {
-      router.push('/(tabs)/properties' as any);
+      router.push('/properties');
     } else {
       router.push(route as any);
     }
