@@ -107,7 +107,7 @@ export default function DashboardScreen() {
     <View style={styles.container}>
       <View style={styles.header}>
         <View>
-          <Text style={styles.greeting}>Hello, {user?.username || 'User'}!</Text>
+          <Text style={styles.greeting}>Hello, {username || 'User'}!</Text>
           <Text style={styles.subtitle}>Manage your assets</Text>
         </View>
         {portfolioData && (
