@@ -627,29 +627,28 @@ export default function AddJewelryScreen() {
       </Modal>
 
       {/* Receipt Camera Modal */}
-      <Modal visible={receiptCameraVisible} animationType="slide" presentationStyle="pageSheet">
+      <Modal visible={receiptCameraVisible} animationType="slide" presentationStyle="fullScreen">
         <View style={styles.cameraContainer}>
           <CameraView
             style={styles.camera}
             ref={(ref) => setReceiptCameraRef(ref)}
             facing="back"
-          >
-            <View style={styles.cameraOverlay}>
-              <TouchableOpacity
-                style={styles.closeCamera}
-                onPress={() => setReceiptCameraVisible(false)}
-              >
-                <Ionicons name="close" size={32} color="#fff" />
-              </TouchableOpacity>
-              <View style={styles.cameraInstructions}>
-                <Text style={styles.instructionText}>Point at receipt/invoice</Text>
-                <Text style={styles.instructionSubtext}>Ensure text is clear and visible</Text>
-              </View>
-              <TouchableOpacity style={styles.captureButton} onPress={handleTakeReceiptPicture}>
-                <View style={styles.captureButtonInner} />
-              </TouchableOpacity>
+          />
+          <View style={styles.cameraOverlay}>
+            <TouchableOpacity
+              style={styles.closeCamera}
+              onPress={() => setReceiptCameraVisible(false)}
+            >
+              <Ionicons name="close" size={32} color="#fff" />
+            </TouchableOpacity>
+            <View style={styles.cameraInstructions}>
+              <Text style={styles.instructionText}>Scan Receipt/Invoice</Text>
+              <Text style={styles.instructionSubtext}>Position receipt within frame</Text>
             </View>
-          </CameraView>
+            <TouchableOpacity style={styles.captureButton} onPress={handleTakeReceiptPicture}>
+              <View style={styles.captureButtonInner} />
+            </TouchableOpacity>
+          </View>
         </View>
       </Modal>
 
