@@ -798,6 +798,12 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '600',
   },
+  instructionSubtext: {
+    color: '#fff',
+    fontSize: 13,
+    marginTop: 4,
+    opacity: 0.9,
+  },
   captureButton: {
     width: 80,
     height: 80,
@@ -836,5 +842,10 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: '#000',
     fontWeight: '600',
+  },
+  scanningSubtext: {
+    marginTop: 4,
+    fontSize: 14,
+    color: '#666',
   },
 });
