@@ -138,6 +138,42 @@ export default function Profile() {
     }
   };
 
+  const handleCurrencyChange = async (currency: string) => {
+    setSaving(true);
+    try {
+      const updatedProfile = await authApi.updateProfile(token!, { 
+        currency_preference: currency 
+      });
+      setProfile(updatedProfile);
+      setSelectedCurrency(currency);
+      await AsyncStorage.setItem('user_currency_preference', currency);
+      setCurrencyModalVisible(false);
+      Alert.alert('Success', `Currency updated to ${currency}`);
+    } catch (error: any) {
+      Alert.alert('Error', error.message || 'Failed to update currency');
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const handleMeasurementChange = async (system: 'metric' | 'imperial') => {
+    setSaving(true);
+    try {
+      const updatedProfile = await authApi.updateProfile(token!, { 
+        measurement_system: system 
+      });
+      setProfile(updatedProfile);
+      setSelectedMeasurement(system);
+      await AsyncStorage.setItem('user_measurement_preference', system);
+      setMeasurementModalVisible(false);
+      Alert.alert('Success', `Measurement system updated to ${system === 'metric' ? 'Metric' : 'Imperial'}`);
+    } catch (error: any) {
+      Alert.alert('Error', error.message || 'Failed to update measurement system');
+    } finally {
+      setSaving(false);
+    }
+  };
+
   const handleLogout = () => {
     Alert.alert(
       'Logout',
