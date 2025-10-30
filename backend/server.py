@@ -1098,23 +1098,38 @@ async def scan_receipt(
         user_message = UserMessage(
             text="""Analyze this receipt/invoice image and extract all relevant purchase information.
 
+IMPORTANT: This may be an Indian receipt with DD/MM/YYYY date format, rupee currency (₹), and GST details.
+
+Instructions:
+- For dates in DD/MM/YYYY format, convert to YYYY-MM-DD format
+- If multiple items are listed, focus on the PRIMARY/MAIN item (usually the most expensive or first major item)
+- Extract warranty information from any warranty cards, terms, or product details visible
+- For Indian receipts, look for: Product name, Brand, Model number, Serial number, MRP/Price, GST details
+- Convert any Indian rupee amounts (₹) to numeric format without currency symbol
+- Look for warranty period mentions like "1 year", "2 years", "6 months" etc.
+
 Return ONLY a valid JSON object with this exact structure (use null for fields you cannot find):
 {
-  "vendor_name": "Store or vendor name",
-  "purchase_date": "YYYY-MM-DD format date",
-  "item_name": "Product name",
-  "item_description": "Brief description of the item",
-  "brand": "Brand name if visible",
-  "model": "Model number if visible",
-  "serial_number": "Serial number if visible",
+  "vendor_name": "Store or vendor name (e.g., Reliance Digital, Amazon, Flipkart)",
+  "purchase_date": "YYYY-MM-DD format date (convert from DD/MM/YYYY if needed)",
+  "item_name": "Main product name (focus on the primary expensive item if multiple)",
+  "item_description": "Brief description including model details",
+  "brand": "Brand name (e.g., Apple, Samsung, LG)",
+  "model": "Model number or code (e.g., MBA-13 MW133HN A)",
+  "serial_number": "Serial number or IMEI if visible",
   "purchase_cost": 0.00,
-  "warranty_info": "Warranty details if mentioned",
+  "warranty_info": "Warranty details if mentioned (e.g., '1 year manufacturer warranty')",
   "warranty_months": 0,
   "confidence": 0.95
 }
 
-Be precise with extracted values. If you're unsure about a field, set it to null.
-Set confidence between 0.0 and 1.0 based on image quality and visibility of information.""",
+Examples:
+- If date shows "30/10/2025", convert to "2025-10-30"
+- If price shows "₹119,900", extract as 119900.00
+- If item is "MBA-13 MW133HN A" with brand context, extract brand as "Apple" and model as "MBA-13 MW133HN A"
+- If warranty shows "1 year", set warranty_months to 12
+
+Be precise with extracted values. Set confidence between 0.0 and 1.0 based on image quality and visibility of information.""",
             image_content=[ImageContent(image=scan_request.image, type="base64")]
         )
         
