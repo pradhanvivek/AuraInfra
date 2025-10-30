@@ -1342,6 +1342,104 @@ async def delete_art(art_id: str, user_id: str = Depends(get_current_user)):
         raise HTTPException(status_code=404, detail="Art not found")
     return {"message": "Art deleted successfully"}
 
+# ============= FURNITURE AI SCANNER =============
+
+@api_router.post("/furniture/scan", response_model=FurnitureScanResult)
+async def scan_furniture(scan_request: ImageScanRequest, user_id: str = Depends(get_current_user)):
+    """AI scan furniture from image"""
+    try:
+        image_base64 = scan_request.image
+        
+        prompt = f"""Analyze this furniture image and extract the following information in JSON format:
+{{
+  "name": "Descriptive name of the furniture piece",
+  "category": "Sofa/Table/Chair/Bed/Cabinet/Desk/Shelf/Wardrobe/Other",
+  "brand": "Brand name if visible or identifiable",
+  "material": "Primary material (Wood/Metal/Fabric/Leather/Glass/Plastic/Mixed/Other)",
+  "style": "Design style (Modern/Contemporary/Traditional/Vintage/Industrial/Scandinavian/etc)",
+  "estimated_age": "Approximate age or era (New/5-10 years/Vintage/Antique)",
+  "condition": "Excellent/Good/Fair/Poor based on visible condition",
+  "confidence": "Confidence score 0.0-1.0"
+}}
+
+Provide your best assessment based on visible features, construction, design elements, and any visible branding or labels."""
+
+        genai.configure(api_key=EMERGENT_LLM_KEY)
+        model = genai.GenerativeModel("gemini-2.0-flash-exp")
+        
+        image_data = base64.b64decode(image_base64)
+        
+        response = model.generate_content([
+            prompt,
+            {
+                "mime_type": "image/jpeg",
+                "data": image_base64
+            }
+        ])
+        
+        result_text = response.text.strip()
+        if result_text.startswith("```json"):
+            result_text = result_text[7:]
+        if result_text.endswith("```"):
+            result_text = result_text[:-3]
+        result_text = result_text.strip()
+        
+        result = json.loads(result_text)
+        
+        return FurnitureScanResult(**result)
+    except Exception as e:
+        logger.error(f"Furniture scan error: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+# ============= ART AI SCANNER =============
+
+@api_router.post("/art/scan", response_model=ArtScanResult)
+async def scan_art(scan_request: ImageScanRequest, user_id: str = Depends(get_current_user)):
+    """AI scan art from image"""
+    try:
+        image_base64 = scan_request.image
+        
+        prompt = f"""Analyze this artwork image and extract the following information in JSON format:
+{{
+  "name": "Title or descriptive name of the artwork",
+  "type": "Painting/Sculpture/Print/Photograph/Drawing/Collage/Digital Art/Mixed Media/Other",
+  "artist": "Artist name if identifiable from signature or style",
+  "medium": "Medium used (Oil/Acrylic/Watercolor/Bronze/Marble/Canvas/Paper/Digital/etc)",
+  "style": "Art style or movement (Impressionism/Abstract/Realism/Contemporary/etc)",
+  "estimated_period": "Time period or era (Contemporary/Modern/20th Century/19th Century/etc)",
+  "subject_matter": "Brief description of what the artwork depicts",
+  "confidence": "Confidence score 0.0-1.0"
+}}
+
+Provide your best assessment based on visible artistic elements, technique, composition, and any visible signatures or markings."""
+
+        genai.configure(api_key=EMERGENT_LLM_KEY)
+        model = genai.GenerativeModel("gemini-2.0-flash-exp")
+        
+        image_data = base64.b64decode(image_base64)
+        
+        response = model.generate_content([
+            prompt,
+            {
+                "mime_type": "image/jpeg",
+                "data": image_base64
+            }
+        ])
+        
+        result_text = response.text.strip()
+        if result_text.startswith("```json"):
+            result_text = result_text[7:]
+        if result_text.endswith("```"):
+            result_text = result_text[:-3]
+        result_text = result_text.strip()
+        
+        result = json.loads(result_text)
+        
+        return ArtScanResult(**result)
+    except Exception as e:
+        logger.error(f"Art scan error: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
 # ============= RECEIPT SCANNER ENDPOINT =============
 
 @api_router.post("/scan-receipt", response_model=ReceiptScanResult)
