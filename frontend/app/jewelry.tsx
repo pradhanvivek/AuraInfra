@@ -226,6 +226,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     gap: 8,
     marginTop: 4,
+    flexWrap: 'wrap',
   },
   detailBadge: {
     flexDirection: 'row',
@@ -235,10 +236,12 @@ const styles = StyleSheet.create({
     paddingVertical: 4,
     borderRadius: 8,
     gap: 4,
+    maxWidth: '45%',
   },
   detailText: {
     fontSize: 11,
     color: '#8E8E93',
+    flexShrink: 1,
   },
   jewelryValue: {
     fontSize: 16,
