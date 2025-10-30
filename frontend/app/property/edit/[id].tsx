@@ -38,6 +38,8 @@ export default function EditPropertyScreen() {
   const [address, setAddress] = useState('');
   const [latitude, setLatitude] = useState<number | undefined>();
   const [longitude, setLongitude] = useState<number | undefined>();
+  const [purchaseCost, setPurchaseCost] = useState('');
+  const [currentValue, setCurrentValue] = useState('');
   
   const autocompleteRef = useRef<any>(null);
 
@@ -52,6 +54,8 @@ export default function EditPropertyScreen() {
       setAddress(property.address);
       setLatitude(property.latitude);
       setLongitude(property.longitude);
+      setPurchaseCost(property.purchase_cost ? property.purchase_cost.toString() : '');
+      setCurrentValue(property.current_value ? property.current_value.toString() : '');
     } catch (error: any) {
       Alert.alert('Error', 'Failed to load property details');
       router.back();
@@ -78,6 +82,8 @@ export default function EditPropertyScreen() {
         address: address.trim(),
         latitude,
         longitude,
+        purchase_cost: purchaseCost ? parseFloat(purchaseCost) : undefined,
+        current_value: currentValue ? parseFloat(currentValue) : undefined,
       });
       Alert.alert('Success', 'Property updated successfully', [
         { text: 'OK', onPress: () => router.back() }
