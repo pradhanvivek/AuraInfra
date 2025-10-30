@@ -596,6 +596,42 @@ export default function AddFurnitureScreen() {
             onConfirm={handleDateConfirm}
             onCancel={() => setDatePickerVisible(false)}
           />
+
+          {/* Camera Modal for AI Scanning */}
+          <Modal visible={cameraVisible} animationType="slide" presentationStyle="fullScreen">
+            <View style={styles.cameraContainer}>
+              <CameraView
+                style={styles.camera}
+                ref={(ref) => setCameraRef(ref)}
+                facing="back"
+              />
+              <View style={styles.cameraOverlay}>
+                <TouchableOpacity
+                  style={styles.closeCamera}
+                  onPress={() => setCameraVisible(false)}
+                >
+                  <Ionicons name="close" size={32} color="#fff" />
+                </TouchableOpacity>
+                <View style={styles.cameraInstructions}>
+                  <Text style={styles.instructionText}>Point at furniture item</Text>
+                  <Text style={styles.instructionSubtext}>Ensure good lighting for best results</Text>
+                </View>
+                <TouchableOpacity style={styles.captureButton} onPress={handleTakePicture}>
+                  <View style={styles.captureButtonInner} />
+                </TouchableOpacity>
+              </View>
+            </View>
+          </Modal>
+
+          {scanning && (
+            <View style={styles.scanningOverlay}>
+              <View style={styles.scanningCard}>
+                <ActivityIndicator size="large" color="#34C759" />
+                <Text style={styles.scanningText}>Scanning furniture...</Text>
+                <Text style={styles.scanningSubtext}>Analyzing with AI</Text>
+              </View>
+            </View>
+          )}
         </>
       )}
     </View>
