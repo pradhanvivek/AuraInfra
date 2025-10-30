@@ -61,13 +61,17 @@ export default function Profile() {
       setSelectedCurrency(data.currency_preference || 'INR');
       setSelectedMeasurement(data.measurement_system || 'metric');
       
-      // Store preferences in AsyncStorage for localeUtils
+      // Store preferences using the helper functions from localeUtils
       if (data.currency_preference) {
         await AsyncStorage.setItem('user_currency_preference', data.currency_preference);
       }
       if (data.measurement_system) {
         await AsyncStorage.setItem('user_measurement_preference', data.measurement_system);
       }
+      
+      // Initialize the preferences cache in localeUtils
+      const { initializePreferences } = await import('../../utils/localeUtils');
+      await initializePreferences();
     } catch (error: any) {
       Alert.alert('Error', 'Failed to load profile');
     } finally {
