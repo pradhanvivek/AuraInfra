@@ -324,7 +324,7 @@ export default function AddVehicleScreen() {
             <Text style={styles.label}>Purchase Cost</Text>
             <TextInput
               style={styles.input}
-              placeholder="$0"
+              placeholder={`${getCurrencyInfo().symbol}0`}
               placeholderTextColor={placeholderColor}
               value={purchaseCost}
               onChangeText={setPurchaseCost}
@@ -335,7 +335,7 @@ export default function AddVehicleScreen() {
             <Text style={styles.label}>Current Value</Text>
             <TextInput
               style={styles.input}
-              placeholder="$0"
+              placeholder={`${getCurrencyInfo().symbol}0`}
               placeholderTextColor={placeholderColor}
               value={currentValue}
               onChangeText={setCurrentValue}
