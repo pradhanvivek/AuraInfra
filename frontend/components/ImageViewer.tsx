@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import {
   Modal,
   View,
@@ -9,26 +9,37 @@ import {
   Share,
   Alert,
   Platform,
+  ScrollView,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import * as FileSystem from 'expo-file-system';
 import * as Sharing from 'expo-sharing';
 
 interface ImageViewerProps {
-  visible: boolean;
-  imageUri: string;
+  visible?: boolean;
+  images?: string[];
+  imageUri?: string;
+  initialIndex?: number;
   onClose: () => void;
 }
 
 const { width, height } = Dimensions.get('window');
 
-export default function ImageViewer({ visible, imageUri, onClose }: ImageViewerProps) {
+export default function ImageViewer({ visible = true, images, imageUri, initialIndex = 0, onClose }: ImageViewerProps) {
+  const [currentIndex, setCurrentIndex] = useState(initialIndex);
+  
+  // Support both single image (imageUri) and multiple images (images array)
+  const imageList = images || (imageUri ? [imageUri] : []);
+  const currentImageUri = imageList[currentIndex];
+
   const handleShare = async () => {
     try {
+      if (!currentImageUri) return;
+      
       // For base64 images, we need to save to file first
-      if (imageUri.startsWith('data:image')) {
+      if (currentImageUri.startsWith('data:image')) {
         const filename = FileSystem.documentDirectory + `share_${Date.now()}.jpg`;
-        const base64Data = imageUri.split(',')[1];
+        const base64Data = currentImageUri.split(',')[1];
         
         await FileSystem.writeAsStringAsync(filename, base64Data, {
           encoding: FileSystem.EncodingType.Base64,
@@ -46,12 +57,18 @@ export default function ImageViewer({ visible, imageUri, onClose }: ImageViewerP
         }
       } else {
         // For regular URLs
-        await Share.share({ url: imageUri });
+        await Share.share({ url: currentImageUri });
       }
     } catch (error) {
       console.error('Error sharing image:', error);
       Alert.alert('Error', 'Failed to share image');
     }
+  };
+
+  const handleScroll = (event: any) => {
+    const offsetX = event.nativeEvent.contentOffset.x;
+    const index = Math.round(offsetX / width);
+    setCurrentIndex(index);
   };
 
   return (
@@ -72,14 +89,39 @@ export default function ImageViewer({ visible, imageUri, onClose }: ImageViewerP
           </TouchableOpacity>
         </View>
 
-        {/* Image */}
-        <View style={styles.imageContainer}>
-          <Image
-            source={{ uri: imageUri }}
-            style={styles.image}
-            resizeMode="contain"
-          />
-        </View>
+        {/* Images */}
+        <ScrollView
+          horizontal
+          pagingEnabled
+          showsHorizontalScrollIndicator={false}
+          onMomentumScrollEnd={handleScroll}
+          contentOffset={{ x: initialIndex * width, y: 0 }}
+        >
+          {imageList.map((uri, index) => (
+            <View key={index} style={styles.imageContainer}>
+              <Image
+                source={{ uri }}
+                style={styles.image}
+                resizeMode="contain"
+              />
+            </View>
+          ))}
+        </ScrollView>
+
+        {/* Page Indicator */}
+        {imageList.length > 1 && (
+          <View style={styles.pageIndicator}>
+            {imageList.map((_, index) => (
+              <View
+                key={index}
+                style={[
+                  styles.dot,
+                  currentIndex === index && styles.activeDot,
+                ]}
+              />
+            ))}
+          </View>
+        )}
       </View>
     </Modal>
   );
@@ -103,12 +145,35 @@ const styles = StyleSheet.create({
     padding: 8,
   },
   imageContainer: {
-    flex: 1,
+    width: width,
+    height: height - 100,
     justifyContent: 'center',
     alignItems: 'center',
   },
   image: {
     width: width,
     height: height - 100,
+  },
+  pageIndicator: {
+    position: 'absolute',
+    bottom: 40,
+    left: 0,
+    right: 0,
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  dot: {
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+    backgroundColor: 'rgba(255, 255, 255, 0.5)',
+    marginHorizontal: 4,
+  },
+  activeDot: {
+    backgroundColor: '#fff',
+    width: 10,
+    height: 10,
+    borderRadius: 5,
   },
 });
