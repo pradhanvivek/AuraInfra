@@ -247,35 +247,47 @@ export default function AddJewelryScreen() {
 
     setSaving(true);
     try {
-      await axios.post(
-        `${API_URL}/api/jewelry`,
-        {
-          name: name.trim(),
-          type,
-          metal,
-          stones: stones.trim() || undefined,
-          weight: weight ? parseFloat(weight) : undefined,
-          purity: purity.trim() || undefined,
-          purchase_date: purchaseDate || undefined,
-          purchase_cost: purchaseCost ? parseFloat(purchaseCost) : undefined,
-          appraisal_value: appraisalValue ? parseFloat(appraisalValue) : undefined,
-          appraisal_date: appraisalDate || undefined,
-          certificate_number: certificateNumber.trim() || undefined,
-          photos,
-          certificate: certificate || undefined,
-          notes: notes.trim() || undefined,
-          warranty_info: warrantyInfo.trim() || undefined,
-          warranty_expiry_date: warrantyExpiry || undefined,
-        },
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
+      const payload = {
+        name: name.trim(),
+        type,
+        metal,
+        stones: stones.trim() || undefined,
+        weight: weight ? parseFloat(weight) : undefined,
+        purity: purity.trim() || undefined,
+        purchase_date: purchaseDate || undefined,
+        purchase_cost: purchaseCost ? parseFloat(purchaseCost) : undefined,
+        appraisal_value: appraisalValue ? parseFloat(appraisalValue) : undefined,
+        appraisal_date: appraisalDate || undefined,
+        certificate_number: certificateNumber.trim() || undefined,
+        photos,
+        certificate: certificate || undefined,
+        notes: notes.trim() || undefined,
+        warranty_info: warrantyInfo.trim() || undefined,
+        warranty_expiry_date: warrantyExpiry || undefined,
+      };
 
-      Alert.alert('Success', 'Jewelry added successfully', [
-        { text: 'OK', onPress: () => router.back() }
-      ]);
+      if (isEditing) {
+        await axios.put(
+          `${API_URL}/api/jewelry/${editId}`,
+          payload,
+          { headers: { Authorization: `Bearer ${token}` } }
+        );
+        Alert.alert('Success', 'Jewelry updated successfully', [
+          { text: 'OK', onPress: () => router.back() }
+        ]);
+      } else {
+        await axios.post(
+          `${API_URL}/api/jewelry`,
+          payload,
+          { headers: { Authorization: `Bearer ${token}` } }
+        );
+        Alert.alert('Success', 'Jewelry added successfully', [
+          { text: 'OK', onPress: () => router.back() }
+        ]);
+      }
     } catch (error) {
       console.error('Save error:', error);
-      Alert.alert('Error', 'Failed to save jewelry');
+      Alert.alert('Error', `Failed to ${isEditing ? 'update' : 'save'} jewelry`);
     } finally {
       setSaving(false);
     }
