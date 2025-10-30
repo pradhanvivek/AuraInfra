@@ -630,6 +630,8 @@ export default function AddApplianceScreen() {
           </View>
         </View>
       )}
+        </>
+      )}
     </View>
   );
 }
