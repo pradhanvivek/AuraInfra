@@ -859,15 +859,29 @@ export default function FixturesScreen({ propertyId }: FixturesScreenProps) {
             {selectedFixture?.invoice && (
               <>
                 <Text style={styles.detailsLabel}>Invoice</Text>
-                <Image
-                  source={{ uri: `data:image/jpeg;base64,${selectedFixture.invoice}` }}
-                  style={styles.detailsPhoto}
-                />
+                <TouchableOpacity
+                  onPress={() => {
+                    setSelectedImageUri(`data:image/jpeg;base64,${selectedFixture.invoice}`);
+                    setImageViewerVisible(true);
+                  }}
+                >
+                  <Image
+                    source={{ uri: `data:image/jpeg;base64,${selectedFixture.invoice}` }}
+                    style={styles.detailsPhoto}
+                  />
+                </TouchableOpacity>
               </>
             )}
           </ScrollView>
         </View>
       </Modal>
+
+      {/* Image Viewer */}
+      <ImageViewer
+        visible={imageViewerVisible}
+        imageUri={selectedImageUri}
+        onClose={() => setImageViewerVisible(false)}
+      />
 
       {/* Camera Modal for Appliance Scanning */}
       <Modal
