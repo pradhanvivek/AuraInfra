@@ -86,7 +86,7 @@ export default function JewelryScreen() {
             {item.stones && (
               <View style={styles.detailBadge}>
                 <Ionicons name="diamond-outline" size={12} color="#FF2D55" />
-                <Text style={styles.detailText}>{item.stones}</Text>
+                <Text style={styles.detailText} numberOfLines={1} ellipsizeMode="tail">{item.stones}</Text>
               </View>
             )}
           </View>
