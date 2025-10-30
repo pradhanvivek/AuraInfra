@@ -206,11 +206,18 @@ export default function JewelryDetailsScreen() {
         {jewelry.certificate && (
           <View style={styles.section}>
             <Text style={styles.sectionTitle}>Certificate</Text>
-            <Image
-              source={{ uri: `data:image/jpeg;base64,${jewelry.certificate}` }}
-              style={styles.certificateImage}
-              resizeMode="contain"
-            />
+            <TouchableOpacity
+              onPress={() => {
+                setSelectedImageUri(`data:image/jpeg;base64,${jewelry.certificate}`);
+                setImageViewerVisible(true);
+              }}
+            >
+              <Image
+                source={{ uri: `data:image/jpeg;base64,${jewelry.certificate}` }}
+                style={styles.certificateImage}
+                resizeMode="contain"
+              />
+            </TouchableOpacity>
           </View>
         )}
 
@@ -224,7 +231,14 @@ export default function JewelryDetailsScreen() {
 
         <View style={styles.bottomPadding} />
       </ScrollView>
-    </View>
+
+      {/* Image Viewer */}
+      <ImageViewer
+        visible={imageViewerVisible}
+        imageUri={selectedImageUri}
+        onClose={() => setImageViewerVisible(false)}
+      />
+    </SafeAreaView>
   );
 }
 
