@@ -234,6 +234,36 @@ class ApplianceScanResult(BaseModel):
     serial_number: Optional[str] = None
     confidence: float  # 0-1 confidence score
 
+# Jewelry Scanner Models
+class JewelryScanRequest(BaseModel):
+    image: str  # base64 encoded image
+
+class JewelryScanResult(BaseModel):
+    name: str
+    type: Optional[str] = None  # e.g., "ring", "necklace", "bracelet"
+    metal_type: Optional[str] = None  # e.g., "gold", "silver", "platinum"
+    gemstone_details: Optional[str] = None  # e.g., "diamond", "ruby"
+    weight_estimate: Optional[str] = None  # estimated weight in grams
+    estimated_value: Optional[str] = None
+    confidence: float
+
+# Receipt Scanner Models
+class ReceiptScanRequest(BaseModel):
+    image: str  # base64 encoded receipt image
+
+class ReceiptScanResult(BaseModel):
+    vendor_name: Optional[str] = None
+    purchase_date: Optional[str] = None  # ISO format date
+    item_name: Optional[str] = None
+    item_description: Optional[str] = None
+    brand: Optional[str] = None
+    model: Optional[str] = None
+    serial_number: Optional[str] = None
+    purchase_cost: Optional[float] = None
+    warranty_info: Optional[str] = None
+    warranty_months: Optional[int] = None
+    confidence: float
+
 # Paint Estimation Models
 class WallScanRequest(BaseModel):
     image: str  # base64 encoded
