@@ -39,7 +39,10 @@ export default function AddApplianceScreen() {
   // Dynamic placeholder color based on theme
   const placeholderColor = colorScheme === 'dark' ? '#999999' : '#666666';
   const scanMode = params.mode === 'scan';
+  const editId = params.id as string | undefined;
+  const isEditing = !!editId;
 
+  const [loading, setLoading] = useState(isEditing);
   const [name, setName] = useState('');
   const [category, setCategory] = useState('TV');
   const [brand, setBrand] = useState('');
@@ -69,6 +72,43 @@ export default function AddApplianceScreen() {
   const [datePickerVisible, setDatePickerVisible] = useState(false);
   const [datePickerMode, setDatePickerMode] = useState<'purchase' | 'warranty' | 'lastMaint' | 'nextMaint'>('purchase');
 
+  useEffect(() => {
+    if (isEditing) {
+      fetchAppliance();
+    }
+  }, [editId]);
+
+  const fetchAppliance = async () => {
+    try {
+      const response = await axios.get(
+        `${API_URL}/api/appliances/${editId}`,
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      const data = response.data;
+      setName(data.name || '');
+      setCategory(data.category || 'TV');
+      setBrand(data.brand || '');
+      setModel(data.model || '');
+      setSerialNumber(data.serial_number || '');
+      setPurchaseDate(data.purchase_date || '');
+      setPurchaseCost(data.purchase_cost ? data.purchase_cost.toString() : '');
+      setCurrentValue(data.current_value ? data.current_value.toString() : '');
+      setWarrantyInfo(data.warranty_info || '');
+      setWarrantyExpiry(data.warranty_expiry || '');
+      setPhotos(data.photos || []);
+      setInvoice(data.invoice || '');
+      setNotes(data.notes || '');
+      setLastMaintenance(data.last_maintenance || '');
+      setNextMaintenance(data.next_maintenance || '');
+      setMaintenanceFrequency(data.maintenance_frequency ? data.maintenance_frequency.toString() : '');
+    } catch (error: any) {
+      console.error('Failed to fetch appliance:', error);
+      Alert.alert('Error', 'Failed to load appliance details');
+      router.back();
+    } finally {
+      setLoading(false);
+    }
+  };
   const handleScan = async () => {
     if (!permission?.granted) {
       const result = await requestPermission();
