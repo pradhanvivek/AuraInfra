@@ -631,6 +631,7 @@ export default function FixturesScreen({ propertyId }: FixturesScreenProps) {
             <TextInput
               style={styles.input}
               placeholder="Model number"
+              placeholderTextColor={placeholderColor}
               value={model}
               onChangeText={setModel}
             />
