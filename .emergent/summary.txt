@@ -1,66 +1,136 @@
 <analysis>
-The AI engineer's work trajectory outlines the continuous evolution of the AuraInfra.ai application from a property management tool to a comprehensive Personal Asset Management System. The initial phase focused on core property features, followed by advanced AI-powered functionalities like multi-floor plan analysis, camera-based appliance scanning, and sensor-guided paint estimation. The most recent major pivot involved building out the asset management capabilities, including a new dashboard, CRUD operations for vehicles, appliances, and jewelry, and AI integration for data capture.
-
-During the current interaction, the engineer addressed several critical items. First, navigation for the Jewelry category was fixed, including the creation of its  form and updating the list screen's routing. This was followed by enhancing the backend  model and its corresponding AI prompt for improved jewelry scanning capabilities, a process validated and refined by a backend testing agent. A significant user-reported bug concerning placeholder text visibility in both light and dark modes was then resolved by first standardizing placeholder colors and then implementing  for dynamic, theme-aware text styling across all relevant input forms and screens. Finally, a latent issue of malformed import statements in  and  was identified and corrected, ensuring these key forms are now functional.
+The AI engineer's trajectory details the AuraInfra.ai application's transformation into a comprehensive Personal Asset Management System. Initial work focused on AI-powered property features, then expanded to asset management (vehicles, appliances, jewelry) with CRUD and AI integration. Key achievements include fixing UI/UX issues like placeholder text visibility, resolving unmatched route errors, and implementing a robust, multi-image full-screen viewer with sharing capabilities. Significant effort was dedicated to establishing and refining a dynamic currency/measurement preference system, correcting its persistence across backend and frontend. The engineer also introduced AI-powered receipt scanning, specifically enhancing its accuracy for Indian receipts, and enabled avatar uploads. The most recent phase involved addressing critical deployment blockers (hardcoded URLs, database migration) and resolving persistent bugs, such as portfolio value calculation and asset detail page navigation issues.
 </analysis>
 
 <product_requirements>
-The AuraInfra.ai application is designed as a comprehensive Personal Asset Management System, evolving from its initial role as a property management tool. Key functionalities include property listing, detailed property views (documents, fixtures with warranty, measurements, Vastu/Feng Shui analysis), user profile management, notifications, Near Me services, and an AI-driven health score. Recent enhancements have introduced multi-floor AI floor plan analysis, camera-based appliance scanning for identification and warranty tracking, and multi-wall paint estimation utilizing sensors and AI. The core asset management system now supports managing vehicles, appliances, and jewelry, featuring a central dashboard with tile-based navigation for different asset categories. It allows for both manual and AI-powered data entry for common and category-specific fields, along with warranty and periodic maintenance tracking. The system aims to provide a portfolio dashboard displaying total asset value and offering PDF export options for insurance or reporting purposes.
+The AuraInfra.ai application aims to be a comprehensive Personal Asset Management System. Initially a property management tool, it now supports property listing, detailed views (documents, fixtures, measurements, Vastu/Feng Shui), user profiles, notifications, Near Me services, and an AI health score. Recent additions include AI floor plan analysis, camera-based appliance scanning for identification/warranty, and multi-wall paint estimation. The core asset management system covers vehicles, appliances, and jewelry, offering a dashboard with tile-based navigation, manual/AI-powered data entry for common and category-specific fields, and warranty/maintenance tracking. It features a portfolio dashboard for total asset value and PDF export. User-driven enhancements included fixing dark mode visibility, correct navigation post-login, dynamic currency display, full-screen image viewing/sharing, receipt scanning, avatar uploads, and robust backend/frontend communication.
 </product_requirements>
 
 <key_technical_concepts>
 -   **Expo Router**: File-based navigation.
--   **React Native**: Core UI components, mobile-first design.
+-   **React Native**: Core UI components, mobile-first design, .
 -   **FastAPI & MongoDB**: Backend framework and NoSQL database.
--   **AI Integration**: Gemini 2.0 Flash (via ) for various analyses.
+-   **AI Integration**: Gemini 2.0 Flash (via ) for scanning.
 -   ****: Device camera access.
 -   ****: Device accelerometer/gyroscope.
--   **Locale Utilities**: Dynamic currency/measurement formatting.
--   ****: Dynamic UI theming (light/dark mode).
+-   **Locale Utilities**: Dynamic currency/measurement formatting,  for preferences.
+-   ** & **: For image sharing functionality.
 </key_technical_concepts>
 
 <code_architecture>
 **Directory Structure:**
 
 -   
-    -   **Summary:** Core FastAPI backend. Handles all API requests and database interactions.
-    -   **Changes:** Enhanced  model to include more detailed fields (e.g., , ). Improved the AI prompt for jewelry scanning. The  field in  was made optional by the backend testing agent to resolve validation errors.
+    -   **Summary:** Core FastAPI backend. Handles API requests, DB interactions, and AI processing.
+    -   **Changes:**
+        -   Enhanced  model, AI prompt.
+        -   Added , , and  fields to  and  models.
+        -   Implemented  endpoints for appliances and jewelry, including  model and updated AI prompts for Indian receipts.
+        -   Fixed  and  endpoints to correctly handle , ,  persistence.
+        -   Modified portfolio summary calculation to handle numeric/string values for  and use  as fallback.
 -   
-    -   **Summary:** Lists user's properties.
-    -   **Changes:** Updated  to dynamically adjust based on the device's color scheme using .
+    -   **Summary:** Script for database migration.
+    -   **Changes:** Fixed hardcoded database name.
 -   
-    -   **Summary:** Form for adding/editing appliance details with AI scanning capabilities.
-    -   **Changes:** Corrected malformed import statements. Updated  in  components and  style to dynamically adjust based on the device's color scheme using .
+    -   **Summary:** Backend testing script.
+    -   **Changes:** Fixed hardcoded URLs.
+-   
+    -   **Summary:** User login screen.
+    -   **Changes:** Fixed placeholder visibility (dark mode), updated tagline, added company name footer, redirected post-login to dashboard.
+-   
+    -   **Summary:** Defines the tab navigation layout.
+    -   **Changes:** Verified  page hidden from tabs but part of the layout.
+-   
+    -   **Summary:** Central dashboard displaying asset categories and total value.
+    -   **Changes:** Fixed  bug by correctly accessing  from  instead of a non-existent  object.
+-   
+    -   **Summary:** User profile management screen.
+    -   **Changes:**
+        -   Added UI controls for currency and measurement preferences, saving to  and updating backend.
+        -   Implemented avatar upload functionality, making the avatar tappable and displaying the uploaded image.
+        -   Updated  and handler functions to manage new preferences and avatar.
+-   
+    -   **Summary:** Root layout for the Expo Router app.
+    -   **Changes:** Added the  route to resolve Unmatched Route errors after properties was moved/renamed implicitly.
+-   
+    -   **Summary:** Form for adding/editing appliance details.
+    -   **Changes:** Corrected malformed import statements. Updated . Integrated receipt scanning with a Scan Receipt button, camera modal, and associated handlers/styles. Added dynamic currency symbol to placeholders.
+-    (New file)
+    -   **Summary:** Detail view for a single appliance.
+    -   **Changes:** Created this file. Fixed layout issues by wrapping content in  and . Integrated  for images.
 -   
     -   **Summary:** Lists user's appliances.
-    -   **Changes:** Verified that the Add Appliance button correctly navigates to .
+    -   **Changes:** Verified navigation to  and detail views.
 -   
     -   **Summary:** Lists user's jewelry.
-    -   **Changes:** Updated navigation logic for the Add Jewelry button to correctly route to . Updated  in  components to dynamically adjust based on the device's color scheme using .
+    -   **Changes:** Fixed navigation for Add Jewelry to . Updated navigation for item tap to . Updated .
 -    (New file)
-    -   **Summary:** Form for adding/editing jewelry details with AI scanning capabilities. This file was created during the trajectory.
-    -   **Changes:** Initial creation of the file. Updated  in  components and  style to dynamically adjust based on the device's color scheme using .
+    -   **Summary:** Form for adding/editing jewelry details.
+    -   **Changes:** Initial creation of the file. Updated . Integrated receipt scanning with a Scan Receipt button, camera modal, and associated handlers/styles. Added dynamic currency symbol to placeholders.
+-    (New file)
+    -   **Summary:** Detail view for a single jewelry item.
+    -   **Changes:** Created this file. Fixed layout issues by wrapping content in  and . Integrated  for images.
 -   
-    -   **Summary:** Form for adding/editing vehicle details with AI scanning capabilities.
-    -   **Changes:** Corrected malformed import statements. Updated  in  components and  style to dynamically adjust based on the device's color scheme using .
+    -   **Summary:** Detail view for a property.
+    -   **Changes:** Served as a pattern for asset detail pages. The back button functionality was reported as not working.
 -   
-    -   **Summary:** Handles property measurements with AI analysis and manual input.
-    -   **Changes:** Updated  in  components to dynamically adjust based on the device's color scheme using .
+    -   **Summary:** Form for editing property details.
+    -   **Changes:** Addressed issue where address field was not persisting on iPhone by using a ref to set the text value for . Fixed lingering reference to old properties route.
+-   
+    -   **Summary:** Lists user's vehicles.
+    -   **Changes:** Verified navigation to detail pages.
+-   
+    -   **Summary:** Form for adding/editing vehicle details.
+    -   **Changes:** Corrected malformed import statements. Updated . Added dynamic currency symbol to placeholders.
+-    (New file)
+    -   **Summary:** Detail view for a single vehicle.
+    -   **Changes:** Created this file. Fixed layout issues by wrapping content in  and . Integrated  for images.
+-    (New file)
+    -   **Summary:** Reusable component for displaying full-screen images with sharing capabilities.
+    -   **Changes:** Initial creation. Updated to support multiple images with swiping. Fixed  encoding issue and deprecation warning by using new File API imports ( and ).
+-   
+    -   **Summary:** Displays property documents.
+    -   **Changes:** Applied  for viewing documents.
+-   
+    -   **Summary:** Manages property fixtures.
+    -   **Changes:** Integrated  for fixture photos and invoices. Fixed placeholder text colors to be dynamic based on  for light/dark mode visibility. Fixed hardcoded API URL.
+-   
+    -   **Summary:** Displays nearby services/points of interest related to a property.
+    -   **Changes:** Replaced hardcoded Nominatim API URLs with  from .
+-   
+    -   **Summary:** Utility functions for locale-based formatting (currency, measurements).
+    -   **Changes:**
+        -   Modified to use  for user-defined currency and measurement preferences.
+        -   Implemented a synchronous cached preference system (, , ).
+        -   Updated  to prioritize user preference from cache over device locale.
+-   
+    -   **Summary:** Manages user authentication state.
+    -   **Changes:** Ensured  is correctly exposed.
+-   
+    -   **Summary:** Vite configuration for the website.
+    -   **Changes:** Fixed hardcoded port configuration.
 </code_architecture>
 
 <pending_tasks>
--   Implement the detailed view pages for Vehicles, Appliances, and Jewelry categories.
--   Integrate AI scanning functionality (e.g., for vehicle make/model/year, jewelry type/metal/value) into the  forms.
+-   Integrate AI scanning functionality for vehicle make/model/year into the  form.
 -   Build the portfolio dashboard's charting and full PDF export functionality.
 -   Implement periodic maintenance tracking for applicable asset categories.
+-   Implement search functionality within categories and an uber search bar across all categories.
+-   Address the property details page back button not functioning.
+-   Address the unmatched route error when editing added jewelry or appliances.
+-   Add an option to include purchase or current cost of the property when adding/editing properties.
 </pending_tasks>
 
 <current_work>
-Immediately prior to this summary request, the AI engineer was addressing critical import syntax errors within the  forms for both appliances and vehicles. Specifically, the files  and  had malformed import statements that prevented the components from rendering correctly, leading to user-reported issues like the being built message on the appliance add page.
+Immediately prior to this summary request, the AI engineer was addressing four critical user-reported issues:
+1.  **Address field not persisting in edit property page:** The  component on  was not retaining the previously selected address value, particularly on iPhone. The engineer identified that  alone was insufficient for dynamic updates and planned to use a React ref to properly set and update the address text field.
+2.  **Option to add purchase/current cost of property:** User requested functionality to include cost details for properties.
+3.  **Unmatched route error on asset edit:** Editing existing jewelry or appliance items led to navigation errors.
+4.  **Property details page back button not functioning:** The back button on the property details screen was unresponsive.
 
-The engineer meticulously identified and rectified these syntax errors, ensuring all necessary React Native components, hooks, and utilities were imported correctly and in the appropriate format. This was a crucial step to make these asset addition forms fully functional and ready for further development, such as integrating AI scanning capabilities. Following these fixes, the frontend was restarted to apply the changes, bringing the application to a stable state regarding these core asset input forms.
+The engineer had just implemented a fix for the address persistence issue in  by leveraging a  to manage the  component's . After this fix, the frontend was restarted. The remaining three issues from this batch (, , ) are still outstanding.
 </current_work>
 
 <optional_next_step>
-Integrate AI scanning functionality into the  forms for Appliances and Jewelry.
+The next step is to fix the Property Details Back Button functionality, as per the user's explicit instruction: Go ahead with option B which includes Fix 1: Property Details Back Button.
 </optional_next_step>
