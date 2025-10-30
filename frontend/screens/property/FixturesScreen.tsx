@@ -699,6 +699,7 @@ export default function FixturesScreen({ propertyId }: FixturesScreenProps) {
             <TextInput
               style={styles.input}
               placeholder="e.g., +1 234 567 8900"
+              placeholderTextColor={placeholderColor}
               value={vendorContact}
               onChangeText={setVendorContact}
               keyboardType="phone-pad"
