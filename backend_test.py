@@ -11,8 +11,8 @@ import uuid
 from datetime import datetime
 import os
 
-# Get backend URL from environment
-BACKEND_URL = "https://aurassets.preview.emergentagent.com/api"
+# Get backend URL from environment variable
+BACKEND_URL = os.environ.get('BACKEND_URL', 'http://localhost:8001/api')
 
 class PropertyManagerAPITester:
     def __init__(self):
