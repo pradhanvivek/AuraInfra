@@ -540,6 +540,220 @@ class PropertyManagerAPITester:
         
         return False
     
+    # ============= JEWELRY TESTS =============
+    
+    def test_create_jewelry(self):
+        """Test creating a jewelry item"""
+        data = {
+            "name": "Diamond Engagement Ring",
+            "type": "Ring",
+            "metal": "White Gold",
+            "stones": "1 carat diamond",
+            "number_of_stones": 1,
+            "weight": 3.5,
+            "purchase_date": "2023-06-15",
+            "purchase_cost": 5000.00,
+            "appraisal_value": 6500.00,
+            "appraisal_date": "2024-01-15",
+            "certificate_number": "GIA123456789",
+            "notes": "Beautiful engagement ring with excellent cut diamond",
+            "warranty_info": "Lifetime warranty on setting",
+            "warranty_expiry_date": "2030-06-15"
+        }
+        
+        response = self.make_request("POST", "/jewelry", data)
+        
+        if response and response.status_code == 200:
+            result = response.json()
+            if "id" in result and result["name"] == data["name"]:
+                self.test_jewelry_id = result["id"]
+                self.log_result("Create Jewelry", True, f"Jewelry '{data['name']}' created with ID: {self.test_jewelry_id}")
+                return True
+            else:
+                self.log_result("Create Jewelry", False, "Missing ID or incorrect name in response")
+        else:
+            error_msg = response.json().get("detail", "Unknown error") if response else "No response"
+            self.log_result("Create Jewelry", False, f"Status: {response.status_code if response else 'None'}, Error: {error_msg}")
+        
+        return False
+    
+    def test_get_jewelry(self):
+        """Test getting all jewelry for user"""
+        response = self.make_request("GET", "/jewelry")
+        
+        if response and response.status_code == 200:
+            jewelry_items = response.json()
+            if isinstance(jewelry_items, list) and len(jewelry_items) > 0:
+                found_jewelry = any(item.get("id") == self.test_jewelry_id for item in jewelry_items)
+                if found_jewelry:
+                    self.log_result("Get Jewelry", True, f"Retrieved {len(jewelry_items)} jewelry items including test item")
+                    return True
+                else:
+                    self.log_result("Get Jewelry", False, "Test jewelry not found in jewelry list")
+            else:
+                self.log_result("Get Jewelry", False, "No jewelry returned or invalid format")
+        else:
+            error_msg = response.json().get("detail", "Unknown error") if response else "No response"
+            self.log_result("Get Jewelry", False, f"Status: {response.status_code if response else 'None'}, Error: {error_msg}")
+        
+        return False
+    
+    def test_get_jewelry_by_id(self):
+        """Test getting a specific jewelry item by ID"""
+        if not self.test_jewelry_id:
+            self.log_result("Get Jewelry by ID", False, "No test jewelry ID available")
+            return False
+        
+        response = self.make_request("GET", f"/jewelry/{self.test_jewelry_id}")
+        
+        if response and response.status_code == 200:
+            jewelry_data = response.json()
+            if jewelry_data.get("id") == self.test_jewelry_id:
+                self.log_result("Get Jewelry by ID", True, f"Retrieved jewelry: {jewelry_data.get('name')}")
+                return True
+            else:
+                self.log_result("Get Jewelry by ID", False, "Jewelry ID mismatch")
+        else:
+            error_msg = response.json().get("detail", "Unknown error") if response else "No response"
+            self.log_result("Get Jewelry by ID", False, f"Status: {response.status_code if response else 'None'}, Error: {error_msg}")
+        
+        return False
+    
+    def test_update_jewelry(self):
+        """Test updating a jewelry item"""
+        if not self.test_jewelry_id:
+            self.log_result("Update Jewelry", False, "No test jewelry ID available")
+            return False
+        
+        data = {
+            "name": "Updated Diamond Ring",
+            "type": "Ring",
+            "metal": "Platinum",
+            "stones": "1.2 carat diamond",
+            "weight": 4.0,
+            "appraisal_value": 7500.00,
+            "notes": "Updated appraisal value and metal type"
+        }
+        
+        response = self.make_request("PUT", f"/jewelry/{self.test_jewelry_id}", data)
+        
+        if response and response.status_code == 200:
+            result = response.json()
+            if "message" in result and "successfully" in result["message"]:
+                self.log_result("Update Jewelry", True, f"Jewelry updated successfully")
+                return True
+            else:
+                self.log_result("Update Jewelry", False, "No success message in response")
+        else:
+            error_msg = response.json().get("detail", "Unknown error") if response else "No response"
+            self.log_result("Update Jewelry", False, f"Status: {response.status_code if response else 'None'}, Error: {error_msg}")
+        
+        return False
+    
+    def test_jewelry_scan_endpoint(self):
+        """Test the AI jewelry scanning endpoint"""
+        data = {
+            "image": self.create_sample_image_base64()
+        }
+        
+        response = self.make_request("POST", "/jewelry/scan", data)
+        
+        if response and response.status_code == 200:
+            scan_result = response.json()
+            
+            # Verify the response structure matches JewelryScanResult model
+            required_fields = ["type", "confidence"]
+            optional_fields = ["name", "metal", "stones", "weight", "estimated_value"]
+            
+            has_required_fields = all(field in scan_result for field in required_fields)
+            
+            if has_required_fields:
+                self.log_result("Jewelry Scan Endpoint", True, f"Scan successful - Type: {scan_result.get('type')}, Confidence: {scan_result.get('confidence')}")
+                
+                # Log additional fields if present
+                additional_info = []
+                if scan_result.get("name"):
+                    additional_info.append(f"Name: {scan_result['name']}")
+                if scan_result.get("metal"):
+                    additional_info.append(f"Metal: {scan_result['metal']}")
+                if scan_result.get("stones"):
+                    additional_info.append(f"Stones: {scan_result['stones']}")
+                if scan_result.get("weight"):
+                    additional_info.append(f"Weight: {scan_result['weight']}g")
+                if scan_result.get("estimated_value"):
+                    additional_info.append(f"Value: ${scan_result['estimated_value']}")
+                
+                if additional_info:
+                    print(f"   Enhanced scan data: {', '.join(additional_info)}")
+                
+                return True
+            else:
+                self.log_result("Jewelry Scan Endpoint", False, f"Missing required fields. Expected: {required_fields}, Got: {list(scan_result.keys())}")
+        else:
+            error_msg = response.json().get("detail", "Unknown error") if response else "No response"
+            self.log_result("Jewelry Scan Endpoint", False, f"Status: {response.status_code if response else 'None'}, Error: {error_msg}")
+        
+        return False
+    
+    def test_jewelry_authentication_enforcement(self):
+        """Test that JWT authentication is properly enforced for jewelry endpoints"""
+        # Test without token
+        session_no_auth = requests.Session()
+        
+        endpoints_to_test = [
+            ("GET", "/jewelry"),
+            ("POST", "/jewelry"),
+            ("POST", "/jewelry/scan")
+        ]
+        
+        auth_results = []
+        
+        for method, endpoint in endpoints_to_test:
+            if method == "GET":
+                response = session_no_auth.get(f"{self.base_url}{endpoint}")
+            elif method == "POST":
+                response = session_no_auth.post(f"{self.base_url}{endpoint}", json={})
+            
+            if response.status_code == 401:
+                auth_results.append(True)
+                print(f"   ✅ Auth enforcement for {method} {endpoint} - PASSED")
+            else:
+                auth_results.append(False)
+                print(f"   ❌ Auth enforcement for {method} {endpoint} - FAILED (Expected 401, got {response.status_code})")
+        
+        success = all(auth_results)
+        self.log_result("Jewelry Authentication Enforcement", success, f"Tested {len(endpoints_to_test)} endpoints")
+        return success
+    
+    def test_delete_jewelry(self):
+        """Test deleting a jewelry item"""
+        if not self.test_jewelry_id:
+            self.log_result("Delete Jewelry", False, "No test jewelry ID available")
+            return False
+        
+        response = self.make_request("DELETE", f"/jewelry/{self.test_jewelry_id}")
+        
+        if response and response.status_code == 200:
+            result = response.json()
+            if "message" in result:
+                self.log_result("Delete Jewelry", True, "Jewelry deleted successfully")
+                
+                # Verify deletion by trying to get the item
+                verify_response = self.make_request("GET", f"/jewelry/{self.test_jewelry_id}")
+                if verify_response and verify_response.status_code == 404:
+                    print("   ✅ Delete verification - Item not found as expected")
+                else:
+                    print("   ⚠️ Delete verification - Item may still exist")
+                
+                return True
+            else:
+                self.log_result("Delete Jewelry", False, "No success message in response")
+        else:
+            error_msg = response.json().get("detail", "Unknown error") if response else "No response"
+            self.log_result("Delete Jewelry", False, f"Status: {response.status_code if response else 'None'}, Error: {error_msg}")
+        
+        return False
+    
     # ============= DELETION TESTS =============
     
     def test_delete_measurement(self):
