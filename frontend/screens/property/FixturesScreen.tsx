@@ -82,6 +82,10 @@ export default function FixturesScreen({ propertyId }: FixturesScreenProps) {
   const [scanningAppliance, setScanningAppliance] = useState(false);
   const [cameraRef, setCameraRef] = useState<any>(null);
   const [permission, requestPermission] = useCameraPermissions();
+  
+  // Image viewer state
+  const [imageViewerVisible, setImageViewerVisible] = useState(false);
+  const [selectedImageUri, setSelectedImageUri] = useState('');
 
   useEffect(() => {
     fetchFixtures();
