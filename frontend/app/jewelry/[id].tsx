@@ -204,8 +204,8 @@ export default function JewelryDetailsScreen() {
             <Text style={styles.sectionTitle}>Certificate</Text>
             <TouchableOpacity
               onPress={() => {
-                setSelectedImageUri(`data:image/jpeg;base64,${jewelry.certificate}`);
-                setImageViewerVisible(true);
+                // Show certificate as a separate image (not in the photos array)
+                setSelectedImageIndex(-1); // Use -1 to indicate certificate
               }}
             >
               <Image
@@ -228,12 +228,22 @@ export default function JewelryDetailsScreen() {
         <View style={styles.bottomPadding} />
       </ScrollView>
 
-      {/* Image Viewer */}
-      <ImageViewer
-        visible={imageViewerVisible}
-        imageUri={selectedImageUri}
-        onClose={() => setImageViewerVisible(false)}
-      />
+      {/* Image Viewer Modal - Photos */}
+      {selectedImageIndex !== null && selectedImageIndex >= 0 && jewelry?.photos && (
+        <ImageViewer
+          images={jewelry.photos.map(photo => `data:image/jpeg;base64,${photo}`)}
+          initialIndex={selectedImageIndex}
+          onClose={() => setSelectedImageIndex(null)}
+        />
+      )}
+
+      {/* Image Viewer Modal - Certificate */}
+      {selectedImageIndex === -1 && jewelry?.certificate && (
+        <ImageViewer
+          imageUri={`data:image/jpeg;base64,${jewelry.certificate}`}
+          onClose={() => setSelectedImageIndex(null)}
+        />
+      )}
     </SafeAreaView>
   );
 }
