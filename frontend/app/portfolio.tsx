@@ -13,6 +13,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useAuth } from '../contexts/AuthContext';
 import axios from 'axios';
 import Constants from 'expo-constants';
+import { formatCurrency } from '../utils/localeUtils';
 
 const API_URL = Constants.expoConfig?.extra?.EXPO_PUBLIC_BACKEND_URL || process.env.EXPO_PUBLIC_BACKEND_URL;
 
@@ -130,7 +131,7 @@ export default function PortfolioScreen() {
         <View style={styles.totalCard}>
           <Text style={styles.totalLabel}>Total Portfolio Value</Text>
           <Text style={styles.totalValue}>
-            ${portfolio.total_value.toLocaleString()}
+            {formatCurrency(portfolio.total_value)}
           </Text>
           <Text style={styles.totalSubtext}>
             {portfolio.properties_count + portfolio.vehicles_count + 
@@ -155,7 +156,7 @@ export default function PortfolioScreen() {
               </View>
               <View style={styles.categoryValues}>
                 <Text style={[styles.categoryValue, { color: category.color }]}>
-                  ${category.value.toLocaleString()}
+                  {formatCurrency(category.value)}
                 </Text>
                 <Text style={styles.categoryPercentage}>
                   {category.percentage.toFixed(1)}%
