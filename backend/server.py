@@ -63,6 +63,7 @@ class UserProfile(BaseModel):
     username: str
     email: Optional[str] = None
     phone: Optional[str] = None
+    avatar: Optional[str] = None  # base64 encoded image
     warranty_reminder_days: int = 30
     geomancy_preference: str = "vastu"  # "vastu" or "feng_shui"
     currency_preference: Optional[str] = None  # "USD", "INR", "EUR", etc.
@@ -72,6 +73,7 @@ class UserProfile(BaseModel):
 class UserProfileUpdate(BaseModel):
     email: Optional[str] = None
     phone: Optional[str] = None
+    avatar: Optional[str] = None  # base64 encoded image
     warranty_reminder_days: Optional[int] = None
     geomancy_preference: Optional[str] = None  # "vastu" or "feng_shui"
     currency_preference: Optional[str] = None  # "USD", "INR", "EUR", etc.
