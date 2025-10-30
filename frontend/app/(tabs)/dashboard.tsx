@@ -114,7 +114,7 @@ export default function DashboardScreen() {
           <View style={styles.valueCard}>
             <Text style={styles.valueLabel}>Total Value</Text>
             <Text style={styles.valueAmount}>
-              ${portfolioData.total_value.toLocaleString()}
+              {formatCurrency(portfolioData.total_value)}
             </Text>
           </View>
         )}
