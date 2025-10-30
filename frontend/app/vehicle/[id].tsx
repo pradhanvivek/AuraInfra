@@ -161,11 +161,15 @@ export default function VehicleDetailsScreen() {
             <Text style={styles.sectionTitle}>Photos</Text>
             <ScrollView horizontal showsHorizontalScrollIndicator={false}>
               {vehicle.photos.map((photo, index) => (
-                <Image
+                <TouchableOpacity
                   key={index}
-                  source={{ uri: `data:image/jpeg;base64,${photo}` }}
-                  style={styles.photo}
-                />
+                  onPress={() => setSelectedImageIndex(index)}
+                >
+                  <Image
+                    source={{ uri: `data:image/jpeg;base64,${photo}` }}
+                    style={styles.photo}
+                  />
+                </TouchableOpacity>
               ))}
             </ScrollView>
           </View>
