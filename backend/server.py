@@ -1014,17 +1014,21 @@ async def scan_jewelry(scan_data: dict, user_id: str = Depends(get_current_user)
         ).with_model("gemini", "gemini-2.0-flash")
         
         user_message = UserMessage(
-            text="""Analyze this jewelry image and identify it.
+            text="""Analyze this jewelry image and identify it in detail.
 
-Return ONLY a valid JSON object:
+Return ONLY a valid JSON object with this structure:
 {
-  "type": "Ring",
-  "metal": "Gold",
+  "name": "Descriptive name (e.g., 'Diamond Engagement Ring', 'Gold Necklace')",
+  "type": "Type (Ring, Necklace, Bracelet, Earrings, Watch, etc.)",
+  "metal": "Metal type (Gold, Silver, Platinum, White Gold, etc.)",
+  "stones": "Stones/gems description (e.g., '1 carat diamond, 2 rubies')",
+  "weight": 15.5,
   "estimated_value": 5000,
   "confidence": 0.90
 }
 
-Return ONLY JSON, no additional text.""",
+If you cannot determine a field with confidence, omit it or set it to null.
+Return ONLY the JSON object, no additional text.""",
             file_contents=[ImageContent(image_base64=scan_data['image'])]
         )
         
