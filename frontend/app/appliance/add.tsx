@@ -574,7 +574,6 @@ export default function AddApplianceScreen() {
                 <View style={styles.captureButtonInner} />
               </TouchableOpacity>
             </View>
-          </CameraView>
         </View>
       </Modal>
 
