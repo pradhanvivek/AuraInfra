@@ -565,6 +565,7 @@ export default function FixturesScreen({ propertyId }: FixturesScreenProps) {
             <TextInput
               style={styles.input}
               placeholder="e.g., Living Room Ceiling Fan"
+              placeholderTextColor={placeholderColor}
               value={name}
               onChangeText={setName}
             />
