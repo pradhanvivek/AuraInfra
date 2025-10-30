@@ -238,15 +238,6 @@ class ApplianceScanResult(BaseModel):
 class JewelryScanRequest(BaseModel):
     image: str  # base64 encoded image
 
-class JewelryScanResult(BaseModel):
-    name: str
-    type: Optional[str] = None  # e.g., "ring", "necklace", "bracelet"
-    metal_type: Optional[str] = None  # e.g., "gold", "silver", "platinum"
-    gemstone_details: Optional[str] = None  # e.g., "diamond", "ruby"
-    weight_estimate: Optional[str] = None  # estimated weight in grams
-    estimated_value: Optional[str] = None
-    confidence: float
-
 # Receipt Scanner Models
 class ReceiptScanRequest(BaseModel):
     image: str  # base64 encoded receipt image
