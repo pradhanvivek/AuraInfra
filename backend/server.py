@@ -511,6 +511,26 @@ class JewelryScanResult(BaseModel):
     estimated_value: Optional[float] = None
     confidence: float
 
+class FurnitureScanResult(BaseModel):
+    name: Optional[str] = None
+    category: Optional[str] = "Unknown"
+    brand: Optional[str] = None
+    material: Optional[str] = None
+    style: Optional[str] = None
+    estimated_age: Optional[str] = None
+    condition: Optional[str] = None
+    confidence: float
+
+class ArtScanResult(BaseModel):
+    name: Optional[str] = None
+    type: Optional[str] = "Unknown"
+    artist: Optional[str] = None
+    medium: Optional[str] = None
+    style: Optional[str] = None
+    estimated_period: Optional[str] = None
+    subject_matter: Optional[str] = None
+    confidence: float
+
 # Portfolio Summary
 class PortfolioSummary(BaseModel):
     total_value: float
