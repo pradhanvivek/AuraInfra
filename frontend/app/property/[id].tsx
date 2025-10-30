@@ -19,6 +19,8 @@ interface Property {
   id: string;
   name: string;
   address: string;
+  purchase_cost?: number;
+  current_value?: number;
 }
 
 export default function PropertyDetails() {
