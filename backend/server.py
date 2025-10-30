@@ -1071,6 +1071,77 @@ Return ONLY the JSON object, no additional text.""",
         logger.error(f"Jewelry scan error: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))
 
+# ============= RECEIPT SCANNER ENDPOINT =============
+
+@api_router.post("/scan-receipt", response_model=ReceiptScanResult)
+async def scan_receipt(
+    scan_request: ReceiptScanRequest,
+    user_id: str = Depends(get_current_user)
+):
+    """
+    Use Gemini Vision AI to extract information from receipt/invoice images
+    """
+    try:
+        from emergentintegrations.llm.chat import LlmChat, UserMessage, ImageContent
+        import json
+        
+        api_key = os.environ.get('EMERGENT_LLM_KEY')
+        if not api_key:
+            raise HTTPException(status_code=500, detail="API key not configured")
+        
+        chat = LlmChat(
+            api_key=api_key,
+            session_id=f"receipt_scan_{user_id}_{uuid.uuid4()}",
+            system_message="You are an expert at extracting information from receipts and invoices."
+        ).with_model("gemini", "gemini-2.0-flash")
+        
+        user_message = UserMessage(
+            text="""Analyze this receipt/invoice image and extract all relevant purchase information.
+
+Return ONLY a valid JSON object with this exact structure (use null for fields you cannot find):
+{
+  "vendor_name": "Store or vendor name",
+  "purchase_date": "YYYY-MM-DD format date",
+  "item_name": "Product name",
+  "item_description": "Brief description of the item",
+  "brand": "Brand name if visible",
+  "model": "Model number if visible",
+  "serial_number": "Serial number if visible",
+  "purchase_cost": 0.00,
+  "warranty_info": "Warranty details if mentioned",
+  "warranty_months": 0,
+  "confidence": 0.95
+}
+
+Be precise with extracted values. If you're unsure about a field, set it to null.
+Set confidence between 0.0 and 1.0 based on image quality and visibility of information.""",
+            image_content=[ImageContent(image=scan_request.image, type="base64")]
+        )
+        
+        response = await chat.send_message(user_message)
+        
+        try:
+            # Try to extract JSON from response
+            json_start = response.find('{')
+            json_end = response.rfind('}') + 1
+            if json_start != -1 and json_end > json_start:
+                json_str = response[json_start:json_end]
+                result = json.loads(json_str)
+            else:
+                result = json.loads(response)
+            
+            return ReceiptScanResult(**result)
+            
+        except json.JSONDecodeError as je:
+            logger.error(f"JSON parsing error: {str(je)}")
+            raise HTTPException(status_code=500, detail="Failed to parse AI response")
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Receipt scan error: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
 # ============= APPLIANCE SCANNER ENDPOINT =============
 
 @api_router.post("/fixtures/scan-appliance", response_model=ApplianceScanResult)
