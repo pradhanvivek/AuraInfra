@@ -756,6 +756,289 @@ async def delete_fixture(
     
     return {"message": "Fixture deleted successfully"}
 
+# ============= PORTFOLIO & ASSET MANAGEMENT ENDPOINTS =============
+
+@api_router.get("/portfolio/summary", response_model=PortfolioSummary)
+async def get_portfolio_summary(user_id: str = Depends(get_current_user)):
+    """Get portfolio summary with total values and counts"""
+    try:
+        # Get properties
+        properties_cursor = db.properties.find({"user_id": user_id})
+        properties = await properties_cursor.to_list(length=1000)
+        properties_value = sum(float(p.get('price', 0)) for p in properties)
+        
+        # Get vehicles
+        vehicles_cursor = db.vehicles.find({"user_id": user_id})
+        vehicles = await vehicles_cursor.to_list(length=1000)
+        vehicles_value = sum(float(v.get('current_value', 0) or 0) for v in vehicles)
+        
+        # Get appliances
+        appliances_cursor = db.appliances.find({"user_id": user_id})
+        appliances = await appliances_cursor.to_list(length=1000)
+        appliances_value = sum(float(a.get('current_value', 0) or 0) for a in appliances)
+        
+        # Get jewelry
+        jewelry_cursor = db.jewelry.find({"user_id": user_id})
+        jewelry = await jewelry_cursor.to_list(length=1000)
+        jewelry_value = sum(float(j.get('appraisal_value', 0) or 0) for j in jewelry)
+        
+        return PortfolioSummary(
+            total_value=properties_value + vehicles_value + appliances_value + jewelry_value,
+            properties_value=properties_value,
+            vehicles_value=vehicles_value,
+            appliances_value=appliances_value,
+            jewelry_value=jewelry_value,
+            properties_count=len(properties),
+            vehicles_count=len(vehicles),
+            appliances_count=len(appliances),
+            jewelry_count=len(jewelry)
+        )
+    except Exception as e:
+        logger.error(f"Portfolio summary error: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+# ============= VEHICLE ENDPOINTS =============
+
+@api_router.post("/vehicles")
+async def create_vehicle(vehicle_data: VehicleCreate, user_id: str = Depends(get_current_user)):
+    """Create a new vehicle"""
+    vehicle = Vehicle(user_id=user_id, **vehicle_data.dict())
+    await db.vehicles.insert_one(vehicle.dict())
+    return vehicle
+
+@api_router.get("/vehicles")
+async def get_vehicles(user_id: str = Depends(get_current_user)):
+    """Get all vehicles for user"""
+    vehicles = []
+    async for doc in db.vehicles.find({"user_id": user_id}):
+        doc.pop('_id', None)
+        vehicles.append(doc)
+    return vehicles
+
+@api_router.get("/vehicles/{vehicle_id}")
+async def get_vehicle(vehicle_id: str, user_id: str = Depends(get_current_user)):
+    """Get a specific vehicle"""
+    vehicle = await db.vehicles.find_one({"id": vehicle_id, "user_id": user_id})
+    if not vehicle:
+        raise HTTPException(status_code=404, detail="Vehicle not found")
+    vehicle.pop('_id', None)
+    return vehicle
+
+@api_router.put("/vehicles/{vehicle_id}")
+async def update_vehicle(
+    vehicle_id: str,
+    vehicle_data: VehicleCreate,
+    user_id: str = Depends(get_current_user)
+):
+    """Update a vehicle"""
+    result = await db.vehicles.update_one(
+        {"id": vehicle_id, "user_id": user_id},
+        {"$set": vehicle_data.dict()}
+    )
+    if result.matched_count == 0:
+        raise HTTPException(status_code=404, detail="Vehicle not found")
+    return {"message": "Vehicle updated successfully"}
+
+@api_router.delete("/vehicles/{vehicle_id}")
+async def delete_vehicle(vehicle_id: str, user_id: str = Depends(get_current_user)):
+    """Delete a vehicle"""
+    result = await db.vehicles.delete_one({"id": vehicle_id, "user_id": user_id})
+    if result.deleted_count == 0:
+        raise HTTPException(status_code=404, detail="Vehicle not found")
+    return {"message": "Vehicle deleted successfully"}
+
+@api_router.post("/vehicles/scan")
+async def scan_vehicle(scan_data: dict, user_id: str = Depends(get_current_user)):
+    """AI scan for vehicle identification"""
+    try:
+        from emergentintegrations.llm.chat import LlmChat, UserMessage, ImageContent
+        import json
+        
+        api_key = os.environ.get('EMERGENT_LLM_KEY')
+        if not api_key:
+            raise HTTPException(status_code=500, detail="API key not configured")
+        
+        chat = LlmChat(
+            api_key=api_key,
+            session_id=f"vehicle_scan_{user_id}_{uuid.uuid4()}",
+            system_message="You are an expert in identifying vehicles from images."
+        ).with_model("gemini", "gemini-2.0-flash")
+        
+        user_message = UserMessage(
+            text="""Analyze this vehicle image and identify it.
+
+Return ONLY a valid JSON object:
+{
+  "make": "BMW",
+  "model": "3 Series",
+  "year": 2020,
+  "confidence": 0.95
+}
+
+If year is not clear, set it to null. Return ONLY JSON, no additional text.""",
+            file_contents=[ImageContent(image_base64=scan_data['image'])]
+        )
+        
+        response = await chat.send_message(user_message)
+        json_start = response.find('{')
+        json_end = response.rfind('}') + 1
+        if json_start != -1 and json_end > json_start:
+            json_str = response[json_start:json_end]
+            result = json.loads(json_str)
+        else:
+            result = json.loads(response)
+        
+        return VehicleScanResult(**result)
+    except Exception as e:
+        logger.error(f"Vehicle scan error: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+# ============= APPLIANCE ENDPOINTS =============
+
+@api_router.post("/appliances")
+async def create_appliance(appliance_data: ApplianceCreate, user_id: str = Depends(get_current_user)):
+    """Create a new appliance"""
+    appliance = Appliance(user_id=user_id, **appliance_data.dict())
+    await db.appliances.insert_one(appliance.dict())
+    return appliance
+
+@api_router.get("/appliances")
+async def get_appliances(user_id: str = Depends(get_current_user)):
+    """Get all appliances for user"""
+    appliances = []
+    async for doc in db.appliances.find({"user_id": user_id}):
+        doc.pop('_id', None)
+        appliances.append(doc)
+    return appliances
+
+@api_router.get("/appliances/{appliance_id}")
+async def get_appliance(appliance_id: str, user_id: str = Depends(get_current_user)):
+    """Get a specific appliance"""
+    appliance = await db.appliances.find_one({"id": appliance_id, "user_id": user_id})
+    if not appliance:
+        raise HTTPException(status_code=404, detail="Appliance not found")
+    appliance.pop('_id', None)
+    return appliance
+
+@api_router.put("/appliances/{appliance_id}")
+async def update_appliance(
+    appliance_id: str,
+    appliance_data: ApplianceCreate,
+    user_id: str = Depends(get_current_user)
+):
+    """Update an appliance"""
+    result = await db.appliances.update_one(
+        {"id": appliance_id, "user_id": user_id},
+        {"$set": appliance_data.dict()}
+    )
+    if result.matched_count == 0:
+        raise HTTPException(status_code=404, detail="Appliance not found")
+    return {"message": "Appliance updated successfully"}
+
+@api_router.delete("/appliances/{appliance_id}")
+async def delete_appliance(appliance_id: str, user_id: str = Depends(get_current_user)):
+    """Delete an appliance"""
+    result = await db.appliances.delete_one({"id": appliance_id, "user_id": user_id})
+    if result.deleted_count == 0:
+        raise HTTPException(status_code=404, detail="Appliance not found")
+    return {"message": "Appliance deleted successfully"}
+
+# ============= JEWELRY ENDPOINTS =============
+
+@api_router.post("/jewelry")
+async def create_jewelry(jewelry_data: JewelryCreate, user_id: str = Depends(get_current_user)):
+    """Create a new jewelry item"""
+    jewelry = Jewelry(user_id=user_id, **jewelry_data.dict())
+    await db.jewelry.insert_one(jewelry.dict())
+    return jewelry
+
+@api_router.get("/jewelry")
+async def get_jewelry(user_id: str = Depends(get_current_user)):
+    """Get all jewelry for user"""
+    jewelry_items = []
+    async for doc in db.jewelry.find({"user_id": user_id}):
+        doc.pop('_id', None)
+        jewelry_items.append(doc)
+    return jewelry_items
+
+@api_router.get("/jewelry/{jewelry_id}")
+async def get_jewelry_item(jewelry_id: str, user_id: str = Depends(get_current_user)):
+    """Get a specific jewelry item"""
+    jewelry = await db.jewelry.find_one({"id": jewelry_id, "user_id": user_id})
+    if not jewelry:
+        raise HTTPException(status_code=404, detail="Jewelry not found")
+    jewelry.pop('_id', None)
+    return jewelry
+
+@api_router.put("/jewelry/{jewelry_id}")
+async def update_jewelry(
+    jewelry_id: str,
+    jewelry_data: JewelryCreate,
+    user_id: str = Depends(get_current_user)
+):
+    """Update a jewelry item"""
+    result = await db.jewelry.update_one(
+        {"id": jewelry_id, "user_id": user_id},
+        {"$set": jewelry_data.dict()}
+    )
+    if result.matched_count == 0:
+        raise HTTPException(status_code=404, detail="Jewelry not found")
+    return {"message": "Jewelry updated successfully"}
+
+@api_router.delete("/jewelry/{jewelry_id}")
+async def delete_jewelry(jewelry_id: str, user_id: str = Depends(get_current_user)):
+    """Delete a jewelry item"""
+    result = await db.jewelry.delete_one({"id": jewelry_id, "user_id": user_id})
+    if result.deleted_count == 0:
+        raise HTTPException(status_code=404, detail="Jewelry not found")
+    return {"message": "Jewelry deleted successfully"}
+
+@api_router.post("/jewelry/scan")
+async def scan_jewelry(scan_data: dict, user_id: str = Depends(get_current_user)):
+    """AI scan for jewelry identification"""
+    try:
+        from emergentintegrations.llm.chat import LlmChat, UserMessage, ImageContent
+        import json
+        
+        api_key = os.environ.get('EMERGENT_LLM_KEY')
+        if not api_key:
+            raise HTTPException(status_code=500, detail="API key not configured")
+        
+        chat = LlmChat(
+            api_key=api_key,
+            session_id=f"jewelry_scan_{user_id}_{uuid.uuid4()}",
+            system_message="You are an expert in identifying jewelry and gemstones."
+        ).with_model("gemini", "gemini-2.0-flash")
+        
+        user_message = UserMessage(
+            text="""Analyze this jewelry image and identify it.
+
+Return ONLY a valid JSON object:
+{
+  "type": "Ring",
+  "metal": "Gold",
+  "estimated_value": 5000,
+  "confidence": 0.90
+}
+
+Return ONLY JSON, no additional text.""",
+            file_contents=[ImageContent(image_base64=scan_data['image'])]
+        )
+        
+        response = await chat.send_message(user_message)
+        json_start = response.find('{')
+        json_end = response.rfind('}') + 1
+        if json_start != -1 and json_end > json_start:
+            json_str = response[json_start:json_end]
+            result = json.loads(json_str)
+        else:
+            result = json.loads(response)
+        
+        return JewelryScanResult(**result)
+    except Exception as e:
+        logger.error(f"Jewelry scan error: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
 # ============= APPLIANCE SCANNER ENDPOINT =============
 
 @api_router.post("/fixtures/scan-appliance", response_model=ApplianceScanResult)
