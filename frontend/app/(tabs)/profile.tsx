@@ -252,6 +252,36 @@ export default function Profile() {
             </View>
             <Ionicons name="chevron-forward" size={20} color="#C7C7CC" />
           </TouchableOpacity>
+
+          <TouchableOpacity
+            style={styles.infoCard}
+            onPress={() => setCurrencyModalVisible(true)}
+          >
+            <View style={styles.infoIcon}>
+              <Ionicons name="cash-outline" size={24} color="#007AFF" />
+            </View>
+            <View style={styles.infoContent}>
+              <Text style={styles.infoLabel}>Currency</Text>
+              <Text style={styles.infoValue}>{selectedCurrency}</Text>
+            </View>
+            <Ionicons name="chevron-forward" size={20} color="#C7C7CC" />
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            style={styles.infoCard}
+            onPress={() => setMeasurementModalVisible(true)}
+          >
+            <View style={styles.infoIcon}>
+              <Ionicons name="resize-outline" size={24} color="#007AFF" />
+            </View>
+            <View style={styles.infoContent}>
+              <Text style={styles.infoLabel}>Measurement System</Text>
+              <Text style={styles.infoValue}>
+                {selectedMeasurement === 'metric' ? 'Metric (m, kg)' : 'Imperial (ft, lb)'}
+              </Text>
+            </View>
+            <Ionicons name="chevron-forward" size={20} color="#C7C7CC" />
+          </TouchableOpacity>
         </View>
 
         <View style={styles.section}>
