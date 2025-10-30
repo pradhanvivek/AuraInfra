@@ -906,12 +906,23 @@ class PropertyManagerAPITester:
         print("-" * 30)
         self.test_ai_floorplan_analysis()
         
+        # Jewelry Tests
+        print("\n💎 JEWELRY TESTS")
+        print("-" * 30)
+        self.test_create_jewelry()
+        self.test_get_jewelry()
+        self.test_get_jewelry_by_id()
+        self.test_update_jewelry()
+        self.test_jewelry_scan_endpoint()
+        self.test_jewelry_authentication_enforcement()
+        
         # Deletion Tests
         print("\n🗑️ DELETION TESTS")
         print("-" * 30)
         self.test_delete_measurement()
         self.test_delete_fixture()
         self.test_delete_document()
+        self.test_delete_jewelry()
         self.test_delete_property()
         
         # Final Results
