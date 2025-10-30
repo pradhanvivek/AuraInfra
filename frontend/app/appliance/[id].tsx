@@ -223,7 +223,7 @@ export default function ApplianceDetailsScreen() {
 
         <View style={styles.bottomPadding} />
       </ScrollView>
-    </View>
+    </SafeAreaView>
   );
 }
 
