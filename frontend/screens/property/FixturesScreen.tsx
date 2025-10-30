@@ -709,6 +709,7 @@ export default function FixturesScreen({ propertyId }: FixturesScreenProps) {
             <TextInput
               style={styles.input}
               placeholder="e.g., contact@vendor.com"
+              placeholderTextColor={placeholderColor}
               value={vendorEmail}
               onChangeText={setVendorEmail}
               keyboardType="email-address"
