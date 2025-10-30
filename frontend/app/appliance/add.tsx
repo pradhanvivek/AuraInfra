@@ -20,6 +20,7 @@ import { useAuth } from '../../contexts/AuthContext';
 import axios from 'axios';
 import Constants from 'expo-constants';
 import DateTimePickerModal from 'react-native-modal-datetime-picker';
+import { getCurrencyInfo } from '../../utils/localeUtils';
 
 const API_URL = Constants.expoConfig?.extra?.EXPO_PUBLIC_BACKEND_URL || process.env.EXPO_PUBLIC_BACKEND_URL;
 
