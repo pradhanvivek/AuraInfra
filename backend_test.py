@@ -19,1131 +19,458 @@ load_dotenv('/app/frontend/.env')
 BASE_URL = os.getenv('EXPO_PUBLIC_BACKEND_URL', 'https://aurainfra-pm.preview.emergentagent.com')
 API_BASE = f"{BASE_URL}/api"
 
-class PropertyManagerAPITester:
+class BackendTester:
     def __init__(self):
-        self.base_url = BACKEND_URL
         self.session = requests.Session()
-        self.auth_token = None
+        self.access_token = None
         self.user_id = None
-        self.username = None
-        self.test_property_id = None
-        self.test_document_id = None
-        self.test_fixture_id = None
-        self.test_measurement_id = None
-        self.test_jewelry_id = None
+        self.test_results = []
         
-        # Test results tracking
-        self.results = {
-            "passed": 0,
-            "failed": 0,
-            "errors": []
-        }
-    
-    def log_result(self, test_name, success, message=""):
+    def log_result(self, test_name, success, details=""):
         """Log test result"""
-        if success:
-            self.results["passed"] += 1
-            print(f"✅ {test_name}: PASSED {message}")
-        else:
-            self.results["failed"] += 1
-            self.results["errors"].append(f"{test_name}: {message}")
-            print(f"❌ {test_name}: FAILED - {message}")
+        status = "✅ PASS" if success else "❌ FAIL"
+        self.test_results.append({
+            'test': test_name,
+            'success': success,
+            'details': details
+        })
+        print(f"{status}: {test_name}")
+        if details:
+            print(f"   Details: {details}")
     
-    def make_request(self, method, endpoint, data=None, headers=None):
-        """Make HTTP request with error handling"""
-        url = f"{self.base_url}{endpoint}"
+    def setup_auth(self):
+        """Register a test user and get authentication token"""
+        print("\n=== AUTHENTICATION SETUP ===")
         
-        # Add auth header if token exists
-        if self.auth_token and headers is None:
-            headers = {"Authorization": f"Bearer {self.auth_token}", "Content-Type": "application/json"}
-        elif self.auth_token and headers:
-            headers["Authorization"] = f"Bearer {self.auth_token}"
-            if "Content-Type" not in headers:
-                headers["Content-Type"] = "application/json"
-        elif headers is None:
-            headers = {"Content-Type": "application/json"}
+        # Generate unique username
+        username = f"testuser_{uuid.uuid4().hex[:8]}"
+        password = "testpass123"
         
+        # Register user
         try:
-            if method.upper() == "GET":
-                response = self.session.get(url, headers=headers)
-            elif method.upper() == "POST":
-                response = self.session.post(url, json=data, headers=headers)
-            elif method.upper() == "PUT":
-                response = self.session.put(url, json=data, headers=headers)
-            elif method.upper() == "DELETE":
-                response = self.session.delete(url, headers=headers)
-            else:
-                raise ValueError(f"Unsupported method: {method}")
+            response = self.session.post(f"{API_BASE}/auth/register", json={
+                "username": username,
+                "password": password
+            })
             
-            return response
-        except Exception as e:
-            print(f"Request error: {str(e)}")
-            return None
-    
-    def create_sample_base64_file(self, content="Sample document content"):
-        """Create a sample base64 encoded file"""
-        return base64.b64encode(content.encode()).decode()
-    
-    def create_sample_image_base64(self):
-        """Create a sample base64 encoded image (minimal PNG)"""
-        # Minimal 1x1 PNG image in base64
-        return "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg=="
-    
-    # ============= AUTHENTICATION TESTS =============
-    
-    def test_user_registration(self):
-        """Test user registration"""
-        test_username = f"john_doe_{uuid.uuid4().hex[:8]}"
-        test_password = "SecurePass123!"
-        
-        data = {
-            "username": test_username,
-            "password": test_password
-        }
-        
-        response = self.make_request("POST", "/auth/register", data)
-        
-        if response and response.status_code == 200:
-            result = response.json()
-            if "access_token" in result and "user_id" in result:
-                self.auth_token = result["access_token"]
-                self.user_id = result["user_id"]
-                self.username = result["username"]
-                self.log_result("User Registration", True, f"User {test_username} registered successfully")
+            if response.status_code == 200:
+                data = response.json()
+                self.access_token = data['access_token']
+                self.user_id = data['user_id']
+                self.session.headers.update({
+                    'Authorization': f'Bearer {self.access_token}'
+                })
+                self.log_result("User Registration", True, f"User ID: {self.user_id}")
                 return True
             else:
-                self.log_result("User Registration", False, "Missing token or user_id in response")
-        else:
-            error_msg = response.json().get("detail", "Unknown error") if response else "No response"
-            self.log_result("User Registration", False, f"Status: {response.status_code if response else 'None'}, Error: {error_msg}")
-        
-        return False
-    
-    def test_user_login(self):
-        """Test user login with existing credentials"""
-        if not self.username:
-            self.log_result("User Login", False, "No username available from registration")
-            return False
-        
-        # For this test, we'll use the same credentials from registration
-        # In a real scenario, we'd use known test credentials
-        data = {
-            "username": self.username,
-            "password": "SecurePass123!"
-        }
-        
-        response = self.make_request("POST", "/auth/login", data, headers={})
-        
-        if response and response.status_code == 200:
-            result = response.json()
-            if "access_token" in result:
-                # Update token with login token
-                self.auth_token = result["access_token"]
-                self.log_result("User Login", True, f"User {self.username} logged in successfully")
-                return True
-            else:
-                self.log_result("User Login", False, "Missing access_token in response")
-        else:
-            error_msg = response.json().get("detail", "Unknown error") if response else "No response"
-            self.log_result("User Login", False, f"Status: {response.status_code if response else 'None'}, Error: {error_msg}")
-        
-        return False
-    
-    # ============= PROFILE/WARRANTY REMINDER TESTS =============
-    
-    def test_get_profile_default_warranty_days(self):
-        """Test GET /api/auth/profile returns default warranty_reminder_days of 30"""
-        response = self.make_request("GET", "/auth/profile")
-        
-        if response and response.status_code == 200:
-            profile = response.json()
-            warranty_days = profile.get("warranty_reminder_days")
-            
-            if warranty_days == 30:
-                self.log_result("Get Profile - Default Warranty Days", True, f"Profile returns default warranty_reminder_days: {warranty_days}")
-                return True
-            else:
-                self.log_result("Get Profile - Default Warranty Days", False, f"Expected warranty_reminder_days=30, got {warranty_days}")
-        else:
-            error_msg = response.json().get("detail", "Unknown error") if response else "No response"
-            self.log_result("Get Profile - Default Warranty Days", False, f"Status: {response.status_code if response else 'None'}, Error: {error_msg}")
-        
-        return False
-    
-    def test_update_warranty_days_valid(self, days):
-        """Test PUT /api/auth/profile with valid warranty_reminder_days"""
-        data = {"warranty_reminder_days": days}
-        response = self.make_request("PUT", "/auth/profile", data)
-        
-        if response and response.status_code == 200:
-            profile = response.json()
-            updated_days = profile.get("warranty_reminder_days")
-            
-            if updated_days == days:
-                self.log_result(f"Update Warranty Days - {days} days", True, f"Successfully updated warranty_reminder_days to {days}")
-                return True
-            else:
-                self.log_result(f"Update Warranty Days - {days} days", False, f"Expected {days}, got {updated_days}")
-        else:
-            error_msg = response.json().get("detail", "Unknown error") if response else "No response"
-            self.log_result(f"Update Warranty Days - {days} days", False, f"Status: {response.status_code if response else 'None'}, Error: {error_msg}")
-        
-        return False
-    
-    def test_update_warranty_days_invalid(self, invalid_days):
-        """Test PUT /api/auth/profile with invalid warranty_reminder_days (should return 400)"""
-        data = {"warranty_reminder_days": invalid_days}
-        response = self.make_request("PUT", "/auth/profile", data)
-        
-        if response and response.status_code == 400:
-            self.log_result(f"Invalid Warranty Days - {invalid_days}", True, f"Correctly rejected invalid warranty_reminder_days: {invalid_days}")
-            return True
-        else:
-            # Debug information
-            status = response.status_code if response else 'None'
-            response_text = response.text if response else 'No response'
-            self.log_result(f"Invalid Warranty Days - {invalid_days}", False, f"Expected 400 error for invalid value {invalid_days}, got {status}. Response: {response_text}")
-        
-        return False
-    
-    def test_warranty_days_persistence(self, test_days):
-        """Test that warranty_reminder_days value persists after update"""
-        # First update to test_days
-        update_success = self.test_update_warranty_days_valid(test_days)
-        if not update_success:
-            return False
-        
-        # Then fetch profile again to verify persistence
-        response = self.make_request("GET", "/auth/profile")
-        
-        if response and response.status_code == 200:
-            profile = response.json()
-            persisted_days = profile.get("warranty_reminder_days")
-            
-            if persisted_days == test_days:
-                self.log_result(f"Warranty Days Persistence - {test_days} days", True, f"Value {test_days} persisted correctly after update")
-                return True
-            else:
-                self.log_result(f"Warranty Days Persistence - {test_days} days", False, f"Expected persisted value {test_days}, got {persisted_days}")
-        else:
-            error_msg = response.json().get("detail", "Unknown error") if response else "No response"
-            self.log_result(f"Warranty Days Persistence - {test_days} days", False, f"Status: {response.status_code if response else 'None'}, Error: {error_msg}")
-        
-        return False
-    
-    # ============= PROPERTY TESTS =============
-    
-    def test_create_property(self):
-        """Test creating a new property"""
-        data = {
-            "name": "Sunset Villa Estate",
-            "address": "123 Ocean Drive, Miami Beach, FL 33139"
-        }
-        
-        response = self.make_request("POST", "/properties", data)
-        
-        if response and response.status_code == 200:
-            result = response.json()
-            if "id" in result and result["name"] == data["name"]:
-                self.test_property_id = result["id"]
-                self.log_result("Create Property", True, f"Property '{data['name']}' created with ID: {self.test_property_id}")
-                return True
-            else:
-                self.log_result("Create Property", False, "Missing ID or incorrect name in response")
-        else:
-            error_msg = response.json().get("detail", "Unknown error") if response else "No response"
-            self.log_result("Create Property", False, f"Status: {response.status_code if response else 'None'}, Error: {error_msg}")
-        
-        return False
-    
-    def test_get_properties(self):
-        """Test getting all properties for user"""
-        response = self.make_request("GET", "/properties")
-        
-        if response and response.status_code == 200:
-            properties = response.json()
-            if isinstance(properties, list) and len(properties) > 0:
-                # Check if our test property is in the list
-                found_property = any(prop.get("id") == self.test_property_id for prop in properties)
-                if found_property:
-                    self.log_result("Get Properties", True, f"Retrieved {len(properties)} properties including test property")
-                    return True
-                else:
-                    self.log_result("Get Properties", False, "Test property not found in properties list")
-            else:
-                self.log_result("Get Properties", False, "No properties returned or invalid format")
-        else:
-            error_msg = response.json().get("detail", "Unknown error") if response else "No response"
-            self.log_result("Get Properties", False, f"Status: {response.status_code if response else 'None'}, Error: {error_msg}")
-        
-        return False
-    
-    def test_get_property_by_id(self):
-        """Test getting a specific property by ID"""
-        if not self.test_property_id:
-            self.log_result("Get Property by ID", False, "No test property ID available")
-            return False
-        
-        response = self.make_request("GET", f"/properties/{self.test_property_id}")
-        
-        if response and response.status_code == 200:
-            property_data = response.json()
-            if property_data.get("id") == self.test_property_id:
-                self.log_result("Get Property by ID", True, f"Retrieved property: {property_data.get('name')}")
-                return True
-            else:
-                self.log_result("Get Property by ID", False, "Property ID mismatch")
-        else:
-            error_msg = response.json().get("detail", "Unknown error") if response else "No response"
-            self.log_result("Get Property by ID", False, f"Status: {response.status_code if response else 'None'}, Error: {error_msg}")
-        
-        return False
-    
-    # ============= DOCUMENT TESTS =============
-    
-    def test_create_document(self):
-        """Test uploading a document to a property"""
-        if not self.test_property_id:
-            self.log_result("Create Document", False, "No test property ID available")
-            return False
-        
-        data = {
-            "name": "Property Deed.pdf",
-            "file_data": self.create_sample_base64_file("This is a sample property deed document content."),
-            "file_type": "application/pdf"
-        }
-        
-        response = self.make_request("POST", f"/properties/{self.test_property_id}/documents", data)
-        
-        if response and response.status_code == 200:
-            result = response.json()
-            if "id" in result and result["name"] == data["name"]:
-                self.test_document_id = result["id"]
-                self.log_result("Create Document", True, f"Document '{data['name']}' uploaded with ID: {self.test_document_id}")
-                return True
-            else:
-                self.log_result("Create Document", False, "Missing ID or incorrect name in response")
-        else:
-            error_msg = response.json().get("detail", "Unknown error") if response else "No response"
-            self.log_result("Create Document", False, f"Status: {response.status_code if response else 'None'}, Error: {error_msg}")
-        
-        return False
-    
-    def test_get_documents(self):
-        """Test getting all documents for a property"""
-        if not self.test_property_id:
-            self.log_result("Get Documents", False, "No test property ID available")
-            return False
-        
-        response = self.make_request("GET", f"/properties/{self.test_property_id}/documents")
-        
-        if response and response.status_code == 200:
-            documents = response.json()
-            if isinstance(documents, list) and len(documents) > 0:
-                found_document = any(doc.get("id") == self.test_document_id for doc in documents)
-                if found_document:
-                    self.log_result("Get Documents", True, f"Retrieved {len(documents)} documents including test document")
-                    return True
-                else:
-                    self.log_result("Get Documents", False, "Test document not found in documents list")
-            else:
-                self.log_result("Get Documents", False, "No documents returned or invalid format")
-        else:
-            error_msg = response.json().get("detail", "Unknown error") if response else "No response"
-            self.log_result("Get Documents", False, f"Status: {response.status_code if response else 'None'}, Error: {error_msg}")
-        
-        return False
-    
-    # ============= FIXTURE TESTS =============
-    
-    def test_create_fixture(self):
-        """Test creating a fixture for a property"""
-        if not self.test_property_id:
-            self.log_result("Create Fixture", False, "No test property ID available")
-            return False
-        
-        data = {
-            "name": "Living Room Ceiling Fan",
-            "category": "fans",
-            "make": "Hunter",
-            "model": "Builder Plus",
-            "serial_number": "HF52001-WH",
-            "warranty_info": "5 year limited warranty",
-            "photo": self.create_sample_image_base64()
-        }
-        
-        response = self.make_request("POST", f"/properties/{self.test_property_id}/fixtures", data)
-        
-        if response and response.status_code == 200:
-            result = response.json()
-            if "id" in result and result["name"] == data["name"]:
-                self.test_fixture_id = result["id"]
-                self.log_result("Create Fixture", True, f"Fixture '{data['name']}' created with ID: {self.test_fixture_id}")
-                return True
-            else:
-                self.log_result("Create Fixture", False, "Missing ID or incorrect name in response")
-        else:
-            error_msg = response.json().get("detail", "Unknown error") if response else "No response"
-            self.log_result("Create Fixture", False, f"Status: {response.status_code if response else 'None'}, Error: {error_msg}")
-        
-        return False
-    
-    def test_get_fixtures(self):
-        """Test getting all fixtures for a property"""
-        if not self.test_property_id:
-            self.log_result("Get Fixtures", False, "No test property ID available")
-            return False
-        
-        response = self.make_request("GET", f"/properties/{self.test_property_id}/fixtures")
-        
-        if response and response.status_code == 200:
-            fixtures = response.json()
-            if isinstance(fixtures, list) and len(fixtures) > 0:
-                found_fixture = any(fix.get("id") == self.test_fixture_id for fix in fixtures)
-                if found_fixture:
-                    self.log_result("Get Fixtures", True, f"Retrieved {len(fixtures)} fixtures including test fixture")
-                    return True
-                else:
-                    self.log_result("Get Fixtures", False, "Test fixture not found in fixtures list")
-            else:
-                self.log_result("Get Fixtures", False, "No fixtures returned or invalid format")
-        else:
-            error_msg = response.json().get("detail", "Unknown error") if response else "No response"
-            self.log_result("Get Fixtures", False, f"Status: {response.status_code if response else 'None'}, Error: {error_msg}")
-        
-        return False
-    
-    def test_get_fixture_by_id(self):
-        """Test getting a specific fixture by ID"""
-        if not self.test_property_id or not self.test_fixture_id:
-            self.log_result("Get Fixture by ID", False, "No test property or fixture ID available")
-            return False
-        
-        response = self.make_request("GET", f"/properties/{self.test_property_id}/fixtures/{self.test_fixture_id}")
-        
-        if response and response.status_code == 200:
-            fixture_data = response.json()
-            if fixture_data.get("id") == self.test_fixture_id:
-                self.log_result("Get Fixture by ID", True, f"Retrieved fixture: {fixture_data.get('name')}")
-                return True
-            else:
-                self.log_result("Get Fixture by ID", False, "Fixture ID mismatch")
-        else:
-            error_msg = response.json().get("detail", "Unknown error") if response else "No response"
-            self.log_result("Get Fixture by ID", False, f"Status: {response.status_code if response else 'None'}, Error: {error_msg}")
-        
-        return False
-    
-    def test_update_fixture(self):
-        """Test updating a fixture"""
-        if not self.test_property_id or not self.test_fixture_id:
-            self.log_result("Update Fixture", False, "No test property or fixture ID available")
-            return False
-        
-        data = {
-            "name": "Living Room Ceiling Fan - Updated",
-            "category": "fans",
-            "make": "Hunter",
-            "model": "Builder Plus Pro",
-            "serial_number": "HF52001-WH-PRO",
-            "warranty_info": "7 year extended warranty"
-        }
-        
-        response = self.make_request("PUT", f"/properties/{self.test_property_id}/fixtures/{self.test_fixture_id}", data)
-        
-        if response and response.status_code == 200:
-            result = response.json()
-            if result.get("name") == data["name"] and result.get("model") == data["model"]:
-                self.log_result("Update Fixture", True, f"Fixture updated successfully: {data['name']}")
-                return True
-            else:
-                self.log_result("Update Fixture", False, "Fixture data not updated correctly")
-        else:
-            error_msg = response.json().get("detail", "Unknown error") if response else "No response"
-            self.log_result("Update Fixture", False, f"Status: {response.status_code if response else 'None'}, Error: {error_msg}")
-        
-        return False
-    
-    # ============= MEASUREMENT TESTS =============
-    
-    def test_create_measurement(self):
-        """Test creating a measurement for a property"""
-        if not self.test_property_id:
-            self.log_result("Create Measurement", False, "No test property ID available")
-            return False
-        
-        data = {
-            "room_type": "master_bedroom",
-            "length": 14.5,
-            "width": 12.0,
-            "height": 9.0,
-            "unit": "feet",
-            "floor_plan_image": self.create_sample_image_base64(),
-            "notes": "Master bedroom with walk-in closet and ensuite bathroom"
-        }
-        
-        response = self.make_request("POST", f"/properties/{self.test_property_id}/measurements", data)
-        
-        if response and response.status_code == 200:
-            result = response.json()
-            if "id" in result and result["room_type"] == data["room_type"]:
-                self.test_measurement_id = result["id"]
-                self.log_result("Create Measurement", True, f"Measurement for '{data['room_type']}' created with ID: {self.test_measurement_id}")
-                return True
-            else:
-                self.log_result("Create Measurement", False, "Missing ID or incorrect room_type in response")
-        else:
-            error_msg = response.json().get("detail", "Unknown error") if response else "No response"
-            self.log_result("Create Measurement", False, f"Status: {response.status_code if response else 'None'}, Error: {error_msg}")
-        
-        return False
-    
-    def test_get_measurements(self):
-        """Test getting all measurements for a property"""
-        if not self.test_property_id:
-            self.log_result("Get Measurements", False, "No test property ID available")
-            return False
-        
-        response = self.make_request("GET", f"/properties/{self.test_property_id}/measurements")
-        
-        if response and response.status_code == 200:
-            measurements = response.json()
-            if isinstance(measurements, list) and len(measurements) > 0:
-                found_measurement = any(m.get("id") == self.test_measurement_id for m in measurements)
-                if found_measurement:
-                    self.log_result("Get Measurements", True, f"Retrieved {len(measurements)} measurements including test measurement")
-                    return True
-                else:
-                    self.log_result("Get Measurements", False, "Test measurement not found in measurements list")
-            else:
-                self.log_result("Get Measurements", False, "No measurements returned or invalid format")
-        else:
-            error_msg = response.json().get("detail", "Unknown error") if response else "No response"
-            self.log_result("Get Measurements", False, f"Status: {response.status_code if response else 'None'}, Error: {error_msg}")
-        
-        return False
-    
-    # ============= AI ANALYSIS TESTS =============
-    
-    def test_ai_floorplan_analysis(self):
-        """Test AI floor plan analysis"""
-        data = {
-            "floor_plan_image": self.create_sample_image_base64()
-        }
-        
-        response = self.make_request("POST", "/measurements/analyze-floorplan", data)
-        
-        if response and response.status_code == 200:
-            result = response.json()
-            if "analysis" in result and "message" in result:
-                self.log_result("AI Floor Plan Analysis", True, "Floor plan analyzed successfully")
-                return True
-            else:
-                self.log_result("AI Floor Plan Analysis", False, "Missing analysis or message in response")
-        else:
-            error_msg = response.json().get("detail", "Unknown error") if response else "No response"
-            self.log_result("AI Floor Plan Analysis", False, f"Status: {response.status_code if response else 'None'}, Error: {error_msg}")
-        
-        return False
-    
-    # ============= APPLIANCE AI SCANNER TESTS =============
-    
-    def test_appliance_scanner_endpoint_exists(self):
-        """Test that the appliance scanner endpoint exists"""
-        data = {
-            "image": self.create_sample_image_base64()
-        }
-        
-        response = self.make_request("POST", "/fixtures/scan-appliance", data)
-        
-        if response and response.status_code in [200, 400, 422]:  # Any of these means endpoint exists
-            self.log_result("Appliance Scanner - Endpoint Exists", True, "POST /api/fixtures/scan-appliance endpoint exists")
-            return True
-        elif response and response.status_code == 404:
-            self.log_result("Appliance Scanner - Endpoint Exists", False, "Endpoint not found (404)")
-            return False
-        else:
-            self.log_result("Appliance Scanner - Endpoint Exists", True, f"Endpoint exists (status: {response.status_code if response else 'None'})")
-            return True
-    
-    def test_appliance_scanner_authentication(self):
-        """Test that JWT authentication is enforced for appliance scanner"""
-        # Test without authentication
-        session_no_auth = requests.Session()
-        data = {"image": self.create_sample_image_base64()}
-        
-        response = session_no_auth.post(f"{self.base_url}/fixtures/scan-appliance", json=data)
-        
-        if response and response.status_code in [401, 403]:
-            self.log_result("Appliance Scanner - Authentication Required", True, f"Endpoint properly requires authentication ({response.status_code})")
-            return True
-        else:
-            self.log_result("Appliance Scanner - Authentication Required", False, 
-                          f"Endpoint should require auth but returned: {response.status_code if response else 'None'}")
-            return False
-    
-    def test_appliance_scanner_request_validation(self):
-        """Test request format validation for appliance scanner"""
-        # Test with missing image field
-        response = self.make_request("POST", "/fixtures/scan-appliance", {})
-        
-        if response and response.status_code == 422:
-            self.log_result("Appliance Scanner - Request Validation", True, "Missing image field properly rejected (422)")
-            return True
-        else:
-            self.log_result("Appliance Scanner - Request Validation", False, 
-                          f"Missing image should return 422 but got: {response.status_code if response else 'None'}")
-            return False
-    
-    def test_appliance_scanner_functionality(self):
-        """Test the actual AI appliance scanning functionality"""
-        # Use a more realistic appliance image (refrigerator base64)
-        appliance_image = "/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAYEBQYFBAYGBQYHBwYIChAKCgkJChQODwwQFxQYGBcUFhYaHSUfGhsjHBYWICwgIyYnKSopGR8tMC0oMCUoKSj/2wBDAQcHBwoIChMKChMoGhYaKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCj/wAARCAABAAEDASIAAhEBAxEB/8QAFQABAQAAAAAAAAAAAAAAAAAAAAv/xAAUEAEAAAAAAAAAAAAAAAAAAAAA/8QAFQEBAQAAAAAAAAAAAAAAAAAAAAX/xAAUEQEAAAAAAAAAAAAAAAAAAAAA/9oADAMBAAIRAxEAPwCdABmX/9k="
-        
-        data = {
-            "image": appliance_image
-        }
-        
-        response = self.make_request("POST", "/fixtures/scan-appliance", data)
-        
-        if response and response.status_code == 200:
-            scan_result = response.json()
-            
-            # Verify response structure matches ApplianceScanResult model
-            required_fields = ["name", "category", "confidence"]
-            optional_fields = ["make", "model", "serial_number"]
-            
-            missing_required = [field for field in required_fields if field not in scan_result]
-            if missing_required:
-                self.log_result("Appliance Scanner - Functionality", False, 
-                              f"Missing required fields: {missing_required}")
-                return False
-            
-            # Verify confidence is a float between 0 and 1
-            confidence = scan_result.get("confidence")
-            if not isinstance(confidence, (int, float)) or not (0 <= confidence <= 1):
-                self.log_result("Appliance Scanner - Functionality", False, 
-                              f"Invalid confidence value: {confidence}")
-                return False
-            
-            # Verify name and category are strings
-            if not isinstance(scan_result.get("name"), str) or not isinstance(scan_result.get("category"), str):
-                self.log_result("Appliance Scanner - Functionality", False, 
-                              "Name and category must be strings")
-                return False
-            
-            self.log_result("Appliance Scanner - Functionality", True, 
-                          "AI scanning returned valid ApplianceScanResult")
-            
-            # Log scan results for verification
-            print(f"   📱 Scan Results:")
-            print(f"      Name: {scan_result.get('name')}")
-            print(f"      Category: {scan_result.get('category')}")
-            print(f"      Make: {scan_result.get('make', 'N/A')}")
-            print(f"      Model: {scan_result.get('model', 'N/A')}")
-            print(f"      Serial: {scan_result.get('serial_number', 'N/A')}")
-            print(f"      Confidence: {scan_result.get('confidence')}")
-            
-            return True
-            
-        else:
-            error_msg = response.json().get("detail", "Unknown error") if response else "No response"
-            self.log_result("Appliance Scanner - Functionality", False, 
-                          f"AI scanning failed with status: {response.status_code if response else 'None'}, Error: {error_msg}")
-            return False
-    
-    def test_appliance_scanner_gemini_integration(self):
-        """Test that Gemini 2.0 Flash integration is working"""
-        data = {
-            "image": self.create_sample_image_base64()
-        }
-        
-        response = self.make_request("POST", "/fixtures/scan-appliance", data)
-        
-        if response and response.status_code == 200:
-            scan_result = response.json()
-            
-            # Check if the response indicates AI processing
-            name = scan_result.get("name", "").lower()
-            category = scan_result.get("category", "").lower()
-            confidence = scan_result.get("confidence", 0)
-            
-            # Basic validation that AI is working
-            if confidence > 0 and len(name) > 0 and len(category) > 0:
-                self.log_result("Appliance Scanner - Gemini Integration", True, 
-                              "Gemini 2.0 Flash integration appears functional")
-                return True
-            else:
-                self.log_result("Appliance Scanner - Gemini Integration", False, 
-                              "AI response seems incomplete or invalid")
+                self.log_result("User Registration", False, f"Status: {response.status_code}, Response: {response.text}")
                 return False
                 
-        elif response and response.status_code == 500:
-            error_text = response.text.lower()
-            if "api key" in error_text:
-                self.log_result("Appliance Scanner - Gemini Integration", False, 
-                              "API key not configured for Gemini integration")
-            else:
-                self.log_result("Appliance Scanner - Gemini Integration", False, 
-                              "Gemini integration error (500)")
-            return False
-        else:
-            self.log_result("Appliance Scanner - Gemini Integration", False, 
-                          f"Unexpected response: {response.status_code if response else 'None'}")
+        except Exception as e:
+            self.log_result("User Registration", False, f"Exception: {str(e)}")
             return False
     
-    def test_appliance_scanner_response_structure(self):
-        """Test complete response structure validation"""
-        data = {
-            "image": self.create_sample_image_base64()
-        }
+    def test_property_cost_fields(self):
+        """Test Property Cost Fields Backend functionality"""
+        print("\n=== TESTING PROPERTY COST FIELDS ===")
         
-        response = self.make_request("POST", "/fixtures/scan-appliance", data)
-        
-        if response and response.status_code == 200:
-            scan_result = response.json()
-            
-            # Check all expected fields from ApplianceScanResult model
-            expected_structure = {
-                "name": str,
-                "category": str,
-                "make": (str, type(None)),
-                "model": (str, type(None)),
-                "serial_number": (str, type(None)),
-                "confidence": (int, float)
+        # Test 1: Create property with purchase_cost and current_value
+        try:
+            property_data = {
+                "name": "Luxury Villa with Cost Fields",
+                "address": "123 Test Street, Mumbai, India",
+                "latitude": 19.0760,
+                "longitude": 72.8777,
+                "purchase_cost": 5000000.50,
+                "current_value": 6500000.75
             }
             
-            validation_errors = []
-            for field, expected_type in expected_structure.items():
-                if field not in scan_result:
-                    validation_errors.append(f"Missing field: {field}")
-                elif not isinstance(scan_result[field], expected_type):
-                    validation_errors.append(f"Invalid type for {field}: expected {expected_type}, got {type(scan_result[field])}")
+            response = self.session.post(f"{API_BASE}/properties", json=property_data)
             
-            if validation_errors:
-                self.log_result("Appliance Scanner - Response Structure", False, 
-                              "Response structure validation failed")
-                for error in validation_errors:
-                    print(f"      ❌ {error}")
-                return False
-            else:
-                self.log_result("Appliance Scanner - Response Structure", True, 
-                              "Response structure matches ApplianceScanResult model")
-                return True
-        else:
-            self.log_result("Appliance Scanner - Response Structure", False, 
-                          f"Cannot validate structure, request failed: {response.status_code if response else 'None'}")
-            return False
-
-    # ============= JEWELRY TESTS =============
-    
-    def test_create_jewelry(self):
-        """Test creating a jewelry item"""
-        data = {
-            "name": "Diamond Engagement Ring",
-            "type": "Ring",
-            "metal": "White Gold",
-            "stones": "1 carat diamond",
-            "number_of_stones": 1,
-            "weight": 3.5,
-            "purchase_date": "2023-06-15",
-            "purchase_cost": 5000.00,
-            "appraisal_value": 6500.00,
-            "appraisal_date": "2024-01-15",
-            "certificate_number": "GIA123456789",
-            "notes": "Beautiful engagement ring with excellent cut diamond",
-            "warranty_info": "Lifetime warranty on setting",
-            "warranty_expiry_date": "2030-06-15"
-        }
-        
-        response = self.make_request("POST", "/jewelry", data)
-        
-        if response and response.status_code == 200:
-            result = response.json()
-            if "id" in result and result["name"] == data["name"]:
-                self.test_jewelry_id = result["id"]
-                self.log_result("Create Jewelry", True, f"Jewelry '{data['name']}' created with ID: {self.test_jewelry_id}")
-                return True
-            else:
-                self.log_result("Create Jewelry", False, "Missing ID or incorrect name in response")
-        else:
-            error_msg = response.json().get("detail", "Unknown error") if response else "No response"
-            self.log_result("Create Jewelry", False, f"Status: {response.status_code if response else 'None'}, Error: {error_msg}")
-        
-        return False
-    
-    def test_get_jewelry(self):
-        """Test getting all jewelry for user"""
-        response = self.make_request("GET", "/jewelry")
-        
-        if response and response.status_code == 200:
-            jewelry_items = response.json()
-            if isinstance(jewelry_items, list) and len(jewelry_items) > 0:
-                found_jewelry = any(item.get("id") == self.test_jewelry_id for item in jewelry_items)
-                if found_jewelry:
-                    self.log_result("Get Jewelry", True, f"Retrieved {len(jewelry_items)} jewelry items including test item")
-                    return True
+            if response.status_code == 200:
+                created_property = response.json()
+                property_id = created_property['id']
+                
+                # Verify cost fields are returned
+                if (created_property.get('purchase_cost') == 5000000.50 and 
+                    created_property.get('current_value') == 6500000.75):
+                    self.log_result("Property Create with Cost Fields", True, 
+                                  f"Property ID: {property_id}, Purchase: ₹{created_property['purchase_cost']}, Current: ₹{created_property['current_value']}")
                 else:
-                    self.log_result("Get Jewelry", False, "Test jewelry not found in jewelry list")
+                    self.log_result("Property Create with Cost Fields", False, 
+                                  f"Cost fields not returned correctly. Got: purchase_cost={created_property.get('purchase_cost')}, current_value={created_property.get('current_value')}")
+                    return
             else:
-                self.log_result("Get Jewelry", False, "No jewelry returned or invalid format")
-        else:
-            error_msg = response.json().get("detail", "Unknown error") if response else "No response"
-            self.log_result("Get Jewelry", False, f"Status: {response.status_code if response else 'None'}, Error: {error_msg}")
-        
-        return False
-    
-    def test_get_jewelry_by_id(self):
-        """Test getting a specific jewelry item by ID"""
-        if not self.test_jewelry_id:
-            self.log_result("Get Jewelry by ID", False, "No test jewelry ID available")
-            return False
-        
-        response = self.make_request("GET", f"/jewelry/{self.test_jewelry_id}")
-        
-        if response and response.status_code == 200:
-            jewelry_data = response.json()
-            if jewelry_data.get("id") == self.test_jewelry_id:
-                self.log_result("Get Jewelry by ID", True, f"Retrieved jewelry: {jewelry_data.get('name')}")
-                return True
-            else:
-                self.log_result("Get Jewelry by ID", False, "Jewelry ID mismatch")
-        else:
-            error_msg = response.json().get("detail", "Unknown error") if response else "No response"
-            self.log_result("Get Jewelry by ID", False, f"Status: {response.status_code if response else 'None'}, Error: {error_msg}")
-        
-        return False
-    
-    def test_update_jewelry(self):
-        """Test updating a jewelry item"""
-        if not self.test_jewelry_id:
-            self.log_result("Update Jewelry", False, "No test jewelry ID available")
-            return False
-        
-        data = {
-            "name": "Updated Diamond Ring",
-            "type": "Ring",
-            "metal": "Platinum",
-            "stones": "1.2 carat diamond",
-            "weight": 4.0,
-            "appraisal_value": 7500.00,
-            "notes": "Updated appraisal value and metal type"
-        }
-        
-        response = self.make_request("PUT", f"/jewelry/{self.test_jewelry_id}", data)
-        
-        if response and response.status_code == 200:
-            result = response.json()
-            if "message" in result and "successfully" in result["message"]:
-                self.log_result("Update Jewelry", True, f"Jewelry updated successfully")
-                return True
-            else:
-                self.log_result("Update Jewelry", False, "No success message in response")
-        else:
-            error_msg = response.json().get("detail", "Unknown error") if response else "No response"
-            self.log_result("Update Jewelry", False, f"Status: {response.status_code if response else 'None'}, Error: {error_msg}")
-        
-        return False
-    
-    def test_jewelry_scan_endpoint(self):
-        """Test the AI jewelry scanning endpoint"""
-        data = {
-            "image": self.create_sample_image_base64()
-        }
-        
-        response = self.make_request("POST", "/jewelry/scan", data)
-        
-        if response and response.status_code == 200:
-            scan_result = response.json()
-            
-            # Verify the response structure matches JewelryScanResult model
-            required_fields = ["type", "confidence"]
-            optional_fields = ["name", "metal", "stones", "weight", "estimated_value"]
-            
-            has_required_fields = all(field in scan_result for field in required_fields)
-            
-            if has_required_fields:
-                self.log_result("Jewelry Scan Endpoint", True, f"Scan successful - Type: {scan_result.get('type')}, Confidence: {scan_result.get('confidence')}")
+                self.log_result("Property Create with Cost Fields", False, 
+                              f"Status: {response.status_code}, Response: {response.text}")
+                return
                 
-                # Log additional fields if present
-                additional_info = []
-                if scan_result.get("name"):
-                    additional_info.append(f"Name: {scan_result['name']}")
-                if scan_result.get("metal"):
-                    additional_info.append(f"Metal: {scan_result['metal']}")
-                if scan_result.get("stones"):
-                    additional_info.append(f"Stones: {scan_result['stones']}")
-                if scan_result.get("weight"):
-                    additional_info.append(f"Weight: {scan_result['weight']}g")
-                if scan_result.get("estimated_value"):
-                    additional_info.append(f"Value: ${scan_result['estimated_value']}")
-                
-                if additional_info:
-                    print(f"   Enhanced scan data: {', '.join(additional_info)}")
-                
-                return True
-            else:
-                self.log_result("Jewelry Scan Endpoint", False, f"Missing required fields. Expected: {required_fields}, Got: {list(scan_result.keys())}")
-        else:
-            error_msg = response.json().get("detail", "Unknown error") if response else "No response"
-            self.log_result("Jewelry Scan Endpoint", False, f"Status: {response.status_code if response else 'None'}, Error: {error_msg}")
+        except Exception as e:
+            self.log_result("Property Create with Cost Fields", False, f"Exception: {str(e)}")
+            return
         
-        return False
-    
-    def test_jewelry_authentication_enforcement(self):
-        """Test that JWT authentication is properly enforced for jewelry endpoints"""
-        # Test without token
-        session_no_auth = requests.Session()
-        
-        endpoints_to_test = [
-            ("GET", "/jewelry"),
-            ("POST", "/jewelry"),
-            ("POST", "/jewelry/scan")
-        ]
-        
-        auth_results = []
-        
-        for method, endpoint in endpoints_to_test:
-            if method == "GET":
-                response = session_no_auth.get(f"{self.base_url}{endpoint}")
-            elif method == "POST":
-                response = session_no_auth.post(f"{self.base_url}{endpoint}", json={})
+        # Test 2: Get property by ID and verify cost fields
+        try:
+            response = self.session.get(f"{API_BASE}/properties/{property_id}")
             
-            if response.status_code == 401:
-                auth_results.append(True)
-                print(f"   ✅ Auth enforcement for {method} {endpoint} - PASSED")
-            else:
-                auth_results.append(False)
-                print(f"   ❌ Auth enforcement for {method} {endpoint} - FAILED (Expected 401, got {response.status_code})")
-        
-        success = all(auth_results)
-        self.log_result("Jewelry Authentication Enforcement", success, f"Tested {len(endpoints_to_test)} endpoints")
-        return success
-    
-    def test_delete_jewelry(self):
-        """Test deleting a jewelry item"""
-        if not self.test_jewelry_id:
-            self.log_result("Delete Jewelry", False, "No test jewelry ID available")
-            return False
-        
-        response = self.make_request("DELETE", f"/jewelry/{self.test_jewelry_id}")
-        
-        if response and response.status_code == 200:
-            result = response.json()
-            if "message" in result:
-                self.log_result("Delete Jewelry", True, "Jewelry deleted successfully")
-                
-                # Verify deletion by trying to get the item
-                verify_response = self.make_request("GET", f"/jewelry/{self.test_jewelry_id}")
-                if verify_response and verify_response.status_code == 404:
-                    print("   ✅ Delete verification - Item not found as expected")
+            if response.status_code == 200:
+                property_data = response.json()
+                if (property_data.get('purchase_cost') == 5000000.50 and 
+                    property_data.get('current_value') == 6500000.75):
+                    self.log_result("Property Get by ID with Cost Fields", True, 
+                                  f"Cost fields retrieved correctly")
                 else:
-                    print("   ⚠️ Delete verification - Item may still exist")
+                    self.log_result("Property Get by ID with Cost Fields", False, 
+                                  f"Cost fields not retrieved correctly")
+            else:
+                self.log_result("Property Get by ID with Cost Fields", False, 
+                              f"Status: {response.status_code}")
                 
-                return True
+        except Exception as e:
+            self.log_result("Property Get by ID with Cost Fields", False, f"Exception: {str(e)}")
+        
+        # Test 3: Update property cost fields
+        try:
+            update_data = {
+                "purchase_cost": 5500000.00,
+                "current_value": 7000000.00
+            }
+            
+            response = self.session.put(f"{API_BASE}/properties/{property_id}", json=update_data)
+            
+            if response.status_code == 200:
+                updated_property = response.json()
+                if (updated_property.get('purchase_cost') == 5500000.00 and 
+                    updated_property.get('current_value') == 7000000.00):
+                    self.log_result("Property Update Cost Fields", True, 
+                                  f"Updated to Purchase: ₹{updated_property['purchase_cost']}, Current: ₹{updated_property['current_value']}")
+                else:
+                    self.log_result("Property Update Cost Fields", False, 
+                                  f"Cost fields not updated correctly")
             else:
-                self.log_result("Delete Jewelry", False, "No success message in response")
-        else:
-            error_msg = response.json().get("detail", "Unknown error") if response else "No response"
-            self.log_result("Delete Jewelry", False, f"Status: {response.status_code if response else 'None'}, Error: {error_msg}")
+                self.log_result("Property Update Cost Fields", False, 
+                              f"Status: {response.status_code}, Response: {response.text}")
+                
+        except Exception as e:
+            self.log_result("Property Update Cost Fields", False, f"Exception: {str(e)}")
         
-        return False
-    
-    # ============= DELETION TESTS =============
-    
-    def test_delete_measurement(self):
-        """Test deleting a measurement"""
-        if not self.test_property_id or not self.test_measurement_id:
-            self.log_result("Delete Measurement", False, "No test property or measurement ID available")
-            return False
-        
-        response = self.make_request("DELETE", f"/properties/{self.test_property_id}/measurements/{self.test_measurement_id}")
-        
-        if response and response.status_code == 200:
-            result = response.json()
-            if "message" in result:
-                self.log_result("Delete Measurement", True, "Measurement deleted successfully")
-                return True
+        # Test 4: Create property with null/missing cost fields (optional fields)
+        try:
+            property_data_minimal = {
+                "name": "Basic Property No Cost",
+                "address": "456 Simple Street, Delhi, India"
+            }
+            
+            response = self.session.post(f"{API_BASE}/properties", json=property_data_minimal)
+            
+            if response.status_code == 200:
+                created_property = response.json()
+                # Cost fields should be null or not present
+                purchase_cost = created_property.get('purchase_cost')
+                current_value = created_property.get('current_value')
+                
+                if purchase_cost is None and current_value is None:
+                    self.log_result("Property Create without Cost Fields", True, 
+                                  "Optional cost fields handled correctly (null values)")
+                else:
+                    self.log_result("Property Create without Cost Fields", False, 
+                                  f"Expected null values, got purchase_cost={purchase_cost}, current_value={current_value}")
             else:
-                self.log_result("Delete Measurement", False, "No success message in response")
-        else:
-            error_msg = response.json().get("detail", "Unknown error") if response else "No response"
-            self.log_result("Delete Measurement", False, f"Status: {response.status_code if response else 'None'}, Error: {error_msg}")
-        
-        return False
+                self.log_result("Property Create without Cost Fields", False, 
+                              f"Status: {response.status_code}")
+                
+        except Exception as e:
+            self.log_result("Property Create without Cost Fields", False, f"Exception: {str(e)}")
     
-    def test_delete_fixture(self):
-        """Test deleting a fixture"""
-        if not self.test_property_id or not self.test_fixture_id:
-            self.log_result("Delete Fixture", False, "No test property or fixture ID available")
-            return False
+    def test_appliance_edit_functionality(self):
+        """Test Appliance Edit (PUT) functionality"""
+        print("\n=== TESTING APPLIANCE EDIT FUNCTIONALITY ===")
         
-        response = self.make_request("DELETE", f"/properties/{self.test_property_id}/fixtures/{self.test_fixture_id}")
-        
-        if response and response.status_code == 200:
-            result = response.json()
-            if "message" in result:
-                self.log_result("Delete Fixture", True, "Fixture deleted successfully")
-                return True
+        # Test 1: Create an appliance first
+        try:
+            appliance_data = {
+                "name": "Samsung Smart TV",
+                "category": "TV",
+                "brand": "Samsung",
+                "model": "QN65Q80A",
+                "serial_number": "SN123456789",
+                "purchase_date": "2024-01-15",
+                "purchase_cost": 85000.00,
+                "current_value": 75000.00,
+                "warranty_info": "2 years manufacturer warranty",
+                "warranty_expiry_date": "2026-01-15",
+                "photos": ["base64encodedphoto1", "base64encodedphoto2"],
+                "invoice": "base64encodedinvoice",
+                "notes": "Living room TV with smart features",
+                "maintenance_frequency_months": 12
+            }
+            
+            response = self.session.post(f"{API_BASE}/appliances", json=appliance_data)
+            
+            if response.status_code == 200:
+                created_appliance = response.json()
+                appliance_id = created_appliance['id']
+                self.log_result("Appliance Create for Edit Test", True, 
+                              f"Appliance ID: {appliance_id}")
             else:
-                self.log_result("Delete Fixture", False, "No success message in response")
-        else:
-            error_msg = response.json().get("detail", "Unknown error") if response else "No response"
-            self.log_result("Delete Fixture", False, f"Status: {response.status_code if response else 'None'}, Error: {error_msg}")
+                self.log_result("Appliance Create for Edit Test", False, 
+                              f"Status: {response.status_code}, Response: {response.text}")
+                return
+                
+        except Exception as e:
+            self.log_result("Appliance Create for Edit Test", False, f"Exception: {str(e)}")
+            return
         
-        return False
-    
-    def test_delete_document(self):
-        """Test deleting a document"""
-        if not self.test_property_id or not self.test_document_id:
-            self.log_result("Delete Document", False, "No test property or document ID available")
-            return False
-        
-        response = self.make_request("DELETE", f"/properties/{self.test_property_id}/documents/{self.test_document_id}")
-        
-        if response and response.status_code == 200:
-            result = response.json()
-            if "message" in result:
-                self.log_result("Delete Document", True, "Document deleted successfully")
-                return True
+        # Test 2: Update the appliance using PUT
+        try:
+            updated_data = {
+                "name": "Samsung Smart TV - Updated",
+                "category": "TV",
+                "brand": "Samsung",
+                "model": "QN65Q80A-UPDATED",
+                "serial_number": "SN123456789-NEW",
+                "purchase_date": "2024-01-15",
+                "purchase_cost": 90000.00,
+                "current_value": 80000.00,
+                "warranty_info": "3 years extended warranty",
+                "warranty_expiry_date": "2027-01-15",
+                "photos": ["base64encodedphoto1-updated", "base64encodedphoto2-updated", "base64encodedphoto3-new"],
+                "invoice": "base64encodedinvoice-updated",
+                "notes": "Living room TV with smart features - Updated with extended warranty",
+                "last_maintenance_date": "2024-12-01",
+                "next_maintenance_date": "2025-12-01",
+                "maintenance_frequency_months": 6
+            }
+            
+            response = self.session.put(f"{API_BASE}/appliances/{appliance_id}", json=updated_data)
+            
+            if response.status_code == 200:
+                result = response.json()
+                if result.get('message') == 'Appliance updated successfully':
+                    self.log_result("Appliance PUT Update", True, 
+                                  "Appliance updated successfully")
+                else:
+                    self.log_result("Appliance PUT Update", False, 
+                                  f"Unexpected response: {result}")
             else:
-                self.log_result("Delete Document", False, "No success message in response")
-        else:
-            error_msg = response.json().get("detail", "Unknown error") if response else "No response"
-            self.log_result("Delete Document", False, f"Status: {response.status_code if response else 'None'}, Error: {error_msg}")
+                self.log_result("Appliance PUT Update", False, 
+                              f"Status: {response.status_code}, Response: {response.text}")
+                return
+                
+        except Exception as e:
+            self.log_result("Appliance PUT Update", False, f"Exception: {str(e)}")
+            return
         
-        return False
-    
-    def test_delete_property(self):
-        """Test deleting a property"""
-        if not self.test_property_id:
-            self.log_result("Delete Property", False, "No test property ID available")
-            return False
-        
-        response = self.make_request("DELETE", f"/properties/{self.test_property_id}")
-        
-        if response and response.status_code == 200:
-            result = response.json()
-            if "message" in result:
-                self.log_result("Delete Property", True, "Property deleted successfully")
-                return True
+        # Test 3: Verify the update by getting the appliance
+        try:
+            response = self.session.get(f"{API_BASE}/appliances/{appliance_id}")
+            
+            if response.status_code == 200:
+                appliance = response.json()
+                
+                # Verify key fields were updated
+                checks = [
+                    (appliance.get('name') == "Samsung Smart TV - Updated", "name"),
+                    (appliance.get('model') == "QN65Q80A-UPDATED", "model"),
+                    (appliance.get('serial_number') == "SN123456789-NEW", "serial_number"),
+                    (appliance.get('purchase_cost') == 90000.00, "purchase_cost"),
+                    (appliance.get('current_value') == 80000.00, "current_value"),
+                    (appliance.get('warranty_info') == "3 years extended warranty", "warranty_info"),
+                    (appliance.get('warranty_expiry_date') == "2027-01-15", "warranty_expiry_date"),
+                    (len(appliance.get('photos', [])) == 3, "photos count"),
+                    (appliance.get('invoice') == "base64encodedinvoice-updated", "invoice"),
+                    (appliance.get('maintenance_frequency_months') == 6, "maintenance_frequency_months")
+                ]
+                
+                failed_checks = [field for passed, field in checks if not passed]
+                
+                if not failed_checks:
+                    self.log_result("Appliance Update Verification", True, 
+                                  "All fields updated correctly")
+                else:
+                    self.log_result("Appliance Update Verification", False, 
+                                  f"Failed fields: {', '.join(failed_checks)}")
             else:
-                self.log_result("Delete Property", False, "No success message in response")
-        else:
-            error_msg = response.json().get("detail", "Unknown error") if response else "No response"
-            self.log_result("Delete Property", False, f"Status: {response.status_code if response else 'None'}, Error: {error_msg}")
-        
-        return False
+                self.log_result("Appliance Update Verification", False, 
+                              f"Status: {response.status_code}")
+                
+        except Exception as e:
+            self.log_result("Appliance Update Verification", False, f"Exception: {str(e)}")
     
-    # ============= MAIN TEST RUNNER =============
+    def test_jewelry_edit_functionality(self):
+        """Test Jewelry Edit (PUT) functionality"""
+        print("\n=== TESTING JEWELRY EDIT FUNCTIONALITY ===")
+        
+        # Test 1: Create a jewelry item first
+        try:
+            jewelry_data = {
+                "name": "Diamond Engagement Ring",
+                "type": "Ring",
+                "metal": "White Gold",
+                "stones": "1 carat diamond, 2 small rubies",
+                "number_of_stones": 3,
+                "weight": 5.2,
+                "purchase_date": "2024-02-14",
+                "purchase_cost": 150000.00,
+                "appraisal_value": 180000.00,
+                "appraisal_date": "2024-02-20",
+                "certificate_number": "GIA-123456789",
+                "certificate_photo": "base64encodedcertificate",
+                "photos": ["base64encodedphoto1", "base64encodedphoto2"],
+                "notes": "Engagement ring with certified diamond",
+                "warranty_info": "Lifetime warranty on setting",
+                "warranty_expiry_date": "2099-12-31"
+            }
+            
+            response = self.session.post(f"{API_BASE}/jewelry", json=jewelry_data)
+            
+            if response.status_code == 200:
+                created_jewelry = response.json()
+                jewelry_id = created_jewelry['id']
+                self.log_result("Jewelry Create for Edit Test", True, 
+                              f"Jewelry ID: {jewelry_id}")
+            else:
+                self.log_result("Jewelry Create for Edit Test", False, 
+                              f"Status: {response.status_code}, Response: {response.text}")
+                return
+                
+        except Exception as e:
+            self.log_result("Jewelry Create for Edit Test", False, f"Exception: {str(e)}")
+            return
+        
+        # Test 2: Update the jewelry using PUT
+        try:
+            updated_data = {
+                "name": "Diamond Engagement Ring - Resized",
+                "type": "Ring",
+                "metal": "Platinum",
+                "stones": "1.2 carat diamond, 4 small rubies",
+                "number_of_stones": 5,
+                "weight": 6.1,
+                "purchase_date": "2024-02-14",
+                "purchase_cost": 150000.00,
+                "appraisal_value": 220000.00,
+                "appraisal_date": "2024-12-01",
+                "certificate_number": "GIA-123456789-UPDATED",
+                "certificate_photo": "base64encodedcertificate-updated",
+                "photos": ["base64encodedphoto1-updated", "base64encodedphoto2-updated", "base64encodedphoto3-new"],
+                "notes": "Engagement ring with certified diamond - Upgraded and resized",
+                "warranty_info": "Lifetime warranty on setting and stones",
+                "warranty_expiry_date": "2099-12-31"
+            }
+            
+            response = self.session.put(f"{API_BASE}/jewelry/{jewelry_id}", json=updated_data)
+            
+            if response.status_code == 200:
+                result = response.json()
+                if result.get('message') == 'Jewelry updated successfully':
+                    self.log_result("Jewelry PUT Update", True, 
+                                  "Jewelry updated successfully")
+                else:
+                    self.log_result("Jewelry PUT Update", False, 
+                                  f"Unexpected response: {result}")
+            else:
+                self.log_result("Jewelry PUT Update", False, 
+                              f"Status: {response.status_code}, Response: {response.text}")
+                return
+                
+        except Exception as e:
+            self.log_result("Jewelry PUT Update", False, f"Exception: {str(e)}")
+            return
+        
+        # Test 3: Verify the update by getting the jewelry
+        try:
+            response = self.session.get(f"{API_BASE}/jewelry/{jewelry_id}")
+            
+            if response.status_code == 200:
+                jewelry = response.json()
+                
+                # Verify key fields were updated
+                checks = [
+                    (jewelry.get('name') == "Diamond Engagement Ring - Resized", "name"),
+                    (jewelry.get('metal') == "Platinum", "metal"),
+                    (jewelry.get('stones') == "1.2 carat diamond, 4 small rubies", "stones"),
+                    (jewelry.get('number_of_stones') == 5, "number_of_stones"),
+                    (jewelry.get('weight') == 6.1, "weight"),
+                    (jewelry.get('appraisal_value') == 220000.00, "appraisal_value"),
+                    (jewelry.get('appraisal_date') == "2024-12-01", "appraisal_date"),
+                    (jewelry.get('certificate_number') == "GIA-123456789-UPDATED", "certificate_number"),
+                    (jewelry.get('certificate_photo') == "base64encodedcertificate-updated", "certificate_photo"),
+                    (len(jewelry.get('photos', [])) == 3, "photos count"),
+                    (jewelry.get('warranty_info') == "Lifetime warranty on setting and stones", "warranty_info")
+                ]
+                
+                failed_checks = [field for passed, field in checks if not passed]
+                
+                if not failed_checks:
+                    self.log_result("Jewelry Update Verification", True, 
+                                  "All fields updated correctly")
+                else:
+                    self.log_result("Jewelry Update Verification", False, 
+                                  f"Failed fields: {', '.join(failed_checks)}")
+            else:
+                self.log_result("Jewelry Update Verification", False, 
+                              f"Status: {response.status_code}")
+                
+        except Exception as e:
+            self.log_result("Jewelry Update Verification", False, f"Exception: {str(e)}")
     
     def run_all_tests(self):
-        """Run all API tests in sequence"""
-        print(f"\n🚀 Starting Property Manager API Tests")
-        print(f"Backend URL: {self.base_url}")
-        print("=" * 60)
+        """Run all backend tests"""
+        print(f"🚀 Starting Backend API Tests")
+        print(f"📍 API Base URL: {API_BASE}")
+        print(f"⏰ Test Started: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
         
-        # Authentication Tests
-        print("\n📋 AUTHENTICATION TESTS")
-        print("-" * 30)
-        self.test_user_registration()
-        self.test_user_login()
+        # Setup authentication
+        if not self.setup_auth():
+            print("❌ Authentication setup failed. Cannot proceed with tests.")
+            return False
         
-        # Profile/Warranty Reminder Tests
-        print("\n👤 PROFILE & WARRANTY REMINDER TESTS")
-        print("-" * 30)
-        self.test_get_profile_default_warranty_days()
+        # Run all test suites
+        self.test_property_cost_fields()
+        self.test_appliance_edit_functionality()
+        self.test_jewelry_edit_functionality()
         
-        # Test valid warranty days updates
-        valid_days = [7, 14, 30]
-        for days in valid_days:
-            self.test_update_warranty_days_valid(days)
+        # Print summary
+        self.print_summary()
         
-        # Test invalid warranty days (should be rejected)
-        invalid_days = [1, 5, 15, 60, 0, -1, 100]
-        for days in invalid_days:
-            self.test_update_warranty_days_invalid(days)
+        return all(result['success'] for result in self.test_results)
+    
+    def print_summary(self):
+        """Print test summary"""
+        print("\n" + "="*60)
+        print("📊 BACKEND TESTING SUMMARY")
+        print("="*60)
         
-        # Test persistence for each valid value
-        for days in valid_days:
-            self.test_warranty_days_persistence(days)
+        total_tests = len(self.test_results)
+        passed_tests = sum(1 for result in self.test_results if result['success'])
+        failed_tests = total_tests - passed_tests
         
-        # Property Tests
-        print("\n🏠 PROPERTY TESTS")
-        print("-" * 30)
-        self.test_create_property()
-        self.test_get_properties()
-        self.test_get_property_by_id()
+        print(f"Total Tests: {total_tests}")
+        print(f"✅ Passed: {passed_tests}")
+        print(f"❌ Failed: {failed_tests}")
+        print(f"Success Rate: {(passed_tests/total_tests)*100:.1f}%")
         
-        # Document Tests
-        print("\n📄 DOCUMENT TESTS")
-        print("-" * 30)
-        self.test_create_document()
-        self.test_get_documents()
+        if failed_tests > 0:
+            print("\n❌ FAILED TESTS:")
+            for result in self.test_results:
+                if not result['success']:
+                    print(f"   • {result['test']}: {result['details']}")
         
-        # Fixture Tests
-        print("\n🔧 FIXTURE TESTS")
-        print("-" * 30)
-        self.test_create_fixture()
-        self.test_get_fixtures()
-        self.test_get_fixture_by_id()
-        self.test_update_fixture()
+        print("\n✅ PASSED TESTS:")
+        for result in self.test_results:
+            if result['success']:
+                print(f"   • {result['test']}")
         
-        # Measurement Tests
-        print("\n📏 MEASUREMENT TESTS")
-        print("-" * 30)
-        self.test_create_measurement()
-        self.test_get_measurements()
-        
-        # AI Analysis Tests
-        print("\n🤖 AI ANALYSIS TESTS")
-        print("-" * 30)
-        self.test_ai_floorplan_analysis()
-        
-        # Appliance AI Scanner Tests
-        print("\n🔍 APPLIANCE AI SCANNER TESTS")
-        print("-" * 30)
-        self.test_appliance_scanner_endpoint_exists()
-        self.test_appliance_scanner_authentication()
-        self.test_appliance_scanner_request_validation()
-        self.test_appliance_scanner_functionality()
-        self.test_appliance_scanner_gemini_integration()
-        self.test_appliance_scanner_response_structure()
-        
-        # Jewelry Tests
-        print("\n💎 JEWELRY TESTS")
-        print("-" * 30)
-        self.test_create_jewelry()
-        self.test_get_jewelry()
-        self.test_get_jewelry_by_id()
-        self.test_update_jewelry()
-        self.test_jewelry_scan_endpoint()
-        self.test_jewelry_authentication_enforcement()
-        
-        # Deletion Tests
-        print("\n🗑️ DELETION TESTS")
-        print("-" * 30)
-        self.test_delete_measurement()
-        self.test_delete_fixture()
-        self.test_delete_document()
-        self.test_delete_jewelry()
-        self.test_delete_property()
-        
-        # Final Results
-        print("\n" + "=" * 60)
-        print("📊 TEST RESULTS SUMMARY")
-        print("=" * 60)
-        print(f"✅ Passed: {self.results['passed']}")
-        print(f"❌ Failed: {self.results['failed']}")
-        print(f"📈 Success Rate: {(self.results['passed'] / (self.results['passed'] + self.results['failed']) * 100):.1f}%")
-        
-        if self.results['errors']:
-            print(f"\n🚨 FAILED TESTS:")
-            for error in self.results['errors']:
-                print(f"   • {error}")
-        
-        return self.results
+        print("="*60)
 
 if __name__ == "__main__":
-    tester = PropertyManagerAPITester()
-    results = tester.run_all_tests()
+    tester = BackendTester()
+    success = tester.run_all_tests()
+    
+    if success:
+        print("\n🎉 All tests passed successfully!")
+        exit(0)
+    else:
+        print("\n💥 Some tests failed!")
+        exit(1)
