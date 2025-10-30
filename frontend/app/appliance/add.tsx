@@ -553,14 +553,14 @@ export default function AddApplianceScreen() {
       </Modal>
 
       {/* Camera Modal */}
-      <Modal visible={cameraVisible} animationType="slide" presentationStyle="pageSheet">
+      <Modal visible={cameraVisible} animationType="slide" presentationStyle="fullScreen">
         <View style={styles.cameraContainer}>
           <CameraView
             style={styles.camera}
             ref={(ref) => setCameraRef(ref)}
             facing="back"
-          >
-            <View style={styles.cameraOverlay}>
+          />
+          <View style={styles.cameraOverlay}>
               <TouchableOpacity
                 style={styles.closeCamera}
                 onPress={() => setCameraVisible(false)}
