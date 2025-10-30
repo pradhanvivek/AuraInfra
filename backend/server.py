@@ -395,7 +395,7 @@ class VehicleScanResult(BaseModel):
 
 class JewelryScanResult(BaseModel):
     name: Optional[str] = None
-    type: str
+    type: Optional[str] = "Unknown"
     metal: Optional[str] = None
     stones: Optional[str] = None
     weight: Optional[float] = None
