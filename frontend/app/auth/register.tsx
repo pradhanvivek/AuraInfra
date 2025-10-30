@@ -41,7 +41,7 @@ export default function Register() {
     setLoading(true);
     try {
       await register(username, password);
-      router.replace('/(tabs)/properties');
+      router.replace('/(tabs)/dashboard');
     } catch (error: any) {
       Alert.alert('Registration Failed', error.message);
     } finally {
