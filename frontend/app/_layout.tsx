@@ -11,6 +11,13 @@ export default function RootLayout() {
           <Stack.Screen name="auth/login" />
           <Stack.Screen name="auth/register" />
           <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+          <Stack.Screen 
+            name="properties" 
+            options={{ 
+              headerShown: false,
+              presentation: 'card'
+            }} 
+          />
           <Stack.Screen name="property/add" options={{ presentation: 'modal', headerShown: true, title: 'Add Property' }} />
           <Stack.Screen 
             name="property/[id]" 
