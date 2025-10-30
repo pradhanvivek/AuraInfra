@@ -132,26 +132,14 @@ export default function VehiclesScreen() {
 
       <TouchableOpacity
         style={styles.scanFab}
-        onPress={() => {
-          Alert.alert(
-            'AI Scan',
-            'Camera-based vehicle scanning will be available soon. Use the + button to add manually.',
-            [{ text: 'OK' }]
-          );
-        }}
+        onPress={() => router.push('/vehicle/add?mode=scan' as any)}
       >
         <Ionicons name="camera" size={24} color="#fff" />
       </TouchableOpacity>
 
       <TouchableOpacity
         style={styles.fab}
-        onPress={() => {
-          Alert.alert(
-            'Add Vehicle',
-            'Manual vehicle entry form coming soon! This will allow you to add vehicle details including make, model, year, VIN, insurance, and maintenance tracking.',
-            [{ text: 'OK' }]
-          );
-        }}
+        onPress={() => router.push('/vehicle/add' as any)}
       >
         <Ionicons name="add" size={28} color="#fff" />
       </TouchableOpacity>
