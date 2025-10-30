@@ -1130,7 +1130,7 @@ Examples:
 - If warranty shows "1 year", set warranty_months to 12
 
 Be precise with extracted values. Set confidence between 0.0 and 1.0 based on image quality and visibility of information.""",
-            image_content=[ImageContent(image=scan_request.image, type="base64")]
+            file_contents=[ImageContent(image_base64=scan_request.image)]
         )
         
         response = await chat.send_message(user_message)
