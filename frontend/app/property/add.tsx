@@ -52,6 +52,8 @@ export default function AddProperty() {
         address,
         latitude,
         longitude,
+        purchase_cost: purchaseCost ? parseFloat(purchaseCost) : undefined,
+        current_value: currentValue ? parseFloat(currentValue) : undefined,
       });
       Alert.alert('Success', 'Property added successfully');
       router.back();
