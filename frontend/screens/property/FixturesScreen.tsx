@@ -22,6 +22,7 @@ import { useAuth } from '../../contexts/AuthContext';
 import { fixtureApi } from '../../services/api';
 import axios from 'axios';
 import Constants from 'expo-constants';
+import ImageViewer from '../../components/ImageViewer';
 
 const API_URL = Constants.expoConfig?.extra?.EXPO_PUBLIC_BACKEND_URL || process.env.EXPO_PUBLIC_BACKEND_URL;
 
