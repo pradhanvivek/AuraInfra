@@ -144,8 +144,15 @@ export const formatCurrency = (amount: number, showCode: boolean = false): strin
   return `${currency.symbol}${formatted}`;
 };
 
-// Get measurement system for device location
+// Get measurement system for device location or user preference
 export const getMeasurementSystem = (): 'imperial' | 'metric' => {
+  // First, check user's manual preference from cache
+  const userPref = getUserMeasurementPreference();
+  if (userPref === 'imperial' || userPref === 'metric') {
+    return userPref;
+  }
+
+  // Fall back to device locale
   const countryCode = getCountryCode();
   return measurementSystem[countryCode] || 'metric'; // Default to metric
 };
