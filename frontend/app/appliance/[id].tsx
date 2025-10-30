@@ -227,6 +227,15 @@ export default function ApplianceDetailsScreen() {
 
         <View style={styles.bottomPadding} />
       </ScrollView>
+
+      {/* Image Viewer Modal */}
+      {selectedImageIndex !== null && appliance?.photos && (
+        <ImageViewer
+          images={appliance.photos.map(photo => `data:image/jpeg;base64,${photo}`)}
+          initialIndex={selectedImageIndex}
+          onClose={() => setSelectedImageIndex(null)}
+        />
+      )}
     </SafeAreaView>
   );
 }
