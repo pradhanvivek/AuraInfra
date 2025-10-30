@@ -255,9 +255,25 @@ export default function Profile() {
 
       <ScrollView style={styles.content}>
         <View style={styles.profileSection}>
-          <View style={styles.avatarContainer}>
-            <Ionicons name="person" size={48} color="#007AFF" />
-          </View>
+          <TouchableOpacity 
+            style={styles.avatarContainer}
+            onPress={handleChangeAvatar}
+            disabled={uploadingAvatar}
+          >
+            {uploadingAvatar ? (
+              <ActivityIndicator size="large" color="#007AFF" />
+            ) : profile?.avatar ? (
+              <Image 
+                source={{ uri: `data:image/jpeg;base64,${profile.avatar}` }}
+                style={styles.avatar}
+              />
+            ) : (
+              <Ionicons name="person" size={48} color="#007AFF" />
+            )}
+            <View style={styles.avatarBadge}>
+              <Ionicons name="camera" size={16} color="#fff" />
+            </View>
+          </TouchableOpacity>
           <Text style={styles.username}>{profile?.username}</Text>
           <Text style={styles.memberSince}>
             Member since {new Date(profile?.created_at || '').toLocaleDateString()}
