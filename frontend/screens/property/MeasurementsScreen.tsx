@@ -60,6 +60,7 @@ interface MeasurementsScreenProps {
 
 export default function MeasurementsScreen({ propertyId }: MeasurementsScreenProps) {
   const { token } = useAuth();
+  const colorScheme = useColorScheme();
   const [measurements, setMeasurements] = useState<Measurement[]>([]);
   const [loading, setLoading] = useState(true);
   const [modalVisible, setModalVisible] = useState(false);
@@ -68,6 +69,9 @@ export default function MeasurementsScreen({ propertyId }: MeasurementsScreenPro
   const [editMode, setEditMode] = useState(false);
   const [selectedMeasurement, setSelectedMeasurement] = useState<Measurement | null>(null);
   const [inputMode, setInputMode] = useState<'manual' | 'ai'>('manual'); // manual or ai
+  
+  // Dynamic placeholder color based on theme
+  const placeholderColor = colorScheme === 'dark' ? '#999999' : '#666666';
 
   // Form state
   const [roomType, setRoomType] = useState('master_bedroom');
