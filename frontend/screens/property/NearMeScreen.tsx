@@ -15,6 +15,9 @@ import Constants from 'expo-constants';
 import { useAuth } from '../../contexts/AuthContext';
 import { propertyApi } from '../../services/api';
 
+// OpenStreetMap API endpoint
+const NOMINATIM_URL = process.env.EXPO_PUBLIC_NOMINATIM_URL || 'https://nominatim.openstreetmap.org';
+
 interface NearbyPlace {
   id: string;
   name: string;
