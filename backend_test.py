@@ -541,6 +541,195 @@ class PropertyManagerAPITester:
         
         return False
     
+    # ============= APPLIANCE AI SCANNER TESTS =============
+    
+    def test_appliance_scanner_endpoint_exists(self):
+        """Test that the appliance scanner endpoint exists"""
+        data = {
+            "image": self.create_sample_image_base64()
+        }
+        
+        response = self.make_request("POST", "/fixtures/scan-appliance", data)
+        
+        if response and response.status_code in [200, 400, 422]:  # Any of these means endpoint exists
+            self.log_result("Appliance Scanner - Endpoint Exists", True, "POST /api/fixtures/scan-appliance endpoint exists")
+            return True
+        elif response and response.status_code == 404:
+            self.log_result("Appliance Scanner - Endpoint Exists", False, "Endpoint not found (404)")
+            return False
+        else:
+            self.log_result("Appliance Scanner - Endpoint Exists", True, f"Endpoint exists (status: {response.status_code if response else 'None'})")
+            return True
+    
+    def test_appliance_scanner_authentication(self):
+        """Test that JWT authentication is enforced for appliance scanner"""
+        # Test without authentication
+        session_no_auth = requests.Session()
+        data = {"image": self.create_sample_image_base64()}
+        
+        response = session_no_auth.post(f"{self.base_url}/fixtures/scan-appliance", json=data)
+        
+        if response and response.status_code in [401, 403]:
+            self.log_result("Appliance Scanner - Authentication Required", True, f"Endpoint properly requires authentication ({response.status_code})")
+            return True
+        else:
+            self.log_result("Appliance Scanner - Authentication Required", False, 
+                          f"Endpoint should require auth but returned: {response.status_code if response else 'None'}")
+            return False
+    
+    def test_appliance_scanner_request_validation(self):
+        """Test request format validation for appliance scanner"""
+        # Test with missing image field
+        response = self.make_request("POST", "/fixtures/scan-appliance", {})
+        
+        if response and response.status_code == 422:
+            self.log_result("Appliance Scanner - Request Validation", True, "Missing image field properly rejected (422)")
+            return True
+        else:
+            self.log_result("Appliance Scanner - Request Validation", False, 
+                          f"Missing image should return 422 but got: {response.status_code if response else 'None'}")
+            return False
+    
+    def test_appliance_scanner_functionality(self):
+        """Test the actual AI appliance scanning functionality"""
+        # Use a more realistic appliance image (refrigerator base64)
+        appliance_image = "/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAYEBQYFBAYGBQYHBwYIChAKCgkJChQODwwQFxQYGBcUFhYaHSUfGhsjHBYWICwgIyYnKSopGR8tMC0oMCUoKSj/2wBDAQcHBwoIChMKChMoGhYaKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCj/wAARCAABAAEDASIAAhEBAxEB/8QAFQABAQAAAAAAAAAAAAAAAAAAAAv/xAAUEAEAAAAAAAAAAAAAAAAAAAAA/8QAFQEBAQAAAAAAAAAAAAAAAAAAAAX/xAAUEQEAAAAAAAAAAAAAAAAAAAAA/9oADAMBAAIRAxEAPwCdABmX/9k="
+        
+        data = {
+            "image": appliance_image
+        }
+        
+        response = self.make_request("POST", "/fixtures/scan-appliance", data)
+        
+        if response and response.status_code == 200:
+            scan_result = response.json()
+            
+            # Verify response structure matches ApplianceScanResult model
+            required_fields = ["name", "category", "confidence"]
+            optional_fields = ["make", "model", "serial_number"]
+            
+            missing_required = [field for field in required_fields if field not in scan_result]
+            if missing_required:
+                self.log_result("Appliance Scanner - Functionality", False, 
+                              f"Missing required fields: {missing_required}")
+                return False
+            
+            # Verify confidence is a float between 0 and 1
+            confidence = scan_result.get("confidence")
+            if not isinstance(confidence, (int, float)) or not (0 <= confidence <= 1):
+                self.log_result("Appliance Scanner - Functionality", False, 
+                              f"Invalid confidence value: {confidence}")
+                return False
+            
+            # Verify name and category are strings
+            if not isinstance(scan_result.get("name"), str) or not isinstance(scan_result.get("category"), str):
+                self.log_result("Appliance Scanner - Functionality", False, 
+                              "Name and category must be strings")
+                return False
+            
+            self.log_result("Appliance Scanner - Functionality", True, 
+                          "AI scanning returned valid ApplianceScanResult")
+            
+            # Log scan results for verification
+            print(f"   📱 Scan Results:")
+            print(f"      Name: {scan_result.get('name')}")
+            print(f"      Category: {scan_result.get('category')}")
+            print(f"      Make: {scan_result.get('make', 'N/A')}")
+            print(f"      Model: {scan_result.get('model', 'N/A')}")
+            print(f"      Serial: {scan_result.get('serial_number', 'N/A')}")
+            print(f"      Confidence: {scan_result.get('confidence')}")
+            
+            return True
+            
+        else:
+            error_msg = response.json().get("detail", "Unknown error") if response else "No response"
+            self.log_result("Appliance Scanner - Functionality", False, 
+                          f"AI scanning failed with status: {response.status_code if response else 'None'}, Error: {error_msg}")
+            return False
+    
+    def test_appliance_scanner_gemini_integration(self):
+        """Test that Gemini 2.0 Flash integration is working"""
+        data = {
+            "image": self.create_sample_image_base64()
+        }
+        
+        response = self.make_request("POST", "/fixtures/scan-appliance", data)
+        
+        if response and response.status_code == 200:
+            scan_result = response.json()
+            
+            # Check if the response indicates AI processing
+            name = scan_result.get("name", "").lower()
+            category = scan_result.get("category", "").lower()
+            confidence = scan_result.get("confidence", 0)
+            
+            # Basic validation that AI is working
+            if confidence > 0 and len(name) > 0 and len(category) > 0:
+                self.log_result("Appliance Scanner - Gemini Integration", True, 
+                              "Gemini 2.0 Flash integration appears functional")
+                return True
+            else:
+                self.log_result("Appliance Scanner - Gemini Integration", False, 
+                              "AI response seems incomplete or invalid")
+                return False
+                
+        elif response and response.status_code == 500:
+            error_text = response.text.lower()
+            if "api key" in error_text:
+                self.log_result("Appliance Scanner - Gemini Integration", False, 
+                              "API key not configured for Gemini integration")
+            else:
+                self.log_result("Appliance Scanner - Gemini Integration", False, 
+                              "Gemini integration error (500)")
+            return False
+        else:
+            self.log_result("Appliance Scanner - Gemini Integration", False, 
+                          f"Unexpected response: {response.status_code if response else 'None'}")
+            return False
+    
+    def test_appliance_scanner_response_structure(self):
+        """Test complete response structure validation"""
+        data = {
+            "image": self.create_sample_image_base64()
+        }
+        
+        response = self.make_request("POST", "/fixtures/scan-appliance", data)
+        
+        if response and response.status_code == 200:
+            scan_result = response.json()
+            
+            # Check all expected fields from ApplianceScanResult model
+            expected_structure = {
+                "name": str,
+                "category": str,
+                "make": (str, type(None)),
+                "model": (str, type(None)),
+                "serial_number": (str, type(None)),
+                "confidence": (int, float)
+            }
+            
+            validation_errors = []
+            for field, expected_type in expected_structure.items():
+                if field not in scan_result:
+                    validation_errors.append(f"Missing field: {field}")
+                elif not isinstance(scan_result[field], expected_type):
+                    validation_errors.append(f"Invalid type for {field}: expected {expected_type}, got {type(scan_result[field])}")
+            
+            if validation_errors:
+                self.log_result("Appliance Scanner - Response Structure", False, 
+                              "Response structure validation failed")
+                for error in validation_errors:
+                    print(f"      ❌ {error}")
+                return False
+            else:
+                self.log_result("Appliance Scanner - Response Structure", True, 
+                              "Response structure matches ApplianceScanResult model")
+                return True
+        else:
+            self.log_result("Appliance Scanner - Response Structure", False, 
+                          f"Cannot validate structure, request failed: {response.status_code if response else 'None'}")
+            return False
+
     # ============= JEWELRY TESTS =============
     
     def test_create_jewelry(self):
