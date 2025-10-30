@@ -25,6 +25,7 @@ class PropertyManagerAPITester:
         self.test_document_id = None
         self.test_fixture_id = None
         self.test_measurement_id = None
+        self.test_jewelry_id = None
         
         # Test results tracking
         self.results = {
