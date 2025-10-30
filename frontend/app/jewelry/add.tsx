@@ -601,29 +601,28 @@ export default function AddJewelryScreen() {
       </Modal>
 
       {/* Camera Modal */}
-      <Modal visible={cameraVisible} animationType="slide" presentationStyle="pageSheet">
+      <Modal visible={cameraVisible} animationType="slide" presentationStyle="fullScreen">
         <View style={styles.cameraContainer}>
           <CameraView
             style={styles.camera}
             ref={(ref) => setCameraRef(ref)}
             facing="back"
-          >
-            <View style={styles.cameraOverlay}>
-              <TouchableOpacity
-                style={styles.closeCamera}
-                onPress={() => setCameraVisible(false)}
-              >
-                <Ionicons name="close" size={32} color="#fff" />
-              </TouchableOpacity>
-              <View style={styles.cameraInstructions}>
-                <Text style={styles.instructionText}>Point at jewelry item</Text>
-                <Text style={styles.instructionSubtext}>Ensure good lighting for best results</Text>
-              </View>
-              <TouchableOpacity style={styles.captureButton} onPress={handleTakePicture}>
-                <View style={styles.captureButtonInner} />
-              </TouchableOpacity>
+          />
+          <View style={styles.cameraOverlay}>
+            <TouchableOpacity
+              style={styles.closeCamera}
+              onPress={() => setCameraVisible(false)}
+            >
+              <Ionicons name="close" size={32} color="#fff" />
+            </TouchableOpacity>
+            <View style={styles.cameraInstructions}>
+              <Text style={styles.instructionText}>Point at jewelry item</Text>
+              <Text style={styles.instructionSubtext}>Ensure good lighting for best results</Text>
             </View>
-          </CameraView>
+            <TouchableOpacity style={styles.captureButton} onPress={handleTakePicture}>
+              <View style={styles.captureButtonInner} />
+            </TouchableOpacity>
+          </View>
         </View>
       </Modal>
 
