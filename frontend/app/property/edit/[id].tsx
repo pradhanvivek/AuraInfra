@@ -231,8 +231,10 @@ export default function EditPropertyScreen() {
                   },
                 }}
                 textInputProps={{
-                  value: address,
-                  onChangeText: setAddress,
+                  defaultValue: address,
+                  onChangeText: (text: string) => {
+                    setAddress(text);
+                  },
                 }}
                 listViewDisplayed="auto"
                 keyboardShouldPersistTaps="handled"
