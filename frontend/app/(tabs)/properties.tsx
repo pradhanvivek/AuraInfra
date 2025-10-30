@@ -134,7 +134,7 @@ export default function Properties() {
               placeholder="Search by name or address..."
               value={searchQuery}
               onChangeText={handleSearch}
-              placeholderTextColor="#C7C7CC"
+              placeholderTextColor="#666666"
             />
             {searchQuery.length > 0 && (
               <TouchableOpacity onPress={clearSearch} style={styles.clearButton}>
