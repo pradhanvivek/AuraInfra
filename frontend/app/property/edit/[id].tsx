@@ -105,7 +105,7 @@ export default function EditPropertyScreen() {
             try {
               await propertyApi.delete(token!, id!);
               Alert.alert('Success', 'Property deleted successfully', [
-                { text: 'OK', onPress: () => router.replace('/(tabs)/properties') }
+                { text: 'OK', onPress: () => router.replace('/properties') }
               ]);
             } catch (error: any) {
               Alert.alert('Error', error.message || 'Failed to delete property');
