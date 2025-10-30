@@ -793,10 +793,17 @@ export default function FixturesScreen({ propertyId }: FixturesScreenProps) {
 
           <ScrollView style={styles.modalContent}>
             {selectedFixture?.photo && (
-              <Image
-                source={{ uri: `data:image/jpeg;base64,${selectedFixture.photo}` }}
-                style={styles.detailsPhoto}
-              />
+              <TouchableOpacity
+                onPress={() => {
+                  setSelectedImageUri(`data:image/jpeg;base64,${selectedFixture.photo}`);
+                  setImageViewerVisible(true);
+                }}
+              >
+                <Image
+                  source={{ uri: `data:image/jpeg;base64,${selectedFixture.photo}` }}
+                  style={styles.detailsPhoto}
+                />
+              </TouchableOpacity>
             )}
 
             <View style={styles.detailsRow}>
