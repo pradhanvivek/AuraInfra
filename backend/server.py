@@ -646,6 +646,10 @@ async def update_property(
         update_data["latitude"] = property_data.latitude
     if property_data.longitude is not None:
         update_data["longitude"] = property_data.longitude
+    if property_data.purchase_cost is not None:
+        update_data["purchase_cost"] = property_data.purchase_cost
+    if property_data.current_value is not None:
+        update_data["current_value"] = property_data.current_value
     
     if update_data:
         await db.properties.update_one(
