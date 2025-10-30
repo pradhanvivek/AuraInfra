@@ -211,6 +211,34 @@ export default function Profile() {
     );
   };
 
+  const handleChangeAvatar = async () => {
+    try {
+      const result = await ImagePicker.launchImageLibraryAsync({
+        mediaTypes: ImagePicker.MediaTypeOptions.Images,
+        allowsEditing: true,
+        aspect: [1, 1],
+        quality: 0.5,
+        base64: true,
+      });
+
+      if (!result.canceled && result.assets[0].base64) {
+        setUploadingAvatar(true);
+        
+        // Update profile with new avatar
+        const updatedProfile = await authApi.updateProfile(token!, { 
+          avatar: result.assets[0].base64 
+        });
+        
+        setProfile(updatedProfile);
+        Alert.alert('Success', 'Avatar updated successfully!');
+      }
+    } catch (error: any) {
+      Alert.alert('Error', error.message || 'Failed to update avatar');
+    } finally {
+      setUploadingAvatar(false);
+    }
+  };
+
   if (loading) {
     return (
       <View style={styles.centerContainer}>
