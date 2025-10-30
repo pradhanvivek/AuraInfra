@@ -375,7 +375,8 @@ export default function AddApplianceScreen() {
         <Text style={styles.sectionTitle}>Notes</Text>
         <TextInput
           style={[styles.input, styles.textArea]}
-          placeholder=" placeholderTextColor="#666666" Additional notes..."
+          placeholder="Additional notes..."
+          placeholderTextColor="#666666"
           value={notes}
           onChangeText={setNotes}
           multiline
