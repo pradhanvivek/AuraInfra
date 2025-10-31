@@ -546,6 +546,56 @@ backend:
     priority: "medium"
     needs_retesting: true
     status_history:
+
+
+  - task: "Property Detail Header Flicker Fix"
+    implemented: true
+    working: "NA"
+    file: "frontend/app/property/[id].tsx"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "Fixed header flicker on property detail page by replacing SafeAreaView with useSafeAreaInsets hook. Now applies safe area padding synchronously to prevent layout shift. Updated headerWrapper style to use dynamic paddingTop based on insets.top."
+
+  - task: "Enhanced Portfolio PDF Export"
+    implemented: true
+    working: "NA"
+    file: "frontend/app/portfolio.tsx"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "Enhanced PDF export to include comprehensive asset details. Added API call to /api/portfolio/details to fetch all assets. Implemented renderAssetSection helper to display individual asset listings with brand, model, address, category, artist, material, purchase_date, warranty_expiry, and cost. Updated HTML template with better styling, page breaks, and detailed asset sections for all categories (properties, vehicles, appliances, jewelry, furniture, art). Added A4 dimensions to PDF generation."
+
+  - task: "Maintenance Tracking Screen"
+    implemented: true
+    working: "NA"
+    file: "frontend/app/maintenance.tsx"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "Created complete maintenance tracking screen with three tabs: Upcoming, Overdue, Completed. Features include: mark as complete, delete maintenance, recurring indicators, days until due/overdue display, cost tracking, notes display, color-coded badges by maintenance type, asset icons, pull-to-refresh, empty states. Fetches from /api/maintenance/upcoming, /api/maintenance/overdue, and /api/maintenance?completed=true endpoints."
+
+  - task: "Dashboard Maintenance Tile"
+    implemented: true
+    working: "NA"
+    file: "frontend/app/(tabs)/dashboard.tsx"
+    stuck_count: 0
+    priority: "medium"
+    needs_retesting: false
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "Added Maintenance tile to dashboard with wrench/construct icon, orange color, and route to /maintenance. Positioned between Art and Portfolio tiles for easy access to maintenance tracking feature."
+
       - working: "NA"
         agent: "main"
         comment: "Added supplementary endpoints: GET /api/maintenance/{id} (get by ID), DELETE /api/maintenance/{id}, GET /api/maintenance/asset/{asset_type}/{asset_id} (get for specific asset), GET /api/maintenance/upcoming?days=30 (upcoming within days), GET /api/maintenance/overdue (overdue records)."
