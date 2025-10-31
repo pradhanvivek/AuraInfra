@@ -183,8 +183,8 @@ const styles = StyleSheet.create({
   headerTitle: {
   },
   logo: {
-    width: 40,
-    height: 40,
+    width: 80,
+    height: 80,
     fontSize: 20,
     fontWeight: 'bold',
     color: '#000',
