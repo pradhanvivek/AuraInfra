@@ -223,10 +223,8 @@ const styles = StyleSheet.create({
     marginTop: 8,
   },
   footer: {
-    position: 'absolute',
-    bottom: 24,
-    left: 0,
-    right: 0,
+    paddingVertical: 24,
+    paddingHorizontal: 24,
     alignItems: 'center',
   },
   companyName: {
