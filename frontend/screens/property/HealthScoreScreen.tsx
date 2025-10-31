@@ -47,18 +47,11 @@ export default function HealthScoreScreen({ propertyId }: HealthScoreScreenProps
   };
 
   const handleCategoryPress = (key: string) => {
-    // Map health score categories to their respective screens
-    const routeMap: { [key: string]: string } = {
-      'documents': `/property/${propertyId}/documents`,
-      'fixtures': `/property/${propertyId}/fixtures`,
-      'measurements': `/property/${propertyId}/measurements`,
-      'vastu_feng_shui': `/property/${propertyId}/vastu`,
-      'paint_estimation': `/property/${propertyId}/paint-estimation`,
-    };
-    
-    if (routeMap[key]) {
-      router.push(routeMap[key] as any);
-    }
+    // Since all tabs are already visible in the property detail page,
+    // we don't need to navigate. Users can tap on the tabs directly.
+    // This function can be used for future enhancements like showing a modal
+    // or highlighting the specific tab.
+    return;
   };
 
   const fetchHealthScore = async () => {
