@@ -439,6 +439,7 @@ const styles = StyleSheet.create({
   customLegend: {
     flex: 1,
     paddingLeft: 0,
+    paddingRight: 8,
     justifyContent: 'center',
   },
   legendItem: {
