@@ -615,7 +615,13 @@ frontend:
 
 test_plan:
   current_focus:
-    - "Portfolio Charting & PDF Export"
+    - "Portfolio Details Endpoint"
+    - "Maintenance Tracking - Create Maintenance"
+    - "Maintenance Tracking - Get Maintenance"
+    - "Maintenance Tracking - Update & Recurring"
+    - "Maintenance Tracking - Additional Endpoints"
+    - "Enhanced Portfolio PDF Export"
+    - "Maintenance Tracking Screen"
   stuck_tasks: []
   test_all: false
   test_priority: "high_first"
