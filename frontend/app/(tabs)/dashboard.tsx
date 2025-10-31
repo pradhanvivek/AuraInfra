@@ -244,8 +244,17 @@ export default function DashboardScreen() {
                 paddingLeft="0"
                 center={[10, 0]}
                 absolute
-                hasLegend={true}
+                hasLegend={false}
               />
+              {/* Custom Legend without numbers */}
+              <View style={styles.customLegend}>
+                {chartData.map((item, index) => (
+                  <View key={index} style={styles.legendItem}>
+                    <View style={[styles.legendColor, { backgroundColor: item.color }]} />
+                    <Text style={styles.legendText}>{item.name}</Text>
+                  </View>
+                ))}
+              </View>
             </View>
           </View>
         )}
