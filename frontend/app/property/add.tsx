@@ -66,7 +66,9 @@ export default function AddProperty() {
   };
 
   return (
-    <SafeAreaView style={styles.container} edges={['bottom']}>
+    <>
+      <Stack.Screen options={{ headerShown: false }} />
+      <SafeAreaView style={styles.container} edges={['bottom']}>
       {/* Header with Back and Cancel */}
       <View style={styles.header}>
         <TouchableOpacity onPress={() => router.back()} style={styles.headerButton}>
