@@ -57,26 +57,6 @@ export default function PropertyDetails() {
 
   return (
     <View style={styles.container}>
-      {/* Property Header */}
-      <View style={styles.header}>
-        <View style={styles.headerTextContainer}>
-          <Text style={styles.propertyName} numberOfLines={1}>
-            {property?.name || 'Property Details'}
-          </Text>
-          {property?.address && (
-            <Text style={styles.propertyAddress} numberOfLines={1}>
-              {property.address}
-            </Text>
-          )}
-        </View>
-        <TouchableOpacity 
-          onPress={() => router.push(`/property/edit/${id}`)} 
-          style={styles.editBtn}
-        >
-          <Ionicons name="create-outline" size={24} color="#007AFF" />
-        </TouchableOpacity>
-      </View>
-
       {/* Tabs Container */}
       <View style={styles.tabsContainer}>
         <Tab.Navigator
