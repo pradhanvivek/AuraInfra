@@ -628,11 +628,6 @@ frontend:
 
 test_plan:
   current_focus:
-    - "Portfolio Details Endpoint"
-    - "Maintenance Tracking - Create Maintenance"
-    - "Maintenance Tracking - Get Maintenance"
-    - "Maintenance Tracking - Update & Recurring"
-    - "Maintenance Tracking - Additional Endpoints"
     - "Enhanced Portfolio PDF Export"
     - "Maintenance Tracking Screen"
   stuck_tasks: []
