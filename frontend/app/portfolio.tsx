@@ -439,42 +439,60 @@ export default function PortfolioScreen() {
         {/* Category Breakdown */}
         <Text style={styles.sectionTitle}>Asset Breakdown</Text>
         
-        {categories.map((category) => (
-          <View key={category.name} style={styles.categoryCard}>
-            <View style={styles.categoryHeader}>
-              <View style={styles.categoryInfo}>
-                <View style={[styles.iconCircle, { backgroundColor: category.color + '20' }]}>
-                  <Ionicons name={category.icon as any} size={24} color={category.color} />
+        {categories.map((category) => {
+          // Map category names to routes
+          const routeMap: { [key: string]: string } = {
+            'Properties': '/properties',
+            'Vehicles': '/vehicles',
+            'Appliances': '/appliances',
+            'Jewelry': '/jewelry',
+            'Furniture': '/furniture',
+            'Art': '/arts',
+          };
+          
+          return (
+            <TouchableOpacity 
+              key={category.name} 
+              style={styles.categoryCard}
+              onPress={() => router.push(routeMap[category.name] as any)}
+              activeOpacity={0.7}
+            >
+              <View style={styles.categoryHeader}>
+                <View style={styles.categoryInfo}>
+                  <View style={[styles.iconCircle, { backgroundColor: category.color + '20' }]}>
+                    <Ionicons name={category.icon as any} size={24} color={category.color} />
+                  </View>
+                  <View style={styles.categoryText}>
+                    <Text style={styles.categoryName}>{category.name}</Text>
+                    <Text style={styles.categoryCount}>{category.count} items</Text>
+                  </View>
                 </View>
-                <View style={styles.categoryText}>
-                  <Text style={styles.categoryName}>{category.name}</Text>
-                  <Text style={styles.categoryCount}>{category.count} items</Text>
+                <View style={styles.categoryValues}>
+                  <Text style={[styles.categoryValue, { color: category.color }]}>
+                    {formatCurrency(category.value)}
+                  </Text>
+                  <Text style={styles.categoryPercentage}>
+                    {category.percentage.toFixed(1)}%
+                  </Text>
+                  <Ionicons name="chevron-forward" size={20} color="#C7C7CC" style={{ marginLeft: 4 }} />
                 </View>
               </View>
-              <View style={styles.categoryValues}>
-                <Text style={[styles.categoryValue, { color: category.color }]}>
-                  {formatCurrency(category.value)}
-                </Text>
-                <Text style={styles.categoryPercentage}>
-                  {category.percentage.toFixed(1)}%
-                </Text>
+              
+              {/* Progress Bar */}
+              <View style={styles.progressBar}>
+                <View 
+                  style={[
+                    styles.progressFill, 
+                    { 
+                      width: `${category.percentage}%`,
+                      backgroundColor: category.color 
+                    }
+                  ]} 
+                />
               </View>
-            </View>
-            
-            {/* Progress Bar */}
-            <View style={styles.progressBar}>
-              <View 
-                style={[
-                  styles.progressFill, 
-                  { 
-                    width: `${category.percentage}%`,
-                    backgroundColor: category.color 
-                  }
-                ]} 
-              />
-            </View>
-          </View>
-        ))}
+            </TouchableOpacity>
+          );
+        })}
 
         {/* Action Buttons */}
         <View style={styles.actionsSection}>
