@@ -537,15 +537,18 @@ backend:
 
   - task: "Maintenance Tracking - Update & Recurring"
     implemented: true
-    working: "NA"
+    working: true
     file: "backend/server.py"
     stuck_count: 0
     priority: "high"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
       - working: "NA"
         agent: "main"
         comment: "Added PUT /api/maintenance/{id} endpoint with MaintenanceUpdate model. When marking complete, automatically creates next occurrence for recurring maintenance based on recurring_interval_days. Supports updating all maintenance fields."
+      - working: true
+        agent: "testing"
+        comment: "MAINTENANCE UPDATE & RECURRING TESTING COMPLETED SUCCESSFULLY: Comprehensive testing of PUT /api/maintenance/{id} endpoint completed with 100% success rate. All test objectives met: 1) Basic field updates working correctly (cost, notes), 2) Mark as complete functionality working (completed=true, completed_date), 3) **CRITICAL RECURRING FUNCTIONALITY VERIFIED** - When marking recurring maintenance as complete, next occurrence is automatically created with correct due_date based on recurring_interval_days, 4) New recurring maintenance record has correct asset_type and maintains recurring properties, 5) Proper 404 error handling for non-existent maintenance records. All 5 tests passed successfully demonstrating robust update functionality and automatic recurring maintenance generation."
 
   - task: "Maintenance Tracking - Additional Endpoints"
     implemented: true
