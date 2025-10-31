@@ -407,8 +407,7 @@ export default function PortfolioScreen() {
             {formatCurrency(portfolio.total_value)}
           </Text>
           <Text style={styles.totalSubtext}>
-            {portfolio.properties_count + portfolio.vehicles_count + 
-             portfolio.appliances_count + portfolio.jewelry_count} items total
+            {totalAssets} items total
           </Text>
         </View>
 
