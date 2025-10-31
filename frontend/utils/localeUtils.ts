@@ -145,15 +145,22 @@ export const getCurrencyCode = (): string => {
 // Format currency based on locale
 export const formatCurrency = (amount: number, showCode: boolean = false): string => {
   const currency = getCurrencyInfo();
-  const formatted = amount.toLocaleString(getDeviceLocale(), {
+  const locale = getDeviceLocale();
+  
+  // Use Intl.NumberFormat for proper locale-based formatting
+  const formatter = new Intl.NumberFormat(locale, {
+    style: 'currency',
+    currency: currency.code,
     minimumFractionDigits: currency.decimals,
     maximumFractionDigits: currency.decimals,
   });
   
+  const formatted = formatter.format(amount);
+  
   if (showCode) {
-    return `${currency.symbol}${formatted} ${currency.code}`;
+    return `${formatted} ${currency.code}`;
   }
-  return `${currency.symbol}${formatted}`;
+  return formatted;
 };
 
 // Get measurement system for device location or user preference
