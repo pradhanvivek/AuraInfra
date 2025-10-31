@@ -433,7 +433,7 @@ const styles = StyleSheet.create({
   },
   customLegend: {
     flex: 1,
-    paddingLeft: 16,
+    paddingLeft: 0,
     justifyContent: 'center',
   },
   legendItem: {
