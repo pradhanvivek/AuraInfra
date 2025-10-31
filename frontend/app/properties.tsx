@@ -10,12 +10,15 @@ import {
   RefreshControl,
   TextInput,
   useColorScheme,
+  Image,
 } from 'react-native';
 import { useRouter, useFocusEffect } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useAuth } from '../contexts/AuthContext';
 import { propertyApi } from '../services/api';
+
+const LOGO_URL = 'https://customer-assets.emergentagent.com/job_95500ee6-6a87-4222-9712-857c1f99b6e3/artifacts/6qjibbhd_logo-new-over.webp';
 
 interface Property {
   id: string;
