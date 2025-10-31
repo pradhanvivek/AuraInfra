@@ -2939,16 +2939,25 @@ async def scan_asset(request: ImageScanRequest, credentials: HTTPAuthorizationCr
     
     try:
         user = await get_current_user(credentials)
+        user_id = user["username"]
+        
+        # Get API key
+        api_key = os.environ.get('EMERGENT_LLM_KEY')
+        if not api_key:
+            raise HTTPException(status_code=500, detail="LLM API key not configured")
         
         # Use Gemini to identify the asset type
         from emergentintegrations.llm.chat import LlmChat, UserMessage, ImageContent
         
         # Create the chat instance
-        llm_chat = LlmChat(model='gemini-2.0-flash-exp')
+        llm_chat = LlmChat(
+            api_key=api_key,
+            session_id=f"asset_scan_{user_id}_{uuid.uuid4()}",
+            system_message="You are an expert at identifying physical assets and objects."
+        ).with_model("gemini", "gemini-2.0-flash-exp")
         
         # Create the prompt
-        prompt = """You are an expert at identifying physical assets and objects. 
-        Look at this image and identify what type of asset it is.
+        prompt = """Look at this image and identify what type of asset it is.
         
         Respond with ONLY a JSON object in this exact format:
         {
@@ -2979,7 +2988,6 @@ async def scan_asset(request: ImageScanRequest, credentials: HTTPAuthorizationCr
         response_text = response.content.strip()
         
         # Parse the JSON response
-        import json
         # Remove markdown code blocks if present
         if response_text.startswith('```'):
             response_text = response_text.split('```')[1]
