@@ -3134,6 +3134,57 @@ async def get_all_maintenance(
     
     return maintenance_list
 
+@api_router.get("/maintenance/upcoming")
+async def get_upcoming_maintenance(user_id: str = Depends(get_current_user), days: int = 30):
+    """Get upcoming maintenance within specified days"""
+    cutoff_date = datetime.utcnow() + timedelta(days=days)
+    
+    maintenance_list = await db.maintenance.find({
+        "user_id": user_id,
+        "completed": False,
+        "due_date": {"$lte": cutoff_date}
+    }).sort("due_date", 1).to_list(length=1000)
+    
+    for m in maintenance_list:
+        if '_id' in m:
+            m['_id'] = str(m['_id'])
+    
+    return maintenance_list
+
+@api_router.get("/maintenance/overdue")
+async def get_overdue_maintenance(user_id: str = Depends(get_current_user)):
+    """Get overdue maintenance records"""
+    maintenance_list = await db.maintenance.find({
+        "user_id": user_id,
+        "completed": False,
+        "due_date": {"$lt": datetime.utcnow()}
+    }).sort("due_date", 1).to_list(length=1000)
+    
+    for m in maintenance_list:
+        if '_id' in m:
+            m['_id'] = str(m['_id'])
+    
+    return maintenance_list
+
+@api_router.get("/maintenance/asset/{asset_type}/{asset_id}")
+async def get_maintenance_for_asset(
+    asset_type: str,
+    asset_id: str,
+    user_id: str = Depends(get_current_user)
+):
+    """Get all maintenance records for a specific asset"""
+    maintenance_list = await db.maintenance.find({
+        "user_id": user_id,
+        "asset_type": asset_type,
+        "asset_id": asset_id
+    }).sort("due_date", -1).to_list(length=1000)
+    
+    for m in maintenance_list:
+        if '_id' in m:
+            m['_id'] = str(m['_id'])
+    
+    return maintenance_list
+
 @api_router.get("/maintenance/{maintenance_id}")
 async def get_maintenance_by_id(maintenance_id: str, user_id: str = Depends(get_current_user)):
     """Get a specific maintenance record"""
@@ -3193,57 +3244,6 @@ async def delete_maintenance(maintenance_id: str, user_id: str = Depends(get_cur
         raise HTTPException(status_code=404, detail="Maintenance record not found")
     
     return {"message": "Maintenance deleted successfully"}
-
-@api_router.get("/maintenance/asset/{asset_type}/{asset_id}")
-async def get_maintenance_for_asset(
-    asset_type: str,
-    asset_id: str,
-    user_id: str = Depends(get_current_user)
-):
-    """Get all maintenance records for a specific asset"""
-    maintenance_list = await db.maintenance.find({
-        "user_id": user_id,
-        "asset_type": asset_type,
-        "asset_id": asset_id
-    }).sort("due_date", -1).to_list(length=1000)
-    
-    for m in maintenance_list:
-        if '_id' in m:
-            m['_id'] = str(m['_id'])
-    
-    return maintenance_list
-
-@api_router.get("/maintenance/upcoming")
-async def get_upcoming_maintenance(user_id: str = Depends(get_current_user), days: int = 30):
-    """Get upcoming maintenance within specified days"""
-    cutoff_date = datetime.utcnow() + timedelta(days=days)
-    
-    maintenance_list = await db.maintenance.find({
-        "user_id": user_id,
-        "completed": False,
-        "due_date": {"$lte": cutoff_date}
-    }).sort("due_date", 1).to_list(length=1000)
-    
-    for m in maintenance_list:
-        if '_id' in m:
-            m['_id'] = str(m['_id'])
-    
-    return maintenance_list
-
-@api_router.get("/maintenance/overdue")
-async def get_overdue_maintenance(user_id: str = Depends(get_current_user)):
-    """Get overdue maintenance records"""
-    maintenance_list = await db.maintenance.find({
-        "user_id": user_id,
-        "completed": False,
-        "due_date": {"$lt": datetime.utcnow()}
-    }).sort("due_date", 1).to_list(length=1000)
-    
-    for m in maintenance_list:
-        if '_id' in m:
-            m['_id'] = str(m['_id'])
-    
-    return maintenance_list
 
 
 app.include_router(api_router)
