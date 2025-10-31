@@ -29,9 +29,7 @@ export default function RootLayout() {
           <Stack.Screen 
             name="property/[id]" 
             options={{ 
-              headerShown: true, 
-              title: 'Property Details',
-              headerBackTitle: 'Back'
+              headerShown: false,
             }} 
           />
         </Stack>
