@@ -64,12 +64,296 @@ export default function PortfolioScreen() {
     }
   };
 
-  const handleGeneratePDF = () => {
-    Alert.alert(
-      'Generate PDF Report',
-      'PDF report feature will be available soon. This will include a comprehensive breakdown of all your assets with images and values.',
-      [{ text: 'OK' }]
-    );
+  const handleGeneratePDF = async () => {
+    if (!portfolio) return;
+
+    try {
+      setGeneratingPDF(true);
+
+      // Prepare data for PDF
+      const categories = getCategoriesData();
+      const totalAssets = portfolio.properties_count + portfolio.vehicles_count + 
+                         portfolio.appliances_count + portfolio.jewelry_count +
+                         portfolio.furniture_count + portfolio.art_count;
+
+      // Create HTML content for PDF
+      const htmlContent = `
+        <!DOCTYPE html>
+        <html>
+        <head>
+          <meta name="viewport" content="width=device-width, initial-scale=1.0">
+          <style>
+            body {
+              font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+              padding: 20px;
+              color: #333;
+            }
+            .header {
+              text-align: center;
+              margin-bottom: 30px;
+              padding-bottom: 20px;
+              border-bottom: 2px solid #5856D6;
+            }
+            .logo {
+              width: 60px;
+              height: 60px;
+              background: #5856D6;
+              border-radius: 15px;
+              margin: 0 auto 15px;
+              display: flex;
+              align-items: center;
+              justify-content: center;
+              color: white;
+              font-size: 32px;
+              font-weight: bold;
+            }
+            h1 {
+              color: #5856D6;
+              margin: 0;
+              font-size: 24px;
+            }
+            .subtitle {
+              color: #666;
+              font-size: 14px;
+              margin-top: 5px;
+            }
+            .summary-card {
+              background: linear-gradient(135deg, #5856D6 0%, #7B79E8 100%);
+              color: white;
+              padding: 25px;
+              border-radius: 15px;
+              margin: 20px 0;
+              text-align: center;
+            }
+            .summary-label {
+              font-size: 14px;
+              opacity: 0.9;
+              margin-bottom: 10px;
+            }
+            .summary-value {
+              font-size: 36px;
+              font-weight: bold;
+              margin-bottom: 8px;
+            }
+            .summary-subtext {
+              font-size: 14px;
+              opacity: 0.9;
+            }
+            .section-title {
+              font-size: 20px;
+              font-weight: bold;
+              margin: 30px 0 15px;
+              color: #000;
+            }
+            .category-item {
+              background: #f8f8f8;
+              border-radius: 12px;
+              padding: 15px;
+              margin-bottom: 12px;
+              display: flex;
+              justify-content: space-between;
+              align-items: center;
+            }
+            .category-info {
+              flex: 1;
+            }
+            .category-name {
+              font-size: 16px;
+              font-weight: 600;
+              margin-bottom: 5px;
+            }
+            .category-count {
+              font-size: 12px;
+              color: #666;
+            }
+            .category-values {
+              text-align: right;
+            }
+            .category-value {
+              font-size: 18px;
+              font-weight: bold;
+              margin-bottom: 3px;
+            }
+            .category-percentage {
+              font-size: 12px;
+              color: #666;
+            }
+            .progress-bar {
+              height: 6px;
+              background: #e0e0e0;
+              border-radius: 3px;
+              margin-top: 10px;
+              overflow: hidden;
+            }
+            .progress-fill {
+              height: 100%;
+              border-radius: 3px;
+            }
+            .footer {
+              margin-top: 40px;
+              padding-top: 20px;
+              border-top: 1px solid #e0e0e0;
+              text-align: center;
+              color: #666;
+              font-size: 12px;
+            }
+            .stats-grid {
+              display: flex;
+              gap: 15px;
+              margin: 20px 0;
+            }
+            .stat-card {
+              flex: 1;
+              background: #f8f8f8;
+              border-radius: 12px;
+              padding: 20px;
+              text-align: center;
+            }
+            .stat-value {
+              font-size: 28px;
+              font-weight: bold;
+              margin: 10px 0;
+            }
+            .stat-label {
+              font-size: 12px;
+              color: #666;
+            }
+          </style>
+        </head>
+        <body>
+          <div class="header">
+            <div class="logo">A</div>
+            <h1>AuraInfra.ai</h1>
+            <div class="subtitle">Personal Asset Management System</div>
+          </div>
+
+          <div class="summary-card">
+            <div class="summary-label">Total Portfolio Value</div>
+            <div class="summary-value">${formatCurrency(portfolio.total_value)}</div>
+            <div class="summary-subtext">${totalAssets} items across ${categories.length} categories</div>
+          </div>
+
+          <div class="stats-grid">
+            <div class="stat-card">
+              <div class="stat-label">Total Assets</div>
+              <div class="stat-value">${totalAssets}</div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-label">Categories</div>
+              <div class="stat-value">${categories.length}</div>
+            </div>
+          </div>
+
+          <div class="section-title">Asset Breakdown</div>
+          
+          ${categories.map(cat => `
+            <div class="category-item">
+              <div class="category-info">
+                <div class="category-name">${cat.name}</div>
+                <div class="category-count">${cat.count} items</div>
+                <div class="progress-bar">
+                  <div class="progress-fill" style="width: ${cat.percentage}%; background: ${cat.color};"></div>
+                </div>
+              </div>
+              <div class="category-values">
+                <div class="category-value" style="color: ${cat.color};">${formatCurrency(cat.value)}</div>
+                <div class="category-percentage">${cat.percentage.toFixed(1)}%</div>
+              </div>
+            </div>
+          `).join('')}
+
+          <div class="footer">
+            <p>Generated on ${new Date().toLocaleDateString('en-US', { 
+              year: 'numeric', 
+              month: 'long', 
+              day: 'numeric',
+              hour: '2-digit',
+              minute: '2-digit'
+            })}</p>
+            <p>AuraInfra.ai - Your Digital Vault for Physical Assets</p>
+          </div>
+        </body>
+        </html>
+      `;
+
+      // Generate PDF
+      const { uri } = await Print.printToFileAsync({ html: htmlContent });
+      
+      // Share PDF
+      if (await Sharing.isAvailableAsync()) {
+        await Sharing.shareAsync(uri, {
+          mimeType: 'application/pdf',
+          dialogTitle: 'Portfolio Report',
+          UTI: 'com.adobe.pdf',
+        });
+        Alert.alert('Success', 'Portfolio PDF generated successfully!');
+      } else {
+        Alert.alert('Success', `PDF saved to: ${uri}`);
+      }
+    } catch (error) {
+      console.error('Error generating PDF:', error);
+      Alert.alert('Error', 'Failed to generate PDF report. Please try again.');
+    } finally {
+      setGeneratingPDF(false);
+    }
+  };
+
+  const getCategoriesData = () => {
+    if (!portfolio) return [];
+    
+    const categories = [
+      {
+        name: 'Properties',
+        value: portfolio.properties_value,
+        count: portfolio.properties_count,
+        icon: 'home',
+        color: '#007AFF',
+        percentage: portfolio.total_value > 0 ? (portfolio.properties_value / portfolio.total_value) * 100 : 0,
+      },
+      {
+        name: 'Vehicles',
+        value: portfolio.vehicles_value,
+        count: portfolio.vehicles_count,
+        icon: 'car',
+        color: '#FF9500',
+        percentage: portfolio.total_value > 0 ? (portfolio.vehicles_value / portfolio.total_value) * 100 : 0,
+      },
+      {
+        name: 'Appliances',
+        value: portfolio.appliances_value,
+        count: portfolio.appliances_count,
+        icon: 'tv',
+        color: '#34C759',
+        percentage: portfolio.total_value > 0 ? (portfolio.appliances_value / portfolio.total_value) * 100 : 0,
+      },
+      {
+        name: 'Jewelry',
+        value: portfolio.jewelry_value,
+        count: portfolio.jewelry_count,
+        icon: 'diamond',
+        color: '#FF2D55',
+        percentage: portfolio.total_value > 0 ? (portfolio.jewelry_value / portfolio.total_value) * 100 : 0,
+      },
+      {
+        name: 'Furniture',
+        value: portfolio.furniture_value,
+        count: portfolio.furniture_count,
+        icon: 'bed',
+        color: '#5856D6',
+        percentage: portfolio.total_value > 0 ? (portfolio.furniture_value / portfolio.total_value) * 100 : 0,
+      },
+      {
+        name: 'Art',
+        value: portfolio.art_value,
+        count: portfolio.art_count,
+        icon: 'color-palette',
+        color: '#FF3B30',
+        percentage: portfolio.total_value > 0 ? (portfolio.art_value / portfolio.total_value) * 100 : 0,
+      },
+    ];
+
+    // Filter out categories with 0 items
+    return categories.filter(cat => cat.count > 0);
   };
 
   if (loading) {
