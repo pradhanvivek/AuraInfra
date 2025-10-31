@@ -214,12 +214,23 @@ export default function DashboardScreen() {
             <Text style={styles.greeting}>Hello, {username || 'User'}!</Text>
           </View>
           {portfolioData && (
-            <View style={styles.valueCard}>
-              <Text style={styles.valueLabel}>Total Portfolio Value</Text>
+            <TouchableOpacity 
+              style={styles.valueCard}
+              onPress={() => setIsValueHidden(!isValueHidden)}
+              activeOpacity={0.7}
+            >
+              <View style={styles.valueCardHeader}>
+                <Text style={styles.valueLabel}>Total Portfolio Value</Text>
+                <Ionicons 
+                  name={isValueHidden ? "eye-off-outline" : "eye-outline"} 
+                  size={20} 
+                  color="#666" 
+                />
+              </View>
               <Text style={styles.valueAmount}>
-                {formatCurrency(portfolioData.total_value)}
+                {isValueHidden ? '••••••••' : formatCurrency(portfolioData.total_value)}
               </Text>
-            </View>
+            </TouchableOpacity>
           )}
         </View>
       </View>
