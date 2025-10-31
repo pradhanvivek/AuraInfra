@@ -245,6 +245,16 @@ const styles = StyleSheet.create({
     shadowRadius: 4,
     elevation: 2,
   },
+  headerLeft: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    flex: 1,
+  },
+  logo: {
+    width: 40,
+    height: 40,
+    marginRight: 12,
+  },
   greeting: {
     fontSize: 20,
     fontWeight: 'bold',
