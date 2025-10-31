@@ -143,13 +143,55 @@ export default function DashboardScreen() {
   const getChartData = () => {
     if (!portfolioData) return [];
     
+    const currencySymbol = getCurrencyInfo().symbol;
+    
+    const formatChartValue = (value: number) => {
+      return `${currencySymbol}${value.toLocaleString()}`;
+    };
+    
     const data = [
-      { name: 'Properties', value: portfolioData.properties_value, color: '#007AFF', legendFontColor: '#000', legendFontSize: 11 },
-      { name: 'Vehicles', value: portfolioData.vehicles_value, color: '#FF9500', legendFontColor: '#000', legendFontSize: 11 },
-      { name: 'Appliances', value: portfolioData.appliances_value, color: '#34C759', legendFontColor: '#000', legendFontSize: 11 },
-      { name: 'Jewelry', value: portfolioData.jewelry_value, color: '#FF2D55', legendFontColor: '#000', legendFontSize: 11 },
-      { name: 'Furniture', value: portfolioData.furniture_value, color: '#5856D6', legendFontColor: '#000', legendFontSize: 11 },
-      { name: 'Art', value: portfolioData.art_value, color: '#FF3B30', legendFontColor: '#000', legendFontSize: 11 },
+      { 
+        name: `Properties: ${formatChartValue(portfolioData.properties_value)}`, 
+        value: portfolioData.properties_value, 
+        color: '#007AFF', 
+        legendFontColor: '#000', 
+        legendFontSize: 11 
+      },
+      { 
+        name: `Vehicles: ${formatChartValue(portfolioData.vehicles_value)}`, 
+        value: portfolioData.vehicles_value, 
+        color: '#FF9500', 
+        legendFontColor: '#000', 
+        legendFontSize: 11 
+      },
+      { 
+        name: `Appliances: ${formatChartValue(portfolioData.appliances_value)}`, 
+        value: portfolioData.appliances_value, 
+        color: '#34C759', 
+        legendFontColor: '#000', 
+        legendFontSize: 11 
+      },
+      { 
+        name: `Jewelry: ${formatChartValue(portfolioData.jewelry_value)}`, 
+        value: portfolioData.jewelry_value, 
+        color: '#FF2D55', 
+        legendFontColor: '#000', 
+        legendFontSize: 11 
+      },
+      { 
+        name: `Furniture: ${formatChartValue(portfolioData.furniture_value)}`, 
+        value: portfolioData.furniture_value, 
+        color: '#5856D6', 
+        legendFontColor: '#000', 
+        legendFontSize: 11 
+      },
+      { 
+        name: `Art: ${formatChartValue(portfolioData.art_value)}`, 
+        value: portfolioData.art_value, 
+        color: '#FF3B30', 
+        legendFontColor: '#000', 
+        legendFontSize: 11 
+      },
     ];
     
     // Filter out categories with 0 value
