@@ -1534,6 +1534,58 @@ Be precise with extracted values. Set confidence between 0.0 and 1.0 based on im
         logger.error(f"Furniture receipt scan error: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))
 
+# ============= UNIVERSAL ASSET IDENTIFIER =============
+
+@api_router.post("/identify-asset")
+async def identify_asset(scan_request: ImageScanRequest, user_id: str = Depends(get_current_user)):
+    """AI-powered universal asset identifier"""
+    try:
+        image_base64 = scan_request.image
+        
+        prompt = """Analyze this image and identify what type of asset it is. 
+        
+        Respond ONLY with a JSON object in this exact format:
+        {
+          "asset_type": "one of: vehicle, appliance, jewelry, furniture, art, property, other",
+          "description": "brief description of the item",
+          "confidence": 0.95
+        }
+        
+        Be specific about the asset_type. Examples:
+        - Car, motorcycle, bicycle → "vehicle"
+        - TV, refrigerator, washing machine → "appliance"
+        - Ring, necklace, earrings → "jewelry"
+        - Sofa, table, chair, bed → "furniture"
+        - Painting, sculpture, artwork → "art"
+        - Building, house → "property"
+        
+        Choose the most appropriate category."""
+
+        genai.configure(api_key=EMERGENT_LLM_KEY)
+        model = genai.GenerativeModel("gemini-2.0-flash-exp")
+        
+        response = model.generate_content([
+            prompt,
+            {
+                "mime_type": "image/jpeg",
+                "data": image_base64
+            }
+        ])
+        
+        result_text = response.text.strip()
+        if result_text.startswith("```json"):
+            result_text = result_text[7:]
+        if result_text.endswith("```"):
+            result_text = result_text[:-3]
+        result_text = result_text.strip()
+        
+        result = json.loads(result_text)
+        
+        return result
+    except Exception as e:
+        logger.error(f"Asset identification error: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
 # ============= RECEIPT SCANNER ENDPOINT =============
 
 @api_router.post("/scan-receipt", response_model=ReceiptScanResult)
