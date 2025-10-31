@@ -55,67 +55,69 @@ export default function Login() {
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
         style={styles.keyboardView}
       >
-        <View style={styles.content}>
-          <View style={styles.logoContainer}>
-            <View style={styles.logoBox}>
-              <Text style={styles.logoText}>A</Text>
+        <View style={styles.innerContainer}>
+          <View style={styles.content}>
+            <View style={styles.logoContainer}>
+              <View style={styles.logoBox}>
+                <Text style={styles.logoText}>A</Text>
+              </View>
+              <Text style={[styles.appName, { color: textColor }]}>AuraInfra.ai</Text>
+              <Text style={[styles.tagline, { color: subtextColor }]}>Your Digital Vault for Physical Assets</Text>
             </View>
-            <Text style={[styles.appName, { color: textColor }]}>AuraInfra.ai</Text>
-            <Text style={[styles.tagline, { color: subtextColor }]}>Your Digital Vault for Physical Assets</Text>
+
+            <Text style={[styles.title, { color: textColor }]}>Welcome Back</Text>
+            <Text style={[styles.subtitle, { color: subtextColor }]}>Sign in to continue</Text>
+
+            <View style={styles.form}>
+              <TextInput
+                style={[styles.input, { 
+                  backgroundColor: inputBgColor, 
+                  borderColor: inputBorderColor,
+                  color: textColor 
+                }]}
+                placeholder="Username"
+                placeholderTextColor={placeholderColor}
+                value={username}
+                onChangeText={setUsername}
+                autoCapitalize="none"
+                editable={!loading}
+              />
+
+              <TextInput
+                style={[styles.input, { 
+                  backgroundColor: inputBgColor, 
+                  borderColor: inputBorderColor,
+                  color: textColor 
+                }]}
+                placeholder="Password"
+                placeholderTextColor={placeholderColor}
+                value={password}
+                onChangeText={setPassword}
+                secureTextEntry
+                editable={!loading}
+              />
+
+              <TouchableOpacity
+                style={[styles.button, loading && styles.buttonDisabled]}
+                onPress={handleLogin}
+                disabled={loading}
+              >
+                {loading ? (
+                  <ActivityIndicator color="#fff" />
+                ) : (
+                  <Text style={styles.buttonText}>Login</Text>
+                )}
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                onPress={() => router.push('/auth/register')}
+                disabled={loading}
+              >
+                <Text style={styles.linkText}>Don't have an account? Register</Text>
+              </TouchableOpacity>
+            </View>
           </View>
-
-          <Text style={[styles.title, { color: textColor }]}>Welcome Back</Text>
-          <Text style={[styles.subtitle, { color: subtextColor }]}>Sign in to continue</Text>
-
-          <View style={styles.form}>
-            <TextInput
-              style={[styles.input, { 
-                backgroundColor: inputBgColor, 
-                borderColor: inputBorderColor,
-                color: textColor 
-              }]}
-              placeholder="Username"
-              placeholderTextColor={placeholderColor}
-              value={username}
-              onChangeText={setUsername}
-              autoCapitalize="none"
-              editable={!loading}
-            />
-
-            <TextInput
-              style={[styles.input, { 
-                backgroundColor: inputBgColor, 
-                borderColor: inputBorderColor,
-                color: textColor 
-              }]}
-              placeholder="Password"
-              placeholderTextColor={placeholderColor}
-              value={password}
-              onChangeText={setPassword}
-              secureTextEntry
-              editable={!loading}
-            />
-
-            <TouchableOpacity
-              style={[styles.button, loading && styles.buttonDisabled]}
-              onPress={handleLogin}
-              disabled={loading}
-            >
-              {loading ? (
-                <ActivityIndicator color="#fff" />
-              ) : (
-                <Text style={styles.buttonText}>Login</Text>
-              )}
-            </TouchableOpacity>
-
-            <TouchableOpacity
-              onPress={() => router.push('/auth/register')}
-              disabled={loading}
-            >
-              <Text style={styles.linkText}>Don't have an account? Register</Text>
-            </TouchableOpacity>
-          </View>
-
+          
           <View style={styles.footer}>
             <Text style={[styles.companyName, { color: subtextColor }]}>
               Jash Vish Infratech Private Limited
