@@ -412,8 +412,15 @@ const styles = StyleSheet.create({
     shadowRadius: 4,
     elevation: 2,
   },
+  chartContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
   customLegend: {
-    marginTop: 12,
+    flex: 1,
+    paddingLeft: 16,
+    justifyContent: 'center',
   },
   legendItem: {
     flexDirection: 'row',
@@ -421,9 +428,9 @@ const styles = StyleSheet.create({
     marginBottom: 8,
   },
   legendColor: {
-    width: 16,
-    height: 16,
-    borderRadius: 8,
+    width: 12,
+    height: 12,
+    borderRadius: 6,
     marginRight: 8,
   },
   legendText: {
