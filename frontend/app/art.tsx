@@ -181,6 +181,10 @@ const styles = StyleSheet.create({
     borderBottomColor: '#E5E5EA',
   },
   headerTitle: {
+  },
+  logo: {
+    width: 40,
+    height: 40,
     fontSize: 20,
     fontWeight: 'bold',
     color: '#000',
