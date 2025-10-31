@@ -191,6 +191,7 @@ const styles = StyleSheet.create({
   },
   list: {
     padding: 16,
+    paddingTop: 0,
   },
   artCard: {
     flexDirection: 'row',

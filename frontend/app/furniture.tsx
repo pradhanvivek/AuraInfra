@@ -193,6 +193,7 @@ const styles = StyleSheet.create({
   },
   list: {
     padding: 16,
+    paddingTop: 0,
   },
   furnitureCard: {
     flexDirection: 'row',
