@@ -70,11 +70,46 @@ export default function PortfolioScreen() {
     try {
       setGeneratingPDF(true);
 
+      // Fetch detailed asset data
+      const response = await axios.get(
+        `${API_URL}/api/portfolio/details`,
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      const detailedData = response.data;
+
       // Prepare data for PDF
       const categories = getCategoriesData();
       const totalAssets = portfolio.properties_count + portfolio.vehicles_count + 
                          portfolio.appliances_count + portfolio.jewelry_count +
                          portfolio.furniture_count + portfolio.art_count;
+
+      // Helper to render asset items
+      const renderAssetSection = (title: string, items: any[], valueField: string = 'current_value') => {
+        if (items.length === 0) return '';
+        
+        return `
+          <div class="asset-section">
+            <h2 class="asset-section-title">${title}</h2>
+            ${items.map((item, index) => `
+              <div class="asset-item">
+                <div class="asset-number">${index + 1}</div>
+                <div class="asset-details">
+                  <div class="asset-name">${item.name || item.model || item.brand || 'Unnamed Item'}</div>
+                  ${item.brand ? `<div class="asset-meta">Brand: ${item.brand}</div>` : ''}
+                  ${item.model ? `<div class="asset-meta">Model: ${item.model}</div>` : ''}
+                  ${item.address ? `<div class="asset-meta">Address: ${item.address}</div>` : ''}
+                  ${item.category ? `<div class="asset-meta">Category: ${item.category}</div>` : ''}
+                  ${item.artist ? `<div class="asset-meta">Artist: ${item.artist}</div>` : ''}
+                  ${item.material ? `<div class="asset-meta">Material: ${item.material}</div>` : ''}
+                  ${item.purchase_date ? `<div class="asset-meta">Purchased: ${new Date(item.purchase_date).toLocaleDateString()}</div>` : ''}
+                  ${item.warranty_expiry ? `<div class="asset-meta">Warranty Until: ${new Date(item.warranty_expiry).toLocaleDateString()}</div>` : ''}
+                  <div class="asset-value">${formatCurrency(item[valueField] || item.purchase_cost || item.appraisal_value || 0)}</div>
+                </div>
+              </div>
+            `).join('')}
+          </div>
+        `;
+      };
 
       // Create HTML content for PDF
       const htmlContent = `
