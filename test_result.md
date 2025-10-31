@@ -552,13 +552,18 @@ backend:
 
   - task: "Maintenance Tracking - Additional Endpoints"
     implemented: true
-    working: "NA"
+    working: true
     file: "backend/server.py"
     stuck_count: 0
     priority: "medium"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
-
+      - working: "NA"
+        agent: "main"
+        comment: "Added supplementary endpoints: GET /api/maintenance/{id} (get by ID), DELETE /api/maintenance/{id}, GET /api/maintenance/asset/{asset_type}/{asset_id} (get for specific asset), GET /api/maintenance/upcoming?days=30 (upcoming within days), GET /api/maintenance/overdue (overdue records)."
+      - working: true
+        agent: "testing"
+        comment: "ADDITIONAL MAINTENANCE ENDPOINTS TESTING COMPLETED SUCCESSFULLY: Comprehensive testing of supplementary maintenance endpoints completed with 100% success rate. **CRITICAL ROUTE ORDERING ISSUE FIXED** - Resolved FastAPI route conflict where /maintenance/{maintenance_id} was intercepting /maintenance/upcoming and /maintenance/overdue requests. Reordered routes to place specific endpoints before generic parameter routes. All test objectives met: 1) GET /api/maintenance/{id} returns correct maintenance record by ID, 2) GET /api/maintenance/asset/{asset_type}/{asset_id} returns maintenance for specific assets, 3) GET /api/maintenance/upcoming?days=30 returns upcoming maintenance within timeframe with proper validation, 4) GET /api/maintenance/overdue returns overdue maintenance with correct date filtering, 5) DELETE /api/maintenance/{id} successfully deletes records and returns proper 404 for verification. All 5 tests passed successfully after fixing the route ordering issue."
 
   - task: "Property Detail Header Flicker Fix"
     implemented: true
@@ -607,10 +612,6 @@ backend:
       - working: "NA"
         agent: "main"
         comment: "Added Maintenance tile to dashboard with wrench/construct icon, orange color, and route to /maintenance. Positioned between Art and Portfolio tiles for easy access to maintenance tracking feature."
-
-      - working: "NA"
-        agent: "main"
-        comment: "Added supplementary endpoints: GET /api/maintenance/{id} (get by ID), DELETE /api/maintenance/{id}, GET /api/maintenance/asset/{asset_type}/{asset_id} (get for specific asset), GET /api/maintenance/upcoming?days=30 (upcoming within days), GET /api/maintenance/overdue (overdue records)."
 
 frontend:
   - task: "Portfolio Charting & PDF Export"
