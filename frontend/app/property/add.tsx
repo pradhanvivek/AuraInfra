@@ -266,6 +266,36 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#F2F2F7',
   },
+  header: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    borderBottomWidth: 1,
+    borderBottomColor: '#E5E5EA',
+    backgroundColor: '#fff',
+  },
+  headerButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: 8,
+  },
+  headerButtonText: {
+    fontSize: 16,
+    color: '#007AFF',
+    marginLeft: 4,
+  },
+  headerTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: '#000',
+  },
+  cancelText: {
+    fontSize: 16,
+    color: '#FF3B30',
+    fontWeight: '600',
+  },
   keyboardView: {
     flex: 1,
   },
