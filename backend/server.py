@@ -700,6 +700,60 @@ async def update_profile(profile: UserProfileUpdate, user_id: str = Depends(get_
         created_at=user_doc["created_at"]
     )
 
+# ============= ADMIN ENDPOINTS =============
+
+@api_router.get("/admin/stats")
+async def get_admin_stats(user_id: str = Depends(get_current_user)):
+    """Get admin statistics - user counts, asset counts, etc."""
+    try:
+        # Get total user count
+        total_users = await db.users.count_documents({})
+        
+        # Get users registered in last 30 days
+        thirty_days_ago = datetime.utcnow() - timedelta(days=30)
+        recent_users = await db.users.count_documents({
+            "created_at": {"$gte": thirty_days_ago}
+        })
+        
+        # Get total assets across all users
+        total_properties = await db.properties.count_documents({})
+        total_vehicles = await db.vehicles.count_documents({})
+        total_appliances = await db.appliances.count_documents({})
+        total_jewelry = await db.jewelry.count_documents({})
+        total_furniture = await db.furniture.count_documents({})
+        total_art = await db.art.count_documents({})
+        
+        total_assets = (total_properties + total_vehicles + total_appliances + 
+                       total_jewelry + total_furniture + total_art)
+        
+        # Get user list with basic info
+        users_cursor = db.users.find({}, {
+            "_id": 0,
+            "id": 1,
+            "username": 1,
+            "email": 1,
+            "created_at": 1
+        }).sort("created_at", -1)
+        users_list = await users_cursor.to_list(length=1000)
+        
+        return {
+            "total_users": total_users,
+            "recent_users_30d": recent_users,
+            "total_assets": total_assets,
+            "assets_by_category": {
+                "properties": total_properties,
+                "vehicles": total_vehicles,
+                "appliances": total_appliances,
+                "jewelry": total_jewelry,
+                "furniture": total_furniture,
+                "art": total_art
+            },
+            "users": users_list
+        }
+    except Exception as e:
+        logger.error(f"Admin stats error: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
 # ============= PROPERTY ENDPOINTS =============
 
 @api_router.post("/properties", response_model=Property)
