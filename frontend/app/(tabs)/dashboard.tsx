@@ -254,7 +254,7 @@ export default function DashboardScreen() {
                     }}
                     accessor="value"
                     backgroundColor="transparent"
-                    paddingLeft="15"
+                    paddingLeft="25"
                     center={[0, 0]}
                     absolute
                     hasLegend={false}
