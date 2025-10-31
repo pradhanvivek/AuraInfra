@@ -274,29 +274,35 @@ const styles = StyleSheet.create({
     shadowRadius: 4,
     elevation: 3,
   },
-  tileHeader: {
+  tileTop: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'flex-start',
   },
+  tileBottom: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginTop: 8,
+  },
+  tileTitle: {
+    fontSize: 13,
+    fontWeight: '600',
+    color: '#fff',
+    flex: 1,
+  },
   badge: {
-    backgroundColor: 'rgba(255,255,255,0.3)',
-    borderRadius: 12,
-    paddingHorizontal: 8,
-    paddingVertical: 4,
+    backgroundColor: 'rgba(255, 255, 255, 0.3)',
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+    borderRadius: 10,
     minWidth: 24,
     alignItems: 'center',
   },
   badgeText: {
-    color: '#fff',
-    fontSize: 12,
-    fontWeight: 'bold',
-  },
-  tileTitle: {
-    fontSize: 18,
+    fontSize: 11,
     fontWeight: 'bold',
     color: '#fff',
-    marginTop: 'auto',
   },
   quickActions: {
     marginTop: 8,
