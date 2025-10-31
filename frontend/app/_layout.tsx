@@ -1,8 +1,15 @@
 import { Stack } from 'expo-router';
 import { AuthProvider } from '../contexts/AuthContext';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
+import { useEffect } from 'react';
+import { initializePreferences } from '../utils/localeUtils';
 
 export default function RootLayout() {
+  useEffect(() => {
+    // Initialize locale preferences on app start
+    initializePreferences();
+  }, []);
+
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
       <AuthProvider>
