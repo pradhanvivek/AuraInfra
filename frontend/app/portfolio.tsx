@@ -411,6 +411,27 @@ export default function PortfolioScreen() {
           </Text>
         </View>
 
+        {/* Visual Chart */}
+        {chartData.length > 0 && (
+          <View style={styles.chartCard}>
+            <Text style={styles.sectionTitle}>Portfolio Distribution</Text>
+            <View style={styles.chartContainer}>
+              <PieChart
+                data={chartData}
+                width={screenWidth - 48}
+                height={220}
+                chartConfig={{
+                  color: (opacity = 1) => `rgba(0, 0, 0, ${opacity})`,
+                }}
+                accessor="population"
+                backgroundColor="transparent"
+                paddingLeft="15"
+                absolute
+              />
+            </View>
+          </View>
+        )}
+
         {/* Category Breakdown */}
         <Text style={styles.sectionTitle}>Asset Breakdown</Text>
         
