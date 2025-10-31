@@ -10,7 +10,7 @@ import { formatCurrency } from '../../utils/localeUtils';
 const API_URL = Constants.expoConfig?.extra?.EXPO_PUBLIC_BACKEND_URL || process.env.EXPO_PUBLIC_BACKEND_URL;
 
 const { width } = Dimensions.get('window');
-const tileSize = (width - 48) / 2; // 2 columns with padding
+const tileSize = width * 0.4; // 40% of screen width for horizontal scrolling
 
 interface PortfolioData {
   total_value: number;
