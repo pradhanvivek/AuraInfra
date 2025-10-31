@@ -346,6 +346,19 @@ const styles = StyleSheet.create({
     shadowRadius: 4,
     elevation: 2,
   },
+  chartSection: {
+    marginBottom: 20,
+  },
+  chartCard: {
+    backgroundColor: '#fff',
+    borderRadius: 16,
+    padding: 16,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.05,
+    shadowRadius: 4,
+    elevation: 2,
+  },
   tilesSection: {
     marginBottom: 16,
   },
@@ -363,8 +376,8 @@ const styles = StyleSheet.create({
     gap: 12,
   },
   tile: {
-    width: tileSize,
-    height: tileSize,
+    width: tileSize.width,
+    height: tileSize.height,
     borderRadius: 16,
     padding: 10,
     justifyContent: 'space-between',
