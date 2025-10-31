@@ -240,8 +240,9 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     marginHorizontal: 16,
   },
-  addButton: {
-    padding: 8,
+  logo: {
+    width: 80,
+    height: 80,
   },
   searchContainer: {
     backgroundColor: '#fff',
