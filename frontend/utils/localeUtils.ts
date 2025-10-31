@@ -145,7 +145,21 @@ export const getCurrencyCode = (): string => {
 // Format currency based on locale
 export const formatCurrency = (amount: number, showCode: boolean = false): string => {
   const currency = getCurrencyInfo();
-  const locale = getDeviceLocale();
+  
+  // Map currency codes to their proper locales for correct number formatting
+  const currencyLocaleMap: { [key: string]: string } = {
+    'INR': 'en-IN',  // Indian numbering system (lakhs, crores)
+    'USD': 'en-US',  // US numbering system
+    'EUR': 'de-DE',  // European numbering system
+    'GBP': 'en-GB',  // UK numbering system
+    'JPY': 'ja-JP',  // Japanese numbering system
+    'CNY': 'zh-CN',  // Chinese numbering system
+    'AUD': 'en-AU',  // Australian numbering system
+    'CAD': 'en-CA',  // Canadian numbering system
+  };
+  
+  // Get the appropriate locale for the currency, fallback to device locale
+  const locale = currencyLocaleMap[currency.code] || getDeviceLocale();
   
   // Use Intl.NumberFormat for proper locale-based formatting
   const formatter = new Intl.NumberFormat(locale, {
