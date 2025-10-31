@@ -489,8 +489,22 @@ backend:
         agent: "testing"
         comment: "JEWELRY EDIT FUNCTIONALITY BACKEND TESTING COMPLETED SUCCESSFULLY: Comprehensive testing of PUT /api/jewelry/{id} endpoint completed with 100% success rate. All test objectives met: 1) Jewelry creation for edit test (PASS - created Diamond Engagement Ring with ID), 2) PUT update operation (PASS - successfully updated jewelry with message 'Jewelry updated successfully'), 3) Update verification (PASS - all fields updated correctly including name, metal, stones, number_of_stones, weight, appraisal_value, appraisal_date, certificate_number, certificate_photo, photos array, and warranty_info). The backend properly handles jewelry editing with complete field updates, certificate management, photo management, and data persistence. Ready for frontend integration."
 
+frontend:
+  - task: "Portfolio Charting & PDF Export"
+    implemented: true
+    working: "NA"
+    file: "frontend/app/portfolio.tsx"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "Implemented comprehensive portfolio visualization and PDF export. Added pie chart using react-native-chart-kit to display asset distribution. Implemented full PDF generation using expo-print with styled HTML template including portfolio summary, asset breakdown, and stats. Added expo-sharing for PDF save/share functionality. Updated portfolio to include furniture and art categories. Chart only displays for categories with items. Added loading states for PDF generation. Installed required packages: react-native-chart-kit, react-native-svg, expo-print."
+
 test_plan:
-  current_focus: []
+  current_focus:
+    - "Portfolio Charting & PDF Export"
   stuck_tasks: []
   test_all: false
   test_priority: "high_first"
