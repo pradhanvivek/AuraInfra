@@ -379,7 +379,7 @@ const styles = StyleSheet.create({
     marginBottom: 2,
   },
   usernameText: {
-    fontSize: 28,
+    fontSize: 32,
     fontWeight: 'bold',
     color: '#000',
   },
