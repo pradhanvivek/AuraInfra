@@ -183,6 +183,7 @@ const styles = StyleSheet.create({
   },
   list: {
     padding: 16,
+    paddingTop: 0,
   },
   vehicleCard: {
     flexDirection: 'row',
