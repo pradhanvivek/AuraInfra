@@ -6,6 +6,7 @@ import { useState, useCallback } from 'react';
 import axios from 'axios';
 import Constants from 'expo-constants';
 import { formatCurrency } from '../../utils/localeUtils';
+import { getCurrencyInfo } from '../../utils/localeUtils';
 import { PieChart } from 'react-native-chart-kit';
 
 const API_URL = Constants.expoConfig?.extra?.EXPO_PUBLIC_BACKEND_URL || process.env.EXPO_PUBLIC_BACKEND_URL;
