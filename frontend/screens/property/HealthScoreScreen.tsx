@@ -46,7 +46,20 @@ export default function HealthScoreScreen({ propertyId }: HealthScoreScreenProps
     }
   };
 
-  const fetchHealthScore = async () => {
+  const handleCategoryPress = (key: string) => {
+    // Map health score categories to their respective screens
+    const routeMap: { [key: string]: string } = {
+      'documents': `/property/${propertyId}/documents`,
+      'fixtures': `/property/${propertyId}/fixtures`,
+      'measurements': `/property/${propertyId}/measurements`,
+      'vastu_feng_shui': `/property/${propertyId}/vastu`,
+      'paint_estimation': `/property/${propertyId}/paint-estimation`,
+    };
+    
+    if (routeMap[key]) {
+      router.push(routeMap[key] as any);
+    }
+  };
     try {
       const data = await propertyApi.getHealthScore(token!, propertyId);
       setHealthData(data);
