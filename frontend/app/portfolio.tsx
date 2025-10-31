@@ -708,4 +708,14 @@ const styles = StyleSheet.create({
     color: '#8E8E93',
     marginTop: 4,
   },
+  chartCard: {
+    backgroundColor: '#fff',
+    borderRadius: 20,
+    padding: 20,
+    marginBottom: 24,
+  },
+  chartContainer: {
+    alignItems: 'center',
+    marginTop: 8,
+  },
 });
