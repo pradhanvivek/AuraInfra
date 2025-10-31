@@ -2935,8 +2935,10 @@ async def scan_asset(request: ImageScanRequest, credentials: HTTPAuthorizationCr
     """
     Identify what type of asset is in an image using Gemini AI
     """
+    import json
+    
     try:
-        user = await authenticate_user(credentials)
+        user = await get_current_user(credentials)
         
         # Use Gemini to identify the asset type
         from emergentintegrations.llm.chat import LlmChat, UserMessage, ImageContent
