@@ -1,23 +1,20 @@
 #!/usr/bin/env python3
 """
-Backend API Testing for Property Management App
-Testing Focus: Property Cost Fields, Appliance Edit, Jewelry Edit
+Backend API Testing for AuraInfra.ai App
+Tests maintenance tracking endpoints and portfolio details endpoint
 """
 
 import requests
 import json
-import base64
 import uuid
-from datetime import datetime
+from datetime import datetime, timedelta
+import base64
 import os
-from dotenv import load_dotenv
-
-# Load environment variables
-load_dotenv('/app/frontend/.env')
 
 # Configuration
-BASE_URL = os.getenv('EXPO_PUBLIC_BACKEND_URL', 'https://property-pulse-80.preview.emergentagent.com')
-API_BASE = f"{BASE_URL}/api"
+BACKEND_URL = "https://property-pulse-80.preview.emergentagent.com/api"
+TEST_USERNAME = f"testuser_{uuid.uuid4().hex[:8]}"
+TEST_PASSWORD = "SecurePass123!"
 
 class BackendTester:
     def __init__(self):
