@@ -21,453 +21,578 @@ class BackendTester:
         self.session = requests.Session()
         self.access_token = None
         self.user_id = None
-        self.test_results = []
+        self.test_assets = {}  # Store created test assets
+        self.test_maintenance = {}  # Store created maintenance records
         
-    def log_result(self, test_name, success, details=""):
-        """Log test result"""
-        status = "✅ PASS" if success else "❌ FAIL"
-        self.test_results.append({
-            'test': test_name,
-            'success': success,
-            'details': details
-        })
-        print(f"{status}: {test_name}")
-        if details:
-            print(f"   Details: {details}")
-    
-    def setup_auth(self):
-        """Register a test user and get authentication token"""
-        print("\n=== AUTHENTICATION SETUP ===")
+    def log(self, message):
+        print(f"[{datetime.now().strftime('%H:%M:%S')}] {message}")
         
-        # Generate unique username
-        username = f"testuser_{uuid.uuid4().hex[:8]}"
-        password = "testpass123"
-        
-        # Register user
+    def register_and_login(self):
+        """Register a test user and login to get access token"""
         try:
-            response = self.session.post(f"{API_BASE}/auth/register", json={
-                "username": username,
-                "password": password
-            })
+            # Register user
+            register_data = {
+                "username": TEST_USERNAME,
+                "password": TEST_PASSWORD
+            }
             
+            response = self.session.post(f"{BACKEND_URL}/auth/register", json=register_data)
             if response.status_code == 200:
                 data = response.json()
-                self.access_token = data['access_token']
-                self.user_id = data['user_id']
-                self.session.headers.update({
-                    'Authorization': f'Bearer {self.access_token}'
-                })
-                self.log_result("User Registration", True, f"User ID: {self.user_id}")
+                self.access_token = data["access_token"]
+                self.user_id = data["user_id"]
+                self.session.headers.update({"Authorization": f"Bearer {self.access_token}"})
+                self.log(f"✅ User registered and logged in: {TEST_USERNAME}")
                 return True
             else:
-                self.log_result("User Registration", False, f"Status: {response.status_code}, Response: {response.text}")
+                self.log(f"❌ Registration failed: {response.status_code} - {response.text}")
                 return False
                 
         except Exception as e:
-            self.log_result("User Registration", False, f"Exception: {str(e)}")
+            self.log(f"❌ Registration error: {str(e)}")
             return False
     
-    def test_property_cost_fields(self):
-        """Test Property Cost Fields Backend functionality"""
-        print("\n=== TESTING PROPERTY COST FIELDS ===")
-        
-        # Test 1: Create property with purchase_cost and current_value
+    def create_test_assets(self):
+        """Create test assets for maintenance testing"""
         try:
+            # Create test property
             property_data = {
-                "name": "Luxury Villa with Cost Fields",
-                "address": "123 Test Street, Mumbai, India",
-                "latitude": 19.0760,
-                "longitude": 72.8777,
-                "purchase_cost": 5000000.50,
-                "current_value": 6500000.75
+                "name": "Test Property for Maintenance",
+                "address": "123 Test Street, Mumbai, Maharashtra",
+                "purchase_cost": 5000000.0,
+                "current_value": 6000000.0
             }
             
-            response = self.session.post(f"{API_BASE}/properties", json=property_data)
-            
+            response = self.session.post(f"{BACKEND_URL}/properties", json=property_data)
             if response.status_code == 200:
-                created_property = response.json()
-                property_id = created_property['id']
-                
-                # Verify cost fields are returned
-                if (created_property.get('purchase_cost') == 5000000.50 and 
-                    created_property.get('current_value') == 6500000.75):
-                    self.log_result("Property Create with Cost Fields", True, 
-                                  f"Property ID: {property_id}, Purchase: ₹{created_property['purchase_cost']}, Current: ₹{created_property['current_value']}")
-                else:
-                    self.log_result("Property Create with Cost Fields", False, 
-                                  f"Cost fields not returned correctly. Got: purchase_cost={created_property.get('purchase_cost')}, current_value={created_property.get('current_value')}")
-                    return
-            else:
-                self.log_result("Property Create with Cost Fields", False, 
-                              f"Status: {response.status_code}, Response: {response.text}")
-                return
-                
-        except Exception as e:
-            self.log_result("Property Create with Cost Fields", False, f"Exception: {str(e)}")
-            return
-        
-        # Test 2: Get property by ID and verify cost fields
-        try:
-            response = self.session.get(f"{API_BASE}/properties/{property_id}")
+                property_id = response.json()["id"]
+                self.test_assets["property"] = {
+                    "id": property_id,
+                    "name": "Test Property for Maintenance"
+                }
+                self.log(f"✅ Test property created: {property_id}")
             
-            if response.status_code == 200:
-                property_data = response.json()
-                if (property_data.get('purchase_cost') == 5000000.50 and 
-                    property_data.get('current_value') == 6500000.75):
-                    self.log_result("Property Get by ID with Cost Fields", True, 
-                                  f"Cost fields retrieved correctly")
-                else:
-                    self.log_result("Property Get by ID with Cost Fields", False, 
-                                  f"Cost fields not retrieved correctly")
-            else:
-                self.log_result("Property Get by ID with Cost Fields", False, 
-                              f"Status: {response.status_code}")
-                
-        except Exception as e:
-            self.log_result("Property Get by ID with Cost Fields", False, f"Exception: {str(e)}")
-        
-        # Test 3: Update property cost fields
-        try:
-            update_data = {
-                "purchase_cost": 5500000.00,
-                "current_value": 7000000.00
-            }
-            
-            response = self.session.put(f"{API_BASE}/properties/{property_id}", json=update_data)
-            
-            if response.status_code == 200:
-                updated_property = response.json()
-                if (updated_property.get('purchase_cost') == 5500000.00 and 
-                    updated_property.get('current_value') == 7000000.00):
-                    self.log_result("Property Update Cost Fields", True, 
-                                  f"Updated to Purchase: ₹{updated_property['purchase_cost']}, Current: ₹{updated_property['current_value']}")
-                else:
-                    self.log_result("Property Update Cost Fields", False, 
-                                  f"Cost fields not updated correctly")
-            else:
-                self.log_result("Property Update Cost Fields", False, 
-                              f"Status: {response.status_code}, Response: {response.text}")
-                
-        except Exception as e:
-            self.log_result("Property Update Cost Fields", False, f"Exception: {str(e)}")
-        
-        # Test 4: Create property with null/missing cost fields (optional fields)
-        try:
-            property_data_minimal = {
-                "name": "Basic Property No Cost",
-                "address": "456 Simple Street, Delhi, India"
-            }
-            
-            response = self.session.post(f"{API_BASE}/properties", json=property_data_minimal)
-            
-            if response.status_code == 200:
-                created_property = response.json()
-                # Cost fields should be null or not present
-                purchase_cost = created_property.get('purchase_cost')
-                current_value = created_property.get('current_value')
-                
-                if purchase_cost is None and current_value is None:
-                    self.log_result("Property Create without Cost Fields", True, 
-                                  "Optional cost fields handled correctly (null values)")
-                else:
-                    self.log_result("Property Create without Cost Fields", False, 
-                                  f"Expected null values, got purchase_cost={purchase_cost}, current_value={current_value}")
-            else:
-                self.log_result("Property Create without Cost Fields", False, 
-                              f"Status: {response.status_code}")
-                
-        except Exception as e:
-            self.log_result("Property Create without Cost Fields", False, f"Exception: {str(e)}")
-    
-    def test_appliance_edit_functionality(self):
-        """Test Appliance Edit (PUT) functionality"""
-        print("\n=== TESTING APPLIANCE EDIT FUNCTIONALITY ===")
-        
-        # Test 1: Create an appliance first
-        try:
-            appliance_data = {
-                "name": "Samsung Smart TV",
-                "category": "TV",
-                "brand": "Samsung",
-                "model": "QN65Q80A",
-                "serial_number": "SN123456789",
-                "purchase_date": "2024-01-15",
-                "purchase_cost": 85000.00,
-                "current_value": 75000.00,
-                "warranty_info": "2 years manufacturer warranty",
-                "warranty_expiry_date": "2026-01-15",
-                "photos": ["base64encodedphoto1", "base64encodedphoto2"],
-                "invoice": "base64encodedinvoice",
-                "notes": "Living room TV with smart features",
-                "maintenance_frequency_months": 12
-            }
-            
-            response = self.session.post(f"{API_BASE}/appliances", json=appliance_data)
-            
-            if response.status_code == 200:
-                created_appliance = response.json()
-                appliance_id = created_appliance['id']
-                self.log_result("Appliance Create for Edit Test", True, 
-                              f"Appliance ID: {appliance_id}")
-            else:
-                self.log_result("Appliance Create for Edit Test", False, 
-                              f"Status: {response.status_code}, Response: {response.text}")
-                return
-                
-        except Exception as e:
-            self.log_result("Appliance Create for Edit Test", False, f"Exception: {str(e)}")
-            return
-        
-        # Test 2: Update the appliance using PUT
-        try:
-            updated_data = {
-                "name": "Samsung Smart TV - Updated",
-                "category": "TV",
-                "brand": "Samsung",
-                "model": "QN65Q80A-UPDATED",
-                "serial_number": "SN123456789-NEW",
-                "purchase_date": "2024-01-15",
-                "purchase_cost": 90000.00,
-                "current_value": 80000.00,
-                "warranty_info": "3 years extended warranty",
-                "warranty_expiry_date": "2027-01-15",
-                "photos": ["base64encodedphoto1-updated", "base64encodedphoto2-updated", "base64encodedphoto3-new"],
-                "invoice": "base64encodedinvoice-updated",
-                "notes": "Living room TV with smart features - Updated with extended warranty",
-                "last_maintenance_date": "2024-12-01",
-                "next_maintenance_date": "2025-12-01",
+            # Create test vehicle
+            vehicle_data = {
+                "name": "Test BMW X5",
+                "make": "BMW",
+                "model": "X5",
+                "year": 2022,
+                "purchase_cost": 8000000.0,
+                "current_value": 7500000.0,
                 "maintenance_frequency_months": 6
             }
             
-            response = self.session.put(f"{API_BASE}/appliances/{appliance_id}", json=updated_data)
-            
+            response = self.session.post(f"{BACKEND_URL}/vehicles", json=vehicle_data)
             if response.status_code == 200:
-                result = response.json()
-                if result.get('message') == 'Appliance updated successfully':
-                    self.log_result("Appliance PUT Update", True, 
-                                  "Appliance updated successfully")
-                else:
-                    self.log_result("Appliance PUT Update", False, 
-                                  f"Unexpected response: {result}")
-            else:
-                self.log_result("Appliance PUT Update", False, 
-                              f"Status: {response.status_code}, Response: {response.text}")
-                return
-                
-        except Exception as e:
-            self.log_result("Appliance PUT Update", False, f"Exception: {str(e)}")
-            return
-        
-        # Test 3: Verify the update by getting the appliance
-        try:
-            response = self.session.get(f"{API_BASE}/appliances/{appliance_id}")
+                vehicle_id = response.json()["id"]
+                self.test_assets["vehicle"] = {
+                    "id": vehicle_id,
+                    "name": "Test BMW X5"
+                }
+                self.log(f"✅ Test vehicle created: {vehicle_id}")
             
+            # Create test appliance
+            appliance_data = {
+                "name": "Test Samsung Refrigerator",
+                "category": "Refrigerator",
+                "brand": "Samsung",
+                "model": "RT28T3922S8",
+                "purchase_cost": 45000.0,
+                "current_value": 40000.0,
+                "maintenance_frequency_months": 12
+            }
+            
+            response = self.session.post(f"{BACKEND_URL}/appliances", json=appliance_data)
             if response.status_code == 200:
-                appliance = response.json()
+                appliance_id = response.json()["id"]
+                self.test_assets["appliance"] = {
+                    "id": appliance_id,
+                    "name": "Test Samsung Refrigerator"
+                }
+                self.log(f"✅ Test appliance created: {appliance_id}")
                 
-                # Verify key fields were updated
-                checks = [
-                    (appliance.get('name') == "Samsung Smart TV - Updated", "name"),
-                    (appliance.get('model') == "QN65Q80A-UPDATED", "model"),
-                    (appliance.get('serial_number') == "SN123456789-NEW", "serial_number"),
-                    (appliance.get('purchase_cost') == 90000.00, "purchase_cost"),
-                    (appliance.get('current_value') == 80000.00, "current_value"),
-                    (appliance.get('warranty_info') == "3 years extended warranty", "warranty_info"),
-                    (appliance.get('warranty_expiry_date') == "2027-01-15", "warranty_expiry_date"),
-                    (len(appliance.get('photos', [])) == 3, "photos count"),
-                    (appliance.get('invoice') == "base64encodedinvoice-updated", "invoice"),
-                    (appliance.get('maintenance_frequency_months') == 6, "maintenance_frequency_months")
-                ]
-                
-                failed_checks = [field for passed, field in checks if not passed]
-                
-                if not failed_checks:
-                    self.log_result("Appliance Update Verification", True, 
-                                  "All fields updated correctly")
-                else:
-                    self.log_result("Appliance Update Verification", False, 
-                                  f"Failed fields: {', '.join(failed_checks)}")
-            else:
-                self.log_result("Appliance Update Verification", False, 
-                              f"Status: {response.status_code}")
-                
+            return True
+            
         except Exception as e:
-            self.log_result("Appliance Update Verification", False, f"Exception: {str(e)}")
+            self.log(f"❌ Error creating test assets: {str(e)}")
+            return False
     
-    def test_jewelry_edit_functionality(self):
-        """Test Jewelry Edit (PUT) functionality"""
-        print("\n=== TESTING JEWELRY EDIT FUNCTIONALITY ===")
+    def test_portfolio_details_endpoint(self):
+        """Test GET /api/portfolio/details endpoint"""
+        self.log("\n=== Testing Portfolio Details Endpoint ===")
         
-        # Test 1: Create a jewelry item first
         try:
-            jewelry_data = {
-                "name": "Diamond Engagement Ring",
-                "type": "Ring",
-                "metal": "White Gold",
-                "stones": "1 carat diamond, 2 small rubies",
-                "number_of_stones": 3,
-                "weight": 5.2,
-                "purchase_date": "2024-02-14",
-                "purchase_cost": 150000.00,
-                "appraisal_value": 180000.00,
-                "appraisal_date": "2024-02-20",
-                "certificate_number": "GIA-123456789",
-                "certificate_photo": "base64encodedcertificate",
-                "photos": ["base64encodedphoto1", "base64encodedphoto2"],
-                "notes": "Engagement ring with certified diamond",
-                "warranty_info": "Lifetime warranty on setting",
-                "warranty_expiry_date": "2099-12-31"
+            response = self.session.get(f"{BACKEND_URL}/portfolio/details")
+            
+            if response.status_code == 200:
+                data = response.json()
+                
+                # Verify response structure
+                expected_keys = ["properties", "vehicles", "appliances", "jewelry", "furniture", "art"]
+                missing_keys = [key for key in expected_keys if key not in data]
+                
+                if missing_keys:
+                    self.log(f"❌ Portfolio details missing keys: {missing_keys}")
+                    return False
+                
+                # Verify we have our test assets
+                properties_found = any(p.get("name") == "Test Property for Maintenance" for p in data["properties"])
+                vehicles_found = any(v.get("name") == "Test BMW X5" for v in data["vehicles"])
+                appliances_found = any(a.get("name") == "Test Samsung Refrigerator" for a in data["appliances"])
+                
+                if properties_found and vehicles_found and appliances_found:
+                    self.log("✅ Portfolio details endpoint - All test assets found")
+                else:
+                    self.log(f"⚠️ Portfolio details endpoint - Some test assets missing (P:{properties_found}, V:{vehicles_found}, A:{appliances_found})")
+                
+                # Verify ObjectId conversion to string
+                for category in expected_keys:
+                    for item in data[category]:
+                        if "_id" in item and not isinstance(item["_id"], str):
+                            self.log(f"❌ Portfolio details - ObjectId not converted to string in {category}")
+                            return False
+                
+                self.log("✅ Portfolio details endpoint - ObjectId conversion working")
+                self.log(f"✅ Portfolio details endpoint - Response structure correct with {len(data['properties'])} properties, {len(data['vehicles'])} vehicles, {len(data['appliances'])} appliances")
+                return True
+                
+            else:
+                self.log(f"❌ Portfolio details endpoint failed: {response.status_code} - {response.text}")
+                return False
+                
+        except Exception as e:
+            self.log(f"❌ Portfolio details endpoint error: {str(e)}")
+            return False
+    
+    def test_maintenance_create_endpoint(self):
+        """Test POST /api/maintenance endpoint"""
+        self.log("\n=== Testing Maintenance Create Endpoint ===")
+        
+        try:
+            # Test creating maintenance for different asset types
+            test_cases = []
+            
+            # Property maintenance
+            if "property" in self.test_assets:
+                test_cases.append({
+                    "asset_type": "property",
+                    "asset_id": self.test_assets["property"]["id"],
+                    "asset_name": self.test_assets["property"]["name"],
+                    "maintenance_type": "inspection",
+                    "description": "Annual property inspection and maintenance check",
+                    "due_date": (datetime.utcnow() + timedelta(days=30)).isoformat(),
+                    "cost": 15000.0,
+                    "notes": "Check plumbing, electrical, and structural integrity",
+                    "recurring": True,
+                    "recurring_interval_days": 365
+                })
+            
+            # Vehicle maintenance
+            if "vehicle" in self.test_assets:
+                test_cases.append({
+                    "asset_type": "vehicle",
+                    "asset_id": self.test_assets["vehicle"]["id"],
+                    "asset_name": self.test_assets["vehicle"]["name"],
+                    "maintenance_type": "service",
+                    "description": "Regular vehicle servicing and oil change",
+                    "due_date": (datetime.utcnow() + timedelta(days=15)).isoformat(),
+                    "cost": 8000.0,
+                    "notes": "Engine oil change, brake check, tire rotation",
+                    "recurring": True,
+                    "recurring_interval_days": 180
+                })
+            
+            # Appliance maintenance
+            if "appliance" in self.test_assets:
+                test_cases.append({
+                    "asset_type": "appliance",
+                    "asset_id": self.test_assets["appliance"]["id"],
+                    "asset_name": self.test_assets["appliance"]["name"],
+                    "maintenance_type": "cleaning",
+                    "description": "Deep cleaning and filter replacement",
+                    "due_date": (datetime.utcnow() + timedelta(days=7)).isoformat(),
+                    "cost": 2500.0,
+                    "notes": "Clean coils, replace water filter, check seals",
+                    "recurring": False
+                })
+            
+            success_count = 0
+            for i, maintenance_data in enumerate(test_cases):
+                response = self.session.post(f"{BACKEND_URL}/maintenance", json=maintenance_data)
+                
+                if response.status_code == 200:
+                    created_maintenance = response.json()
+                    maintenance_id = created_maintenance["id"]
+                    self.test_maintenance[f"maintenance_{i}"] = {
+                        "id": maintenance_id,
+                        "asset_type": maintenance_data["asset_type"],
+                        "recurring": maintenance_data["recurring"]
+                    }
+                    
+                    # Verify response structure
+                    required_fields = ["id", "asset_type", "asset_id", "asset_name", "maintenance_type", 
+                                     "description", "due_date", "completed", "user_id", "created_at"]
+                    missing_fields = [field for field in required_fields if field not in created_maintenance]
+                    
+                    if missing_fields:
+                        self.log(f"❌ Maintenance create - Missing fields: {missing_fields}")
+                    else:
+                        success_count += 1
+                        self.log(f"✅ Maintenance created for {maintenance_data['asset_type']}: {maintenance_id}")
+                else:
+                    self.log(f"❌ Maintenance create failed for {maintenance_data['asset_type']}: {response.status_code} - {response.text}")
+            
+            if success_count == len(test_cases):
+                self.log(f"✅ Maintenance create endpoint - All {success_count} test cases passed")
+                return True
+            else:
+                self.log(f"⚠️ Maintenance create endpoint - {success_count}/{len(test_cases)} test cases passed")
+                return False
+                
+        except Exception as e:
+            self.log(f"❌ Maintenance create endpoint error: {str(e)}")
+            return False
+    
+    def test_maintenance_get_endpoint(self):
+        """Test GET /api/maintenance endpoint with filters"""
+        self.log("\n=== Testing Maintenance Get Endpoint ===")
+        
+        try:
+            test_results = []
+            
+            # Test 1: Get all maintenance (no filters)
+            response = self.session.get(f"{BACKEND_URL}/maintenance")
+            if response.status_code == 200:
+                all_maintenance = response.json()
+                test_results.append(f"✅ Get all maintenance: {len(all_maintenance)} records")
+            else:
+                test_results.append(f"❌ Get all maintenance failed: {response.status_code}")
+            
+            # Test 2: Filter by asset_type
+            response = self.session.get(f"{BACKEND_URL}/maintenance?asset_type=vehicle")
+            if response.status_code == 200:
+                vehicle_maintenance = response.json()
+                vehicle_count = len([m for m in vehicle_maintenance if m.get("asset_type") == "vehicle"])
+                test_results.append(f"✅ Filter by asset_type=vehicle: {vehicle_count} records")
+            else:
+                test_results.append(f"❌ Filter by asset_type failed: {response.status_code}")
+            
+            # Test 3: Filter by completed status
+            response = self.session.get(f"{BACKEND_URL}/maintenance?completed=false")
+            if response.status_code == 200:
+                incomplete_maintenance = response.json()
+                incomplete_count = len([m for m in incomplete_maintenance if not m.get("completed")])
+                test_results.append(f"✅ Filter by completed=false: {incomplete_count} records")
+            else:
+                test_results.append(f"❌ Filter by completed failed: {response.status_code}")
+            
+            # Test 4: Filter by upcoming_days
+            response = self.session.get(f"{BACKEND_URL}/maintenance?upcoming_days=30")
+            if response.status_code == 200:
+                upcoming_maintenance = response.json()
+                test_results.append(f"✅ Filter by upcoming_days=30: {len(upcoming_maintenance)} records")
+            else:
+                test_results.append(f"❌ Filter by upcoming_days failed: {response.status_code}")
+            
+            # Test 5: Filter by specific asset
+            if "property" in self.test_assets:
+                asset_id = self.test_assets["property"]["id"]
+                response = self.session.get(f"{BACKEND_URL}/maintenance?asset_type=property&asset_id={asset_id}")
+                if response.status_code == 200:
+                    asset_maintenance = response.json()
+                    test_results.append(f"✅ Filter by specific asset: {len(asset_maintenance)} records")
+                else:
+                    test_results.append(f"❌ Filter by specific asset failed: {response.status_code}")
+            
+            # Test 6: Verify sorting by due_date
+            if response.status_code == 200 and len(all_maintenance) > 1:
+                dates = [datetime.fromisoformat(m["due_date"].replace("Z", "+00:00")) for m in all_maintenance if "due_date" in m]
+                is_sorted = all(dates[i] <= dates[i+1] for i in range(len(dates)-1))
+                if is_sorted:
+                    test_results.append("✅ Maintenance records sorted by due_date")
+                else:
+                    test_results.append("❌ Maintenance records not properly sorted")
+            
+            for result in test_results:
+                self.log(result)
+            
+            success_count = len([r for r in test_results if r.startswith("✅")])
+            total_tests = len(test_results)
+            
+            if success_count == total_tests:
+                self.log(f"✅ Maintenance get endpoint - All {success_count} tests passed")
+                return True
+            else:
+                self.log(f"⚠️ Maintenance get endpoint - {success_count}/{total_tests} tests passed")
+                return False
+                
+        except Exception as e:
+            self.log(f"❌ Maintenance get endpoint error: {str(e)}")
+            return False
+    
+    def test_maintenance_update_and_recurring(self):
+        """Test PUT /api/maintenance/{id} endpoint and recurring functionality"""
+        self.log("\n=== Testing Maintenance Update & Recurring ===")
+        
+        try:
+            test_results = []
+            
+            # Find a recurring maintenance record to test
+            recurring_maintenance = None
+            for key, maintenance in self.test_maintenance.items():
+                if maintenance.get("recurring"):
+                    recurring_maintenance = maintenance
+                    break
+            
+            if not recurring_maintenance:
+                self.log("❌ No recurring maintenance found for testing")
+                return False
+            
+            maintenance_id = recurring_maintenance["id"]
+            
+            # Test 1: Update maintenance fields
+            update_data = {
+                "cost": 12000.0,
+                "notes": "Updated maintenance notes with additional details"
             }
             
-            response = self.session.post(f"{API_BASE}/jewelry", json=jewelry_data)
-            
+            response = self.session.put(f"{BACKEND_URL}/maintenance/{maintenance_id}", json=update_data)
             if response.status_code == 200:
-                created_jewelry = response.json()
-                jewelry_id = created_jewelry['id']
-                self.log_result("Jewelry Create for Edit Test", True, 
-                              f"Jewelry ID: {jewelry_id}")
+                test_results.append("✅ Maintenance update - Basic field update successful")
             else:
-                self.log_result("Jewelry Create for Edit Test", False, 
-                              f"Status: {response.status_code}, Response: {response.text}")
-                return
-                
-        except Exception as e:
-            self.log_result("Jewelry Create for Edit Test", False, f"Exception: {str(e)}")
-            return
-        
-        # Test 2: Update the jewelry using PUT
-        try:
-            updated_data = {
-                "name": "Diamond Engagement Ring - Resized",
-                "type": "Ring",
-                "metal": "Platinum",
-                "stones": "1.2 carat diamond, 4 small rubies",
-                "number_of_stones": 5,
-                "weight": 6.1,
-                "purchase_date": "2024-02-14",
-                "purchase_cost": 150000.00,
-                "appraisal_value": 220000.00,
-                "appraisal_date": "2024-12-01",
-                "certificate_number": "GIA-123456789-UPDATED",
-                "certificate_photo": "base64encodedcertificate-updated",
-                "photos": ["base64encodedphoto1-updated", "base64encodedphoto2-updated", "base64encodedphoto3-new"],
-                "notes": "Engagement ring with certified diamond - Upgraded and resized",
-                "warranty_info": "Lifetime warranty on setting and stones",
-                "warranty_expiry_date": "2099-12-31"
+                test_results.append(f"❌ Maintenance update failed: {response.status_code} - {response.text}")
+            
+            # Test 2: Mark as complete and test recurring functionality
+            complete_data = {
+                "completed": True,
+                "completed_date": datetime.utcnow().isoformat()
             }
             
-            response = self.session.put(f"{API_BASE}/jewelry/{jewelry_id}", json=updated_data)
-            
+            # Get count of maintenance records before completion
+            response = self.session.get(f"{BACKEND_URL}/maintenance")
             if response.status_code == 200:
-                result = response.json()
-                if result.get('message') == 'Jewelry updated successfully':
-                    self.log_result("Jewelry PUT Update", True, 
-                                  "Jewelry updated successfully")
-                else:
-                    self.log_result("Jewelry PUT Update", False, 
-                                  f"Unexpected response: {result}")
+                before_count = len(response.json())
             else:
-                self.log_result("Jewelry PUT Update", False, 
-                              f"Status: {response.status_code}, Response: {response.text}")
-                return
+                before_count = 0
+            
+            # Mark as complete
+            response = self.session.put(f"{BACKEND_URL}/maintenance/{maintenance_id}", json=complete_data)
+            if response.status_code == 200:
+                test_results.append("✅ Maintenance update - Mark as complete successful")
+                
+                # Wait a moment for recurring maintenance to be created
+                import time
+                time.sleep(1)
+                
+                # Check if new recurring maintenance was created
+                response = self.session.get(f"{BACKEND_URL}/maintenance")
+                if response.status_code == 200:
+                    after_count = len(response.json())
+                    if after_count > before_count:
+                        test_results.append("✅ Recurring maintenance - Next occurrence created automatically")
+                        
+                        # Verify the new maintenance has correct due date
+                        all_maintenance = response.json()
+                        asset_type = recurring_maintenance["asset_type"]
+                        new_maintenance = [m for m in all_maintenance if 
+                                         m.get("asset_type") == asset_type and 
+                                         not m.get("completed") and 
+                                         m.get("id") != maintenance_id]
+                        
+                        if new_maintenance:
+                            test_results.append("✅ Recurring maintenance - New record has correct asset type")
+                        else:
+                            test_results.append("❌ Recurring maintenance - New record not found or incorrect")
+                    else:
+                        test_results.append("❌ Recurring maintenance - Next occurrence not created")
+                else:
+                    test_results.append("❌ Recurring maintenance - Could not verify creation")
+            else:
+                test_results.append(f"❌ Mark as complete failed: {response.status_code} - {response.text}")
+            
+            # Test 3: Update non-existent maintenance
+            fake_id = str(uuid.uuid4())
+            response = self.session.put(f"{BACKEND_URL}/maintenance/{fake_id}", json={"cost": 1000.0})
+            if response.status_code == 404:
+                test_results.append("✅ Maintenance update - Proper 404 for non-existent record")
+            else:
+                test_results.append(f"❌ Maintenance update - Expected 404, got {response.status_code}")
+            
+            for result in test_results:
+                self.log(result)
+            
+            success_count = len([r for r in test_results if r.startswith("✅")])
+            total_tests = len(test_results)
+            
+            if success_count == total_tests:
+                self.log(f"✅ Maintenance update & recurring - All {success_count} tests passed")
+                return True
+            else:
+                self.log(f"⚠️ Maintenance update & recurring - {success_count}/{total_tests} tests passed")
+                return False
                 
         except Exception as e:
-            self.log_result("Jewelry PUT Update", False, f"Exception: {str(e)}")
-            return
+            self.log(f"❌ Maintenance update & recurring error: {str(e)}")
+            return False
+    
+    def test_maintenance_additional_endpoints(self):
+        """Test additional maintenance endpoints"""
+        self.log("\n=== Testing Additional Maintenance Endpoints ===")
         
-        # Test 3: Verify the update by getting the jewelry
         try:
-            response = self.session.get(f"{API_BASE}/jewelry/{jewelry_id}")
+            test_results = []
             
-            if response.status_code == 200:
-                jewelry = response.json()
-                
-                # Verify key fields were updated
-                checks = [
-                    (jewelry.get('name') == "Diamond Engagement Ring - Resized", "name"),
-                    (jewelry.get('metal') == "Platinum", "metal"),
-                    (jewelry.get('stones') == "1.2 carat diamond, 4 small rubies", "stones"),
-                    (jewelry.get('number_of_stones') == 5, "number_of_stones"),
-                    (jewelry.get('weight') == 6.1, "weight"),
-                    (jewelry.get('appraisal_value') == 220000.00, "appraisal_value"),
-                    (jewelry.get('appraisal_date') == "2024-12-01", "appraisal_date"),
-                    (jewelry.get('certificate_number') == "GIA-123456789-UPDATED", "certificate_number"),
-                    (jewelry.get('certificate_photo') == "base64encodedcertificate-updated", "certificate_photo"),
-                    (len(jewelry.get('photos', [])) == 3, "photos count"),
-                    (jewelry.get('warranty_info') == "Lifetime warranty on setting and stones", "warranty_info")
-                ]
-                
-                failed_checks = [field for passed, field in checks if not passed]
-                
-                if not failed_checks:
-                    self.log_result("Jewelry Update Verification", True, 
-                                  "All fields updated correctly")
+            # Test 1: GET /api/maintenance/{id}
+            if self.test_maintenance:
+                maintenance_id = list(self.test_maintenance.values())[0]["id"]
+                response = self.session.get(f"{BACKEND_URL}/maintenance/{maintenance_id}")
+                if response.status_code == 200:
+                    maintenance_data = response.json()
+                    if maintenance_data.get("id") == maintenance_id:
+                        test_results.append("✅ Get maintenance by ID - Correct record returned")
+                    else:
+                        test_results.append("❌ Get maintenance by ID - Incorrect record returned")
                 else:
-                    self.log_result("Jewelry Update Verification", False, 
-                                  f"Failed fields: {', '.join(failed_checks)}")
+                    test_results.append(f"❌ Get maintenance by ID failed: {response.status_code}")
+            
+            # Test 2: GET /api/maintenance/asset/{asset_type}/{asset_id}
+            if "property" in self.test_assets:
+                asset_type = "property"
+                asset_id = self.test_assets["property"]["id"]
+                response = self.session.get(f"{BACKEND_URL}/maintenance/asset/{asset_type}/{asset_id}")
+                if response.status_code == 200:
+                    asset_maintenance = response.json()
+                    property_records = [m for m in asset_maintenance if m.get("asset_type") == "property"]
+                    test_results.append(f"✅ Get maintenance for specific asset: {len(property_records)} records")
+                else:
+                    test_results.append(f"❌ Get maintenance for specific asset failed: {response.status_code}")
+            
+            # Test 3: GET /api/maintenance/upcoming?days=30
+            response = self.session.get(f"{BACKEND_URL}/maintenance/upcoming?days=30")
+            if response.status_code == 200:
+                upcoming_maintenance = response.json()
+                # Verify all records are incomplete and within 30 days
+                now = datetime.utcnow()
+                cutoff = now + timedelta(days=30)
+                valid_records = all(
+                    not m.get("completed") and 
+                    datetime.fromisoformat(m["due_date"].replace("Z", "+00:00")) <= cutoff
+                    for m in upcoming_maintenance if "due_date" in m
+                )
+                if valid_records:
+                    test_results.append(f"✅ Get upcoming maintenance: {len(upcoming_maintenance)} valid records")
+                else:
+                    test_results.append("❌ Get upcoming maintenance: Invalid records found")
             else:
-                self.log_result("Jewelry Update Verification", False, 
-                              f"Status: {response.status_code}")
+                test_results.append(f"❌ Get upcoming maintenance failed: {response.status_code}")
+            
+            # Test 4: GET /api/maintenance/overdue
+            response = self.session.get(f"{BACKEND_URL}/maintenance/overdue")
+            if response.status_code == 200:
+                overdue_maintenance = response.json()
+                # Verify all records are incomplete and past due
+                now = datetime.utcnow()
+                valid_records = all(
+                    not m.get("completed") and 
+                    datetime.fromisoformat(m["due_date"].replace("Z", "+00:00")) < now
+                    for m in overdue_maintenance if "due_date" in m
+                )
+                if valid_records or len(overdue_maintenance) == 0:
+                    test_results.append(f"✅ Get overdue maintenance: {len(overdue_maintenance)} valid records")
+                else:
+                    test_results.append("❌ Get overdue maintenance: Invalid records found")
+            else:
+                test_results.append(f"❌ Get overdue maintenance failed: {response.status_code}")
+            
+            # Test 5: DELETE /api/maintenance/{id}
+            if self.test_maintenance:
+                # Use a non-recurring maintenance for deletion test
+                delete_maintenance = None
+                for maintenance in self.test_maintenance.values():
+                    if not maintenance.get("recurring"):
+                        delete_maintenance = maintenance
+                        break
+                
+                if delete_maintenance:
+                    maintenance_id = delete_maintenance["id"]
+                    response = self.session.delete(f"{BACKEND_URL}/maintenance/{maintenance_id}")
+                    if response.status_code == 200:
+                        # Verify deletion
+                        response = self.session.get(f"{BACKEND_URL}/maintenance/{maintenance_id}")
+                        if response.status_code == 404:
+                            test_results.append("✅ Delete maintenance - Record successfully deleted")
+                        else:
+                            test_results.append("❌ Delete maintenance - Record still exists after deletion")
+                    else:
+                        test_results.append(f"❌ Delete maintenance failed: {response.status_code}")
+                else:
+                    test_results.append("⚠️ Delete maintenance - No non-recurring maintenance found for deletion test")
+            
+            for result in test_results:
+                self.log(result)
+            
+            success_count = len([r for r in test_results if r.startswith("✅")])
+            total_tests = len(test_results)
+            
+            if success_count == total_tests:
+                self.log(f"✅ Additional maintenance endpoints - All {success_count} tests passed")
+                return True
+            else:
+                self.log(f"⚠️ Additional maintenance endpoints - {success_count}/{total_tests} tests passed")
+                return False
                 
         except Exception as e:
-            self.log_result("Jewelry Update Verification", False, f"Exception: {str(e)}")
+            self.log(f"❌ Additional maintenance endpoints error: {str(e)}")
+            return False
     
     def run_all_tests(self):
         """Run all backend tests"""
-        print(f"🚀 Starting Backend API Tests")
-        print(f"📍 API Base URL: {API_BASE}")
-        print(f"⏰ Test Started: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
+        self.log("🚀 Starting AuraInfra.ai Backend API Testing")
+        self.log(f"Backend URL: {BACKEND_URL}")
         
-        # Setup authentication
-        if not self.setup_auth():
-            print("❌ Authentication setup failed. Cannot proceed with tests.")
+        # Setup
+        if not self.register_and_login():
             return False
         
-        # Run all test suites
-        self.test_property_cost_fields()
-        self.test_appliance_edit_functionality()
-        self.test_jewelry_edit_functionality()
+        if not self.create_test_assets():
+            return False
         
-        # Print summary
-        self.print_summary()
+        # Run tests
+        test_results = []
         
-        return all(result['success'] for result in self.test_results)
-    
-    def print_summary(self):
-        """Print test summary"""
-        print("\n" + "="*60)
-        print("📊 BACKEND TESTING SUMMARY")
-        print("="*60)
+        test_results.append(("Portfolio Details Endpoint", self.test_portfolio_details_endpoint()))
+        test_results.append(("Maintenance Create", self.test_maintenance_create_endpoint()))
+        test_results.append(("Maintenance Get", self.test_maintenance_get_endpoint()))
+        test_results.append(("Maintenance Update & Recurring", self.test_maintenance_update_and_recurring()))
+        test_results.append(("Additional Maintenance Endpoints", self.test_maintenance_additional_endpoints()))
         
-        total_tests = len(self.test_results)
-        passed_tests = sum(1 for result in self.test_results if result['success'])
-        failed_tests = total_tests - passed_tests
+        # Summary
+        self.log("\n" + "="*60)
+        self.log("📊 TEST SUMMARY")
+        self.log("="*60)
         
-        print(f"Total Tests: {total_tests}")
-        print(f"✅ Passed: {passed_tests}")
-        print(f"❌ Failed: {failed_tests}")
-        print(f"Success Rate: {(passed_tests/total_tests)*100:.1f}%")
+        passed_tests = []
+        failed_tests = []
         
-        if failed_tests > 0:
-            print("\n❌ FAILED TESTS:")
-            for result in self.test_results:
-                if not result['success']:
-                    print(f"   • {result['test']}: {result['details']}")
+        for test_name, result in test_results:
+            if result:
+                passed_tests.append(test_name)
+                self.log(f"✅ {test_name}")
+            else:
+                failed_tests.append(test_name)
+                self.log(f"❌ {test_name}")
         
-        print("\n✅ PASSED TESTS:")
-        for result in self.test_results:
-            if result['success']:
-                print(f"   • {result['test']}")
+        self.log(f"\n📈 Results: {len(passed_tests)}/{len(test_results)} tests passed")
         
-        print("="*60)
+        if failed_tests:
+            self.log(f"❌ Failed tests: {', '.join(failed_tests)}")
+        else:
+            self.log("🎉 All tests passed successfully!")
+        
+        return len(failed_tests) == 0
 
 if __name__ == "__main__":
     tester = BackendTester()
     success = tester.run_all_tests()
-    
-    if success:
-        print("\n🎉 All tests passed successfully!")
-        exit(0)
-    else:
-        print("\n💥 Some tests failed!")
-        exit(1)
+    exit(0 if success else 1)
