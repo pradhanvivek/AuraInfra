@@ -454,7 +454,7 @@ const styles = StyleSheet.create({
     marginRight: 8,
   },
   legendText: {
-    fontSize: 11,
+    fontSize: 13,
     color: '#000',
     flex: 1,
   },
