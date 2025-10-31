@@ -498,7 +498,7 @@ const styles = StyleSheet.create({
     marginTop: 0,
   },
   tileTitle: {
-    fontSize: 24,
+    fontSize: 18,
     fontWeight: '600',
     color: '#fff',
     flex: 1,
