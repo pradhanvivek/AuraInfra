@@ -20,6 +20,12 @@ const tileSize = getTileSize();
 
 interface PortfolioData {
   total_value: number;
+  properties_value: number;
+  vehicles_value: number;
+  appliances_value: number;
+  jewelry_value: number;
+  furniture_value: number;
+  art_value: number;
   properties_count: number;
   vehicles_count: number;
   appliances_count: number;
