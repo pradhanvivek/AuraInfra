@@ -20,6 +20,7 @@ interface HealthScoreScreenProps {
 
 export default function HealthScoreScreen({ propertyId }: HealthScoreScreenProps) {
   const { token } = useAuth();
+  const router = useRouter();
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [healthData, setHealthData] = useState<any>(null);
