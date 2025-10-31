@@ -152,6 +152,9 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
   },
+  safeAreaHeader: {
+    backgroundColor: '#fff',
+  },
   header: {
     flexDirection: 'row',
     alignItems: 'center',
