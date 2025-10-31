@@ -122,7 +122,11 @@ export default function ArtScreen() {
           <Ionicons name="arrow-back" size={28} color="#007AFF" />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>Art & Collectibles</Text>
-        <View style={{ width: 28 }} />
+        <Image 
+          source={{ uri: LOGO_URL }}
+          style={styles.logo}
+          resizeMode="contain"
+        />
       </View>
 
       <FlatList
