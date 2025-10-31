@@ -118,140 +118,205 @@ export default function PortfolioScreen() {
         <head>
           <meta name="viewport" content="width=device-width, initial-scale=1.0">
           <style>
+            * { margin: 0; padding: 0; box-sizing: border-box; }
             body {
               font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-              padding: 20px;
+              padding: 30px;
               color: #333;
+              line-height: 1.6;
             }
             .header {
               text-align: center;
-              margin-bottom: 30px;
-              padding-bottom: 20px;
-              border-bottom: 2px solid #5856D6;
+              margin-bottom: 40px;
+              padding-bottom: 30px;
+              border-bottom: 3px solid #5856D6;
             }
             .logo {
-              width: 60px;
-              height: 60px;
-              background: #5856D6;
-              border-radius: 15px;
-              margin: 0 auto 15px;
+              width: 80px;
+              height: 80px;
+              background: linear-gradient(135deg, #5856D6 0%, #7B79E8 100%);
+              border-radius: 20px;
+              margin: 0 auto 20px;
               display: flex;
               align-items: center;
               justify-content: center;
               color: white;
-              font-size: 32px;
+              font-size: 40px;
               font-weight: bold;
+              box-shadow: 0 4px 15px rgba(88, 86, 214, 0.3);
             }
             h1 {
               color: #5856D6;
-              margin: 0;
-              font-size: 24px;
+              margin: 10px 0;
+              font-size: 32px;
             }
             .subtitle {
               color: #666;
-              font-size: 14px;
-              margin-top: 5px;
+              font-size: 16px;
+              margin-top: 8px;
             }
             .summary-card {
               background: linear-gradient(135deg, #5856D6 0%, #7B79E8 100%);
               color: white;
-              padding: 25px;
-              border-radius: 15px;
-              margin: 20px 0;
+              padding: 35px;
+              border-radius: 20px;
+              margin: 30px 0;
               text-align: center;
+              box-shadow: 0 6px 20px rgba(88, 86, 214, 0.3);
             }
             .summary-label {
-              font-size: 14px;
-              opacity: 0.9;
-              margin-bottom: 10px;
+              font-size: 16px;
+              opacity: 0.95;
+              margin-bottom: 12px;
+              text-transform: uppercase;
+              letter-spacing: 1px;
             }
             .summary-value {
-              font-size: 36px;
+              font-size: 48px;
               font-weight: bold;
-              margin-bottom: 8px;
+              margin-bottom: 10px;
             }
             .summary-subtext {
-              font-size: 14px;
+              font-size: 16px;
               opacity: 0.9;
             }
             .section-title {
-              font-size: 20px;
+              font-size: 24px;
               font-weight: bold;
-              margin: 30px 0 15px;
+              margin: 40px 0 20px;
               color: #000;
+              padding-bottom: 10px;
+              border-bottom: 2px solid #f0f0f0;
             }
             .category-item {
               background: #f8f8f8;
-              border-radius: 12px;
-              padding: 15px;
-              margin-bottom: 12px;
-              display: flex;
-              justify-content: space-between;
-              align-items: center;
-            }
-            .category-info {
-              flex: 1;
+              border-radius: 15px;
+              padding: 20px;
+              margin-bottom: 15px;
             }
             .category-name {
-              font-size: 16px;
+              font-size: 18px;
               font-weight: 600;
-              margin-bottom: 5px;
+              margin-bottom: 8px;
             }
             .category-count {
-              font-size: 12px;
+              font-size: 14px;
               color: #666;
-            }
-            .category-values {
-              text-align: right;
+              margin-bottom: 12px;
             }
             .category-value {
-              font-size: 18px;
+              font-size: 24px;
               font-weight: bold;
-              margin-bottom: 3px;
+              margin-bottom: 5px;
             }
             .category-percentage {
-              font-size: 12px;
+              font-size: 14px;
               color: #666;
             }
             .progress-bar {
-              height: 6px;
+              height: 8px;
               background: #e0e0e0;
-              border-radius: 3px;
-              margin-top: 10px;
+              border-radius: 4px;
+              margin-top: 12px;
               overflow: hidden;
             }
             .progress-fill {
               height: 100%;
-              border-radius: 3px;
+              border-radius: 4px;
             }
-            .footer {
-              margin-top: 40px;
-              padding-top: 20px;
-              border-top: 1px solid #e0e0e0;
-              text-align: center;
-              color: #666;
-              font-size: 12px;
+            .asset-section {
+              margin: 30px 0;
+              page-break-inside: avoid;
             }
-            .stats-grid {
-              display: flex;
-              gap: 15px;
-              margin: 20px 0;
+            .asset-section-title {
+              font-size: 22px;
+              font-weight: bold;
+              color: #5856D6;
+              margin: 25px 0 15px;
+              padding: 12px 20px;
+              background: #F3F2FF;
+              border-left: 5px solid #5856D6;
+              border-radius: 8px;
             }
-            .stat-card {
-              flex: 1;
-              background: #f8f8f8;
+            .asset-item {
+              background: white;
+              border: 1px solid #e0e0e0;
               border-radius: 12px;
               padding: 20px;
+              margin-bottom: 15px;
+              display: flex;
+              gap: 20px;
+              page-break-inside: avoid;
+            }
+            .asset-number {
+              width: 40px;
+              height: 40px;
+              background: #5856D6;
+              color: white;
+              border-radius: 10px;
+              display: flex;
+              align-items: center;
+              justify-content: center;
+              font-weight: bold;
+              font-size: 18px;
+              flex-shrink: 0;
+            }
+            .asset-details {
+              flex: 1;
+            }
+            .asset-name {
+              font-size: 18px;
+              font-weight: 700;
+              color: #000;
+              margin-bottom: 10px;
+            }
+            .asset-meta {
+              font-size: 14px;
+              color: #666;
+              margin: 5px 0;
+            }
+            .asset-value {
+              font-size: 20px;
+              font-weight: bold;
+              color: #5856D6;
+              margin-top: 12px;
+              padding-top: 12px;
+              border-top: 1px solid #f0f0f0;
+            }
+            .stats-grid {
+              display: grid;
+              grid-template-columns: repeat(2, 1fr);
+              gap: 20px;
+              margin: 30px 0;
+            }
+            .stat-card {
+              background: #f8f8f8;
+              border-radius: 15px;
+              padding: 25px;
               text-align: center;
             }
             .stat-value {
-              font-size: 28px;
+              font-size: 36px;
               font-weight: bold;
-              margin: 10px 0;
+              margin: 15px 0;
+              color: #5856D6;
             }
             .stat-label {
-              font-size: 12px;
+              font-size: 14px;
               color: #666;
+              text-transform: uppercase;
+              letter-spacing: 0.5px;
+            }
+            .footer {
+              margin-top: 60px;
+              padding-top: 30px;
+              border-top: 2px solid #e0e0e0;
+              text-align: center;
+              color: #666;
+              font-size: 13px;
+            }
+            .page-break {
+              page-break-after: always;
             }
           </style>
         </head>
@@ -259,7 +324,7 @@ export default function PortfolioScreen() {
           <div class="header">
             <div class="logo">A</div>
             <h1>AuraInfra.ai</h1>
-            <div class="subtitle">Personal Asset Management System</div>
+            <div class="subtitle">Personal Asset Management System - Comprehensive Portfolio Report</div>
           </div>
 
           <div class="summary-card">
@@ -279,49 +344,60 @@ export default function PortfolioScreen() {
             </div>
           </div>
 
-          <div class="section-title">Asset Breakdown</div>
+          <div class="section-title">Portfolio Breakdown</div>
           
           ${categories.map(cat => `
             <div class="category-item">
-              <div class="category-info">
-                <div class="category-name">${cat.name}</div>
-                <div class="category-count">${cat.count} items</div>
-                <div class="progress-bar">
-                  <div class="progress-fill" style="width: ${cat.percentage}%; background: ${cat.color};"></div>
-                </div>
-              </div>
-              <div class="category-values">
-                <div class="category-value" style="color: ${cat.color};">${formatCurrency(cat.value)}</div>
-                <div class="category-percentage">${cat.percentage.toFixed(1)}%</div>
+              <div class="category-name">${cat.name}</div>
+              <div class="category-count">${cat.count} items</div>
+              <div class="category-value" style="color: ${cat.color};">${formatCurrency(cat.value)}</div>
+              <div class="category-percentage">${cat.percentage.toFixed(1)}% of total portfolio</div>
+              <div class="progress-bar">
+                <div class="progress-fill" style="width: ${cat.percentage}%; background: ${cat.color};"></div>
               </div>
             </div>
           `).join('')}
 
+          <div class="page-break"></div>
+
+          <!-- Detailed Asset Listings -->
+          ${renderAssetSection('Properties', detailedData.properties)}
+          ${renderAssetSection('Vehicles', detailedData.vehicles)}
+          ${renderAssetSection('Appliances', detailedData.appliances)}
+          ${renderAssetSection('Jewelry', detailedData.jewelry, 'appraisal_value')}
+          ${renderAssetSection('Furniture', detailedData.furniture)}
+          ${renderAssetSection('Art', detailedData.art, 'appraisal_value')}
+
           <div class="footer">
-            <p>Generated on ${new Date().toLocaleDateString('en-US', { 
+            <p><strong>Generated on ${new Date().toLocaleDateString('en-US', { 
               year: 'numeric', 
               month: 'long', 
               day: 'numeric',
               hour: '2-digit',
               minute: '2-digit'
-            })}</p>
-            <p>AuraInfra.ai - Your Digital Vault for Physical Assets</p>
+            })}</strong></p>
+            <p style="margin-top: 10px;">AuraInfra.ai - Your Digital Vault for Physical Assets</p>
+            <p style="margin-top: 5px; font-size: 12px; color: #999;">This report contains confidential information. Keep secure.</p>
           </div>
         </body>
         </html>
       `;
 
       // Generate PDF
-      const { uri } = await Print.printToFileAsync({ html: htmlContent });
+      const { uri } = await Print.printToFileAsync({ 
+        html: htmlContent,
+        width: 612, // A4 width in points
+        height: 792, // A4 height in points
+      });
       
       // Share PDF
       if (await Sharing.isAvailableAsync()) {
         await Sharing.shareAsync(uri, {
           mimeType: 'application/pdf',
-          dialogTitle: 'Portfolio Report',
+          dialogTitle: 'Portfolio Report - AuraInfra.ai',
           UTI: 'com.adobe.pdf',
         });
-        Alert.alert('Success', 'Portfolio PDF generated successfully!');
+        Alert.alert('Success', 'Comprehensive portfolio PDF generated successfully!');
       } else {
         Alert.alert('Success', `PDF saved to: ${uri}`);
       }
