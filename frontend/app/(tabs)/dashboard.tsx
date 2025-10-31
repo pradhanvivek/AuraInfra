@@ -398,6 +398,25 @@ const styles = StyleSheet.create({
     shadowRadius: 4,
     elevation: 2,
   },
+  customLegend: {
+    marginTop: 12,
+  },
+  legendItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 8,
+  },
+  legendColor: {
+    width: 16,
+    height: 16,
+    borderRadius: 8,
+    marginRight: 8,
+  },
+  legendText: {
+    fontSize: 11,
+    color: '#000',
+    flex: 1,
+  },
   chartSection: {
     marginBottom: 20,
   },
