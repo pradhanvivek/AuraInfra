@@ -302,7 +302,7 @@ const styles = StyleSheet.create({
   headerTop: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 12,
+    marginBottom: 6,
   },
   logo: {
     width: 80,
@@ -310,7 +310,7 @@ const styles = StyleSheet.create({
     marginRight: 12,
   },
   greeting: {
-    fontSize: 20,
+    fontSize: 24,
     fontWeight: 'bold',
     color: '#000',
   },
@@ -326,9 +326,9 @@ const styles = StyleSheet.create({
     marginBottom: 4,
   },
   valueAmount: {
-    fontSize: 24,
+    fontSize: 28,
     fontWeight: 'bold',
-    color: '#000',
+    color: '#34C759',
   },
   content: {
     padding: 12,
