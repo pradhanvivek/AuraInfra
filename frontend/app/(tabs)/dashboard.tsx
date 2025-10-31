@@ -11,11 +11,11 @@ import { PieChart } from 'react-native-chart-kit';
 const API_URL = Constants.expoConfig?.extra?.EXPO_PUBLIC_BACKEND_URL || process.env.EXPO_PUBLIC_BACKEND_URL;
 
 const { width } = Dimensions.get('window');
-// Responsive tile size: smaller on larger screens
+// Responsive tile size: smaller on larger screens, rectangular shape
 const getTileSize = () => {
-  if (width > 1024) return 140; // Desktop/Laptop
-  if (width > 768) return 130; // Tablet
-  return width * 0.35; // Mobile - 35% of screen width
+  if (width > 1024) return { width: 160, height: 120 }; // Desktop/Laptop - rectangular
+  if (width > 768) return { width: 150, height: 110 }; // Tablet - rectangular
+  return { width: width * 0.4, height: width * 0.28 }; // Mobile - rectangular (wider than tall)
 };
 const tileSize = getTileSize();
 
