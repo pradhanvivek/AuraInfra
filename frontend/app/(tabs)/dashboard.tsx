@@ -134,7 +134,14 @@ export default function DashboardScreen() {
   return (
     <View style={styles.container}>
       <View style={styles.header}>
-        <Text style={styles.greeting}>Hello, {username || 'User'}!</Text>
+        <View style={styles.headerLeft}>
+          <Image 
+            source={{ uri: 'https://customer-assets.emergentagent.com/job_95500ee6-6a87-4222-9712-857c1f99b6e3/artifacts/6qjibbhd_logo-new-over.webp' }}
+            style={styles.logo}
+            resizeMode="contain"
+          />
+          <Text style={styles.greeting}>Hello, {username || 'User'}!</Text>
+        </View>
         {portfolioData && (
           <View style={styles.valueCard}>
             <Text style={styles.valueLabel}>Total</Text>
