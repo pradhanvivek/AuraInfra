@@ -57,11 +57,9 @@ export default function PropertyDetails() {
   }
 
   return (
-    <>
-      <Stack.Screen options={{ headerShown: false }} />
-      <View style={styles.container}>
-        {/* Property Header with SafeAreaView */}
-        <SafeAreaView edges={['top']} style={styles.safeAreaHeader}>
+    <View style={styles.container}>
+      {/* Property Header with SafeAreaView */}
+      <SafeAreaView edges={['top']} style={styles.safeAreaHeader}>
           <View style={styles.header}>
             <View style={styles.headerTextContainer}>
               <Text style={styles.propertyName} numberOfLines={1}>
