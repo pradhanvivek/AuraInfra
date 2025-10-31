@@ -433,6 +433,9 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-between',
   },
+  chartWrapper: {
+    overflow: 'hidden',
+  },
   customLegend: {
     flex: 1,
     paddingLeft: 0,
