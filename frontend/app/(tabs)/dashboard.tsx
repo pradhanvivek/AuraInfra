@@ -238,28 +238,30 @@ export default function DashboardScreen() {
           <View style={styles.chartSection}>
             <Text style={styles.sectionTitle}>Portfolio Overview</Text>
             <View style={styles.chartCard}>
-              <PieChart
-                data={chartData}
-                width={width - 40}
-                height={180}
-                chartConfig={{
-                  color: (opacity = 1) => `rgba(0, 0, 0, ${opacity})`,
-                }}
-                accessor="value"
-                backgroundColor="transparent"
-                paddingLeft="0"
-                center={[10, 0]}
-                absolute
-                hasLegend={false}
-              />
-              {/* Custom Legend without numbers */}
-              <View style={styles.customLegend}>
-                {chartData.map((item, index) => (
-                  <View key={index} style={styles.legendItem}>
-                    <View style={[styles.legendColor, { backgroundColor: item.color }]} />
-                    <Text style={styles.legendText}>{item.name}</Text>
-                  </View>
-                ))}
+              <View style={styles.chartContainer}>
+                <PieChart
+                  data={chartData}
+                  width={width * 0.45}
+                  height={180}
+                  chartConfig={{
+                    color: (opacity = 1) => `rgba(0, 0, 0, ${opacity})`,
+                  }}
+                  accessor="value"
+                  backgroundColor="transparent"
+                  paddingLeft="0"
+                  center={[0, 0]}
+                  absolute
+                  hasLegend={false}
+                />
+                {/* Custom Legend on the right */}
+                <View style={styles.customLegend}>
+                  {chartData.map((item, index) => (
+                    <View key={index} style={styles.legendItem}>
+                      <View style={[styles.legendColor, { backgroundColor: item.color }]} />
+                      <Text style={styles.legendText}>{item.name}</Text>
+                    </View>
+                  ))}
+                </View>
               </View>
             </View>
           </View>
