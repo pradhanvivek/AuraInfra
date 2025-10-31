@@ -59,7 +59,7 @@ export default function ScanAssetScreen() {
     try {
       // Use Gemini to identify what type of asset this is
       const response = await axios.post(
-        `${API_URL}/api/identify-asset`,
+        `${API_URL}/api/scan-asset`,
         { image: imageBase64 },
         { 
           headers: { Authorization: `Bearer ${token}` },
