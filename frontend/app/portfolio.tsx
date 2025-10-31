@@ -394,8 +394,12 @@ export default function PortfolioScreen() {
           <Ionicons name="arrow-back" size={28} color="#007AFF" />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>Portfolio</Text>
-        <TouchableOpacity onPress={handleGeneratePDF}>
-          <Ionicons name="download-outline" size={28} color="#007AFF" />
+        <TouchableOpacity onPress={handleGeneratePDF} disabled={generatingPDF}>
+          <Ionicons 
+            name={generatingPDF ? "hourglass-outline" : "download-outline"} 
+            size={28} 
+            color="#007AFF" 
+          />
         </TouchableOpacity>
       </View>
 
