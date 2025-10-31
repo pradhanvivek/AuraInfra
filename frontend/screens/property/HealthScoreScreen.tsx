@@ -197,7 +197,7 @@ export default function HealthScoreScreen({ propertyId }: HealthScoreScreenProps
                 {data.analyzed ? 'Analysis complete' : 'Not analyzed'}
               </Text>
             )}
-          </TouchableOpacity>
+          </View>
         ))}
       </View>
 
