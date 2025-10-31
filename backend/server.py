@@ -534,6 +534,48 @@ class ArtScanResult(BaseModel):
     subject_matter: Optional[str] = None
     confidence: float
 
+
+# Maintenance Tracking Models
+class MaintenanceRecord(BaseModel):
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    asset_type: str  # "property", "vehicle", "appliance", etc.
+    asset_id: str
+    asset_name: str  # For display purposes
+    maintenance_type: str  # "service", "inspection", "repair", "cleaning", etc.
+    description: str
+    due_date: datetime
+    completed: bool = False
+    completed_date: Optional[datetime] = None
+    cost: Optional[float] = None
+    notes: Optional[str] = None
+    user_id: str
+    created_at: datetime = Field(default_factory=datetime.utcnow)
+    recurring: bool = False
+    recurring_interval_days: Optional[int] = None  # e.g., 90 for quarterly
+
+class MaintenanceCreate(BaseModel):
+    asset_type: str
+    asset_id: str
+    asset_name: str
+    maintenance_type: str
+    description: str
+    due_date: datetime
+    cost: Optional[float] = None
+    notes: Optional[str] = None
+    recurring: bool = False
+    recurring_interval_days: Optional[int] = None
+
+class MaintenanceUpdate(BaseModel):
+    maintenance_type: Optional[str] = None
+    description: Optional[str] = None
+    due_date: Optional[datetime] = None
+    completed: Optional[bool] = None
+    completed_date: Optional[datetime] = None
+    cost: Optional[float] = None
+    notes: Optional[str] = None
+    recurring: Optional[bool] = None
+    recurring_interval_days: Optional[int] = None
+
 # Portfolio Summary
 class PortfolioSummary(BaseModel):
     total_value: float
