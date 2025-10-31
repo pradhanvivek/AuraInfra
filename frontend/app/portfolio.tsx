@@ -372,40 +372,20 @@ export default function PortfolioScreen() {
     );
   }
 
-  const categories = [
-    {
-      name: 'Properties',
-      value: portfolio.properties_value,
-      count: portfolio.properties_count,
-      icon: 'home',
-      color: '#007AFF',
-      percentage: (portfolio.properties_value / portfolio.total_value) * 100,
-    },
-    {
-      name: 'Vehicles',
-      value: portfolio.vehicles_value,
-      count: portfolio.vehicles_count,
-      icon: 'car',
-      color: '#FF9500',
-      percentage: (portfolio.vehicles_value / portfolio.total_value) * 100,
-    },
-    {
-      name: 'Appliances',
-      value: portfolio.appliances_value,
-      count: portfolio.appliances_count,
-      icon: 'tv',
-      color: '#34C759',
-      percentage: (portfolio.appliances_value / portfolio.total_value) * 100,
-    },
-    {
-      name: 'Jewelry',
-      value: portfolio.jewelry_value,
-      count: portfolio.jewelry_count,
-      icon: 'diamond',
-      color: '#FF2D55',
-      percentage: (portfolio.jewelry_value / portfolio.total_value) * 100,
-    },
-  ];
+  const categories = getCategoriesData();
+
+  // Prepare chart data
+  const chartData = categories.map((cat) => ({
+    name: cat.name,
+    population: cat.value,
+    color: cat.color,
+    legendFontColor: '#7F7F7F',
+    legendFontSize: 12,
+  }));
+
+  const totalAssets = portfolio.properties_count + portfolio.vehicles_count + 
+                     portfolio.appliances_count + portfolio.jewelry_count +
+                     portfolio.furniture_count + portfolio.art_count;
 
   return (
     <View style={styles.container}>
