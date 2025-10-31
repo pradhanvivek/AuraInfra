@@ -3090,6 +3090,162 @@ async def scan_asset(request: ImageScanRequest, credentials: HTTPAuthorizationCr
         raise HTTPException(status_code=500, detail=f"Failed to identify asset: {str(e)}")
 
 
+# ============= MAINTENANCE TRACKING ENDPOINTS =============
+
+@api_router.post("/maintenance", response_model=MaintenanceRecord)
+async def create_maintenance(maintenance_data: MaintenanceCreate, user_id: str = Depends(get_current_user)):
+    """Create a new maintenance record"""
+    maintenance = MaintenanceRecord(user_id=user_id, **maintenance_data.dict())
+    await db.maintenance.insert_one(maintenance.dict())
+    return maintenance
+
+@api_router.get("/maintenance")
+async def get_all_maintenance(
+    user_id: str = Depends(get_current_user),
+    asset_type: Optional[str] = None,
+    asset_id: Optional[str] = None,
+    completed: Optional[bool] = None,
+    upcoming_days: Optional[int] = None
+):
+    """Get maintenance records with optional filters"""
+    query = {"user_id": user_id}
+    
+    if asset_type:
+        query["asset_type"] = asset_type
+    if asset_id:
+        query["asset_id"] = asset_id
+    if completed is not None:
+        query["completed"] = completed
+    
+    maintenance_list = await db.maintenance.find(query).sort("due_date", 1).to_list(length=1000)
+    
+    # Filter by upcoming days if specified
+    if upcoming_days is not None:
+        cutoff_date = datetime.utcnow() + timedelta(days=upcoming_days)
+        maintenance_list = [
+            m for m in maintenance_list 
+            if not m.get('completed') and m.get('due_date') <= cutoff_date
+        ]
+    
+    # Convert ObjectId to string
+    for m in maintenance_list:
+        if '_id' in m:
+            m['_id'] = str(m['_id'])
+    
+    return maintenance_list
+
+@api_router.get("/maintenance/{maintenance_id}")
+async def get_maintenance_by_id(maintenance_id: str, user_id: str = Depends(get_current_user)):
+    """Get a specific maintenance record"""
+    maintenance = await db.maintenance.find_one({"id": maintenance_id, "user_id": user_id})
+    if not maintenance:
+        raise HTTPException(status_code=404, detail="Maintenance record not found")
+    
+    if '_id' in maintenance:
+        maintenance['_id'] = str(maintenance['_id'])
+    return maintenance
+
+@api_router.put("/maintenance/{maintenance_id}")
+async def update_maintenance(
+    maintenance_id: str,
+    maintenance_data: MaintenanceUpdate,
+    user_id: str = Depends(get_current_user)
+):
+    """Update a maintenance record"""
+    update_data = {k: v for k, v in maintenance_data.dict().items() if v is not None}
+    
+    result = await db.maintenance.update_one(
+        {"id": maintenance_id, "user_id": user_id},
+        {"$set": update_data}
+    )
+    
+    if result.modified_count == 0:
+        raise HTTPException(status_code=404, detail="Maintenance record not found")
+    
+    # If completed and recurring, create next occurrence
+    if update_data.get('completed') and update_data.get('completed_date'):
+        maintenance = await db.maintenance.find_one({"id": maintenance_id, "user_id": user_id})
+        if maintenance and maintenance.get('recurring') and maintenance.get('recurring_interval_days'):
+            next_due_date = maintenance['due_date'] + timedelta(days=maintenance['recurring_interval_days'])
+            next_maintenance = MaintenanceRecord(
+                user_id=user_id,
+                asset_type=maintenance['asset_type'],
+                asset_id=maintenance['asset_id'],
+                asset_name=maintenance['asset_name'],
+                maintenance_type=maintenance['maintenance_type'],
+                description=maintenance['description'],
+                due_date=next_due_date,
+                cost=maintenance.get('cost'),
+                notes=maintenance.get('notes'),
+                recurring=True,
+                recurring_interval_days=maintenance['recurring_interval_days']
+            )
+            await db.maintenance.insert_one(next_maintenance.dict())
+    
+    return {"message": "Maintenance updated successfully"}
+
+@api_router.delete("/maintenance/{maintenance_id}")
+async def delete_maintenance(maintenance_id: str, user_id: str = Depends(get_current_user)):
+    """Delete a maintenance record"""
+    result = await db.maintenance.delete_one({"id": maintenance_id, "user_id": user_id})
+    
+    if result.deleted_count == 0:
+        raise HTTPException(status_code=404, detail="Maintenance record not found")
+    
+    return {"message": "Maintenance deleted successfully"}
+
+@api_router.get("/maintenance/asset/{asset_type}/{asset_id}")
+async def get_maintenance_for_asset(
+    asset_type: str,
+    asset_id: str,
+    user_id: str = Depends(get_current_user)
+):
+    """Get all maintenance records for a specific asset"""
+    maintenance_list = await db.maintenance.find({
+        "user_id": user_id,
+        "asset_type": asset_type,
+        "asset_id": asset_id
+    }).sort("due_date", -1).to_list(length=1000)
+    
+    for m in maintenance_list:
+        if '_id' in m:
+            m['_id'] = str(m['_id'])
+    
+    return maintenance_list
+
+@api_router.get("/maintenance/upcoming")
+async def get_upcoming_maintenance(user_id: str = Depends(get_current_user), days: int = 30):
+    """Get upcoming maintenance within specified days"""
+    cutoff_date = datetime.utcnow() + timedelta(days=days)
+    
+    maintenance_list = await db.maintenance.find({
+        "user_id": user_id,
+        "completed": False,
+        "due_date": {"$lte": cutoff_date}
+    }).sort("due_date", 1).to_list(length=1000)
+    
+    for m in maintenance_list:
+        if '_id' in m:
+            m['_id'] = str(m['_id'])
+    
+    return maintenance_list
+
+@api_router.get("/maintenance/overdue")
+async def get_overdue_maintenance(user_id: str = Depends(get_current_user)):
+    """Get overdue maintenance records"""
+    maintenance_list = await db.maintenance.find({
+        "user_id": user_id,
+        "completed": False,
+        "due_date": {"$lt": datetime.utcnow()}
+    }).sort("due_date", 1).to_list(length=1000)
+    
+    for m in maintenance_list:
+        if '_id' in m:
+            m['_id'] = str(m['_id'])
+    
+    return maintenance_list
+
+
 app.include_router(api_router)
 
 app.add_middleware(
