@@ -10,7 +10,13 @@ import { formatCurrency } from '../../utils/localeUtils';
 const API_URL = Constants.expoConfig?.extra?.EXPO_PUBLIC_BACKEND_URL || process.env.EXPO_PUBLIC_BACKEND_URL;
 
 const { width } = Dimensions.get('window');
-const tileSize = width * 0.4; // 40% of screen width for horizontal scrolling
+// Responsive tile size: smaller on larger screens
+const getTileSize = () => {
+  if (width > 1024) return 140; // Desktop/Laptop
+  if (width > 768) return 130; // Tablet
+  return width * 0.35; // Mobile - 35% of screen width
+};
+const tileSize = getTileSize();
 
 interface PortfolioData {
   total_value: number;
