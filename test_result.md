@@ -522,15 +522,18 @@ backend:
 
   - task: "Maintenance Tracking - Get Maintenance"
     implemented: true
-    working: "NA"
+    working: true
     file: "backend/server.py"
     stuck_count: 0
     priority: "high"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
       - working: "NA"
         agent: "main"
         comment: "Added GET /api/maintenance endpoint with multiple filters: asset_type, asset_id, completed status, and upcoming_days. Returns sorted maintenance records by due_date."
+      - working: true
+        agent: "testing"
+        comment: "MAINTENANCE GET ENDPOINT TESTING COMPLETED SUCCESSFULLY: Comprehensive testing of GET /api/maintenance endpoint completed with 100% success rate. All test objectives met: 1) Get all maintenance records without filters working correctly, 2) Filter by asset_type=vehicle returning correct records, 3) Filter by completed=false returning only incomplete records, 4) Filter by upcoming_days=30 returning records within timeframe, 5) Filter by specific asset (asset_type + asset_id) returning targeted records, 6) Verified proper sorting by due_date in ascending order. All 6 filter tests passed successfully demonstrating robust query functionality with proper authentication and user isolation."
 
   - task: "Maintenance Tracking - Update & Recurring"
     implemented: true
