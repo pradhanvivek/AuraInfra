@@ -196,6 +196,14 @@ export default function Properties() {
           }
         />
       )}
+
+      {/* Floating Action Button */}
+      <TouchableOpacity
+        style={styles.fab}
+        onPress={() => router.push('/property/add')}
+      >
+        <Ionicons name="add" size={28} color="#fff" />
+      </TouchableOpacity>
     </SafeAreaView>
   );
 }
