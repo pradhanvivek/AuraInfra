@@ -1056,6 +1056,37 @@ async def get_portfolio_summary(user_id: str = Depends(get_current_user)):
         logger.error(f"Portfolio summary error: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))
 
+@api_router.get("/portfolio/details")
+async def get_portfolio_details(user_id: str = Depends(get_current_user)):
+    """Get detailed portfolio data including all assets for PDF export"""
+    try:
+        # Fetch all asset types
+        properties = await db.properties.find({"user_id": user_id}).to_list(length=1000)
+        vehicles = await db.vehicles.find({"user_id": user_id}).to_list(length=1000)
+        appliances = await db.appliances.find({"user_id": user_id}).to_list(length=1000)
+        jewelry = await db.jewelry.find({"user_id": user_id}).to_list(length=1000)
+        furniture = await db.furniture.find({"user_id": user_id}).to_list(length=1000)
+        art = await db.art.find({"user_id": user_id}).to_list(length=1000)
+        
+        # Convert ObjectId to string for JSON serialization
+        for item_list in [properties, vehicles, appliances, jewelry, furniture, art]:
+            for item in item_list:
+                if '_id' in item:
+                    item['_id'] = str(item['_id'])
+        
+        return {
+            "properties": properties,
+            "vehicles": vehicles,
+            "appliances": appliances,
+            "jewelry": jewelry,
+            "furniture": furniture,
+            "art": art
+        }
+    except Exception as e:
+        logger.error(f"Portfolio details error: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
 # ============= VEHICLE ENDPOINTS =============
 
 @api_router.post("/vehicles")
