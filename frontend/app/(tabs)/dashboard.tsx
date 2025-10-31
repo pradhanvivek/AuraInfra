@@ -119,8 +119,16 @@ export default function DashboardScreen() {
       title: 'Art',
       icon: 'color-palette',
       color: '#AF52DE',
-      route: '/art',
+      route: '/arts',
       count: portfolioData?.art_count || 0,
+    },
+    {
+      id: 'maintenance',
+      title: 'Maintenance',
+      icon: 'construct',
+      color: '#FF9500',
+      route: '/maintenance',
+      count: 0,
     },
     {
       id: 'portfolio',
