@@ -137,6 +137,10 @@ const styles = StyleSheet.create({
   keyboardView: {
     flex: 1,
   },
+  innerContainer: {
+    flex: 1,
+    justifyContent: 'space-between',
+  },
   content: {
     flex: 1,
     padding: 24,
