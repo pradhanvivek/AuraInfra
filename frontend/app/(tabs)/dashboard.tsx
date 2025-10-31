@@ -41,6 +41,7 @@ export default function DashboardScreen() {
   const { token, username } = useAuth();
   const [portfolioData, setPortfolioData] = useState<PortfolioData | null>(null);
   const [loading, setLoading] = useState(true);
+  const [isValueHidden, setIsValueHidden] = useState(true);
 
   const fetchPortfolioSummary = async () => {
     try {
