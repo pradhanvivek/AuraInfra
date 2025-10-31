@@ -177,6 +177,10 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     color: '#000',
   },
+  logo: {
+    width: 40,
+    height: 40,
+  },
   list: {
     padding: 16,
   },
