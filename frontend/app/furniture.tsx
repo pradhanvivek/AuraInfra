@@ -16,6 +16,7 @@ import axios from 'axios';
 import Constants from 'expo-constants';
 import { useCallback } from 'react';
 
+const LOGO_URL = 'https://customer-assets.emergentagent.com/job_95500ee6-6a87-4222-9712-857c1f99b6e3/artifacts/6qjibbhd_logo-new-over.webp';
 const API_URL = Constants.expoConfig?.extra?.EXPO_PUBLIC_BACKEND_URL || process.env.EXPO_PUBLIC_BACKEND_URL;
 
 interface Furniture {
