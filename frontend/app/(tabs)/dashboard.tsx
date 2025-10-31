@@ -367,17 +367,26 @@ const styles = StyleSheet.create({
   headerTop: {
     flexDirection: 'row',
     alignItems: 'center',
+    justifyContent: 'space-between',
     marginBottom: 6,
   },
-  logo: {
-    width: 80,
-    height: 80,
-    marginRight: 12,
+  greetingContainer: {
+    flex: 1,
   },
-  greeting: {
-    fontSize: 24,
+  helloText: {
+    fontSize: 16,
+    color: '#666',
+    marginBottom: 2,
+  },
+  usernameText: {
+    fontSize: 28,
     fontWeight: 'bold',
     color: '#000',
+  },
+  logo: {
+    width: 60,
+    height: 60,
+    marginLeft: 12,
   },
   valueCard: {
     backgroundColor: '#f8f9fa',
