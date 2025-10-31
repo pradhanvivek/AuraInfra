@@ -257,22 +257,25 @@ const styles = StyleSheet.create({
   content: {
     padding: 12,
   },
+  tilesSection: {
+    marginBottom: 16,
+  },
   sectionTitle: {
     fontSize: 18,
     fontWeight: 'bold',
     color: '#000',
     marginBottom: 12,
     marginTop: 4,
+    paddingHorizontal: 4,
   },
   tilesContainer: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 10,
-    marginBottom: 16,
+    paddingHorizontal: 4,
+    paddingVertical: 4,
+    gap: 12,
   },
   tile: {
     width: tileSize,
-    aspectRatio: 1,
+    height: tileSize,
     borderRadius: 16,
     padding: 12,
     justifyContent: 'space-between',
