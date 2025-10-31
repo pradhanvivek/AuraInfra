@@ -522,16 +522,13 @@ export default function PortfolioScreen() {
         <View style={styles.statsGrid}>
           <View style={styles.statCard}>
             <Ionicons name="trending-up" size={32} color="#34C759" />
-            <Text style={styles.statValue}>
-              {portfolio.properties_count + portfolio.vehicles_count + 
-               portfolio.appliances_count + portfolio.jewelry_count}
-            </Text>
+            <Text style={styles.statValue}>{totalAssets}</Text>
             <Text style={styles.statLabel}>Total Assets</Text>
           </View>
           
           <View style={styles.statCard}>
             <Ionicons name="bar-chart" size={32} color="#007AFF" />
-            <Text style={styles.statValue}>4</Text>
+            <Text style={styles.statValue}>{categories.length}</Text>
             <Text style={styles.statLabel}>Categories</Text>
           </View>
         </View>
