@@ -128,13 +128,10 @@ export default function DashboardScreen() {
   return (
     <View style={styles.container}>
       <View style={styles.header}>
-        <View>
-          <Text style={styles.greeting}>Hello, {username || 'User'}!</Text>
-          <Text style={styles.subtitle}>Manage your assets</Text>
-        </View>
+        <Text style={styles.greeting}>Hello, {username || 'User'}!</Text>
         {portfolioData && (
           <View style={styles.valueCard}>
-            <Text style={styles.valueLabel}>Total Value</Text>
+            <Text style={styles.valueLabel}>Total</Text>
             <Text style={styles.valueAmount}>
               {formatCurrency(portfolioData.total_value)}
             </Text>
@@ -146,8 +143,6 @@ export default function DashboardScreen() {
         contentContainerStyle={styles.content}
         showsVerticalScrollIndicator={false}
       >
-        <Text style={styles.sectionTitle}>Asset Categories</Text>
-        
         <View style={styles.tilesContainer}>
           {categories.map((category) => (
             <TouchableOpacity
@@ -157,7 +152,7 @@ export default function DashboardScreen() {
               activeOpacity={0.8}
             >
               <View style={styles.tileHeader}>
-                <Ionicons name={category.icon as any} size={32} color="#fff" />
+                <Ionicons name={category.icon as any} size={28} color="#fff" />
                 {category.count > 0 && (
                   <View style={styles.badge}>
                     <Text style={styles.badgeText}>{category.count}</Text>
