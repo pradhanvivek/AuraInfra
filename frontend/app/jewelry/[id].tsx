@@ -243,7 +243,7 @@ export default function JewelryDetailsScreen() {
           onClose={() => setSelectedImageIndex(null)}
         />
       )}
-    </SafeAreaView>
+    </View>
   );
 }
 
