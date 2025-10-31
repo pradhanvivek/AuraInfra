@@ -384,8 +384,8 @@ const styles = StyleSheet.create({
     color: '#000',
   },
   logo: {
-    width: 60,
-    height: 60,
+    width: 120,
+    height: 120,
     marginLeft: 12,
   },
   valueCard: {
