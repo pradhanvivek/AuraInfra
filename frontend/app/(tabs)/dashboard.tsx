@@ -138,6 +138,25 @@ export default function DashboardScreen() {
     }
   };
 
+  // Prepare pie chart data
+  const getChartData = () => {
+    if (!portfolioData) return [];
+    
+    const data = [
+      { name: 'Properties', value: portfolioData.properties_value, color: '#007AFF', legendFontColor: '#000', legendFontSize: 11 },
+      { name: 'Vehicles', value: portfolioData.vehicles_value, color: '#FF9500', legendFontColor: '#000', legendFontSize: 11 },
+      { name: 'Appliances', value: portfolioData.appliances_value, color: '#34C759', legendFontColor: '#000', legendFontSize: 11 },
+      { name: 'Jewelry', value: portfolioData.jewelry_value, color: '#FF2D55', legendFontColor: '#000', legendFontSize: 11 },
+      { name: 'Furniture', value: portfolioData.furniture_value, color: '#5856D6', legendFontColor: '#000', legendFontSize: 11 },
+      { name: 'Art', value: portfolioData.art_value, color: '#FF3B30', legendFontColor: '#000', legendFontSize: 11 },
+    ];
+    
+    // Filter out categories with 0 value
+    return data.filter(item => item.value > 0);
+  };
+
+  const chartData = getChartData();
+
   return (
     <View style={styles.container}>
       <View style={styles.header}>
