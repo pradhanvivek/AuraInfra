@@ -296,10 +296,13 @@ const styles = StyleSheet.create({
     shadowRadius: 4,
     elevation: 2,
   },
-  headerLeft: {
+  headerContent: {
+    flex: 1,
+  },
+  headerTop: {
     flexDirection: 'row',
     alignItems: 'center',
-    flex: 1,
+    marginBottom: 12,
   },
   logo: {
     width: 80,
@@ -311,22 +314,21 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     color: '#000',
   },
-  subtitle: {
-    fontSize: 14,
-    color: '#8E8E93',
-  },
   valueCard: {
-    alignItems: 'flex-end',
+    backgroundColor: '#f8f9fa',
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    borderRadius: 12,
   },
   valueLabel: {
-    fontSize: 11,
-    color: '#8E8E93',
-    marginBottom: 2,
+    fontSize: 12,
+    color: '#666',
+    marginBottom: 4,
   },
   valueAmount: {
-    fontSize: 18,
+    fontSize: 24,
     fontWeight: 'bold',
-    color: '#34C759',
+    color: '#000',
   },
   content: {
     padding: 12,
