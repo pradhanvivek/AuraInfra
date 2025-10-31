@@ -333,6 +333,19 @@ const styles = StyleSheet.create({
   content: {
     padding: 12,
   },
+  chartSection: {
+    marginBottom: 20,
+  },
+  chartCard: {
+    backgroundColor: '#fff',
+    borderRadius: 16,
+    padding: 16,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.05,
+    shadowRadius: 4,
+    elevation: 2,
+  },
   tilesSection: {
     marginBottom: 16,
   },
