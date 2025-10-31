@@ -128,12 +128,11 @@ export default function Properties() {
           <Ionicons name="arrow-back" size={24} color="#007AFF" />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>My Properties</Text>
-        <TouchableOpacity
-          style={styles.addButton}
-          onPress={() => router.push('/property/add')}
-        >
-          <Ionicons name="add" size={24} color="#007AFF" />
-        </TouchableOpacity>
+        <Image 
+          source={{ uri: LOGO_URL }}
+          style={styles.logo}
+          resizeMode="contain"
+        />
       </View>
 
       {/* Search Bar */}
