@@ -67,6 +67,18 @@ export default function AddProperty() {
 
   return (
     <SafeAreaView style={styles.container} edges={['bottom']}>
+      {/* Header with Back and Cancel */}
+      <View style={styles.header}>
+        <TouchableOpacity onPress={() => router.back()} style={styles.headerButton}>
+          <Ionicons name="arrow-back" size={24} color="#007AFF" />
+          <Text style={styles.headerButtonText}>Back</Text>
+        </TouchableOpacity>
+        <Text style={styles.headerTitle}>Add Property</Text>
+        <TouchableOpacity onPress={() => router.back()} style={styles.headerButton}>
+          <Text style={styles.cancelText}>Cancel</Text>
+        </TouchableOpacity>
+      </View>
+
       <KeyboardAvoidingView
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
         style={styles.keyboardView}
