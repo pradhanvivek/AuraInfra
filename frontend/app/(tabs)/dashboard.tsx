@@ -200,12 +200,17 @@ export default function DashboardScreen() {
       <View style={styles.header}>
         <View style={styles.headerContent}>
           <View style={styles.headerTop}>
+            <View style={styles.greetingContainer}>
+              <Text style={styles.helloText}>Hello</Text>
+              <Text style={styles.usernameText}>
+                {username ? username.charAt(0).toUpperCase() + username.slice(1).toLowerCase() : 'User'}
+              </Text>
+            </View>
             <Image 
               source={{ uri: 'https://customer-assets.emergentagent.com/job_95500ee6-6a87-4222-9712-857c1f99b6e3/artifacts/6qjibbhd_logo-new-over.webp' }}
               style={styles.logo}
               resizeMode="contain"
             />
-            <Text style={styles.greeting}>Hello, {username || 'User'}!</Text>
           </View>
           {portfolioData && (
             <TouchableOpacity 
