@@ -223,7 +223,7 @@ const styles = StyleSheet.create({
   },
   furnitureName: {
     fontSize: 16,
-    fontWeight: '600',
+    fontWeight: 'bold',
     color: '#000',
     marginBottom: 4,
   },
@@ -238,7 +238,7 @@ const styles = StyleSheet.create({
   categoryText: {
     fontSize: 12,
     color: '#34C759',
-    fontWeight: '600',
+    fontWeight: 'bold',
   },
   detailsRow: {
     flexDirection: 'row',
@@ -273,7 +273,7 @@ const styles = StyleSheet.create({
   },
   emptyText: {
     fontSize: 18,
-    fontWeight: '600',
+    fontWeight: 'bold',
     color: '#000',
     marginTop: 16,
   },
