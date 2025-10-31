@@ -135,6 +135,7 @@ export default function PropertyDetails() {
         </Tab.Navigator>
       </View>
     </View>
+    </>
   );
 }
 
