@@ -492,15 +492,18 @@ backend:
 
   - task: "Portfolio Details Endpoint"
     implemented: true
-    working: "NA"
+    working: true
     file: "backend/server.py"
     stuck_count: 0
     priority: "high"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
       - working: "NA"
         agent: "main"
         comment: "Added GET /api/portfolio/details endpoint to fetch all assets (properties, vehicles, appliances, jewelry, furniture, art) for comprehensive PDF export. Endpoint returns complete asset data with all fields for detailed reporting. Converts ObjectId to string for JSON serialization."
+      - working: true
+        agent: "testing"
+        comment: "PORTFOLIO DETAILS ENDPOINT TESTING COMPLETED SUCCESSFULLY: Comprehensive testing of GET /api/portfolio/details endpoint completed with 100% success rate. All test objectives met: 1) Response structure correct with all required keys (properties, vehicles, appliances, jewelry, furniture, art), 2) All test assets found in response (properties, vehicles, appliances), 3) ObjectId conversion to string working correctly for JSON serialization, 4) Endpoint returns complete asset data for PDF export functionality. The endpoint successfully fetches all asset types for authenticated users and properly handles data serialization."
 
   - task: "Maintenance Tracking - Create Maintenance"
     implemented: true
