@@ -184,6 +184,29 @@ export default function DashboardScreen() {
         contentContainerStyle={styles.content}
         showsVerticalScrollIndicator={false}
       >
+        {/* Portfolio Chart Preview */}
+        {chartData.length > 0 && (
+          <View style={styles.chartSection}>
+            <Text style={styles.sectionTitle}>Portfolio Overview</Text>
+            <View style={styles.chartCard}>
+              <PieChart
+                data={chartData}
+                width={width - 40}
+                height={180}
+                chartConfig={{
+                  color: (opacity = 1) => `rgba(0, 0, 0, ${opacity})`,
+                }}
+                accessor="value"
+                backgroundColor="transparent"
+                paddingLeft="0"
+                center={[10, 0]}
+                absolute
+                hasLegend={true}
+              />
+            </View>
+          </View>
+        )}
+
         {/* Horizontally Scrollable Tiles */}
         <View style={styles.tilesSection}>
           <Text style={styles.sectionTitle}>Your Assets</Text>
