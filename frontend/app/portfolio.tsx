@@ -7,6 +7,7 @@ import {
   TouchableOpacity,
   ActivityIndicator,
   Alert,
+  Dimensions,
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
@@ -14,8 +15,12 @@ import { useAuth } from '../contexts/AuthContext';
 import axios from 'axios';
 import Constants from 'expo-constants';
 import { formatCurrency } from '../utils/localeUtils';
+import { PieChart } from 'react-native-chart-kit';
+import * as Print from 'expo-print';
+import * as Sharing from 'expo-sharing';
 
 const API_URL = Constants.expoConfig?.extra?.EXPO_PUBLIC_BACKEND_URL || process.env.EXPO_PUBLIC_BACKEND_URL;
+const screenWidth = Dimensions.get('window').width;
 
 interface PortfolioData {
   total_value: number;
@@ -23,10 +28,14 @@ interface PortfolioData {
   vehicles_value: number;
   appliances_value: number;
   jewelry_value: number;
+  furniture_value: number;
+  art_value: number;
   properties_count: number;
   vehicles_count: number;
   appliances_count: number;
   jewelry_count: number;
+  furniture_count: number;
+  art_count: number;
 }
 
 export default function PortfolioScreen() {
