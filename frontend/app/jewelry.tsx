@@ -214,7 +214,7 @@ const styles = StyleSheet.create({
   },
   jewelryName: {
     fontSize: 16,
-    fontWeight: '600',
+    fontWeight: 'bold',
     color: '#000',
     marginBottom: 4,
   },
@@ -229,7 +229,7 @@ const styles = StyleSheet.create({
   typeText: {
     fontSize: 12,
     color: '#FF2D55',
-    fontWeight: '600',
+    fontWeight: 'bold',
   },
   detailsRow: {
     flexDirection: 'row',
@@ -264,7 +264,7 @@ const styles = StyleSheet.create({
   },
   emptyText: {
     fontSize: 18,
-    fontWeight: '600',
+    fontWeight: 'bold',
     color: '#000',
     marginTop: 16,
   },
