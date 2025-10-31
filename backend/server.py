@@ -2928,6 +2928,85 @@ async def get_property_health_score(property_id: str, user_id: str = Depends(get
     }
 
 
+# ============= ASSET IDENTIFICATION ENDPOINT =============
+
+@api_router.post("/scan-asset")
+async def scan_asset(request: ImageScanRequest, credentials: HTTPAuthorizationCredentials = Depends(security)):
+    """
+    Identify what type of asset is in an image using Gemini AI
+    """
+    try:
+        user = await authenticate_user(credentials)
+        
+        # Use Gemini to identify the asset type
+        from emergentintegrations.llm.chat import LlmChat, UserMessage, ImageContent
+        
+        # Create the chat instance
+        llm_chat = LlmChat(model='gemini-2.0-flash-exp')
+        
+        # Create the prompt
+        prompt = """You are an expert at identifying physical assets and objects. 
+        Look at this image and identify what type of asset it is.
+        
+        Respond with ONLY a JSON object in this exact format:
+        {
+            "asset_type": "<one of: vehicle, appliance, jewelry, furniture, art>",
+            "confidence": <number between 0 and 1>,
+            "description": "<brief description of what you see>"
+        }
+        
+        Rules:
+        - vehicle: cars, motorcycles, boats, RVs, etc.
+        - appliance: TV, refrigerator, washing machine, microwave, AC, etc.
+        - jewelry: rings, necklaces, watches, bracelets, etc.
+        - furniture: sofas, chairs, tables, beds, cabinets, etc.
+        - art: paintings, sculptures, drawings, antiques, collectibles, etc.
+        
+        Choose the MOST appropriate category. Return ONLY the JSON, no other text."""
+        
+        # Create the message with image
+        image_content = ImageContent(
+            image_base64=request.image,
+            mime_type="image/jpeg"
+        )
+        
+        message = UserMessage(content=[prompt, image_content])
+        
+        # Get AI response
+        response = await llm_chat.ask_async(message)
+        response_text = response.content.strip()
+        
+        # Parse the JSON response
+        import json
+        # Remove markdown code blocks if present
+        if response_text.startswith('```'):
+            response_text = response_text.split('```')[1]
+            if response_text.startswith('json'):
+                response_text = response_text[4:]
+            response_text = response_text.strip()
+        
+        result = json.loads(response_text)
+        
+        # Validate and return
+        return {
+            "asset_type": result.get("asset_type", "appliance"),
+            "confidence": result.get("confidence", 0.5),
+            "description": result.get("description", "Asset identified")
+        }
+        
+    except json.JSONDecodeError as e:
+        logger.error(f"Failed to parse AI response: {e}")
+        # Return a default response
+        return {
+            "asset_type": "appliance",
+            "confidence": 0.3,
+            "description": "Could not clearly identify the asset type"
+        }
+    except Exception as e:
+        logger.error(f"Asset identification error: {e}")
+        raise HTTPException(status_code=500, detail=f"Failed to identify asset: {str(e)}")
+
+
 app.include_router(api_router)
 
 app.add_middleware(
