@@ -16,7 +16,7 @@ from dotenv import load_dotenv
 load_dotenv('/app/frontend/.env')
 
 # Configuration
-BASE_URL = os.getenv('EXPO_PUBLIC_BACKEND_URL', 'https://aurainfra-pm.preview.emergentagent.com')
+BASE_URL = os.getenv('EXPO_PUBLIC_BACKEND_URL', 'https://asset-manager-ai.preview.emergentagent.com')
 API_BASE = f"{BASE_URL}/api"
 
 class BackendTester:
