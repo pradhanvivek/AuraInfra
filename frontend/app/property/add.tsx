@@ -260,6 +260,7 @@ export default function AddProperty() {
         </View>
       </KeyboardAvoidingView>
     </SafeAreaView>
+    </>
   );
 }
 
