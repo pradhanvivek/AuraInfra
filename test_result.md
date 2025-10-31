@@ -489,6 +489,67 @@ backend:
         agent: "testing"
         comment: "JEWELRY EDIT FUNCTIONALITY BACKEND TESTING COMPLETED SUCCESSFULLY: Comprehensive testing of PUT /api/jewelry/{id} endpoint completed with 100% success rate. All test objectives met: 1) Jewelry creation for edit test (PASS - created Diamond Engagement Ring with ID), 2) PUT update operation (PASS - successfully updated jewelry with message 'Jewelry updated successfully'), 3) Update verification (PASS - all fields updated correctly including name, metal, stones, number_of_stones, weight, appraisal_value, appraisal_date, certificate_number, certificate_photo, photos array, and warranty_info). The backend properly handles jewelry editing with complete field updates, certificate management, photo management, and data persistence. Ready for frontend integration."
 
+
+  - task: "Portfolio Details Endpoint"
+    implemented: true
+    working: "NA"
+    file: "backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "Added GET /api/portfolio/details endpoint to fetch all assets (properties, vehicles, appliances, jewelry, furniture, art) for comprehensive PDF export. Endpoint returns complete asset data with all fields for detailed reporting. Converts ObjectId to string for JSON serialization."
+
+  - task: "Maintenance Tracking - Create Maintenance"
+    implemented: true
+    working: "NA"
+    file: "backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "Added POST /api/maintenance endpoint with MaintenanceRecord, MaintenanceCreate models. Supports creating maintenance records with asset_type, asset_id, asset_name, maintenance_type, description, due_date, cost, notes, and recurring options."
+
+  - task: "Maintenance Tracking - Get Maintenance"
+    implemented: true
+    working: "NA"
+    file: "backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "Added GET /api/maintenance endpoint with multiple filters: asset_type, asset_id, completed status, and upcoming_days. Returns sorted maintenance records by due_date."
+
+  - task: "Maintenance Tracking - Update & Recurring"
+    implemented: true
+    working: "NA"
+    file: "backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "Added PUT /api/maintenance/{id} endpoint with MaintenanceUpdate model. When marking complete, automatically creates next occurrence for recurring maintenance based on recurring_interval_days. Supports updating all maintenance fields."
+
+  - task: "Maintenance Tracking - Additional Endpoints"
+    implemented: true
+    working: "NA"
+    file: "backend/server.py"
+    stuck_count: 0
+    priority: "medium"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "Added supplementary endpoints: GET /api/maintenance/{id} (get by ID), DELETE /api/maintenance/{id}, GET /api/maintenance/asset/{asset_type}/{asset_id} (get for specific asset), GET /api/maintenance/upcoming?days=30 (upcoming within days), GET /api/maintenance/overdue (overdue records)."
+
 frontend:
   - task: "Portfolio Charting & PDF Export"
     implemented: true
