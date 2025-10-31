@@ -60,6 +60,8 @@ export default function HealthScoreScreen({ propertyId }: HealthScoreScreenProps
       router.push(routeMap[key] as any);
     }
   };
+
+  const fetchHealthScore = async () => {
     try {
       const data = await propertyApi.getHealthScore(token!, propertyId);
       setHealthData(data);
