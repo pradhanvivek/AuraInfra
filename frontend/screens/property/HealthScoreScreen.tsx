@@ -149,7 +149,12 @@ export default function HealthScoreScreen({ propertyId }: HealthScoreScreenProps
         <Text style={styles.sectionTitle}>Score Breakdown</Text>
         
         {Object.entries(healthData.breakdown).map(([key, data]: [string, any]) => (
-          <View key={key} style={styles.categoryCard}>
+          <TouchableOpacity 
+            key={key} 
+            style={styles.categoryCard}
+            onPress={() => handleCategoryPress(key)}
+            activeOpacity={0.7}
+          >
             <View style={styles.categoryHeader}>
               <View style={styles.categoryTitleRow}>
                 <Ionicons name={getCategoryIcon(key) as any} size={24} color="#007AFF" />
