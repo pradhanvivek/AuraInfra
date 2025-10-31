@@ -244,20 +244,22 @@ export default function DashboardScreen() {
             <Text style={styles.sectionTitle}>Portfolio Overview</Text>
             <View style={styles.chartCard}>
               <View style={styles.chartContainer}>
-                <PieChart
-                  data={chartData}
-                  width={width * 0.45}
-                  height={180}
-                  chartConfig={{
-                    color: (opacity = 1) => `rgba(0, 0, 0, ${opacity})`,
-                  }}
-                  accessor="value"
-                  backgroundColor="transparent"
-                  paddingLeft="0"
-                  center={[0, 0]}
-                  absolute
-                  hasLegend={false}
-                />
+                <View style={styles.chartWrapper}>
+                  <PieChart
+                    data={chartData}
+                    width={width * 0.5}
+                    height={180}
+                    chartConfig={{
+                      color: (opacity = 1) => `rgba(0, 0, 0, ${opacity})`,
+                    }}
+                    accessor="value"
+                    backgroundColor="transparent"
+                    paddingLeft="15"
+                    center={[0, 0]}
+                    absolute
+                    hasLegend={false}
+                  />
+                </View>
                 {/* Custom Legend on the right */}
                 <View style={styles.customLegend}>
                   {chartData.map((item, index) => (
