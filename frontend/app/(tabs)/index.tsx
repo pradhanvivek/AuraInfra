@@ -54,6 +54,7 @@ export default function PropertiesScreen() {
       icon: 'cash-outline',
       color: '#34C759',
       route: '/hoa-maintenance',
+      isAd: false,
     },
     {
       id: 'visitors',
@@ -62,6 +63,7 @@ export default function PropertiesScreen() {
       icon: 'people-outline',
       color: '#007AFF',
       route: '/visitors',
+      isAd: false,
     },
     {
       id: 'community',
@@ -70,6 +72,7 @@ export default function PropertiesScreen() {
       icon: 'chatbubbles-outline',
       color: '#FF9500',
       route: '/community',
+      isAd: false,
     },
     {
       id: 'amenities',
@@ -78,6 +81,7 @@ export default function PropertiesScreen() {
       icon: 'calendar-outline',
       color: '#5856D6',
       route: '/amenities',
+      isAd: false,
     },
     {
       id: 'complaints',
@@ -86,6 +90,7 @@ export default function PropertiesScreen() {
       icon: 'construct-outline',
       color: '#FF3B30',
       route: '/complaints',
+      isAd: false,
     },
     {
       id: 'documents',
@@ -94,6 +99,7 @@ export default function PropertiesScreen() {
       icon: 'document-text-outline',
       color: '#AF52DE',
       route: '/hoa-documents',
+      isAd: false,
     },
     {
       id: 'meetings',
@@ -102,6 +108,16 @@ export default function PropertiesScreen() {
       icon: 'calendar-sharp',
       color: '#00C7BE',
       route: '/meetings',
+      isAd: false,
+    },
+    {
+      id: 'ad-tile',
+      title: 'Special Offer',
+      description: 'Sponsored content',
+      icon: 'megaphone-outline',
+      color: '#FF2D55',
+      route: null,
+      isAd: true,
     },
   ];
 
