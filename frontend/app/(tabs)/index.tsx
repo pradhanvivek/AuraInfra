@@ -184,6 +184,52 @@ export default function PropertiesScreen() {
           <Ionicons name="chevron-forward" size={20} color="#C7C7CC" />
         </TouchableOpacity>
       </ScrollView>
+
+      {/* Property Selector Modal */}
+      <Modal
+        visible={selectorModalVisible}
+        transparent
+        animationType="slide"
+        onRequestClose={() => setSelectorModalVisible(false)}
+      >
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalContent}>
+            <View style={styles.modalHeader}>
+              <Text style={styles.modalTitle}>Select Property</Text>
+              <TouchableOpacity onPress={() => setSelectorModalVisible(false)}>
+                <Ionicons name="close-circle" size={28} color="#8E8E93" />
+              </TouchableOpacity>
+            </View>
+            
+            <ScrollView style={styles.modalList}>
+              {properties.map((property) => (
+                <TouchableOpacity
+                  key={property.id}
+                  style={[
+                    styles.propertyOption,
+                    selectedProperty?.id === property.id && styles.propertyOptionSelected
+                  ]}
+                  onPress={() => {
+                    setSelectedProperty(property);
+                    setSelectorModalVisible(false);
+                  }}
+                >
+                  <View style={styles.propertyOptionContent}>
+                    <Text style={styles.propertyOptionName}>{property.name}</Text>
+                    <Text style={styles.propertyOptionAddress}>{property.address}</Text>
+                    <View style={styles.propertyOptionBadge}>
+                      <Text style={styles.propertyOptionRole}>{property.user_role}</Text>
+                    </View>
+                  </View>
+                  {selectedProperty?.id === property.id && (
+                    <Ionicons name="checkmark-circle" size={24} color="#007AFF" />
+                  )}
+                </TouchableOpacity>
+              ))}
+            </ScrollView>
+          </View>
+        </View>
+      </Modal>
     </View>
   );
 }
