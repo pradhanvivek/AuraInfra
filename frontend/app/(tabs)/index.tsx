@@ -108,11 +108,9 @@ export default function PropertiesScreen() {
       {/* Header with Property Selector */}
       <View style={styles.header}>
         <View style={styles.headerContent}>
-          <Image 
-            source={require('../../assets/logo.png')} 
-            style={styles.logo} 
-            resizeMode="contain"
-          />
+          <View style={styles.logoCircle}>
+            <Ionicons name="business" size={24} color="#fff" />
+          </View>
           <Text style={styles.headerTitle}>Property Management</Text>
         </View>
       </View>
