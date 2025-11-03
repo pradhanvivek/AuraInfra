@@ -509,7 +509,8 @@ const styles = StyleSheet.create({
   },
   categoriesContent: {
     paddingHorizontal: 8,
-    paddingVertical: 0,
+    paddingTop: 5,
+    paddingBottom: 0,
     gap: 6,
   },
   categoryChip: {
