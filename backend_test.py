@@ -12,7 +12,7 @@ import base64
 import os
 
 # Configuration
-BACKEND_URL = "https://property-pulse-80.preview.emergentagent.com/api"
+BACKEND_URL = "https://smartassetmgr.preview.emergentagent.com/api"
 TEST_USERNAME = f"testuser_{uuid.uuid4().hex[:8]}"
 TEST_PASSWORD = "SecurePass123!"
 
