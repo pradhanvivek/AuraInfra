@@ -170,34 +170,45 @@ export default function PropertiesScreen() {
       </View>
 
       <ScrollView contentContainerStyle={styles.content}>
-        {/* Management Cards */}
-        <Text style={styles.sectionTitle}>Property Management</Text>
-        {managementCards.map((card) => (
-          <TouchableOpacity
-            key={card.id}
-            style={styles.card}
-            onPress={() => {
-              // Pass selected property ID to the route
-              router.push({
-                pathname: card.route,
-                params: { propertyId: selectedProperty?.id }
-              } as any);
-            }}
-            activeOpacity={0.7}
-          >
-            <View style={[styles.iconCircle, { backgroundColor: card.color + '20' }]}>
-              <Ionicons name={card.icon as any} size={32} color={card.color} />
+        {/* Hero Banner / Ad Slot */}
+        <View style={styles.heroBanner}>
+          <View style={styles.bannerContent}>
+            <Ionicons name="home" size={40} color="#5856D6" />
+            <View style={styles.bannerText}>
+              <Text style={styles.bannerTitle}>Find Your Dream Home</Text>
+              <Text style={styles.bannerSubtitle}>Premium Properties • Best Prices</Text>
             </View>
-            <View style={styles.cardContent}>
-              <Text style={styles.cardTitle}>{card.title}</Text>
-              <Text style={styles.cardDescription}>{card.description}</Text>
-            </View>
-            <Ionicons name="chevron-forward" size={24} color="#C7C7CC" />
-          </TouchableOpacity>
-        ))}
+            <TouchableOpacity style={styles.bannerButton}>
+              <Text style={styles.bannerButtonText}>Explore</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
 
-        {/* Quick Actions */}
+        {/* Quick Actions Grid */}
         <Text style={styles.sectionTitle}>Quick Actions</Text>
+        <View style={styles.quickActionsGrid}>
+          {managementCards.map((card) => (
+            <TouchableOpacity
+              key={card.id}
+              style={styles.quickActionItem}
+              onPress={() => {
+                router.push({
+                  pathname: card.route,
+                  params: { propertyId: selectedProperty?.id }
+                } as any);
+              }}
+              activeOpacity={0.7}
+            >
+              <View style={[styles.quickActionIcon, { backgroundColor: card.color + '15' }]}>
+                <Ionicons name={card.icon as any} size={28} color={card.color} />
+              </View>
+              <Text style={styles.quickActionLabel}>{card.title}</Text>
+            </TouchableOpacity>
+          ))}
+        </View>
+
+        {/* Property Info Section */}
+        <Text style={styles.sectionTitle}>Property</Text>
         <TouchableOpacity
           style={styles.actionCard}
           onPress={() => router.push('/property/add' as any)}
