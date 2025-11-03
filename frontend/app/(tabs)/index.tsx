@@ -208,19 +208,34 @@ export default function PropertiesScreen() {
           {managementCards.map((card) => (
             <TouchableOpacity
               key={card.id}
-              style={styles.compactCard}
+              style={[
+                styles.compactCard,
+                card.isAd && styles.adCard
+              ]}
               onPress={() => {
-                router.push({
-                  pathname: card.route,
-                  params: { propertyId: selectedProperty?.id }
-                } as any);
+                if (card.isAd) {
+                  // Handle ad click - can open external link or modal
+                  console.log('Ad tile tapped');
+                } else {
+                  router.push({
+                    pathname: card.route,
+                    params: { propertyId: selectedProperty?.id }
+                  } as any);
+                }
               }}
               activeOpacity={0.7}
             >
-              <View style={[styles.compactIcon, { backgroundColor: card.color + '20' }]}>
+              <View style={[
+                styles.compactIcon,
+                { backgroundColor: card.color + '20' },
+                card.isAd && styles.adIcon
+              ]}>
                 <Ionicons name={card.icon as any} size={24} color={card.color} />
               </View>
-              <Text style={styles.compactLabel} numberOfLines={2}>
+              <Text style={[
+                styles.compactLabel,
+                card.isAd && styles.adLabel
+              ]} numberOfLines={2}>
                 {card.title}
               </Text>
             </TouchableOpacity>
