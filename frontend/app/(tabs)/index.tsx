@@ -481,8 +481,8 @@ const styles = StyleSheet.create({
     textTransform: 'uppercase',
   },
   sectionTitle: {
-    fontSize: 20,
-    fontWeight: 'bold',
+    fontSize: 18,
+    fontWeight: '700',
     color: '#000',
     marginBottom: 16,
     marginTop: 8,
