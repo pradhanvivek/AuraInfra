@@ -743,6 +743,161 @@ class PostLike(BaseModel):
     user_id: str
     created_at: datetime = Field(default_factory=datetime.utcnow)
 
+# ============= HOA FEATURES MODELS =============
+
+# Amenities Booking
+class Amenity(BaseModel):
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    property_id: str
+    name: str  # "Clubhouse", "Gym", "Pool", "Party Hall"
+    description: str
+    capacity: Optional[int] = None
+    booking_fee: Optional[float] = None
+    available_hours_start: str = "09:00"  # HH:MM format
+    available_hours_end: str = "22:00"
+    advance_booking_days: int = 30
+    max_booking_hours: int = 4
+    created_at: datetime = Field(default_factory=datetime.utcnow)
+
+class AmenityCreate(BaseModel):
+    property_id: str
+    name: str
+    description: str
+    capacity: Optional[int] = None
+    booking_fee: Optional[float] = None
+    available_hours_start: str = "09:00"
+    available_hours_end: str = "22:00"
+
+class AmenityBooking(BaseModel):
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    amenity_id: str
+    property_id: str
+    user_id: str
+    user_name: str
+    booking_date: datetime
+    start_time: str  # HH:MM format
+    end_time: str
+    purpose: Optional[str] = None
+    status: str = "pending"  # "pending", "approved", "rejected", "cancelled"
+    approved_by: Optional[str] = None
+    approved_at: Optional[datetime] = None
+    payment_status: str = "unpaid"  # "unpaid", "paid"
+    created_at: datetime = Field(default_factory=datetime.utcnow)
+
+class AmenityBookingCreate(BaseModel):
+    amenity_id: str
+    booking_date: datetime
+    start_time: str
+    end_time: str
+    purpose: Optional[str] = None
+
+class AmenityBookingUpdate(BaseModel):
+    status: Optional[str] = None
+    payment_status: Optional[str] = None
+
+# Complaints/Service Requests
+class Complaint(BaseModel):
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    property_id: str
+    user_id: str
+    user_name: str
+    category: str  # "maintenance", "plumbing", "electrical", "cleaning", "security", "other"
+    priority: str = "medium"  # "low", "medium", "high", "urgent"
+    subject: str
+    description: str
+    location: Optional[str] = None
+    photos: Optional[List[str]] = None  # base64 images
+    status: str = "pending"  # "pending", "in_progress", "resolved", "closed"
+    assigned_to: Optional[str] = None
+    resolved_at: Optional[datetime] = None
+    resolution_notes: Optional[str] = None
+    created_at: datetime = Field(default_factory=datetime.utcnow)
+    updated_at: datetime = Field(default_factory=datetime.utcnow)
+
+class ComplaintCreate(BaseModel):
+    property_id: str
+    category: str
+    priority: str = "medium"
+    subject: str
+    description: str
+    location: Optional[str] = None
+    photos: Optional[List[str]] = None
+
+class ComplaintUpdate(BaseModel):
+    status: Optional[str] = None
+    priority: Optional[str] = None
+    assigned_to: Optional[str] = None
+    resolution_notes: Optional[str] = None
+
+# Document Repository
+class Document(BaseModel):
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    property_id: str
+    title: str
+    category: str  # "bylaws", "minutes", "financial", "notice", "form", "other"
+    description: Optional[str] = None
+    file_url: Optional[str] = None  # URL or base64
+    file_name: Optional[str] = None
+    file_size: Optional[int] = None  # in bytes
+    uploaded_by: str  # user_id
+    upload_date: datetime = Field(default_factory=datetime.utcnow)
+    is_public: bool = True  # All residents can view
+
+class DocumentCreate(BaseModel):
+    property_id: str
+    title: str
+    category: str
+    description: Optional[str] = None
+    file_url: Optional[str] = None
+    file_name: Optional[str] = None
+    file_size: Optional[int] = None
+
+# Meeting Scheduler
+class Meeting(BaseModel):
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    property_id: str
+    title: str
+    description: str
+    meeting_type: str = "general"  # "general", "committee", "emergency", "agm"
+    date: datetime
+    time: str  # HH:MM format
+    duration_minutes: int = 60
+    location: str
+    agenda: Optional[List[str]] = None
+    organizer_id: str
+    organizer_name: str
+    max_attendees: Optional[int] = None
+    rsvp_deadline: Optional[datetime] = None
+    created_at: datetime = Field(default_factory=datetime.utcnow)
+
+class MeetingCreate(BaseModel):
+    property_id: str
+    title: str
+    description: str
+    meeting_type: str = "general"
+    date: datetime
+    time: str
+    duration_minutes: int = 60
+    location: str
+    agenda: Optional[List[str]] = None
+    max_attendees: Optional[int] = None
+    rsvp_deadline: Optional[datetime] = None
+
+class MeetingRSVP(BaseModel):
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    meeting_id: str
+    user_id: str
+    user_name: str
+    status: str  # "attending", "not_attending", "maybe"
+    guests_count: int = 0
+    created_at: datetime = Field(default_factory=datetime.utcnow)
+
+class RSVPCreate(BaseModel):
+    meeting_id: str
+    status: str
+    guests_count: int = 0
+
+
 # Portfolio Summary
 class PortfolioSummary(BaseModel):
     total_value: float
