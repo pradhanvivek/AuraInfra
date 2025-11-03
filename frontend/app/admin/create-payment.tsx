@@ -1,0 +1,300 @@
+import { useState, useEffect } from 'react';
+import {
+  View,
+  Text,
+  StyleSheet,
+  ScrollView,
+  TouchableOpacity,
+  TextInput,
+  Alert,
+  ActivityIndicator,
+  KeyboardAvoidingView,
+  Platform,
+} from 'react-native';
+import { useRouter } from 'expo-router';
+import { Ionicons } from '@expo/vector-icons';
+import { useAuth } from '../../contexts/AuthContext';
+import axios from 'axios';
+import Constants from 'expo-constants';
+
+const API_URL = Constants.expoConfig?.extra?.EXPO_PUBLIC_BACKEND_URL || process.env.EXPO_PUBLIC_BACKEND_URL;
+
+interface PropertyMember {
+  id: string;
+  user_id: string;
+  username?: string;
+  email?: string;
+}
+
+export default function CreatePaymentRequest() {
+  const router = useRouter();
+  const { token } = useAuth();
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const [propertyId, setPropertyId] = useState('');
+  const [members, setMembers] = useState<PropertyMember[]>([]);
+  const [selectedUser, setSelectedUser] = useState('');
+  const [amount, setAmount] = useState('');
+  const [title, setTitle] = useState('');
+  const [description, setDescription] = useState('');
+  const [dueDate, setDueDate] = useState('');
+
+  useEffect(() => {
+    fetchPropertyAndMembers();
+  }, []);
+
+  const fetchPropertyAndMembers = async () => {
+    try {
+      const profileResponse = await axios.get(`${API_URL}/api/auth/profile`, {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      
+      const managedProps = profileResponse.data.managed_properties || [];
+      if (managedProps.length > 0) {
+        setPropertyId(managedProps[0]);
+        await fetchMembers(managedProps[0]);
+      }
+    } catch (error) {
+      console.error('Error:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const fetchMembers = async (propId: string) => {
+    try {
+      const response = await axios.get(
+        `${API_URL}/api/properties/${propId}/members`,
+        {
+          headers: { 'Authorization': `Bearer ${token}` }
+        }
+      );
+      setMembers(response.data);
+    } catch (error) {
+      console.error('Error fetching members:', error);
+    }
+  };
+
+  const handleSubmit = async () => {
+    if (!selectedUser || !amount || !title || !description || !dueDate) {
+      Alert.alert('Error', 'Please fill in all fields');
+      return;
+    }
+
+    setSaving(true);
+    try {
+      await axios.post(
+        `${API_URL}/api/admin/properties/${propertyId}/create-payment-request`,
+        null,
+        {
+          params: {
+            target_user_id: selectedUser,
+            amount: parseFloat(amount),
+            title,
+            description,
+            due_date: new Date(dueDate).toISOString()
+          },
+          headers: { 'Authorization': `Bearer ${token}` }
+        }
+      );
+
+      Alert.alert('Success', 'Payment request created successfully!');
+      router.back();
+    } catch (error: any) {
+      Alert.alert('Error', error.response?.data?.detail || 'Failed to create payment request');
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  if (loading) {
+    return (
+      <View style={styles.loadingContainer}>
+        <ActivityIndicator size="large" color="#007AFF" />
+      </View>
+    );
+  }
+
+  return (
+    <KeyboardAvoidingView
+      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+      style={styles.container}
+    >
+      <View style={styles.header}>
+        <TouchableOpacity onPress={() => router.back()}>
+          <Ionicons name="arrow-back" size={24} color="#007AFF" />
+        </TouchableOpacity>
+        <Text style={styles.headerTitle}>Create Payment</Text>
+        <View style={{ width: 24 }} />
+      </View>
+
+      <ScrollView style={styles.content} keyboardShouldPersistTaps="handled">
+        <View style={styles.form}>
+          <Text style={styles.label}>Select Resident *</Text>
+          <ScrollView horizontal style={styles.membersList}>
+            {members.map((member) => (
+              <TouchableOpacity
+                key={member.user_id}
+                style={[
+                  styles.memberChip,
+                  selectedUser === member.user_id && styles.memberChipSelected
+                ]}
+                onPress={() => setSelectedUser(member.user_id)}
+              >
+                <Ionicons
+                  name="person"
+                  size={16}
+                  color={selectedUser === member.user_id ? '#fff' : '#007AFF'}
+                />
+                <Text
+                  style={[
+                    styles.memberChipText,
+                    selectedUser === member.user_id && styles.memberChipTextSelected
+                  ]}
+                >
+                  {member.username || 'User'}
+                </Text>
+              </TouchableOpacity>
+            ))}
+          </ScrollView>
+
+          <Text style={styles.label}>Title *</Text>
+          <TextInput
+            style={styles.input}
+            value={title}
+            onChangeText={setTitle}
+            placeholder="e.g., Monthly Maintenance - January 2025"
+          />
+
+          <Text style={styles.label}>Amount ($) *</Text>
+          <TextInput
+            style={styles.input}
+            value={amount}
+            onChangeText={setAmount}
+            placeholder="0.00"
+            keyboardType="decimal-pad"
+          />
+
+          <Text style={styles.label}>Due Date *</Text>
+          <TextInput
+            style={styles.input}
+            value={dueDate}
+            onChangeText={setDueDate}
+            placeholder="YYYY-MM-DD"
+          />
+
+          <Text style={styles.label}>Description *</Text>
+          <TextInput
+            style={[styles.input, styles.textArea]}
+            value={description}
+            onChangeText={setDescription}
+            placeholder="Provide details about this payment request..."
+            multiline
+            numberOfLines={4}
+          />
+
+          <TouchableOpacity
+            style={styles.submitButton}
+            onPress={handleSubmit}
+            disabled={saving}
+          >
+            <Text style={styles.submitButtonText}>
+              {saving ? 'Creating...' : 'Create Payment Request'}
+            </Text>
+          </TouchableOpacity>
+        </View>
+      </ScrollView>
+    </KeyboardAvoidingView>
+  );
+}
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: '#F2F2F7',
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  header: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    padding: 16,
+    paddingTop: 60,
+    backgroundColor: '#fff',
+    borderBottomWidth: 1,
+    borderBottomColor: '#E5E5EA',
+  },
+  headerTitle: {
+    fontSize: 20,
+    fontWeight: '700',
+    color: '#000',
+  },
+  content: {
+    flex: 1,
+    padding: 16,
+  },
+  form: {
+    backgroundColor: '#fff',
+    borderRadius: 12,
+    padding: 16,
+  },
+  label: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#000',
+    marginBottom: 8,
+    marginTop: 16,
+  },
+  membersList: {
+    maxHeight: 60,
+  },
+  memberChip: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#F0F8FF',
+    borderWidth: 1,
+    borderColor: '#007AFF',
+    borderRadius: 20,
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    marginRight: 8,
+  },
+  memberChipSelected: {
+    backgroundColor: '#007AFF',
+  },
+  memberChipText: {
+    fontSize: 14,
+    color: '#007AFF',
+    marginLeft: 6,
+  },
+  memberChipTextSelected: {
+    color: '#fff',
+  },
+  input: {
+    borderWidth: 1,
+    borderColor: '#E5E5EA',
+    borderRadius: 8,
+    padding: 12,
+    fontSize: 16,
+  },
+  textArea: {
+    minHeight: 100,
+    textAlignVertical: 'top',
+  },
+  submitButton: {
+    backgroundColor: '#007AFF',
+    padding: 16,
+    borderRadius: 12,
+    alignItems: 'center',
+    marginTop: 24,
+  },
+  submitButtonText: {
+    fontSize: 16,
+    fontWeight: '700',
+    color: '#fff',
+  },
+});
