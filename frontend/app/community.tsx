@@ -313,7 +313,7 @@ export default function CommunityBoardScreen() {
           >
             <Ionicons
               name={cat.icon as any}
-              size={14}
+              size={12}
               color={selectedCategory === cat.id ? '#007AFF' : '#8E8E93'}
             />
             <Text style={[
