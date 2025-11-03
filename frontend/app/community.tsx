@@ -605,6 +605,25 @@ const styles = StyleSheet.create({
     fontSize: 10,
     fontWeight: '700',
   },
+  roleBadge: {
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+    borderRadius: 6,
+  },
+  ownerBadge: {
+    backgroundColor: '#34C759',
+  },
+  tenantBadge: {
+    backgroundColor: '#007AFF',
+  },
+  residentBadge: {
+    backgroundColor: '#8E8E93',
+  },
+  roleText: {
+    color: '#fff',
+    fontSize: 9,
+    fontWeight: '700',
+  },
   postTime: {
     fontSize: 12,
     color: '#8E8E93',
