@@ -312,31 +312,39 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     color: '#000',
   },
-  pickerContainer: {
+  selectorButton: {
     borderWidth: 1,
     borderColor: '#E5E5EA',
     borderRadius: 12,
+    padding: 16,
     marginBottom: 16,
-    overflow: 'hidden',
   },
-  picker: {
-    height: 50,
+  selectorContent: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  selectorLeft: {
+    flex: 1,
+  },
+  selectorPropertyName: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#000',
+    marginBottom: 4,
+  },
+  selectorPropertyAddress: {
+    fontSize: 14,
+    color: '#8E8E93',
+  },
+  selectorPlaceholder: {
+    fontSize: 16,
+    color: '#8E8E93',
   },
   propertyDetails: {
     borderTopWidth: 1,
     borderTopColor: '#E5E5EA',
     paddingTop: 16,
-  },
-  propertyName: {
-    fontSize: 20,
-    fontWeight: '700',
-    color: '#000',
-    marginBottom: 4,
-  },
-  propertyAddress: {
-    fontSize: 14,
-    color: '#8E8E93',
-    marginBottom: 12,
   },
   roleBadge: {
     alignSelf: 'flex-start',
@@ -349,6 +357,76 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontSize: 12,
     fontWeight: '700',
+  },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    justifyContent: 'flex-end',
+  },
+  modalContent: {
+    backgroundColor: '#fff',
+    borderTopLeftRadius: 24,
+    borderTopRightRadius: 24,
+    paddingTop: 20,
+    maxHeight: '70%',
+  },
+  modalHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingHorizontal: 20,
+    paddingBottom: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: '#E5E5EA',
+  },
+  modalTitle: {
+    fontSize: 20,
+    fontWeight: '700',
+    color: '#000',
+  },
+  modalList: {
+    paddingHorizontal: 20,
+    paddingTop: 16,
+  },
+  propertyOption: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: 16,
+    borderRadius: 12,
+    marginBottom: 12,
+    backgroundColor: '#F2F2F7',
+  },
+  propertyOptionSelected: {
+    backgroundColor: '#E5F0FF',
+    borderWidth: 2,
+    borderColor: '#007AFF',
+  },
+  propertyOptionContent: {
+    flex: 1,
+  },
+  propertyOptionName: {
+    fontSize: 16,
+    fontWeight: '700',
+    color: '#000',
+    marginBottom: 4,
+  },
+  propertyOptionAddress: {
+    fontSize: 14,
+    color: '#8E8E93',
+    marginBottom: 8,
+  },
+  propertyOptionBadge: {
+    alignSelf: 'flex-start',
+    backgroundColor: '#007AFF20',
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 8,
+  },
+  propertyOptionRole: {
+    fontSize: 11,
+    fontWeight: '600',
+    color: '#007AFF',
+    textTransform: 'uppercase',
   },
   sectionTitle: {
     fontSize: 20,
