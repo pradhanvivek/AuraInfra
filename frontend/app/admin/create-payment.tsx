@@ -184,12 +184,25 @@ export default function CreatePaymentRequest() {
           />
 
           <Text style={styles.label}>Due Date *</Text>
-          <TextInput
-            style={styles.input}
-            value={dueDate}
-            onChangeText={setDueDate}
-            placeholder="YYYY-MM-DD"
-          />
+          <TouchableOpacity
+            style={styles.dateButton}
+            onPress={() => setShowDatePicker(true)}
+          >
+            <Ionicons name="calendar" size={20} color="#007AFF" />
+            <Text style={styles.dateButtonText}>
+              {dueDate.toLocaleDateString()}
+            </Text>
+          </TouchableOpacity>
+          
+          {showDatePicker && (
+            <DateTimePicker
+              value={dueDate}
+              mode="date"
+              display="default"
+              onChange={onDateChange}
+              minimumDate={new Date()}
+            />
+          )}
 
           <Text style={styles.label}>Description *</Text>
           <TextInput
