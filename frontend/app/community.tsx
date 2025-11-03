@@ -526,7 +526,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#E5F0FF',
   },
   categoryChipText: {
-    fontSize: 10,
+    fontSize: 15,
     color: '#8E8E93',
     fontWeight: '600',
   },
