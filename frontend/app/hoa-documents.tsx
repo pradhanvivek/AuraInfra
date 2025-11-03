@@ -1,0 +1,426 @@
+import { useState, useEffect } from 'react';
+import {
+  View,
+  Text,
+  StyleSheet,
+  ScrollView,
+  TouchableOpacity,
+  ActivityIndicator,
+  Alert,
+  RefreshControl,
+} from 'react-native';
+import { useRouter, useLocalSearchParams } from 'expo-router';
+import { Ionicons } from '@expo/vector-icons';
+import { useAuth } from '../contexts/AuthContext';
+import axios from 'axios';
+import Constants from 'expo-constants';
+
+const API_URL = Constants.expoConfig?.extra?.EXPO_PUBLIC_BACKEND_URL || process.env.EXPO_PUBLIC_BACKEND_URL;
+
+interface Document {
+  id: string;
+  title: string;
+  category: string;
+  description?: string;
+  file_name?: string;
+  file_size?: number;
+  upload_date: string;
+  uploaded_by: string;
+}
+
+export default function HOADocumentsScreen() {
+  const router = useRouter();
+  const { propertyId } = useLocalSearchParams<{ propertyId: string }>();
+  const { token } = useAuth();
+  const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
+  const [documents, setDocuments] = useState<Document[]>([]);
+  const [selectedCategory, setSelectedCategory] = useState<string>('all');
+
+  const categories = [
+    { id: 'all', name: 'All', icon: 'folder-open' },
+    { id: 'bylaws', name: 'Bylaws', icon: 'document-text' },
+    { id: 'minutes', name: 'Minutes', icon: 'time' },
+    { id: 'financial', name: 'Financial', icon: 'calculator' },
+    { id: 'notice', name: 'Notice', icon: 'megaphone' },
+    { id: 'form', name: 'Forms', icon: 'clipboard' },
+  ];
+
+  useEffect(() => {
+    if (propertyId) {
+      fetchDocuments();
+    }
+  }, [propertyId, selectedCategory]);
+
+  const fetchDocuments = async () => {
+    try {
+      const categoryParam = selectedCategory !== 'all' ? `?category=${selectedCategory}` : '';
+      const response = await axios.get(
+        `${API_URL}/api/properties/${propertyId}/hoa-documents${categoryParam}`,
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      setDocuments(response.data);
+    } catch (error) {
+      console.error('Error fetching documents:', error);
+      Alert.alert('Error', 'Failed to load documents');
+    } finally {
+      setLoading(false);
+      setRefreshing(false);
+    }
+  };
+
+  const onRefresh = () => {
+    setRefreshing(true);
+    fetchDocuments();
+  };
+
+  const formatDate = (dateString: string): string => {
+    const date = new Date(dateString);
+    return date.toLocaleDateString('en-US', {
+      month: 'short',
+      day: 'numeric',
+      year: 'numeric',
+    });
+  };
+
+  const formatFileSize = (bytes?: number): string => {
+    if (!bytes) return 'Unknown size';
+    if (bytes < 1024) return bytes + ' B';
+    if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
+    return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
+  };
+
+  const getCategoryColor = (category: string): string => {
+    switch (category) {
+      case 'bylaws': return '#5856D6';
+      case 'minutes': return '#007AFF';
+      case 'financial': return '#34C759';
+      case 'notice': return '#FF9500';
+      case 'form': return '#AF52DE';
+      default: return '#8E8E93';
+    }
+  };
+
+  const getCategoryIcon = (category: string) => {
+    const cat = categories.find(c => c.id === category);
+    return cat?.icon || 'document';
+  };
+
+  const renderDocumentCard = (doc: Document) => {
+    return (
+      <TouchableOpacity key={doc.id} style={styles.card} activeOpacity={0.7}>
+        <View style={styles.cardHeader}>
+          <View style={[
+            styles.iconCircle,
+            { backgroundColor: getCategoryColor(doc.category) + '20' }
+          ]}>
+            <Ionicons
+              name={getCategoryIcon(doc.category) as any}
+              size={28}
+              color={getCategoryColor(doc.category)}
+            />
+          </View>
+          <View style={styles.cardInfo}>
+            <Text style={styles.documentTitle}>{doc.title}</Text>
+            {doc.description && (
+              <Text style={styles.description} numberOfLines={2}>{doc.description}</Text>
+            )}
+          </View>
+        </View>
+
+        <View style={styles.metadata}>
+          <View style={styles.metaRow}>
+            <View style={[
+              styles.categoryBadge,
+              { backgroundColor: getCategoryColor(doc.category) }
+            ]}>
+              <Text style={styles.categoryText}>{doc.category.toUpperCase()}</Text>
+            </View>
+            
+            <View style={styles.metaItem}>
+              <Ionicons name="calendar-outline" size={14} color="#8E8E93" />
+              <Text style={styles.metaText}>{formatDate(doc.upload_date)}</Text>
+            </View>
+          </View>
+
+          {doc.file_name && (
+            <View style={styles.fileInfo}>
+              <Ionicons name="document-attach" size={14} color="#8E8E93" />
+              <Text style={styles.fileName} numberOfLines={1}>{doc.file_name}</Text>
+              {doc.file_size && (
+                <Text style={styles.fileSize}>{formatFileSize(doc.file_size)}</Text>
+              )}
+            </View>
+          )}
+        </View>
+
+        <View style={styles.actions}>
+          <TouchableOpacity style={styles.actionButton}>
+            <Ionicons name="eye-outline" size={20} color="#007AFF" />
+            <Text style={styles.actionText}>View</Text>
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.actionButton}>
+            <Ionicons name="download-outline" size={20} color="#007AFF" />
+            <Text style={styles.actionText}>Download</Text>
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.actionButton}>
+            <Ionicons name="share-outline" size={20} color="#007AFF" />
+            <Text style={styles.actionText}>Share</Text>
+          </TouchableOpacity>
+        </View>
+      </TouchableOpacity>
+    );
+  };
+
+  if (loading) {
+    return (
+      <View style={styles.centerContainer}>
+        <ActivityIndicator size="large" color="#007AFF" />
+      </View>
+    );
+  }
+
+  return (
+    <View style={styles.container}>
+      <View style={styles.header}>
+        <TouchableOpacity onPress={() => router.back()}>
+          <Ionicons name="arrow-back" size={28} color="#007AFF" />
+        </TouchableOpacity>
+        <Text style={styles.headerTitle}>HOA Documents</Text>
+        <View style={{ width: 28 }} />
+      </View>
+
+      {/* Category Filter */}
+      <ScrollView
+        horizontal
+        showsHorizontalScrollIndicator={false}
+        style={styles.categoriesContainer}
+        contentContainerStyle={styles.categoriesContent}
+      >
+        {categories.map((cat) => (
+          <TouchableOpacity
+            key={cat.id}
+            style={[
+              styles.categoryChip,
+              selectedCategory === cat.id && styles.categoryChipActive
+            ]}
+            onPress={() => setSelectedCategory(cat.id)}
+          >
+            <Ionicons
+              name={cat.icon as any}
+              size={16}
+              color={selectedCategory === cat.id ? '#007AFF' : '#8E8E93'}
+            />
+            <Text style={[
+              styles.categoryChipText,
+              selectedCategory === cat.id && styles.categoryChipTextActive
+            ]}>
+              {cat.name}
+            </Text>
+          </TouchableOpacity>
+        ))}
+      </ScrollView>
+
+      <ScrollView
+        contentContainerStyle={styles.content}
+        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
+      >
+        {documents.length === 0 ? (
+          <View style={styles.emptyContainer}>
+            <Ionicons name="folder-open-outline" size={64} color="#C7C7CC" />
+            <Text style={styles.emptyText}>No documents found</Text>
+            <Text style={styles.emptySubtext}>
+              {selectedCategory === 'all'
+                ? 'Documents will appear here when uploaded'
+                : `No ${selectedCategory} documents available`}
+            </Text>
+          </View>
+        ) : (
+          documents.map(renderDocumentCard)
+        )}
+      </ScrollView>
+    </View>
+  );
+}
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: '#F2F2F7',
+  },
+  centerContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  header: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    padding: 16,
+    paddingTop: 60,
+    backgroundColor: '#fff',
+    borderBottomWidth: 1,
+    borderBottomColor: '#E5E5EA',
+  },
+  headerTitle: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    color: '#000',
+  },
+  categoriesContainer: {
+    backgroundColor: '#fff',
+    borderBottomWidth: 1,
+    borderBottomColor: '#E5E5EA',
+  },
+  categoriesContent: {
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+    gap: 8,
+  },
+  categoryChip: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    borderRadius: 16,
+    backgroundColor: '#F2F2F7',
+    marginRight: 8,
+  },
+  categoryChipActive: {
+    backgroundColor: '#E5F0FF',
+  },
+  categoryChipText: {
+    fontSize: 13,
+    color: '#8E8E93',
+    fontWeight: '600',
+  },
+  categoryChipTextActive: {
+    color: '#007AFF',
+  },
+  content: {
+    padding: 16,
+  },
+  card: {
+    backgroundColor: '#fff',
+    borderRadius: 16,
+    padding: 16,
+    marginBottom: 16,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
+  },
+  cardHeader: {
+    flexDirection: 'row',
+    marginBottom: 12,
+  },
+  iconCircle: {
+    width: 56,
+    height: 56,
+    borderRadius: 28,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: 12,
+  },
+  cardInfo: {
+    flex: 1,
+  },
+  documentTitle: {
+    fontSize: 17,
+    fontWeight: '700',
+    color: '#000',
+    marginBottom: 4,
+  },
+  description: {
+    fontSize: 14,
+    color: '#8E8E93',
+    lineHeight: 18,
+  },
+  metadata: {
+    gap: 8,
+    marginBottom: 12,
+  },
+  metaRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
+  categoryBadge: {
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 10,
+  },
+  categoryText: {
+    color: '#fff',
+    fontSize: 11,
+    fontWeight: '700',
+  },
+  metaItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+  },
+  metaText: {
+    fontSize: 12,
+    color: '#8E8E93',
+  },
+  fileInfo: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    padding: 10,
+    backgroundColor: '#F2F2F7',
+    borderRadius: 8,
+  },
+  fileName: {
+    flex: 1,
+    fontSize: 13,
+    color: '#000',
+    fontWeight: '500',
+  },
+  fileSize: {
+    fontSize: 12,
+    color: '#8E8E93',
+  },
+  actions: {
+    flexDirection: 'row',
+    borderTopWidth: 1,
+    borderTopColor: '#F2F2F7',
+    paddingTop: 12,
+    gap: 16,
+  },
+  actionButton: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 6,
+    paddingVertical: 8,
+  },
+  actionText: {
+    fontSize: 14,
+    color: '#007AFF',
+    fontWeight: '600',
+  },
+  emptyContainer: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 60,
+  },
+  emptyText: {
+    fontSize: 18,
+    fontWeight: '600',
+    color: '#8E8E93',
+    marginTop: 16,
+    marginBottom: 8,
+  },
+  emptySubtext: {
+    fontSize: 14,
+    color: '#C7C7CC',
+    textAlign: 'center',
+    paddingHorizontal: 40,
+  },
+});
