@@ -54,6 +54,12 @@ export default function HOADocumentsScreen() {
 
   const fetchDocuments = async () => {
     try {
+      if (!propertyId) {
+        console.error('No property ID provided');
+        setLoading(false);
+        return;
+      }
+      
       const categoryParam = selectedCategory !== 'all' ? `?category=${selectedCategory}` : '';
       const response = await axios.get(
         `${API_URL}/api/properties/${propertyId}/hoa-documents${categoryParam}`,
