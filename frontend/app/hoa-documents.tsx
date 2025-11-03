@@ -138,9 +138,9 @@ export default function HOADocumentsScreen() {
           <View style={styles.metaRow}>
             <View style={[
               styles.categoryBadge,
-              { backgroundColor: getCategoryColor(doc.category) }
+              { backgroundColor: getCategoryColor(doc.category || 'other') }
             ]}>
-              <Text style={styles.categoryText}>{doc.category.toUpperCase()}</Text>
+              <Text style={styles.categoryText}>{(doc.category || 'other').toUpperCase()}</Text>
             </View>
             
             <View style={styles.metaItem}>
