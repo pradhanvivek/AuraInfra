@@ -118,12 +118,12 @@ export default function HOADocumentsScreen() {
         <View style={styles.cardHeader}>
           <View style={[
             styles.iconCircle,
-            { backgroundColor: getCategoryColor(doc.category) + '20' }
+            { backgroundColor: getCategoryColor(doc.category || 'other') + '20' }
           ]}>
             <Ionicons
-              name={getCategoryIcon(doc.category) as any}
+              name={getCategoryIcon(doc.category || 'other') as any}
               size={28}
-              color={getCategoryColor(doc.category)}
+              color={getCategoryColor(doc.category || 'other')}
             />
           </View>
           <View style={styles.cardInfo}>
