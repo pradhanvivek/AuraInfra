@@ -283,24 +283,16 @@ const styles = StyleSheet.create({
     flex: 1,
     marginRight: 8,
   },
-  propertyAddressHeader: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: '#000',
-    marginBottom: 4,
-  },
-  roleTag: {
-    alignSelf: 'flex-start',
-    backgroundColor: '#007AFF20',
-    paddingHorizontal: 8,
-    paddingVertical: 2,
-    borderRadius: 8,
-  },
-  roleTagText: {
-    fontSize: 10,
+  propertyNameHeader: {
+    fontSize: 15,
     fontWeight: '700',
-    color: '#007AFF',
-    textTransform: 'uppercase',
+    color: '#000',
+    marginBottom: 2,
+  },
+  propertyAddressHeader: {
+    fontSize: 12,
+    fontWeight: '500',
+    color: '#8E8E93',
   },
   selectText: {
     fontSize: 14,
