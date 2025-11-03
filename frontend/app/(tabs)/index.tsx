@@ -402,7 +402,7 @@ const styles = StyleSheet.create({
     marginBottom: 24,
   },
   compactCard: {
-    width: '23%',
+    width: '22%',
     alignItems: 'center',
     marginBottom: 20,
   },
@@ -420,6 +420,18 @@ const styles = StyleSheet.create({
     color: '#1C1C1E',
     textAlign: 'center',
     lineHeight: 13,
+  },
+  adCard: {
+    opacity: 0.95,
+  },
+  adIcon: {
+    borderWidth: 1,
+    borderColor: '#FF2D5550',
+    borderStyle: 'dashed',
+  },
+  adLabel: {
+    fontStyle: 'italic',
+    fontSize: 10,
   },
   modalOverlay: {
     flex: 1,
