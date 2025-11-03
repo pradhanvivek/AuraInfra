@@ -314,7 +314,10 @@ export default function AmenitiesScreen() {
         animationType="slide"
         onRequestClose={() => setBookModalVisible(false)}
       >
-        <View style={styles.modalOverlay}>
+        <KeyboardAvoidingView
+          behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+          style={styles.modalOverlay}
+        >
           <View style={styles.modalContent}>
             <View style={styles.modalHeader}>
               <Text style={styles.modalTitle}>Book {selectedAmenity?.name}</Text>
@@ -323,7 +326,7 @@ export default function AmenitiesScreen() {
               </TouchableOpacity>
             </View>
 
-            <ScrollView style={styles.modalForm}>
+            <ScrollView style={styles.modalForm} keyboardShouldPersistTaps="handled">
               <Text style={styles.inputLabel}>Booking Date *</Text>
               <TextInput
                 style={styles.input}
@@ -363,7 +366,7 @@ export default function AmenitiesScreen() {
               </TouchableOpacity>
             </ScrollView>
           </View>
-        </View>
+        </KeyboardAvoidingView>
       </Modal>
     </View>
   );
