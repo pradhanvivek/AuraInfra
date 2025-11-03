@@ -514,7 +514,7 @@ const styles = StyleSheet.create({
     gap: 3,
     paddingHorizontal: 8,
     paddingVertical: 4,
-    borderRadius: 14,
+    borderRadius: 12,
     backgroundColor: '#F2F2F7',
     marginRight: 5,
   },
@@ -522,7 +522,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#E5F0FF',
   },
   categoryChipText: {
-    fontSize: 11,
+    fontSize: 10,
     color: '#8E8E93',
     fontWeight: '600',
   },
