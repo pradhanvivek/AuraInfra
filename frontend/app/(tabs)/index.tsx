@@ -349,9 +349,10 @@ const styles = StyleSheet.create({
     padding: 16,
   },
   heroBanner: {
-    backgroundColor: '#5856D6',
+    width: '100%',
+    height: 160,
     borderRadius: 16,
-    padding: 20,
+    overflow: 'hidden',
     marginBottom: 24,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 4 },
@@ -359,60 +360,35 @@ const styles = StyleSheet.create({
     shadowRadius: 8,
     elevation: 5,
   },
-  bannerContent: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 12,
+  heroBannerImage: {
+    width: '100%',
+    height: '100%',
   },
-  bannerText: {
-    flex: 1,
-  },
-  bannerTitle: {
-    fontSize: 18,
-    fontWeight: '700',
-    color: '#fff',
-    marginBottom: 4,
-  },
-  bannerSubtitle: {
-    fontSize: 13,
-    color: '#E5E5EA',
-  },
-  bannerButton: {
-    backgroundColor: '#fff',
-    paddingHorizontal: 20,
-    paddingVertical: 10,
-    borderRadius: 20,
-  },
-  bannerButtonText: {
-    fontSize: 14,
-    fontWeight: '700',
-    color: '#5856D6',
-  },
-  quickActionsGrid: {
+  compactGrid: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    gap: 12,
+    justifyContent: 'space-between',
     marginBottom: 24,
   },
-  quickActionItem: {
+  compactCard: {
     width: '23%',
     alignItems: 'center',
-    paddingVertical: 12,
+    marginBottom: 20,
   },
-  quickActionIcon: {
-    width: 60,
-    height: 60,
-    borderRadius: 16,
+  compactIcon: {
+    width: 56,
+    height: 56,
+    borderRadius: 12,
     justifyContent: 'center',
     alignItems: 'center',
     marginBottom: 8,
   },
-  quickActionLabel: {
+  compactLabel: {
     fontSize: 11,
     fontWeight: '600',
-    color: '#000',
+    color: '#1C1C1E',
     textAlign: 'center',
-    lineHeight: 14,
+    lineHeight: 13,
   },
   modalOverlay: {
     flex: 1,
