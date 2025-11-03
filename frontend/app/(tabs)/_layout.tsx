@@ -52,9 +52,19 @@ export default function TabsLayout() {
       }}
     >
       <Tabs.Screen
-        name="dashboard"
+        name="index"
         options={{
-          title: 'Dashboard',
+          title: 'Properties',
+          headerShown: false,
+          tabBarIcon: ({ color, size }) => (
+            <Ionicons name="business-outline" size={size} color={color} />
+          ),
+        }}
+      />
+      <Tabs.Screen
+        name="assets"
+        options={{
+          title: 'Assets',
           headerShown: false,
           tabBarIcon: ({ color, size }) => (
             <Ionicons name="grid-outline" size={size} color={color} />
@@ -62,12 +72,12 @@ export default function TabsLayout() {
         }}
       />
       <Tabs.Screen
-        name="notifications"
+        name="profile"
         options={{
-          title: 'Notifications',
+          title: 'Profile',
           tabBarIcon: ({ color, size }) => (
             <View>
-              <Ionicons name="notifications-outline" size={size} color={color} />
+              <Ionicons name="person-outline" size={size} color={color} />
               {unreadCount > 0 && (
                 <View style={styles.badge}>
                   <Text style={styles.badgeText}>
@@ -78,19 +88,18 @@ export default function TabsLayout() {
             </View>
           ),
         }}
-        listeners={{
-          tabPress: () => {
-            fetchUnreadCount();
-          },
+      />
+      {/* Hide these from tabs but keep them accessible */}
+      <Tabs.Screen
+        name="dashboard"
+        options={{
+          href: null, // Hide from tab bar
         }}
       />
       <Tabs.Screen
-        name="profile"
+        name="notifications"
         options={{
-          title: 'Profile',
-          tabBarIcon: ({ color, size }) => (
-            <Ionicons name="person-outline" size={size} color={color} />
-          ),
+          href: null, // Hide from tab bar
         }}
       />
     </Tabs>
