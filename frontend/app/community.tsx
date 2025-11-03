@@ -27,6 +27,7 @@ interface Post {
   content: string;
   category: string;
   user_name: string;
+  user_role?: string;  // "owner", "tenant", "resident"
   is_admin_post: boolean;
   is_pinned: boolean;
   likes_count: number;
