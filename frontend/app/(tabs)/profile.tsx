@@ -30,6 +30,9 @@ interface UserProfile {
   geomancy_preference: string;
   currency_preference?: string;
   measurement_system?: string;
+  is_super_admin?: boolean;
+  is_hoa_admin?: boolean;
+  managed_properties?: string[];
   created_at: string;
 }
 
