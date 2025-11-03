@@ -576,6 +576,173 @@ class MaintenanceUpdate(BaseModel):
     recurring: Optional[bool] = None
     recurring_interval_days: Optional[int] = None
 
+
+# ============= PROPERTY MANAGEMENT MODELS =============
+
+# Property Membership & Roles
+class PropertyMembership(BaseModel):
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    property_id: str
+    user_id: str
+    role: str  # "owner", "tenant", "resident"
+    status: str = "active"  # "active", "inactive", "pending"
+    joined_date: datetime = Field(default_factory=datetime.utcnow)
+    end_date: Optional[datetime] = None
+
+class PropertyMembershipCreate(BaseModel):
+    property_id: str
+    role: str  # "owner", "tenant", "resident"
+    status: str = "active"
+
+# HOA Maintenance Charges
+class HOACharge(BaseModel):
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    property_id: str
+    title: str
+    description: str
+    amount: float
+    currency: str = "USD"
+    due_date: datetime
+    status: str = "pending"  # "pending", "paid", "overdue", "cancelled"
+    created_by: str  # Admin user_id
+    created_at: datetime = Field(default_factory=datetime.utcnow)
+    paid_date: Optional[datetime] = None
+    stripe_session_id: Optional[str] = None
+    stripe_payment_intent_id: Optional[str] = None
+
+class HOAChargeCreate(BaseModel):
+    property_id: str
+    title: str
+    description: str
+    amount: float
+    currency: str = "USD"
+    due_date: datetime
+
+class HOAChargeUpdate(BaseModel):
+    title: Optional[str] = None
+    description: Optional[str] = None
+    amount: Optional[float] = None
+    due_date: Optional[datetime] = None
+    status: Optional[str] = None
+
+# Payment Transactions
+class PaymentTransaction(BaseModel):
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    user_id: str
+    charge_id: str  # HOACharge id
+    property_id: str
+    amount: float
+    currency: str
+    stripe_session_id: str
+    stripe_payment_intent_id: Optional[str] = None
+    payment_status: str = "pending"  # "pending", "paid", "failed", "cancelled"
+    metadata: Optional[dict] = None
+    created_at: datetime = Field(default_factory=datetime.utcnow)
+    updated_at: datetime = Field(default_factory=datetime.utcnow)
+
+# Visitor Management
+class Visitor(BaseModel):
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    property_id: str
+    host_user_id: str  # Resident who invited
+    visitor_name: str
+    visitor_phone: str
+    visitor_photo: Optional[str] = None  # base64
+    purpose: str
+    expected_date: datetime
+    expected_time: Optional[str] = None
+    status: str = "pending"  # "pending", "approved", "checked_in", "checked_out", "rejected", "expired"
+    approval_code: Optional[str] = None  # QR code data
+    approved_by: Optional[str] = None  # Security/Admin user_id
+    approved_at: Optional[datetime] = None
+    check_in_time: Optional[datetime] = None
+    check_out_time: Optional[datetime] = None
+    notes: Optional[str] = None
+    created_at: datetime = Field(default_factory=datetime.utcnow)
+
+class VisitorCreate(BaseModel):
+    property_id: str
+    visitor_name: str
+    visitor_phone: str
+    visitor_photo: Optional[str] = None
+    purpose: str
+    expected_date: datetime
+    expected_time: Optional[str] = None
+    notes: Optional[str] = None
+
+class VisitorUpdate(BaseModel):
+    visitor_name: Optional[str] = None
+    visitor_phone: Optional[str] = None
+    visitor_photo: Optional[str] = None
+    purpose: Optional[str] = None
+    expected_date: Optional[datetime] = None
+    expected_time: Optional[str] = None
+    status: Optional[str] = None
+    notes: Optional[str] = None
+
+class VisitorApproval(BaseModel):
+    status: str  # "approved", "rejected"
+    notes: Optional[str] = None
+
+class VisitorCheckIn(BaseModel):
+    check_in_time: datetime = Field(default_factory=datetime.utcnow)
+
+class VisitorCheckOut(BaseModel):
+    check_out_time: datetime = Field(default_factory=datetime.utcnow)
+
+# Community Board
+class CommunityPost(BaseModel):
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    property_id: str
+    user_id: str
+    user_name: str  # For display
+    title: str
+    content: str
+    category: str  # "announcement", "discussion", "event", "complaint", "general"
+    is_pinned: bool = False
+    is_admin_post: bool = False
+    photos: Optional[List[str]] = None  # base64 images
+    created_at: datetime = Field(default_factory=datetime.utcnow)
+    updated_at: datetime = Field(default_factory=datetime.utcnow)
+    likes_count: int = 0
+    comments_count: int = 0
+
+class CommunityPostCreate(BaseModel):
+    property_id: str
+    title: str
+    content: str
+    category: str = "general"
+    photos: Optional[List[str]] = None
+
+class CommunityPostUpdate(BaseModel):
+    title: Optional[str] = None
+    content: Optional[str] = None
+    category: Optional[str] = None
+    is_pinned: Optional[bool] = None
+    photos: Optional[List[str]] = None
+
+class CommunityComment(BaseModel):
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    post_id: str
+    user_id: str
+    user_name: str  # For display
+    content: str
+    created_at: datetime = Field(default_factory=datetime.utcnow)
+    updated_at: datetime = Field(default_factory=datetime.utcnow)
+
+class CommunityCommentCreate(BaseModel):
+    post_id: str
+    content: str
+
+class CommunityCommentUpdate(BaseModel):
+    content: str
+
+class PostLike(BaseModel):
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    post_id: str
+    user_id: str
+    created_at: datetime = Field(default_factory=datetime.utcnow)
+
 # Portfolio Summary
 class PortfolioSummary(BaseModel):
     total_value: float
