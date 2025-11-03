@@ -520,7 +520,7 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     backgroundColor: '#F2F2F7',
     marginRight: 5,
-    height: 40,
+    height: 60,
   },
   categoryChipActive: {
     backgroundColor: '#E5F0FF',
