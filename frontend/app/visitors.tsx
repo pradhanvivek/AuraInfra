@@ -333,7 +333,10 @@ export default function VisitorsScreen() {
         animationType="slide"
         onRequestClose={() => setAddModalVisible(false)}
       >
-        <View style={styles.modalOverlay}>
+        <KeyboardAvoidingView
+          behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+          style={styles.modalOverlay}
+        >
           <View style={styles.modalContent}>
             <View style={styles.modalHeader}>
               <Text style={styles.modalTitle}>Register Visitor</Text>
@@ -342,7 +345,7 @@ export default function VisitorsScreen() {
               </TouchableOpacity>
             </View>
 
-            <ScrollView style={styles.modalForm}>
+            <ScrollView style={styles.modalForm} keyboardShouldPersistTaps="handled">
               <Text style={styles.inputLabel}>Visitor Name *</Text>
               <TextInput
                 style={styles.input}
@@ -399,7 +402,7 @@ export default function VisitorsScreen() {
               </TouchableOpacity>
             </ScrollView>
           </View>
-        </View>
+        </KeyboardAvoidingView>
       </Modal>
     </View>
   );
