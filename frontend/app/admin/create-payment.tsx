@@ -306,6 +306,20 @@ const styles = StyleSheet.create({
     minHeight: 100,
     textAlignVertical: 'top',
   },
+  dateButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: '#E5E5EA',
+    borderRadius: 8,
+    padding: 12,
+    backgroundColor: '#F9F9F9',
+  },
+  dateButtonText: {
+    fontSize: 16,
+    color: '#000',
+    marginLeft: 8,
+  },
   submitButton: {
     backgroundColor: '#007AFF',
     padding: 16,
