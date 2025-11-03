@@ -505,7 +505,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#fff',
     borderBottomWidth: 1,
     borderBottomColor: '#E5E5EA',
-    height: 60,
+    height: 70,
   },
   categoriesContent: {
     paddingHorizontal: 8,
