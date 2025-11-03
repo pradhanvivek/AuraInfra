@@ -4266,6 +4266,289 @@ async def toggle_post_like(post_id: str, user_id: str = Depends(get_current_user
         return {"message": "Liked", "liked": True}
 
 
+# ============= AMENITIES BOOKING ENDPOINTS =============
+
+@api_router.post("/properties/{property_id}/amenities", response_model=Amenity)
+async def create_amenity(
+    property_id: str,
+    amenity_data: AmenityCreate,
+    user_id: str = Depends(get_current_user)
+):
+    """Create amenity (admin only)"""
+    property_doc = await db.properties.find_one({"id": property_id, "user_id": user_id})
+    if not property_doc:
+        raise HTTPException(status_code=403, detail="Only property owner can create amenities")
+    
+    amenity = Amenity(**amenity_data.dict())
+    await db.amenities.insert_one(amenity.dict())
+    return amenity
+
+@api_router.get("/properties/{property_id}/amenities")
+async def get_amenities(property_id: str, user_id: str = Depends(get_current_user)):
+    """Get all amenities for a property"""
+    amenities = await db.amenities.find({"property_id": property_id}).to_list(length=1000)
+    for a in amenities:
+        if '_id' in a:
+            a['_id'] = str(a['_id'])
+    return amenities
+
+@api_router.post("/amenities/book", response_model=AmenityBooking)
+async def book_amenity(
+    booking_data: AmenityBookingCreate,
+    user_id: str = Depends(get_current_user)
+):
+    """Book an amenity"""
+    amenity = await db.amenities.find_one({"id": booking_data.amenity_id})
+    if not amenity:
+        raise HTTPException(status_code=404, detail="Amenity not found")
+    
+    user = await db.users.find_one({"id": user_id})
+    user_name = user.get('username', 'Unknown') if user else 'Unknown'
+    
+    booking = AmenityBooking(
+        user_id=user_id,
+        user_name=user_name,
+        property_id=amenity['property_id'],
+        **booking_data.dict()
+    )
+    await db.amenity_bookings.insert_one(booking.dict())
+    return booking
+
+@api_router.get("/properties/{property_id}/amenity-bookings")
+async def get_amenity_bookings(
+    property_id: str,
+    user_id: str = Depends(get_current_user),
+    status: Optional[str] = None
+):
+    """Get amenity bookings for a property"""
+    query = {"property_id": property_id}
+    if status:
+        query["status"] = status
+    
+    bookings = await db.amenity_bookings.find(query).sort("booking_date", -1).to_list(length=1000)
+    for b in bookings:
+        if '_id' in b:
+            b['_id'] = str(b['_id'])
+    return bookings
+
+@api_router.put("/amenity-bookings/{booking_id}")
+async def update_booking(
+    booking_id: str,
+    booking_data: AmenityBookingUpdate,
+    user_id: str = Depends(get_current_user)
+):
+    """Update booking status (approve/reject)"""
+    update_data = {k: v for k, v in booking_data.dict().items() if v is not None}
+    
+    if 'status' in update_data and update_data['status'] in ['approved', 'rejected']:
+        update_data['approved_by'] = user_id
+        update_data['approved_at'] = datetime.utcnow()
+    
+    result = await db.amenity_bookings.update_one(
+        {"id": booking_id},
+        {"$set": update_data}
+    )
+    
+    if result.modified_count == 0:
+        raise HTTPException(status_code=404, detail="Booking not found")
+    
+    return {"message": "Booking updated successfully"}
+
+# ============= COMPLAINTS/SERVICE REQUESTS ENDPOINTS =============
+
+@api_router.post("/properties/{property_id}/complaints", response_model=Complaint)
+async def create_complaint(
+    property_id: str,
+    complaint_data: ComplaintCreate,
+    user_id: str = Depends(get_current_user)
+):
+    """Submit a complaint or service request"""
+    user = await db.users.find_one({"id": user_id})
+    user_name = user.get('username', 'Unknown') if user else 'Unknown'
+    
+    complaint = Complaint(
+        user_id=user_id,
+        user_name=user_name,
+        **complaint_data.dict()
+    )
+    await db.complaints.insert_one(complaint.dict())
+    return complaint
+
+@api_router.get("/properties/{property_id}/complaints")
+async def get_complaints(
+    property_id: str,
+    user_id: str = Depends(get_current_user),
+    status: Optional[str] = None,
+    category: Optional[str] = None
+):
+    """Get complaints for a property"""
+    query = {"property_id": property_id}
+    if status:
+        query["status"] = status
+    if category:
+        query["category"] = category
+    
+    complaints = await db.complaints.find(query).sort("created_at", -1).to_list(length=1000)
+    for c in complaints:
+        if '_id' in c:
+            c['_id'] = str(c['_id'])
+    return complaints
+
+@api_router.put("/complaints/{complaint_id}")
+async def update_complaint(
+    complaint_id: str,
+    complaint_data: ComplaintUpdate,
+    user_id: str = Depends(get_current_user)
+):
+    """Update complaint status"""
+    update_data = {k: v for k, v in complaint_data.dict().items() if v is not None}
+    update_data["updated_at"] = datetime.utcnow()
+    
+    if 'status' in update_data and update_data['status'] == 'resolved':
+        update_data['resolved_at'] = datetime.utcnow()
+    
+    result = await db.complaints.update_one(
+        {"id": complaint_id},
+        {"$set": update_data}
+    )
+    
+    if result.modified_count == 0:
+        raise HTTPException(status_code=404, detail="Complaint not found")
+    
+    return {"message": "Complaint updated successfully"}
+
+# ============= DOCUMENT REPOSITORY ENDPOINTS =============
+
+@api_router.post("/properties/{property_id}/documents", response_model=Document)
+async def upload_document(
+    property_id: str,
+    document_data: DocumentCreate,
+    user_id: str = Depends(get_current_user)
+):
+    """Upload a document"""
+    document = Document(
+        uploaded_by=user_id,
+        **document_data.dict()
+    )
+    await db.documents.insert_one(document.dict())
+    return document
+
+@api_router.get("/properties/{property_id}/hoa-documents")
+async def get_hoa_documents(
+    property_id: str,
+    user_id: str = Depends(get_current_user),
+    category: Optional[str] = None
+):
+    """Get HOA documents for a property"""
+    query = {"property_id": property_id}
+    if category:
+        query["category"] = category
+    
+    documents = await db.documents.find(query).sort("upload_date", -1).to_list(length=1000)
+    for d in documents:
+        if '_id' in d:
+            d['_id'] = str(d['_id'])
+    return documents
+
+@api_router.delete("/documents/{document_id}")
+async def delete_document(document_id: str, user_id: str = Depends(get_current_user)):
+    """Delete a document (uploader or admin only)"""
+    document = await db.documents.find_one({"id": document_id})
+    if not document:
+        raise HTTPException(status_code=404, detail="Document not found")
+    
+    # Check if user is uploader or property owner
+    property_doc = await db.properties.find_one({"id": document['property_id'], "user_id": user_id})
+    if document['uploaded_by'] != user_id and not property_doc:
+        raise HTTPException(status_code=403, detail="Access denied")
+    
+    await db.documents.delete_one({"id": document_id})
+    return {"message": "Document deleted successfully"}
+
+# ============= MEETING SCHEDULER ENDPOINTS =============
+
+@api_router.post("/properties/{property_id}/meetings", response_model=Meeting)
+async def create_meeting(
+    property_id: str,
+    meeting_data: MeetingCreate,
+    user_id: str = Depends(get_current_user)
+):
+    """Create a meeting (admin/committee)"""
+    user = await db.users.find_one({"id": user_id})
+    user_name = user.get('username', 'Unknown') if user else 'Unknown'
+    
+    meeting = Meeting(
+        organizer_id=user_id,
+        organizer_name=user_name,
+        **meeting_data.dict()
+    )
+    await db.meetings.insert_one(meeting.dict())
+    return meeting
+
+@api_router.get("/properties/{property_id}/meetings")
+async def get_meetings(
+    property_id: str,
+    user_id: str = Depends(get_current_user),
+    upcoming: bool = True
+):
+    """Get meetings for a property"""
+    query = {"property_id": property_id}
+    
+    if upcoming:
+        query["date"] = {"$gte": datetime.utcnow()}
+    
+    meetings = await db.meetings.find(query).sort("date", 1).to_list(length=1000)
+    for m in meetings:
+        if '_id' in m:
+            m['_id'] = str(m['_id'])
+    return meetings
+
+@api_router.post("/meetings/rsvp", response_model=MeetingRSVP)
+async def rsvp_meeting(
+    rsvp_data: RSVPCreate,
+    user_id: str = Depends(get_current_user)
+):
+    """RSVP to a meeting"""
+    user = await db.users.find_one({"id": user_id})
+    user_name = user.get('username', 'Unknown') if user else 'Unknown'
+    
+    # Check if already RSVPed
+    existing = await db.meeting_rsvps.find_one({
+        "meeting_id": rsvp_data.meeting_id,
+        "user_id": user_id
+    })
+    
+    if existing:
+        # Update existing RSVP
+        await db.meeting_rsvps.update_one(
+            {"meeting_id": rsvp_data.meeting_id, "user_id": user_id},
+            {"$set": {"status": rsvp_data.status, "guests_count": rsvp_data.guests_count}}
+        )
+        existing['status'] = rsvp_data.status
+        existing['guests_count'] = rsvp_data.guests_count
+        if '_id' in existing:
+            existing['_id'] = str(existing['_id'])
+        return existing
+    else:
+        # Create new RSVP
+        rsvp = MeetingRSVP(
+            user_id=user_id,
+            user_name=user_name,
+            **rsvp_data.dict()
+        )
+        await db.meeting_rsvps.insert_one(rsvp.dict())
+        return rsvp
+
+@api_router.get("/meetings/{meeting_id}/rsvps")
+async def get_meeting_rsvps(meeting_id: str, user_id: str = Depends(get_current_user)):
+    """Get RSVPs for a meeting"""
+    rsvps = await db.meeting_rsvps.find({"meeting_id": meeting_id}).to_list(length=1000)
+    for r in rsvps:
+        if '_id' in r:
+            r['_id'] = str(r['_id'])
+    return rsvps
+
+
 app.include_router(api_router)
 
 app.add_middleware(
