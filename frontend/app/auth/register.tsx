@@ -18,13 +18,21 @@ export default function Register() {
   const router = useRouter();
   const { register } = useAuth();
   const [username, setUsername] = useState('');
+  const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [loading, setLoading] = useState(false);
 
   const handleRegister = async () => {
-    if (!username || !password || !confirmPassword) {
+    if (!username || !email || !password || !confirmPassword) {
       Alert.alert('Error', 'Please fill in all fields');
+      return;
+    }
+
+    // Basic email validation
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      Alert.alert('Error', 'Please enter a valid email address');
       return;
     }
 
@@ -40,8 +48,8 @@ export default function Register() {
 
     setLoading(true);
     try {
-      await register(username, password);
-      router.replace('/(tabs)/dashboard');
+      await register(username, email, password);
+      router.replace('/(tabs)');
     } catch (error: any) {
       Alert.alert('Registration Failed', error.message);
     } finally {
