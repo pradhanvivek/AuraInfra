@@ -423,7 +423,10 @@ export default function CommunityBoardScreen() {
         animationType="slide"
         onRequestClose={() => setCommentsModalVisible(false)}
       >
-        <View style={styles.modalOverlay}>
+        <KeyboardAvoidingView
+          behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+          style={styles.modalOverlay}
+        >
           <View style={styles.modalContent}>
             <View style={styles.modalHeader}>
               <Text style={styles.modalTitle}>Comments</Text>
@@ -467,7 +470,7 @@ export default function CommunityBoardScreen() {
               </TouchableOpacity>
             </View>
           </View>
-        </View>
+        </KeyboardAvoidingView>
       </Modal>
     </View>
   );
