@@ -1090,4 +1090,21 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: '#8E8E93',
   },
+  adminCard: {
+    borderLeftWidth: 4,
+    borderLeftColor: '#FF6B35',
+  },
+  adminIcon: {
+    backgroundColor: '#FF6B35',
+  },
+  adminLabel: {
+    fontSize: 17,
+    fontWeight: '600',
+    color: '#FF6B35',
+  },
+  adminSubtext: {
+    fontSize: 13,
+    color: '#8E8E93',
+    marginTop: 2,
+  },
 });
