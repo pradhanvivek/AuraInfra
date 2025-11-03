@@ -283,7 +283,10 @@ export default function ComplaintsScreen() {
         animationType="slide"
         onRequestClose={() => setAddModalVisible(false)}
       >
-        <View style={styles.modalOverlay}>
+        <KeyboardAvoidingView
+          behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+          style={styles.modalOverlay}
+        >
           <View style={styles.modalContent}>
             <View style={styles.modalHeader}>
               <Text style={styles.modalTitle}>Submit Complaint</Text>
@@ -292,7 +295,7 @@ export default function ComplaintsScreen() {
               </TouchableOpacity>
             </View>
 
-            <ScrollView style={styles.modalForm}>
+            <ScrollView style={styles.modalForm} keyboardShouldPersistTaps="handled">
               <Text style={styles.inputLabel}>Category *</Text>
               <View style={styles.categoryGrid}>
                 {categories.map((cat) => (
@@ -372,7 +375,7 @@ export default function ComplaintsScreen() {
               </TouchableOpacity>
             </ScrollView>
           </View>
-        </View>
+        </KeyboardAvoidingView>
       </Modal>
     </View>
   );
