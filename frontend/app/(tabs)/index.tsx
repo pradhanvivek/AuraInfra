@@ -170,27 +170,29 @@ export default function PropertiesScreen() {
       </View>
 
       <ScrollView contentContainerStyle={styles.content}>
-        {/* Hero Banner / Ad Slot */}
-        <View style={styles.heroBanner}>
-          <View style={styles.bannerContent}>
-            <Ionicons name="home" size={40} color="#5856D6" />
-            <View style={styles.bannerText}>
-              <Text style={styles.bannerTitle}>Find Your Dream Home</Text>
-              <Text style={styles.bannerSubtitle}>Premium Properties • Best Prices</Text>
-            </View>
-            <TouchableOpacity style={styles.bannerButton}>
-              <Text style={styles.bannerButtonText}>Explore</Text>
-            </TouchableOpacity>
-          </View>
-        </View>
+        {/* Hero Banner with Real Estate Ad */}
+        <TouchableOpacity 
+          style={styles.heroBanner}
+          activeOpacity={0.9}
+          onPress={() => {
+            // Add navigation to ad/listing here if needed
+            console.log('Hero banner tapped');
+          }}
+        >
+          <Image 
+            source={require('../../assets/images/hero-banner.png')} 
+            style={styles.heroBannerImage}
+            resizeMode="cover"
+          />
+        </TouchableOpacity>
 
-        {/* Quick Actions Grid */}
-        <Text style={styles.sectionTitle}>Quick Actions</Text>
-        <View style={styles.quickActionsGrid}>
+        {/* Property Management - Compact Cards */}
+        <Text style={styles.sectionTitle}>Property Management</Text>
+        <View style={styles.compactGrid}>
           {managementCards.map((card) => (
             <TouchableOpacity
               key={card.id}
-              style={styles.quickActionItem}
+              style={styles.compactCard}
               onPress={() => {
                 router.push({
                   pathname: card.route,
@@ -199,16 +201,18 @@ export default function PropertiesScreen() {
               }}
               activeOpacity={0.7}
             >
-              <View style={[styles.quickActionIcon, { backgroundColor: card.color + '15' }]}>
-                <Ionicons name={card.icon as any} size={28} color={card.color} />
+              <View style={[styles.compactIcon, { backgroundColor: card.color + '20' }]}>
+                <Ionicons name={card.icon as any} size={24} color={card.color} />
               </View>
-              <Text style={styles.quickActionLabel}>{card.title}</Text>
+              <Text style={styles.compactLabel} numberOfLines={2}>
+                {card.title}
+              </Text>
             </TouchableOpacity>
           ))}
         </View>
 
-        {/* Property Info Section */}
-        <Text style={styles.sectionTitle}>Property</Text>
+        {/* Property Actions */}
+        <Text style={styles.sectionTitle}>Property Actions</Text>
         <TouchableOpacity
           style={styles.actionCard}
           onPress={() => router.push('/property/add' as any)}
