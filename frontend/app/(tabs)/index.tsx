@@ -123,35 +123,77 @@ export default function PropertiesScreen() {
             <Text style={styles.selectorTitle}>Selected Property</Text>
           </View>
           
-          <View style={styles.pickerContainer}>
-            <Picker
-              selectedValue={selectedProperty?.id}
-              onValueChange={(value) => {
-                const property = properties.find(p => p.id === value);
-                setSelectedProperty(property || null);
-              }}
-              style={styles.picker}
-            >
-              {properties.map((property) => (
-                <Picker.Item
-                  key={property.id}
-                  label={`${property.name} (${property.user_role})`}
-                  value={property.id}
-                />
-              ))}
-            </Picker>
-          </View>
+          <TouchableOpacity
+            style={styles.selectorButton}
+            onPress={() => setSelectorModalVisible(true)}
+          >
+            {selectedProperty ? (
+              <View style={styles.selectorContent}>
+                <View style={styles.selectorLeft}>
+                  <Text style={styles.selectorPropertyName}>{selectedProperty.name}</Text>
+                  <Text style={styles.selectorPropertyAddress}>{selectedProperty.address}</Text>
+                </View>
+                <Ionicons name="chevron-down" size={24} color="#007AFF" />
+              </View>
+            ) : (
+              <Text style={styles.selectorPlaceholder}>Select a property</Text>
+            )}
+          </TouchableOpacity>
 
           {selectedProperty && (
             <View style={styles.propertyDetails}>
-              <Text style={styles.propertyName}>{selectedProperty.name}</Text>
-              <Text style={styles.propertyAddress}>{selectedProperty.address}</Text>
               <View style={styles.roleBadge}>
                 <Text style={styles.roleText}>{selectedProperty.user_role.toUpperCase()}</Text>
               </View>
             </View>
           )}
         </View>
+
+        {/* Property Selector Modal */}
+        <Modal
+          visible={selectorModalVisible}
+          transparent
+          animationType="slide"
+          onRequestClose={() => setSelectorModalVisible(false)}
+        >
+          <View style={styles.modalOverlay}>
+            <View style={styles.modalContent}>
+              <View style={styles.modalHeader}>
+                <Text style={styles.modalTitle}>Select Property</Text>
+                <TouchableOpacity onPress={() => setSelectorModalVisible(false)}>
+                  <Ionicons name="close-circle" size={28} color="#8E8E93" />
+                </TouchableOpacity>
+              </View>
+              
+              <ScrollView style={styles.modalList}>
+                {properties.map((property) => (
+                  <TouchableOpacity
+                    key={property.id}
+                    style={[
+                      styles.propertyOption,
+                      selectedProperty?.id === property.id && styles.propertyOptionSelected
+                    ]}
+                    onPress={() => {
+                      setSelectedProperty(property);
+                      setSelectorModalVisible(false);
+                    }}
+                  >
+                    <View style={styles.propertyOptionContent}>
+                      <Text style={styles.propertyOptionName}>{property.name}</Text>
+                      <Text style={styles.propertyOptionAddress}>{property.address}</Text>
+                      <View style={styles.propertyOptionBadge}>
+                        <Text style={styles.propertyOptionRole}>{property.user_role}</Text>
+                      </View>
+                    </View>
+                    {selectedProperty?.id === property.id && (
+                      <Ionicons name="checkmark-circle" size={24} color="#007AFF" />
+                    )}
+                  </TouchableOpacity>
+                ))}
+              </ScrollView>
+            </View>
+          </View>
+        </Modal>
 
         {/* Management Cards */}
         <Text style={styles.sectionTitle}>Property Management</Text>
