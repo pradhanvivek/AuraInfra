@@ -696,6 +696,7 @@ class CommunityPost(BaseModel):
     property_id: str
     user_id: str
     user_name: str  # For display
+    user_role: Optional[str] = None  # "owner", "tenant", "resident"
     title: str
     content: str
     category: str  # "announcement", "discussion", "event", "complaint", "general"
