@@ -281,7 +281,7 @@ const styles = StyleSheet.create({
   header: {
     backgroundColor: '#fff',
     paddingTop: 60,
-    paddingBottom: 16,
+    paddingBottom: 12,
     paddingHorizontal: 16,
     borderBottomWidth: 1,
     borderBottomColor: '#E5E5EA',
@@ -290,24 +290,54 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.1,
     shadowRadius: 4,
     elevation: 3,
-  },
-  headerContent: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 12,
   },
-  logoCircle: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    backgroundColor: '#007AFF',
-    justifyContent: 'center',
-    alignItems: 'center',
+  logoContainer: {
+    width: 50,
+    height: 50,
   },
-  headerTitle: {
-    fontSize: 24,
-    fontWeight: 'bold',
+  logo: {
+    width: '100%',
+    height: '100%',
+  },
+  addressDropdown: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingVertical: 8,
+    paddingHorizontal: 12,
+    backgroundColor: '#F2F2F7',
+    borderRadius: 12,
+  },
+  addressContent: {
+    flex: 1,
+    marginRight: 8,
+  },
+  propertyAddressHeader: {
+    fontSize: 14,
+    fontWeight: '600',
     color: '#000',
+    marginBottom: 4,
+  },
+  roleTag: {
+    alignSelf: 'flex-start',
+    backgroundColor: '#007AFF20',
+    paddingHorizontal: 8,
+    paddingVertical: 2,
+    borderRadius: 8,
+  },
+  roleTagText: {
+    fontSize: 10,
+    fontWeight: '700',
+    color: '#007AFF',
+    textTransform: 'uppercase',
+  },
+  selectText: {
+    fontSize: 14,
+    color: '#8E8E93',
   },
   content: {
     padding: 16,
