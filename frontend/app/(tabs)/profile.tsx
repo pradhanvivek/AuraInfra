@@ -348,6 +348,24 @@ export default function Profile() {
         </View>
 
         <View style={styles.section}>
+          <Text style={styles.sectionTitle}>Notifications</Text>
+          
+          <TouchableOpacity
+            style={styles.infoCard}
+            onPress={() => router.push('/notifications' as any)}
+          >
+            <View style={styles.infoIcon}>
+              <Ionicons name="notifications-outline" size={24} color="#007AFF" />
+            </View>
+            <View style={styles.infoContent}>
+              <Text style={styles.infoLabel}>View Notifications</Text>
+              <Text style={styles.infoValue}>Warranty reminders and alerts</Text>
+            </View>
+            <Ionicons name="chevron-forward" size={20} color="#C7C7CC" />
+          </TouchableOpacity>
+        </View>
+
+        <View style={styles.section}>
           <Text style={styles.sectionTitle}>Contact Information</Text>
 
           <TouchableOpacity
