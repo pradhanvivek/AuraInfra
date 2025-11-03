@@ -69,6 +69,9 @@ class UserProfile(BaseModel):
     geomancy_preference: str = "vastu"  # "vastu" or "feng_shui"
     currency_preference: Optional[str] = None  # "USD", "INR", "EUR", etc.
     measurement_system: Optional[str] = None  # "imperial" or "metric"
+    is_super_admin: bool = False
+    is_hoa_admin: bool = False
+    managed_properties: Optional[List[str]] = []  # List of property IDs
     created_at: datetime
 
 class UserProfileUpdate(BaseModel):
