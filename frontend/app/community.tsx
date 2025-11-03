@@ -230,9 +230,14 @@ export default function CommunityBoardScreen() {
             <View>
               <View style={styles.authorRow}>
                 <Text style={styles.authorName}>{post.user_name}</Text>
-                {post.is_admin_post && (
-                  <View style={styles.adminBadge}>
-                    <Text style={styles.adminText}>ADMIN</Text>
+                {post.user_role && (
+                  <View style={[
+                    styles.roleBadge,
+                    post.user_role === 'owner' && styles.ownerBadge,
+                    post.user_role === 'tenant' && styles.tenantBadge,
+                    post.user_role === 'resident' && styles.residentBadge,
+                  ]}>
+                    <Text style={styles.roleText}>{post.user_role.toUpperCase()}</Text>
                   </View>
                 )}
               </View>
