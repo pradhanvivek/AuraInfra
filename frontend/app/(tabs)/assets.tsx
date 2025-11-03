@@ -215,7 +215,7 @@ export default function DashboardScreen() {
               </Text>
             </View>
             <Image 
-              source={{ uri: 'https://customer-assets.emergentagent.com/job_95500ee6-6a87-4222-9712-857c1f99b6e3/artifacts/6qjibbhd_logo-new-over.webp' }}
+              source={require('../../assets/logo.png')}
               style={styles.logo}
               resizeMode="contain"
             />
