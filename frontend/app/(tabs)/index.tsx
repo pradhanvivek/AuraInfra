@@ -122,12 +122,12 @@ export default function PropertiesScreen() {
           <View style={styles.addressContent}>
             {selectedProperty ? (
               <>
+                <Text style={styles.propertyNameHeader} numberOfLines={1}>
+                  {selectedProperty.name}
+                </Text>
                 <Text style={styles.propertyAddressHeader} numberOfLines={1}>
                   {selectedProperty.address}
                 </Text>
-                <View style={styles.roleTag}>
-                  <Text style={styles.roleTagText}>{selectedProperty.user_role}</Text>
-                </View>
               </>
             ) : (
               <Text style={styles.selectText}>Select Property</Text>
