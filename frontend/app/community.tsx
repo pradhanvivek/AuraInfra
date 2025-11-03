@@ -509,7 +509,7 @@ const styles = StyleSheet.create({
   categoriesContent: {
     paddingHorizontal: 8,
     paddingVertical: 4,
-    gap: 0,
+    gap: 6,
   },
   categoryChip: {
     flexDirection: 'row',
