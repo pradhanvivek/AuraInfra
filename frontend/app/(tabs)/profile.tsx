@@ -368,6 +368,28 @@ export default function Profile() {
           </TouchableOpacity>
         </View>
 
+        {/* Admin Access Section - Only for HOA Admins and Super Admins */}
+        {(profile?.is_hoa_admin || profile?.is_super_admin) && (
+          <View style={styles.section}>
+            <Text style={styles.sectionTitle}>Administration</Text>
+            <TouchableOpacity
+              style={[styles.infoCard, styles.adminCard]}
+              onPress={() => router.push('/admin/dashboard')}
+            >
+              <View style={[styles.infoIcon, styles.adminIcon]}>
+                <Ionicons name="shield-checkmark" size={24} color="#fff" />
+              </View>
+              <View style={styles.infoContent}>
+                <Text style={styles.adminLabel}>Admin Dashboard</Text>
+                <Text style={styles.adminSubtext}>
+                  {profile.is_super_admin ? 'Super Admin Access' : 'HOA Admin Access'}
+                </Text>
+              </View>
+              <Ionicons name="chevron-forward" size={20} color="#C7C7CC" />
+            </TouchableOpacity>
+          </View>
+        )}
+
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Contact Information</Text>
 
