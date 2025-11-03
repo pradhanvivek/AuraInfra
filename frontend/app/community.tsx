@@ -513,8 +513,8 @@ const styles = StyleSheet.create({
     gap: 6,
   },
   categoryChip: {
-    // flexDirection: 'row',
-    // alignItems: 'center',
+    flexDirection: 'row',
+    alignItems: 'center',
     gap: 3,
     paddingHorizontal: 8,
     borderRadius: 12,
