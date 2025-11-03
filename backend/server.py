@@ -903,6 +903,53 @@ class RSVPCreate(BaseModel):
     guests_count: int = 0
 
 
+# ============= ADMIN & USER APPROVAL MODELS =============
+class PendingUserApproval(BaseModel):
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    user_id: str
+    username: str
+    email: str
+    property_id: str
+    property_name: str
+    requested_role: str  # "owner", "tenant", "resident"
+    documents: List[str] = []  # List of base64 encoded documents
+    document_names: List[str] = []  # Names of documents
+    status: str = "pending"  # "pending", "approved", "rejected"
+    admin_notes: Optional[str] = None
+    created_at: datetime = Field(default_factory=datetime.utcnow)
+    reviewed_at: Optional[datetime] = None
+    reviewed_by: Optional[str] = None  # Admin user ID
+
+class ApprovalRequest(BaseModel):
+    property_id: str
+    requested_role: str
+    documents: List[str]  # base64 documents
+    document_names: List[str]
+
+class ApprovalAction(BaseModel):
+    approval_id: str
+    action: str  # "approve" or "reject"
+    admin_notes: Optional[str] = None
+
+class PropertyAdminAssignment(BaseModel):
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    admin_user_id: str
+    property_id: str
+    assigned_by: str  # Super admin user ID
+    assigned_at: datetime = Field(default_factory=datetime.utcnow)
+
+class AdminDashboardStats(BaseModel):
+    property_id: str
+    total_users: int
+    pending_approvals: int
+    active_residents: int
+    payment_requests_sent: int
+    payments_received: int
+    unpaid_amount: float
+    recent_posts: int
+    upcoming_meetings: int
+
+
 # Portfolio Summary
 class PortfolioSummary(BaseModel):
     total_value: float
