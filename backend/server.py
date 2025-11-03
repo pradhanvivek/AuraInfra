@@ -4049,12 +4049,24 @@ async def create_community_post(
     user = await db.users.find_one({"id": user_id})
     user_name = user.get('username', 'Unknown') if user else 'Unknown'
     
-    # Check if admin post
+    # Check if property owner
     is_admin = property_doc is not None  # Property owner is admin
+    
+    # Get user role from property membership
+    user_role = None
+    membership = await db.property_memberships.find_one({
+        "property_id": property_id,
+        "user_id": user_id
+    })
+    if membership:
+        user_role = membership.get('role')  # "owner", "tenant", "resident"
+    elif is_admin:
+        user_role = "owner"  # Property owner is always owner
     
     post = CommunityPost(
         user_id=user_id,
         user_name=user_name,
+        user_role=user_role,
         is_admin_post=is_admin,
         **post_data.dict()
     )
