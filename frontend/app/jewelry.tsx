@@ -115,7 +115,7 @@ export default function JewelryScreen() {
         </TouchableOpacity>
         <Text style={styles.headerTitle}>Jewelry & Collectibles</Text>
         <Image 
-          source={{ uri: LOGO_URL }}
+          source={require('../assets/logo.png')}
           style={styles.logo}
           resizeMode="contain"
         />
