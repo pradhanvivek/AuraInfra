@@ -1062,6 +1062,12 @@ async def get_profile(user_id: str = Depends(get_current_user)):
     if not user_doc:
         raise HTTPException(status_code=404, detail="User not found")
     
+    # Get managed properties if user is HOA admin
+    managed_properties = []
+    if user_doc.get("is_hoa_admin"):
+        admin_assignments = await db.property_admin_assignments.find({"admin_user_id": user_id}).to_list(length=100)
+        managed_properties = [assignment["property_id"] for assignment in admin_assignments]
+    
     return UserProfile(
         id=user_doc["id"],
         username=user_doc["username"],
@@ -1072,6 +1078,9 @@ async def get_profile(user_id: str = Depends(get_current_user)):
         geomancy_preference=user_doc.get("geomancy_preference", "vastu"),
         currency_preference=user_doc.get("currency_preference"),
         measurement_system=user_doc.get("measurement_system"),
+        is_super_admin=user_doc.get("is_super_admin", False),
+        is_hoa_admin=user_doc.get("is_hoa_admin", False),
+        managed_properties=managed_properties,
         created_at=user_doc["created_at"]
     )
 
