@@ -4627,6 +4627,439 @@ async def get_meeting_rsvps(meeting_id: str, user_id: str = Depends(get_current_
     return rsvps
 
 
+
+# ============= ADMIN ENDPOINTS =============
+
+# Helper function to check if user is super admin
+async def verify_super_admin(user_id: str = Depends(get_current_user)):
+    user = await db.users.find_one({"id": user_id})
+    if not user or not user.get("is_super_admin"):
+        raise HTTPException(status_code=403, detail="Super admin access required")
+    return user_id
+
+# Helper function to check if user is HOA admin for a property
+async def verify_hoa_admin(property_id: str, user_id: str):
+    user = await db.users.find_one({"id": user_id})
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    
+    # Super admins can access everything
+    if user.get("is_super_admin"):
+        return True
+    
+    # Check if user is HOA admin for this property
+    if not user.get("is_hoa_admin"):
+        raise HTTPException(status_code=403, detail="HOA admin access required")
+    
+    admin_assignment = await db.property_admin_assignments.find_one({
+        "admin_user_id": user_id,
+        "property_id": property_id
+    })
+    
+    if not admin_assignment:
+        raise HTTPException(status_code=403, detail="Not authorized for this property")
+    
+    return True
+
+# -------- SUPER ADMIN ENDPOINTS --------
+
+@api_router.post("/admin/super/assign-hoa-admin")
+async def assign_hoa_admin(
+    target_user_id: str,
+    property_id: str,
+    super_admin_id: str = Depends(verify_super_admin)
+):
+    """Super admin assigns HOA admin to a property"""
+    
+    # Verify target user exists
+    target_user = await db.users.find_one({"id": target_user_id})
+    if not target_user:
+        raise HTTPException(status_code=404, detail="Target user not found")
+    
+    # Verify property exists
+    property_doc = await db.properties.find_one({"id": property_id})
+    if not property_doc:
+        raise HTTPException(status_code=404, detail="Property not found")
+    
+    # Update user to be HOA admin
+    await db.users.update_one(
+        {"id": target_user_id},
+        {"$set": {"is_hoa_admin": True}}
+    )
+    
+    # Create admin assignment
+    assignment = PropertyAdminAssignment(
+        admin_user_id=target_user_id,
+        property_id=property_id,
+        assigned_by=super_admin_id
+    )
+    
+    await db.property_admin_assignments.insert_one(assignment.dict())
+    
+    return {"message": "HOA admin assigned successfully", "assignment_id": assignment.id}
+
+@api_router.delete("/admin/super/remove-hoa-admin")
+async def remove_hoa_admin(
+    target_user_id: str,
+    property_id: str,
+    super_admin_id: str = Depends(verify_super_admin)
+):
+    """Super admin removes HOA admin from a property"""
+    
+    # Delete admin assignment
+    result = await db.property_admin_assignments.delete_one({
+        "admin_user_id": target_user_id,
+        "property_id": property_id
+    })
+    
+    if result.deleted_count == 0:
+        raise HTTPException(status_code=404, detail="Admin assignment not found")
+    
+    # Check if user has any other property assignments
+    other_assignments = await db.property_admin_assignments.find_one({"admin_user_id": target_user_id})
+    
+    # If no other assignments, remove HOA admin status
+    if not other_assignments:
+        await db.users.update_one(
+            {"id": target_user_id},
+            {"$set": {"is_hoa_admin": False}}
+        )
+    
+    return {"message": "HOA admin removed successfully"}
+
+@api_router.get("/admin/super/all-properties")
+async def get_all_properties(super_admin_id: str = Depends(verify_super_admin)):
+    """Get all properties in the system"""
+    properties = await db.properties.find({}).to_list(length=1000)
+    for prop in properties:
+        if '_id' in prop:
+            prop['_id'] = str(prop['_id'])
+    return properties
+
+@api_router.get("/admin/super/all-admins")
+async def get_all_admins(super_admin_id: str = Depends(verify_super_admin)):
+    """Get all HOA admins and their assigned properties"""
+    admins = await db.users.find({"is_hoa_admin": True}).to_list(length=1000)
+    
+    result = []
+    for admin in admins:
+        assignments = await db.property_admin_assignments.find({"admin_user_id": admin["id"]}).to_list(length=100)
+        property_ids = [a["property_id"] for a in assignments]
+        
+        result.append({
+            "id": admin["id"],
+            "username": admin["username"],
+            "email": admin.get("email"),
+            "managed_properties": property_ids
+        })
+    
+    return result
+
+# -------- HOA ADMIN ENDPOINTS --------
+
+@api_router.get("/admin/properties/{property_id}/dashboard", response_model=AdminDashboardStats)
+async def get_admin_dashboard(
+    property_id: str,
+    user_id: str = Depends(get_current_user)
+):
+    """Get dashboard statistics for HOA admin"""
+    await verify_hoa_admin(property_id, user_id)
+    
+    # Count total users
+    memberships = await db.property_memberships.find({"property_id": property_id}).to_list(length=10000)
+    total_users = len(memberships)
+    active_residents = len([m for m in memberships if m.get("status") == "active"])
+    
+    # Count pending approvals
+    pending_approvals = await db.pending_user_approvals.count_documents({
+        "property_id": property_id,
+        "status": "pending"
+    })
+    
+    # Count payment requests
+    payment_requests_sent = await db.hoa_maintenance_charges.count_documents({"property_id": property_id})
+    payments_received = await db.payments.count_documents({
+        "charge_id": {"$exists": True},
+        "status": "paid"
+    })
+    
+    # Calculate unpaid amount
+    unpaid_charges = await db.hoa_maintenance_charges.find({
+        "property_id": property_id,
+        "status": "unpaid"
+    }).to_list(length=10000)
+    unpaid_amount = sum(charge.get("amount", 0) for charge in unpaid_charges)
+    
+    # Count recent posts (last 7 days)
+    seven_days_ago = datetime.utcnow() - timedelta(days=7)
+    recent_posts = await db.community_posts.count_documents({
+        "property_id": property_id,
+        "created_at": {"$gte": seven_days_ago}
+    })
+    
+    # Count upcoming meetings
+    upcoming_meetings = await db.hoa_meetings.count_documents({
+        "property_id": property_id,
+        "date": {"$gte": datetime.utcnow()}
+    })
+    
+    return AdminDashboardStats(
+        property_id=property_id,
+        total_users=total_users,
+        pending_approvals=pending_approvals,
+        active_residents=active_residents,
+        payment_requests_sent=payment_requests_sent,
+        payments_received=payments_received,
+        unpaid_amount=unpaid_amount,
+        recent_posts=recent_posts,
+        upcoming_meetings=upcoming_meetings
+    )
+
+@api_router.get("/admin/properties/{property_id}/pending-approvals")
+async def get_pending_approvals(
+    property_id: str,
+    user_id: str = Depends(get_current_user)
+):
+    """Get all pending user approvals for a property"""
+    await verify_hoa_admin(property_id, user_id)
+    
+    approvals = await db.pending_user_approvals.find({
+        "property_id": property_id,
+        "status": "pending"
+    }).to_list(length=1000)
+    
+    for approval in approvals:
+        if '_id' in approval:
+            approval['_id'] = str(approval['_id'])
+    
+    return approvals
+
+@api_router.post("/admin/properties/{property_id}/approve-user")
+async def approve_or_reject_user(
+    property_id: str,
+    action: ApprovalAction,
+    user_id: str = Depends(get_current_user)
+):
+    """Approve or reject a user approval request"""
+    await verify_hoa_admin(property_id, user_id)
+    
+    # Get the approval request
+    approval = await db.pending_user_approvals.find_one({"id": action.approval_id})
+    if not approval:
+        raise HTTPException(status_code=404, detail="Approval request not found")
+    
+    if approval["status"] != "pending":
+        raise HTTPException(status_code=400, detail="Approval already processed")
+    
+    # Update approval status
+    await db.pending_user_approvals.update_one(
+        {"id": action.approval_id},
+        {
+            "$set": {
+                "status": action.action,  # "approve" or "reject"
+                "admin_notes": action.admin_notes,
+                "reviewed_at": datetime.utcnow(),
+                "reviewed_by": user_id
+            }
+        }
+    )
+    
+    if action.action == "approve":
+        # Create property membership
+        membership = PropertyMembership(
+            user_id=approval["user_id"],
+            property_id=property_id,
+            role=approval["requested_role"],
+            status="active"
+        )
+        await db.property_memberships.insert_one(membership.dict())
+        
+        # Mark user as approved (can now login)
+        await db.users.update_one(
+            {"id": approval["user_id"]},
+            {"$set": {"account_approved": True}}
+        )
+        
+        message = "User approved successfully"
+    else:
+        message = "User rejected"
+    
+    return {"message": message}
+
+@api_router.post("/admin/properties/{property_id}/create-payment-request", response_model=HOAMaintenanceCharge)
+async def create_payment_request_admin(
+    property_id: str,
+    target_user_id: str,
+    amount: float,
+    title: str,
+    description: str,
+    due_date: str,
+    user_id: str = Depends(get_current_user)
+):
+    """HOA admin creates a payment request for a user"""
+    await verify_hoa_admin(property_id, user_id)
+    
+    # Verify target user is a member
+    membership = await db.property_memberships.find_one({
+        "user_id": target_user_id,
+        "property_id": property_id
+    })
+    
+    if not membership:
+        raise HTTPException(status_code=404, detail="User not a member of this property")
+    
+    # Create payment request
+    charge = HOAMaintenanceCharge(
+        property_id=property_id,
+        user_id=target_user_id,
+        amount=amount,
+        title=title,
+        description=description,
+        due_date=datetime.fromisoformat(due_date.replace('Z', '+00:00')),
+        status="unpaid"
+    )
+    
+    await db.hoa_maintenance_charges.insert_one(charge.dict())
+    
+    # TODO: Send push notification to user
+    
+    return charge
+
+@api_router.post("/admin/properties/{property_id}/create-post", response_model=CommunityPost)
+async def create_post_admin(
+    property_id: str,
+    post: CommunityPostCreate,
+    user_id: str = Depends(get_current_user)
+):
+    """HOA admin creates a community post/announcement"""
+    await verify_hoa_admin(property_id, user_id)
+    
+    # Get admin info
+    admin = await db.users.find_one({"id": user_id})
+    
+    new_post = CommunityPost(
+        property_id=property_id,
+        user_id=user_id,
+        user_name=admin.get('username', 'Admin'),
+        user_role="admin",
+        is_admin_post=True,
+        is_pinned=True if post.category == "announcement" else False,
+        **post.dict()
+    )
+    
+    await db.community_posts.insert_one(new_post.dict())
+    
+    # TODO: Send push notification to all property members
+    
+    return new_post
+
+@api_router.get("/admin/properties/{property_id}/payments")
+async def get_all_payments(
+    property_id: str,
+    user_id: str = Depends(get_current_user)
+):
+    """Get all payment requests and their status"""
+    await verify_hoa_admin(property_id, user_id)
+    
+    charges = await db.hoa_maintenance_charges.find({"property_id": property_id}).to_list(length=1000)
+    
+    result = []
+    for charge in charges:
+        # Get user info
+        user = await db.users.find_one({"id": charge["user_id"]})
+        
+        # Get payment if exists
+        payment = await db.payments.find_one({"charge_id": charge["id"]})
+        
+        result.append({
+            "charge_id": charge["id"],
+            "user_name": user.get("username") if user else "Unknown",
+            "user_email": user.get("email") if user else None,
+            "amount": charge["amount"],
+            "title": charge["title"],
+            "due_date": charge["due_date"],
+            "status": charge["status"],
+            "payment_date": payment.get("created_at") if payment else None,
+            "created_at": charge["created_at"]
+        })
+    
+    return result
+
+# -------- USER APPROVAL REQUEST ENDPOINT --------
+
+@api_router.post("/user/request-property-approval")
+async def request_property_approval(
+    request: ApprovalRequest,
+    user_id: str = Depends(get_current_user)
+):
+    """User submits approval request with documents to join a property"""
+    
+    # Get user info
+    user = await db.users.find_one({"id": user_id})
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    
+    # Get property info
+    property_doc = await db.properties.find_one({"id": request.property_id})
+    if not property_doc:
+        raise HTTPException(status_code=404, detail="Property not found")
+    
+    # Check if already submitted
+    existing = await db.pending_user_approvals.find_one({
+        "user_id": user_id,
+        "property_id": request.property_id,
+        "status": "pending"
+    })
+    
+    if existing:
+        raise HTTPException(status_code=400, detail="Approval request already pending")
+    
+    # Create approval request
+    approval = PendingUserApproval(
+        user_id=user_id,
+        username=user["username"],
+        email=user.get("email", ""),
+        property_id=request.property_id,
+        property_name=property_doc["name"],
+        requested_role=request.requested_role,
+        documents=request.documents,
+        document_names=request.document_names,
+        status="pending"
+    )
+    
+    await db.pending_user_approvals.insert_one(approval.dict())
+    
+    # Mark user as pending approval (block login)
+    await db.users.update_one(
+        {"id": user_id},
+        {"$set": {"account_approved": False}}
+    )
+    
+    # TODO: Send notification to property admin
+    
+    return {"message": "Approval request submitted successfully", "approval_id": approval.id}
+
+@api_router.get("/user/approval-status/{property_id}")
+async def get_approval_status(
+    property_id: str,
+    user_id: str = Depends(get_current_user)
+):
+    """Get user's approval status for a property"""
+    
+    approval = await db.pending_user_approvals.find_one({
+        "user_id": user_id,
+        "property_id": property_id
+    }, sort=[("created_at", -1)])
+    
+    if not approval:
+        return {"status": "not_submitted"}
+    
+    if '_id' in approval:
+        approval['_id'] = str(approval['_id'])
+    
+    return approval
+
+
 app.include_router(api_router)
 
 app.add_middleware(
