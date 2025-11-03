@@ -344,6 +344,72 @@ const styles = StyleSheet.create({
   content: {
     padding: 16,
   },
+  heroBanner: {
+    backgroundColor: '#5856D6',
+    borderRadius: 16,
+    padding: 20,
+    marginBottom: 24,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.15,
+    shadowRadius: 8,
+    elevation: 5,
+  },
+  bannerContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+  },
+  bannerText: {
+    flex: 1,
+  },
+  bannerTitle: {
+    fontSize: 18,
+    fontWeight: '700',
+    color: '#fff',
+    marginBottom: 4,
+  },
+  bannerSubtitle: {
+    fontSize: 13,
+    color: '#E5E5EA',
+  },
+  bannerButton: {
+    backgroundColor: '#fff',
+    paddingHorizontal: 20,
+    paddingVertical: 10,
+    borderRadius: 20,
+  },
+  bannerButtonText: {
+    fontSize: 14,
+    fontWeight: '700',
+    color: '#5856D6',
+  },
+  quickActionsGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 12,
+    marginBottom: 24,
+  },
+  quickActionItem: {
+    width: '23%',
+    alignItems: 'center',
+    paddingVertical: 12,
+  },
+  quickActionIcon: {
+    width: 60,
+    height: 60,
+    borderRadius: 16,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 8,
+  },
+  quickActionLabel: {
+    fontSize: 11,
+    fontWeight: '600',
+    color: '#000',
+    textAlign: 'center',
+    lineHeight: 14,
+  },
   modalOverlay: {
     flex: 1,
     backgroundColor: 'rgba(0, 0, 0, 0.5)',
