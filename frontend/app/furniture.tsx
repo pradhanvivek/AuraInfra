@@ -124,7 +124,7 @@ export default function FurnitureScreen() {
         </TouchableOpacity>
         <Text style={styles.headerTitle}>Furniture</Text>
         <Image 
-          source={{ uri: LOGO_URL }}
+          source={require('../assets/logo.png')}
           style={styles.logo}
           resizeMode="contain"
         />
