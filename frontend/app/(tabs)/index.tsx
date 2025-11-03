@@ -71,6 +71,38 @@ export default function PropertiesScreen() {
       color: '#FF9500',
       route: '/community',
     },
+    {
+      id: 'amenities',
+      title: 'Amenities Booking',
+      description: 'Book clubhouse, gym & facilities',
+      icon: 'calendar-outline',
+      color: '#5856D6',
+      route: '/amenities',
+    },
+    {
+      id: 'complaints',
+      title: 'Service Requests',
+      description: 'Submit and track complaints',
+      icon: 'construct-outline',
+      color: '#FF3B30',
+      route: '/complaints',
+    },
+    {
+      id: 'documents',
+      title: 'HOA Documents',
+      description: 'Bylaws, minutes & reports',
+      icon: 'document-text-outline',
+      color: '#AF52DE',
+      route: '/hoa-documents',
+    },
+    {
+      id: 'meetings',
+      title: 'Meetings & Events',
+      description: 'Schedule and RSVP to meetings',
+      icon: 'calendar-sharp',
+      color: '#00C7BE',
+      route: '/meetings',
+    },
   ];
 
   if (loading) {
