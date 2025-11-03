@@ -21,6 +21,7 @@ export default function PropertiesScreen() {
   const [properties, setProperties] = useState<Property[]>([]);
   const [selectedProperty, setSelectedProperty] = useState<Property | null>(null);
   const [loading, setLoading] = useState(true);
+  const [selectorModalVisible, setSelectorModalVisible] = useState(false);
 
   useFocusEffect(
     useCallback(() => {
