@@ -949,10 +949,15 @@ async def get_current_user(credentials: HTTPAuthorizationCredentials = Depends(s
 
 @api_router.post("/auth/register", response_model=Token)
 async def register(user: UserRegister):
-    # Check if user exists
+    # Check if username exists
     existing_user = await db.users.find_one({"username": user.username})
     if existing_user:
         raise HTTPException(status_code=400, detail="Username already exists")
+    
+    # Check if email exists
+    existing_email = await db.users.find_one({"email": user.email})
+    if existing_email:
+        raise HTTPException(status_code=400, detail="Email already exists")
     
     # Hash password
     hashed_password = bcrypt.hashpw(user.password.encode('utf-8'), bcrypt.gensalt())
@@ -962,8 +967,8 @@ async def register(user: UserRegister):
     user_doc = {
         "id": user_id,
         "username": user.username,
+        "email": user.email,
         "password": hashed_password.decode('utf-8'),
-        "email": None,
         "phone": None,
         "created_at": datetime.utcnow()
     }
