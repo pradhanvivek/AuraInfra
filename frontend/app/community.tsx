@@ -350,7 +350,10 @@ export default function CommunityBoardScreen() {
         animationType="slide"
         onRequestClose={() => setAddModalVisible(false)}
       >
-        <View style={styles.modalOverlay}>
+        <KeyboardAvoidingView
+          behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+          style={styles.modalOverlay}
+        >
           <View style={styles.modalContent}>
             <View style={styles.modalHeader}>
               <Text style={styles.modalTitle}>Create Post</Text>
@@ -359,7 +362,7 @@ export default function CommunityBoardScreen() {
               </TouchableOpacity>
             </View>
 
-            <ScrollView style={styles.modalForm}>
+            <ScrollView style={styles.modalForm} keyboardShouldPersistTaps="handled">
               <Text style={styles.inputLabel}>Title *</Text>
               <TextInput
                 style={styles.input}
@@ -404,7 +407,7 @@ export default function CommunityBoardScreen() {
               </TouchableOpacity>
             </ScrollView>
           </View>
-        </View>
+        </KeyboardAvoidingView>
       </Modal>
 
       {/* Comments Modal */}
