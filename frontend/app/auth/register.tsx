@@ -87,6 +87,16 @@ export default function Register() {
 
             <TextInput
               style={styles.input}
+              placeholder="Email"
+              value={email}
+              onChangeText={setEmail}
+              autoCapitalize="none"
+              keyboardType="email-address"
+              editable={!loading}
+            />
+
+            <TextInput
+              style={styles.input}
               placeholder="Password"
               value={password}
               onChangeText={setPassword}
