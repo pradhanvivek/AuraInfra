@@ -105,14 +105,36 @@ export default function PropertiesScreen() {
 
   return (
     <View style={styles.container}>
-      {/* Header with Property Selector */}
+      {/* Header with Property Address and Dropdown */}
       <View style={styles.header}>
-        <View style={styles.headerContent}>
-          <View style={styles.logoCircle}>
-            <Ionicons name="business" size={24} color="#fff" />
-          </View>
-          <Text style={styles.headerTitle}>Property Management</Text>
+        <View style={styles.logoContainer}>
+          <Image 
+            source={require('../../assets/logo.png')} 
+            style={styles.logo} 
+            resizeMode="contain"
+          />
         </View>
+        
+        <TouchableOpacity
+          style={styles.addressDropdown}
+          onPress={() => setSelectorModalVisible(true)}
+        >
+          <View style={styles.addressContent}>
+            {selectedProperty ? (
+              <>
+                <Text style={styles.propertyAddressHeader} numberOfLines={1}>
+                  {selectedProperty.address}
+                </Text>
+                <View style={styles.roleTag}>
+                  <Text style={styles.roleTagText}>{selectedProperty.user_role}</Text>
+                </View>
+              </>
+            ) : (
+              <Text style={styles.selectText}>Select Property</Text>
+            )}
+          </View>
+          <Ionicons name="chevron-down-circle" size={24} color="#007AFF" />
+        </TouchableOpacity>
       </View>
 
       <ScrollView contentContainerStyle={styles.content}>
