@@ -105,7 +105,8 @@ export default function CreatePaymentRequest() {
     } catch (error: any) {
       Alert.alert('Error', error.response?.data?.detail || 'Failed to create payment request');
     } finally {
-      setSaving(false);\n    }
+      setSaving(false);
+    }
   };
 
   const onDateChange = (event: any, selectedDate?: Date) => {
