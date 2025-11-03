@@ -4886,7 +4886,7 @@ async def approve_or_reject_user(
     
     return {"message": message}
 
-@api_router.post("/admin/properties/{property_id}/create-payment-request", response_model=HOAMaintenanceCharge)
+@api_router.post("/admin/properties/{property_id}/create-payment-request", response_model=HOACharge)
 async def create_payment_request_admin(
     property_id: str,
     target_user_id: str,
@@ -4909,7 +4909,7 @@ async def create_payment_request_admin(
         raise HTTPException(status_code=404, detail="User not a member of this property")
     
     # Create payment request
-    charge = HOAMaintenanceCharge(
+    charge = HOACharge(
         property_id=property_id,
         user_id=target_user_id,
         amount=amount,
