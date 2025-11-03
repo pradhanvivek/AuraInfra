@@ -3413,6 +3413,704 @@ async def delete_maintenance(maintenance_id: str, user_id: str = Depends(get_cur
     return {"message": "Maintenance deleted successfully"}
 
 
+# ============= PROPERTY MANAGEMENT & MEMBERSHIP ENDPOINTS =============
+
+@api_router.post("/properties/{property_id}/members", response_model=PropertyMembership)
+async def add_property_member(
+    property_id: str,
+    membership_data: PropertyMembershipCreate,
+    user_id: str = Depends(get_current_user)
+):
+    """Add a member to a property (owner only)"""
+    # Verify user is owner of the property
+    property_doc = await db.properties.find_one({"id": property_id})
+    if not property_doc or property_doc.get('user_id') != user_id:
+        raise HTTPException(status_code=403, detail="Only property owner can add members")
+    
+    membership = PropertyMembership(
+        property_id=property_id,
+        **membership_data.dict()
+    )
+    await db.property_memberships.insert_one(membership.dict())
+    return membership
+
+@api_router.get("/properties/{property_id}/members")
+async def get_property_members(
+    property_id: str,
+    user_id: str = Depends(get_current_user)
+):
+    """Get all members of a property"""
+    # Verify user has access to this property
+    has_access = await db.property_memberships.find_one({
+        "property_id": property_id,
+        "user_id": user_id
+    })
+    
+    property_doc = await db.properties.find_one({"id": property_id, "user_id": user_id})
+    
+    if not has_access and not property_doc:
+        raise HTTPException(status_code=403, detail="Access denied")
+    
+    members = await db.property_memberships.find({"property_id": property_id}).to_list(length=1000)
+    
+    for m in members:
+        if '_id' in m:
+            m['_id'] = str(m['_id'])
+    
+    return members
+
+@api_router.get("/users/properties")
+async def get_user_properties(user_id: str = Depends(get_current_user)):
+    """Get all properties user has access to (owned + member)"""
+    # Get owned properties
+    owned = await db.properties.find({"user_id": user_id}).to_list(length=1000)
+    
+    # Get properties where user is member
+    memberships = await db.property_memberships.find({
+        "user_id": user_id,
+        "status": "active"
+    }).to_list(length=1000)
+    
+    member_property_ids = [m['property_id'] for m in memberships]
+    member_properties = []
+    
+    if member_property_ids:
+        member_properties = await db.properties.find({
+            "id": {"$in": member_property_ids}
+        }).to_list(length=1000)
+    
+    # Combine and mark role
+    all_properties = []
+    for prop in owned:
+        prop['user_role'] = 'owner'
+        if '_id' in prop:
+            prop['_id'] = str(prop['_id'])
+        all_properties.append(prop)
+    
+    for prop in member_properties:
+        # Find user's role for this property
+        membership = next((m for m in memberships if m['property_id'] == prop['id']), None)
+        prop['user_role'] = membership['role'] if membership else 'member'
+        if '_id' in prop:
+            prop['_id'] = str(prop['_id'])
+        all_properties.append(prop)
+    
+    return all_properties
+
+# ============= HOA CHARGES & PAYMENT ENDPOINTS =============
+
+@api_router.post("/properties/{property_id}/hoa-charges", response_model=HOACharge)
+async def create_hoa_charge(
+    property_id: str,
+    charge_data: HOAChargeCreate,
+    user_id: str = Depends(get_current_user)
+):
+    """Create HOA maintenance charge (admin/owner only)"""
+    # For MVP, allowing property owner to create charges
+    # In production, this would be restricted to HOA admin role
+    property_doc = await db.properties.find_one({"id": property_id, "user_id": user_id})
+    if not property_doc:
+        raise HTTPException(status_code=403, detail="Only property owner can create charges")
+    
+    charge = HOACharge(
+        created_by=user_id,
+        **charge_data.dict()
+    )
+    await db.hoa_charges.insert_one(charge.dict())
+    return charge
+
+@api_router.get("/properties/{property_id}/hoa-charges")
+async def get_hoa_charges(
+    property_id: str,
+    user_id: str = Depends(get_current_user),
+    status: Optional[str] = None
+):
+    """Get HOA charges for a property"""
+    # Verify user has access
+    has_access = await db.property_memberships.find_one({
+        "property_id": property_id,
+        "user_id": user_id
+    })
+    property_doc = await db.properties.find_one({"id": property_id, "user_id": user_id})
+    
+    if not has_access and not property_doc:
+        raise HTTPException(status_code=403, detail="Access denied")
+    
+    query = {"property_id": property_id}
+    if status:
+        query["status"] = status
+    
+    charges = await db.hoa_charges.find(query).sort("due_date", -1).to_list(length=1000)
+    
+    for c in charges:
+        if '_id' in c:
+            c['_id'] = str(c['_id'])
+    
+    return charges
+
+# Stripe payment integration
+@api_router.post("/payments/hoa/create-checkout")
+async def create_hoa_payment_checkout(
+    charge_id: str,
+    origin_url: str,
+    user_id: str = Depends(get_current_user)
+):
+    """Create Stripe checkout session for HOA charge payment"""
+    from emergentintegrations.payments.stripe.checkout import StripeCheckout, CheckoutSessionRequest
+    
+    # Get charge details
+    charge = await db.hoa_charges.find_one({"id": charge_id})
+    if not charge:
+        raise HTTPException(status_code=404, detail="Charge not found")
+    
+    if charge['status'] == 'paid':
+        raise HTTPException(status_code=400, detail="Charge already paid")
+    
+    # Verify user has access to this property
+    property_id = charge['property_id']
+    has_access = await db.property_memberships.find_one({
+        "property_id": property_id,
+        "user_id": user_id
+    })
+    property_doc = await db.properties.find_one({"id": property_id, "user_id": user_id})
+    
+    if not has_access and not property_doc:
+        raise HTTPException(status_code=403, detail="Access denied")
+    
+    # Initialize Stripe
+    stripe_api_key = os.environ.get('STRIPE_API_KEY')
+    webhook_url = f"{origin_url}/api/webhook/stripe"
+    stripe_checkout = StripeCheckout(api_key=stripe_api_key, webhook_url=webhook_url)
+    
+    # Build success and cancel URLs
+    success_url = f"{origin_url}/payment-success?session_id={{{{CHECKOUT_SESSION_ID}}}}"
+    cancel_url = f"{origin_url}/properties"
+    
+    # Create checkout session
+    checkout_request = CheckoutSessionRequest(
+        amount=float(charge['amount']),  # Stripe requires float
+        currency=charge['currency'].lower(),
+        success_url=success_url,
+        cancel_url=cancel_url,
+        metadata={
+            "charge_id": charge_id,
+            "user_id": user_id,
+            "property_id": property_id,
+            "type": "hoa_charge"
+        }
+    )
+    
+    session = await stripe_checkout.create_checkout_session(checkout_request)
+    
+    # Create payment transaction record
+    transaction = PaymentTransaction(
+        user_id=user_id,
+        charge_id=charge_id,
+        property_id=property_id,
+        amount=charge['amount'],
+        currency=charge['currency'],
+        stripe_session_id=session.session_id,
+        payment_status="pending",
+        metadata=checkout_request.metadata
+    )
+    await db.payment_transactions.insert_one(transaction.dict())
+    
+    return {"url": session.url, "session_id": session.session_id}
+
+@api_router.get("/payments/checkout/status/{session_id}")
+async def get_payment_status(
+    session_id: str,
+    user_id: str = Depends(get_current_user)
+):
+    """Check payment status and update records"""
+    from emergentintegrations.payments.stripe.checkout import StripeCheckout
+    
+    # Get transaction
+    transaction = await db.payment_transactions.find_one({"stripe_session_id": session_id})
+    if not transaction:
+        raise HTTPException(status_code=404, detail="Transaction not found")
+    
+    # Verify user owns this transaction
+    if transaction['user_id'] != user_id:
+        raise HTTPException(status_code=403, detail="Access denied")
+    
+    # If already marked as paid, return success
+    if transaction['payment_status'] == 'paid':
+        return {
+            "status": "complete",
+            "payment_status": "paid",
+            "amount_total": int(transaction['amount'] * 100),  # Convert to cents
+            "currency": transaction['currency']
+        }
+    
+    # Check with Stripe
+    stripe_api_key = os.environ.get('STRIPE_API_KEY')
+    webhook_url = ""  # Not needed for status check
+    stripe_checkout = StripeCheckout(api_key=stripe_api_key, webhook_url=webhook_url)
+    
+    status_response = await stripe_checkout.get_checkout_status(session_id)
+    
+    # Update transaction if payment completed
+    if status_response.payment_status == 'paid' and transaction['payment_status'] != 'paid':
+        # Update transaction
+        await db.payment_transactions.update_one(
+            {"stripe_session_id": session_id},
+            {
+                "$set": {
+                    "payment_status": "paid",
+                    "updated_at": datetime.utcnow()
+                }
+            }
+        )
+        
+        # Update HOA charge
+        await db.hoa_charges.update_one(
+            {"id": transaction['charge_id']},
+            {
+                "$set": {
+                    "status": "paid",
+                    "paid_date": datetime.utcnow(),
+                    "stripe_session_id": session_id
+                }
+            }
+        )
+    
+    return status_response.dict()
+
+@api_router.post("/webhook/stripe")
+async def stripe_webhook(request: Request):
+    """Handle Stripe webhooks"""
+    from emergentintegrations.payments.stripe.checkout import StripeCheckout
+    
+    body = await request.body()
+    signature = request.headers.get("Stripe-Signature")
+    
+    stripe_api_key = os.environ.get('STRIPE_API_KEY')
+    webhook_url = ""
+    stripe_checkout = StripeCheckout(api_key=stripe_api_key, webhook_url=webhook_url)
+    
+    try:
+        webhook_response = await stripe_checkout.handle_webhook(body, signature)
+        
+        # Handle payment success
+        if webhook_response.payment_status == 'paid':
+            session_id = webhook_response.session_id
+            
+            # Find transaction
+            transaction = await db.payment_transactions.find_one({"stripe_session_id": session_id})
+            if transaction and transaction['payment_status'] != 'paid':
+                # Update transaction
+                await db.payment_transactions.update_one(
+                    {"stripe_session_id": session_id},
+                    {"$set": {"payment_status": "paid", "updated_at": datetime.utcnow()}}
+                )
+                
+                # Update HOA charge
+                await db.hoa_charges.update_one(
+                    {"id": transaction['charge_id']},
+                    {"$set": {"status": "paid", "paid_date": datetime.utcnow()}}
+                )
+        
+        return {"status": "success"}
+    except Exception as e:
+        logger.error(f"Webhook error: {str(e)}")
+        raise HTTPException(status_code=400, detail=str(e))
+
+# ============= VISITOR MANAGEMENT ENDPOINTS =============
+
+@api_router.post("/properties/{property_id}/visitors", response_model=Visitor)
+async def create_visitor(
+    property_id: str,
+    visitor_data: VisitorCreate,
+    user_id: str = Depends(get_current_user)
+):
+    """Create/register a visitor"""
+    # Verify user has access to property
+    has_access = await db.property_memberships.find_one({
+        "property_id": property_id,
+        "user_id": user_id
+    })
+    property_doc = await db.properties.find_one({"id": property_id, "user_id": user_id})
+    
+    if not has_access and not property_doc:
+        raise HTTPException(status_code=403, detail="Access denied")
+    
+    # Generate approval code
+    approval_code = str(uuid.uuid4())[:8].upper()
+    
+    visitor = Visitor(
+        host_user_id=user_id,
+        approval_code=approval_code,
+        **visitor_data.dict()
+    )
+    await db.visitors.insert_one(visitor.dict())
+    return visitor
+
+@api_router.get("/properties/{property_id}/visitors")
+async def get_property_visitors(
+    property_id: str,
+    user_id: str = Depends(get_current_user),
+    status: Optional[str] = None,
+    date_filter: Optional[str] = None  # "today", "upcoming", "past"
+):
+    """Get visitors for a property"""
+    # Verify access
+    has_access = await db.property_memberships.find_one({
+        "property_id": property_id,
+        "user_id": user_id
+    })
+    property_doc = await db.properties.find_one({"id": property_id, "user_id": user_id})
+    
+    if not has_access and not property_doc:
+        raise HTTPException(status_code=403, detail="Access denied")
+    
+    query = {"property_id": property_id}
+    
+    if status:
+        query["status"] = status
+    
+    if date_filter == "today":
+        today = datetime.utcnow().date()
+        query["expected_date"] = {
+            "$gte": datetime.combine(today, datetime.min.time()),
+            "$lt": datetime.combine(today, datetime.max.time())
+        }
+    elif date_filter == "upcoming":
+        query["expected_date"] = {"$gte": datetime.utcnow()}
+    elif date_filter == "past":
+        query["expected_date"] = {"$lt": datetime.utcnow()}
+    
+    visitors = await db.visitors.find(query).sort("expected_date", -1).to_list(length=1000)
+    
+    for v in visitors:
+        if '_id' in v:
+            v['_id'] = str(v['_id'])
+    
+    return visitors
+
+@api_router.put("/visitors/{visitor_id}/approve")
+async def approve_visitor(
+    visitor_id: str,
+    approval_data: VisitorApproval,
+    user_id: str = Depends(get_current_user)
+):
+    """Approve or reject visitor (security/admin)"""
+    visitor = await db.visitors.find_one({"id": visitor_id})
+    if not visitor:
+        raise HTTPException(status_code=404, detail="Visitor not found")
+    
+    # For MVP, allowing any property member to approve
+    # In production, restrict to admin/security role
+    
+    update_data = {
+        "status": approval_data.status,
+        "approved_by": user_id,
+        "approved_at": datetime.utcnow()
+    }
+    
+    if approval_data.notes:
+        update_data["notes"] = approval_data.notes
+    
+    await db.visitors.update_one(
+        {"id": visitor_id},
+        {"$set": update_data}
+    )
+    
+    return {"message": f"Visitor {approval_data.status}"}
+
+@api_router.post("/visitors/{visitor_id}/check-in")
+async def check_in_visitor(
+    visitor_id: str,
+    check_in_data: VisitorCheckIn,
+    user_id: str = Depends(get_current_user)
+):
+    """Check in a visitor"""
+    visitor = await db.visitors.find_one({"id": visitor_id})
+    if not visitor:
+        raise HTTPException(status_code=404, detail="Visitor not found")
+    
+    if visitor['status'] != 'approved':
+        raise HTTPException(status_code=400, detail="Visitor not approved")
+    
+    await db.visitors.update_one(
+        {"id": visitor_id},
+        {
+            "$set": {
+                "status": "checked_in",
+                "check_in_time": check_in_data.check_in_time
+            }
+        }
+    )
+    
+    return {"message": "Visitor checked in"}
+
+@api_router.post("/visitors/{visitor_id}/check-out")
+async def check_out_visitor(
+    visitor_id: str,
+    check_out_data: VisitorCheckOut,
+    user_id: str = Depends(get_current_user)
+):
+    """Check out a visitor"""
+    visitor = await db.visitors.find_one({"id": visitor_id})
+    if not visitor:
+        raise HTTPException(status_code=404, detail="Visitor not found")
+    
+    if visitor['status'] != 'checked_in':
+        raise HTTPException(status_code=400, detail="Visitor not checked in")
+    
+    await db.visitors.update_one(
+        {"id": visitor_id},
+        {
+            "$set": {
+                "status": "checked_out",
+                "check_out_time": check_out_data.check_out_time
+            }
+        }
+    )
+    
+    return {"message": "Visitor checked out"}
+
+# ============= COMMUNITY BOARD ENDPOINTS =============
+
+@api_router.post("/properties/{property_id}/community/posts", response_model=CommunityPost)
+async def create_community_post(
+    property_id: str,
+    post_data: CommunityPostCreate,
+    user_id: str = Depends(get_current_user)
+):
+    """Create a community board post"""
+    # Verify user has access to property
+    has_access = await db.property_memberships.find_one({
+        "property_id": property_id,
+        "user_id": user_id
+    })
+    property_doc = await db.properties.find_one({"id": property_id, "user_id": user_id})
+    
+    if not has_access and not property_doc:
+        raise HTTPException(status_code=403, detail="Access denied")
+    
+    # Get user info
+    user = await db.users.find_one({"id": user_id})
+    user_name = user.get('username', 'Unknown') if user else 'Unknown'
+    
+    # Check if admin post
+    is_admin = property_doc is not None  # Property owner is admin
+    
+    post = CommunityPost(
+        user_id=user_id,
+        user_name=user_name,
+        is_admin_post=is_admin,
+        **post_data.dict()
+    )
+    await db.community_posts.insert_one(post.dict())
+    return post
+
+@api_router.get("/properties/{property_id}/community/posts")
+async def get_community_posts(
+    property_id: str,
+    user_id: str = Depends(get_current_user),
+    category: Optional[str] = None,
+    limit: int = 50,
+    skip: int = 0
+):
+    """Get community posts for a property"""
+    # Verify access
+    has_access = await db.property_memberships.find_one({
+        "property_id": property_id,
+        "user_id": user_id
+    })
+    property_doc = await db.properties.find_one({"id": property_id, "user_id": user_id})
+    
+    if not has_access and not property_doc:
+        raise HTTPException(status_code=403, detail="Access denied")
+    
+    query = {"property_id": property_id}
+    if category:
+        query["category"] = category
+    
+    # Sort by pinned first, then by created_at
+    posts = await db.community_posts.find(query).sort([
+        ("is_pinned", -1),
+        ("created_at", -1)
+    ]).skip(skip).limit(limit).to_list(length=limit)
+    
+    for p in posts:
+        if '_id' in p:
+            p['_id'] = str(p['_id'])
+    
+    return posts
+
+@api_router.get("/community/posts/{post_id}")
+async def get_post(post_id: str, user_id: str = Depends(get_current_user)):
+    """Get a specific post"""
+    post = await db.community_posts.find_one({"id": post_id})
+    if not post:
+        raise HTTPException(status_code=404, detail="Post not found")
+    
+    # Verify user has access to the property
+    property_id = post['property_id']
+    has_access = await db.property_memberships.find_one({
+        "property_id": property_id,
+        "user_id": user_id
+    })
+    property_doc = await db.properties.find_one({"id": property_id, "user_id": user_id})
+    
+    if not has_access and not property_doc:
+        raise HTTPException(status_code=403, detail="Access denied")
+    
+    if '_id' in post:
+        post['_id'] = str(post['_id'])
+    
+    return post
+
+@api_router.put("/community/posts/{post_id}")
+async def update_post(
+    post_id: str,
+    post_data: CommunityPostUpdate,
+    user_id: str = Depends(get_current_user)
+):
+    """Update a post (author or admin only)"""
+    post = await db.community_posts.find_one({"id": post_id})
+    if not post:
+        raise HTTPException(status_code=404, detail="Post not found")
+    
+    # Verify user is author or property owner
+    property_doc = await db.properties.find_one({
+        "id": post['property_id'],
+        "user_id": user_id
+    })
+    
+    if post['user_id'] != user_id and not property_doc:
+        raise HTTPException(status_code=403, detail="Access denied")
+    
+    update_data = {k: v for k, v in post_data.dict().items() if v is not None}
+    update_data["updated_at"] = datetime.utcnow()
+    
+    await db.community_posts.update_one(
+        {"id": post_id},
+        {"$set": update_data}
+    )
+    
+    return {"message": "Post updated"}
+
+@api_router.delete("/community/posts/{post_id}")
+async def delete_post(post_id: str, user_id: str = Depends(get_current_user)):
+    """Delete a post (author or admin only)"""
+    post = await db.community_posts.find_one({"id": post_id})
+    if not post:
+        raise HTTPException(status_code=404, detail="Post not found")
+    
+    # Verify user is author or property owner
+    property_doc = await db.properties.find_one({
+        "id": post['property_id'],
+        "user_id": user_id
+    })
+    
+    if post['user_id'] != user_id and not property_doc:
+        raise HTTPException(status_code=403, detail="Access denied")
+    
+    # Delete post and all comments
+    await db.community_posts.delete_one({"id": post_id})
+    await db.community_comments.delete_many({"post_id": post_id})
+    await db.post_likes.delete_many({"post_id": post_id})
+    
+    return {"message": "Post deleted"}
+
+@api_router.post("/community/posts/{post_id}/comments", response_model=CommunityComment)
+async def create_comment(
+    post_id: str,
+    comment_data: CommunityCommentCreate,
+    user_id: str = Depends(get_current_user)
+):
+    """Add a comment to a post"""
+    # Verify post exists and user has access
+    post = await db.community_posts.find_one({"id": post_id})
+    if not post:
+        raise HTTPException(status_code=404, detail="Post not found")
+    
+    property_id = post['property_id']
+    has_access = await db.property_memberships.find_one({
+        "property_id": property_id,
+        "user_id": user_id
+    })
+    property_doc = await db.properties.find_one({"id": property_id, "user_id": user_id})
+    
+    if not has_access and not property_doc:
+        raise HTTPException(status_code=403, detail="Access denied")
+    
+    # Get user info
+    user = await db.users.find_one({"id": user_id})
+    user_name = user.get('username', 'Unknown') if user else 'Unknown'
+    
+    comment = CommunityComment(
+        user_id=user_id,
+        user_name=user_name,
+        **comment_data.dict()
+    )
+    await db.community_comments.insert_one(comment.dict())
+    
+    # Increment comment count
+    await db.community_posts.update_one(
+        {"id": post_id},
+        {"$inc": {"comments_count": 1}}
+    )
+    
+    return comment
+
+@api_router.get("/community/posts/{post_id}/comments")
+async def get_comments(post_id: str, user_id: str = Depends(get_current_user)):
+    """Get all comments for a post"""
+    # Verify post exists and user has access
+    post = await db.community_posts.find_one({"id": post_id})
+    if not post:
+        raise HTTPException(status_code=404, detail="Post not found")
+    
+    property_id = post['property_id']
+    has_access = await db.property_memberships.find_one({
+        "property_id": property_id,
+        "user_id": user_id
+    })
+    property_doc = await db.properties.find_one({"id": property_id, "user_id": user_id})
+    
+    if not has_access and not property_doc:
+        raise HTTPException(status_code=403, detail="Access denied")
+    
+    comments = await db.community_comments.find({"post_id": post_id}).sort("created_at", 1).to_list(length=1000)
+    
+    for c in comments:
+        if '_id' in c:
+            c['_id'] = str(c['_id'])
+    
+    return comments
+
+@api_router.post("/community/posts/{post_id}/like")
+async def toggle_post_like(post_id: str, user_id: str = Depends(get_current_user)):
+    """Like or unlike a post"""
+    # Check if already liked
+    existing_like = await db.post_likes.find_one({
+        "post_id": post_id,
+        "user_id": user_id
+    })
+    
+    if existing_like:
+        # Unlike
+        await db.post_likes.delete_one({"post_id": post_id, "user_id": user_id})
+        await db.community_posts.update_one(
+            {"id": post_id},
+            {"$inc": {"likes_count": -1}}
+        )
+        return {"message": "Unliked", "liked": False}
+    else:
+        # Like
+        like = PostLike(post_id=post_id, user_id=user_id)
+        await db.post_likes.insert_one(like.dict())
+        await db.community_posts.update_one(
+            {"id": post_id},
+            {"$inc": {"likes_count": 1}}
+        )
+        return {"message": "Liked", "liked": True}
+
+
 app.include_router(api_router)
 
 app.add_middleware(
