@@ -78,7 +78,7 @@ export default function CreatePaymentRequest() {
   };
 
   const handleSubmit = async () => {
-    if (!selectedUser || !amount || !title || !description || !dueDate) {
+    if (!selectedUser || !amount || !title || !description) {
       Alert.alert('Error', 'Please fill in all fields');
       return;
     }
@@ -94,7 +94,7 @@ export default function CreatePaymentRequest() {
             amount: parseFloat(amount),
             title,
             description,
-            due_date: new Date(dueDate).toISOString()
+            due_date: dueDate.toISOString()
           },
           headers: { 'Authorization': `Bearer ${token}` }
         }
@@ -105,7 +105,13 @@ export default function CreatePaymentRequest() {
     } catch (error: any) {
       Alert.alert('Error', error.response?.data?.detail || 'Failed to create payment request');
     } finally {
-      setSaving(false);
+      setSaving(false);\n    }
+  };
+
+  const onDateChange = (event: any, selectedDate?: Date) => {
+    setShowDatePicker(Platform.OS === 'ios');
+    if (selectedDate) {
+      setDueDate(selectedDate);
     }
   };
 
