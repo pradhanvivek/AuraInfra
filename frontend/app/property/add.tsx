@@ -87,11 +87,7 @@ export default function AddProperty() {
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
         style={styles.keyboardView}
       >
-        <ScrollView 
-          style={styles.scrollView}
-          contentContainerStyle={styles.content}
-          keyboardShouldPersistTaps="handled"
-        >
+        <View style={styles.content}>
           <View style={styles.section}>
             <Text style={styles.label}>Property Name</Text>
             <TextInput
