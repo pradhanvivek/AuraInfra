@@ -51,6 +51,11 @@ export default function MeetingsManagement() {
       navigate('/admin/login');
       return;
     }
+    if (!propertyId) {
+      alert('No property assigned. Please contact super admin.');
+      navigate('/admin/dashboard');
+      return;
+    }
     fetchMeetings();
   }, []);
 
