@@ -4559,8 +4559,18 @@ async def create_meeting(
     user_id: str = Depends(get_current_user)
 ):
     """Create a meeting (admin/committee)"""
+    # Check if user is property owner or HOA admin managing this property
     user = await db.users.find_one({"id": user_id})
-    user_name = user.get('username', 'Unknown') if user else 'Unknown'
+    if not user:
+        raise HTTPException(status_code=403, detail="User not found")
+    
+    property_doc = await db.properties.find_one({"id": property_id, "user_id": user_id})
+    is_managed = user.get("managed_properties") and property_id in user.get("managed_properties", [])
+    
+    if not property_doc and not is_managed:
+        raise HTTPException(status_code=403, detail="Only property owner or HOA admin can create meetings")
+    
+    user_name = user.get('username', 'Unknown')
     
     meeting = Meeting(
         organizer_id=user_id,
