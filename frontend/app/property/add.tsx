@@ -222,9 +222,10 @@ export default function AddProperty() {
                   value: address,
                   onChangeText: setAddress,
                 }}
-                listViewDisplayed="auto"
+                listViewDisplayed={false}
                 keyboardShouldPersistTaps="handled"
-                nestedScrollEnabled={true}
+                enableHighAccuracyLocation={false}
+                suppressDefaultStyles={false}
                 renderRow={(rowData) => {
                   const title = rowData.structured_formatting.main_text;
                   const address = rowData.structured_formatting.secondary_text;
