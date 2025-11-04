@@ -102,7 +102,7 @@
 # Testing Data - Main Agent and testing sub agent both should log testing data below this section
 #====================================================================================================
 
-user_problem_statement: "Property Management App - Complete notification settings in profile page and implement 'Near Me' feature showing nearby places for each property"
+user_problem_statement: "Fix 3 bugs in HOA Admin Portal: 1) Create announcements bug (useState instead of useEffect), 2) Manage amenities screen not working in web admin, 3) Manage meetings screen not working in web admin"
 
 backend:
   - task: "User Authentication - Register"
