@@ -221,11 +221,11 @@ export default function AddProperty() {
                 textInputProps={{
                   value: address,
                   onChangeText: setAddress,
+                  autoFocus: false,
                 }}
-                listViewDisplayed={false}
+                listViewDisplayed="auto"
                 keyboardShouldPersistTaps="handled"
-                enableHighAccuracyLocation={false}
-                suppressDefaultStyles={false}
+                nestedScrollEnabled={true}
                 renderRow={(rowData) => {
                   const title = rowData.structured_formatting.main_text;
                   const address = rowData.structured_formatting.secondary_text;
