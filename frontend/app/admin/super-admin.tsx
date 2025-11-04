@@ -323,7 +323,10 @@ export default function SuperAdminPanel() {
 
       {/* Assign Admin Modal */}
       <Modal visible={showAssignModal} animationType="slide" transparent>
-        <View style={styles.modalContainer}>
+        <KeyboardAvoidingView
+          behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+          style={styles.modalContainer}
+        >
           <View style={styles.modalContent}>
             <View style={styles.modalHeader}>
               <Text style={styles.modalTitle}>Assign Admin</Text>
@@ -332,7 +335,7 @@ export default function SuperAdminPanel() {
               </TouchableOpacity>
             </View>
 
-            <View style={styles.modalBody}>
+            <ScrollView style={styles.modalBody} keyboardShouldPersistTaps="handled">
               {selectedProperty && (
                 <>
                   <Text style={styles.modalLabel}>Property:</Text>
@@ -344,29 +347,51 @@ export default function SuperAdminPanel() {
                     </View>
                   </View>
 
-                  <Text style={styles.modalLabel}>User ID to assign as admin:</Text>
-                  <Text style={styles.helpText}>
-                    Enter the user ID of the person you want to make an HOA admin for this property.
-                  </Text>
-                  <TextInput
-                    style={styles.input}
-                    value={selectedUserId}
-                    onChangeText={setSelectedUserId}
-                    placeholder="Enter user ID"
-                    autoCapitalize="none"
-                  />
-
-                  <View style={styles.infoBox}>
-                    <Ionicons name="information-circle" size={20} color="#007AFF" />
-                    <Text style={styles.infoText}>
-                      You can find user IDs in the user management section or by asking users to check their profile.
-                    </Text>
-                  </View>
+                  <Text style={styles.modalLabel}>Select User:</Text>
+                  {allUsers.length > 0 ? (
+                    <View style={styles.userList}>
+                      {allUsers.map((user) => (
+                        <TouchableOpacity
+                          key={user.id}
+                          style={[
+                            styles.userItem,
+                            selectedUserId === user.id && styles.userItemSelected
+                          ]}
+                          onPress={() => setSelectedUserId(user.id)}
+                        >
+                          <View style={styles.userItemIcon}>
+                            <Ionicons name="person" size={20} color={selectedUserId === user.id ? '#007AFF' : '#8E8E93'} />
+                          </View>
+                          <View style={styles.userItemInfo}>
+                            <Text style={[
+                              styles.userItemName,
+                              selectedUserId === user.id && styles.userItemNameSelected
+                            ]}>
+                              {user.username}
+                            </Text>
+                            {user.email && (
+                              <Text style={styles.userItemEmail}>{user.email}</Text>
+                            )}
+                          </View>
+                          {selectedUserId === user.id && (
+                            <Ionicons name="checkmark-circle" size={24} color="#007AFF" />
+                          )}
+                        </TouchableOpacity>
+                      ))}
+                    </View>
+                  ) : (
+                    <View style={styles.infoBox}>
+                      <Ionicons name="information-circle" size={20} color="#FF9500" />
+                      <Text style={styles.infoTextWarning}>
+                        Loading users...
+                      </Text>
+                    </View>
+                  )}
 
                   <TouchableOpacity
-                    style={styles.submitButton}
+                    style={[styles.submitButton, !selectedUserId && styles.submitButtonDisabled]}
                     onPress={assignAdmin}
-                    disabled={assigning}
+                    disabled={assigning || !selectedUserId}
                   >
                     <Text style={styles.submitButtonText}>
                       {assigning ? 'Assigning...' : 'Assign Admin'}
@@ -374,9 +399,9 @@ export default function SuperAdminPanel() {
                   </TouchableOpacity>
                 </>
               )}
-            </View>
+            </ScrollView>
           </View>
-        </View>
+        </KeyboardAvoidingView>
       </Modal>
     </View>
   );
