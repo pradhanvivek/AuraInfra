@@ -4353,9 +4353,16 @@ async def create_amenity(
     user_id: str = Depends(get_current_user)
 ):
     """Create amenity (admin only)"""
+    # Check if user is property owner or HOA admin managing this property
+    user = await db.users.find_one({"id": user_id})
+    if not user:
+        raise HTTPException(status_code=403, detail="User not found")
+    
     property_doc = await db.properties.find_one({"id": property_id, "user_id": user_id})
-    if not property_doc:
-        raise HTTPException(status_code=403, detail="Only property owner can create amenities")
+    is_managed = user.get("managed_properties") and property_id in user.get("managed_properties", [])
+    
+    if not property_doc and not is_managed:
+        raise HTTPException(status_code=403, detail="Only property owner or HOA admin can create amenities")
     
     amenity = Amenity(**amenity_data.dict())
     await db.amenities.insert_one(amenity.dict())
