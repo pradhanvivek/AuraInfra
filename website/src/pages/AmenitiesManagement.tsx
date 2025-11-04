@@ -50,6 +50,11 @@ export default function AmenitiesManagement() {
       navigate('/admin/login');
       return;
     }
+    if (!propertyId) {
+      alert('No property assigned. Please contact super admin.');
+      navigate('/admin/dashboard');
+      return;
+    }
     fetchAmenities();
   }, []);
 
