@@ -3660,7 +3660,7 @@ async def get_property_members(
     property_id: str,
     user_id: str = Depends(get_current_user)
 ):
-    """Get all members of a property"""
+    """Get all members of a property with user details"""
     # Verify user has access to this property
     has_access = await db.property_memberships.find_one({
         "property_id": property_id,
@@ -3669,16 +3669,36 @@ async def get_property_members(
     
     property_doc = await db.properties.find_one({"id": property_id, "user_id": user_id})
     
-    if not has_access and not property_doc:
+    # Also check if user is HOA admin for this property
+    is_admin = False
+    user_doc = await db.users.find_one({"id": user_id})
+    if user_doc and user_doc.get("is_hoa_admin"):
+        admin_assignment = await db.property_admin_assignments.find_one({
+            "admin_user_id": user_id,
+            "property_id": property_id
+        })
+        is_admin = admin_assignment is not None
+    
+    if not has_access and not property_doc and not is_admin:
         raise HTTPException(status_code=403, detail="Access denied")
     
     members = await db.property_memberships.find({"property_id": property_id}).to_list(length=1000)
     
+    # Enrich with user details
+    result = []
     for m in members:
-        if '_id' in m:
-            m['_id'] = str(m['_id'])
+        user = await db.users.find_one({"id": m["user_id"]})
+        if user:
+            result.append({
+                "id": m["id"],
+                "user_id": m["user_id"],
+                "username": user.get("username", "Unknown"),
+                "email": user.get("email"),
+                "role": m.get("role", "resident"),
+                "status": m.get("status", "active")
+            })
     
-    return members
+    return result
 
 @api_router.get("/users/properties")
 async def get_user_properties(user_id: str = Depends(get_current_user)):
