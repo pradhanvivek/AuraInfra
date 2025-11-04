@@ -628,8 +628,11 @@ frontend:
 
 test_plan:
   current_focus:
-    - "Enhanced Portfolio PDF Export"
-    - "Maintenance Tracking Screen"
+    - "Create Amenity - HOA Admin Authorization"
+    - "Create Meeting - HOA Admin Authorization"
+    - "Mobile Admin Create Post - useEffect Import Bug"
+    - "Web Admin Amenities Management - PropertyId Validation"
+    - "Web Admin Meetings Management - PropertyId Validation"
   stuck_tasks: []
   test_all: false
   test_priority: "high_first"
