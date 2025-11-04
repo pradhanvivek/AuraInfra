@@ -311,7 +311,7 @@ export default function AddProperty() {
               <Text style={styles.buttonText}>Add Property</Text>
             )}
           </TouchableOpacity>
-        </ScrollView>
+        </View>
       </KeyboardAvoidingView>
     </SafeAreaView>
     </>
