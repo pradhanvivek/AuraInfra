@@ -4772,6 +4772,23 @@ async def get_all_admins(super_admin_id: str = Depends(verify_super_admin)):
     
     return result
 
+@api_router.get("/admin/super/all-users")
+async def get_all_users(super_admin_id: str = Depends(verify_super_admin)):
+    """Get all users in the system"""
+    users = await db.users.find({}).to_list(length=1000)
+    
+    result = []
+    for user in users:
+        result.append({
+            "id": user["id"],
+            "username": user["username"],
+            "email": user.get("email"),
+            "is_hoa_admin": user.get("is_hoa_admin", False),
+            "is_super_admin": user.get("is_super_admin", False)
+        })
+    
+    return result
+
 # -------- HOA ADMIN ENDPOINTS --------
 
 @api_router.get("/admin/properties/{property_id}/dashboard", response_model=AdminDashboardStats)
