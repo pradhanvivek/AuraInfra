@@ -4971,6 +4971,9 @@ async def create_post_admin(
     # Get admin info
     admin = await db.users.find_one({"id": user_id})
     
+    post_data = post.dict()
+    post_data.pop('property_id', None)  # Remove property_id from post data to avoid duplicate
+    
     new_post = CommunityPost(
         property_id=property_id,
         user_id=user_id,
@@ -4978,7 +4981,7 @@ async def create_post_admin(
         user_role="admin",
         is_admin_post=True,
         is_pinned=True if post.category == "announcement" else False,
-        **post.dict()
+        **post_data
     )
     
     await db.community_posts.insert_one(new_post.dict())
