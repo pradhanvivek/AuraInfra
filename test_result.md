@@ -634,7 +634,71 @@ test_plan:
   test_all: false
   test_priority: "high_first"
 
+backend:
+  - task: "Create Amenity - HOA Admin Authorization"
+    implemented: true
+    working: "NA"
+    file: "backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "Fixed POST /api/properties/{property_id}/amenities endpoint to allow HOA admins to create amenities for properties they manage. Previously only property owners could create amenities. Now checks both property ownership and managed_properties list."
+
+  - task: "Create Meeting - HOA Admin Authorization"
+    implemented: true
+    working: "NA"
+    file: "backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "Fixed POST /api/properties/{property_id}/meetings endpoint to add authorization check. Previously had no authorization. Now checks both property ownership and managed_properties list to ensure only property owners or HOA admins can create meetings."
+
+frontend:
+  - task: "Mobile Admin Create Post - useEffect Import Bug"
+    implemented: true
+    working: "NA"
+    file: "frontend/app/admin/create-post.tsx"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "Fixed missing useEffect import in mobile admin create post screen. The file was using useEffect on line 38 but only imported useState. Added useEffect to the imports from react."
+
+  - task: "Web Admin Amenities Management - PropertyId Validation"
+    implemented: true
+    working: "NA"
+    file: "website/src/pages/AmenitiesManagement.tsx"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "Added propertyId validation in useEffect. If no propertyId is found (meaning user has no managed_properties), the page now shows an alert and redirects to dashboard instead of making failed API calls."
+
+  - task: "Web Admin Meetings Management - PropertyId Validation"
+    implemented: true
+    working: "NA"
+    file: "website/src/pages/MeetingsManagement.tsx"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "Added propertyId validation in useEffect. If no propertyId is found (meaning user has no managed_properties), the page now shows an alert and redirects to dashboard instead of making failed API calls."
+
 agent_communication:
+  - agent: "main"
+    message: "FIXED 3 BUGS IN HOA ADMIN PORTAL: 1) Mobile Admin Create Post - Added missing useEffect import that was causing compilation error. 2) Backend Amenities Endpoint - Fixed authorization to allow HOA admins (not just property owners) to create amenities for properties they manage. 3) Backend Meetings Endpoint - Added authorization check to allow only property owners or HOA admins to create meetings. 4) Web Admin Pages - Added propertyId validation to prevent failed API calls when user has no managed properties. All services restarted. Ready for testing."
   - agent: "main"
     message: "Starting Option 1 implementation - AI Scanning Integration. Verified that both appliance and jewelry AI scanning endpoints are already implemented in backend using Gemini 2.0 Flash via emergentintegrations. Jewelry scanner was already tested and confirmed working. Now testing appliance scanner endpoint POST /api/fixtures/scan-appliance to verify functionality before moving to Option 2 (detail view pages)."
   - agent: "testing"
