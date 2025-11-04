@@ -14,13 +14,40 @@ import os
 BACKEND_URL = os.environ.get('EXPO_PUBLIC_BACKEND_URL', 'https://hoa-portal-fixes.preview.emergentagent.com')
 API_BASE = f"{BACKEND_URL}/api"
 
-class BackendTester:
+class TestResults:
+    def __init__(self):
+        self.passed = 0
+        self.failed = 0
+        self.results = []
+    
+    def add_result(self, test_name: str, passed: bool, message: str = ""):
+        self.results.append({
+            "test": test_name,
+            "passed": passed,
+            "message": message
+        })
+        if passed:
+            self.passed += 1
+            print(f"✅ {test_name}: {message}")
+        else:
+            self.failed += 1
+            print(f"❌ {test_name}: {message}")
+    
+    def summary(self):
+        total = self.passed + self.failed
+        print(f"\n📊 Test Summary: {self.passed}/{total} passed, {self.failed} failed")
+        return self.passed, self.failed, total
+
+class HOAAdminTester:
     def __init__(self):
         self.session = requests.Session()
-        self.access_token = None
-        self.user_id = None
-        self.test_assets = {}  # Store created test assets
-        self.test_maintenance = {}  # Store created maintenance records
+        self.results = TestResults()
+        
+        # Test users data
+        self.regular_user = None
+        self.property_owner = None
+        self.hoa_admin = None
+        self.test_property = None
         
     def log(self, message):
         print(f"[{datetime.now().strftime('%H:%M:%S')}] {message}")
