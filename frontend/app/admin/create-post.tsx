@@ -58,6 +58,11 @@ export default function CreateCommunityPost() {
       return;
     }
 
+    if (!propertyId) {
+      Alert.alert('Error', 'Property not loaded. Please try again.');
+      return;
+    }
+
     setSaving(true);
     try {
       await axios.post(
