@@ -140,32 +140,53 @@ export default function CreatePaymentRequest() {
       <ScrollView style={styles.content} keyboardShouldPersistTaps="handled">
         <View style={styles.form}>
           <Text style={styles.label}>Select Resident *</Text>
-          <ScrollView horizontal style={styles.membersList}>
-            {members.map((member) => (
-              <TouchableOpacity
-                key={member.user_id}
-                style={[
-                  styles.memberChip,
-                  selectedUser === member.user_id && styles.memberChipSelected
-                ]}
-                onPress={() => setSelectedUser(member.user_id)}
-              >
-                <Ionicons
-                  name="person"
-                  size={16}
-                  color={selectedUser === member.user_id ? '#fff' : '#007AFF'}
-                />
-                <Text
+          {members.length === 0 ? (
+            <View style={styles.emptyState}>
+              <Ionicons name="people-outline" size={48} color="#C7C7CC" />
+              <Text style={styles.emptyText}>No residents found in this property</Text>
+              <Text style={styles.emptySubtext}>
+                Add residents to the property first to create payment requests
+              </Text>
+            </View>
+          ) : (
+            <View style={styles.membersList}>
+              {members.map((member) => (
+                <TouchableOpacity
+                  key={member.user_id}
                   style={[
-                    styles.memberChipText,
-                    selectedUser === member.user_id && styles.memberChipTextSelected
+                    styles.memberItem,
+                    selectedUser === member.user_id && styles.memberItemSelected
                   ]}
+                  onPress={() => setSelectedUser(member.user_id)}
                 >
-                  {member.username || 'User'}
-                </Text>
-              </TouchableOpacity>
-            ))}
-          </ScrollView>
+                  <View style={styles.memberItemIcon}>
+                    <Ionicons
+                      name="person"
+                      size={20}
+                      color={selectedUser === member.user_id ? '#007AFF' : '#8E8E93'}
+                    />
+                  </View>
+                  <View style={styles.memberItemInfo}>
+                    <Text style={[
+                      styles.memberItemName,
+                      selectedUser === member.user_id && styles.memberItemNameSelected
+                    ]}>
+                      {member.username || 'User'}
+                    </Text>
+                    {member.email && (
+                      <Text style={styles.memberItemEmail}>{member.email}</Text>
+                    )}
+                    <Text style={styles.memberItemRole}>
+                      {member.role ? member.role.toUpperCase() : 'RESIDENT'}
+                    </Text>
+                  </View>
+                  {selectedUser === member.user_id && (
+                    <Ionicons name="checkmark-circle" size={24} color="#007AFF" />
+                  )}
+                </TouchableOpacity>
+              ))}
+            </View>
+          )}
 
           <Text style={styles.label}>Title *</Text>
           <TextInput
