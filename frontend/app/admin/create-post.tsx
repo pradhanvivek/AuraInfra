@@ -35,7 +35,7 @@ export default function CreateCommunityPost() {
   const [saving, setSaving] = useState(false);
   const [propertyId, setPropertyId] = useState('');
 
-  useState(() => {
+  useEffect(() => {
     fetchPropertyId();
   }, []);
 
