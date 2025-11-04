@@ -1,20 +1,18 @@
 #!/usr/bin/env python3
 """
-Backend API Testing for AuraInfra.ai App
-Tests maintenance tracking endpoints and portfolio details endpoint
+Backend Testing for HOA Admin Portal Bug Fixes
+Tests the 3 bug fixes for HOA admin authorization on amenities and meetings endpoints.
 """
 
 import requests
 import json
 import uuid
 from datetime import datetime, timedelta
-import base64
 import os
 
-# Configuration
-BACKEND_URL = "https://hoa-portal-fixes.preview.emergentagent.com/api"
-TEST_USERNAME = f"testuser_{uuid.uuid4().hex[:8]}"
-TEST_PASSWORD = "SecurePass123!"
+# Get backend URL from environment
+BACKEND_URL = os.environ.get('EXPO_PUBLIC_BACKEND_URL', 'https://hoa-portal-fixes.preview.emergentagent.com')
+API_BASE = f"{BACKEND_URL}/api"
 
 class BackendTester:
     def __init__(self):
