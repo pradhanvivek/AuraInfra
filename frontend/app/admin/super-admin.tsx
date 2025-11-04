@@ -682,12 +682,63 @@ const styles = StyleSheet.create({
     fontSize: 13,
     color: '#007AFF',
   },
+  infoTextWarning: {
+    flex: 1,
+    fontSize: 13,
+    color: '#FF9500',
+  },
+  userList: {
+    gap: 8,
+    marginBottom: 16,
+  },
+  userItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#F2F2F7',
+    padding: 12,
+    borderRadius: 8,
+    gap: 12,
+    borderWidth: 2,
+    borderColor: 'transparent',
+  },
+  userItemSelected: {
+    backgroundColor: '#F0F8FF',
+    borderColor: '#007AFF',
+  },
+  userItemIcon: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: '#fff',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  userItemInfo: {
+    flex: 1,
+  },
+  userItemName: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#000',
+  },
+  userItemNameSelected: {
+    color: '#007AFF',
+  },
+  userItemEmail: {
+    fontSize: 13,
+    color: '#8E8E93',
+    marginTop: 2,
+  },
   submitButton: {
     backgroundColor: '#007AFF',
     padding: 16,
     borderRadius: 12,
     alignItems: 'center',
     marginTop: 24,
+    marginBottom: 24,
+  },
+  submitButtonDisabled: {
+    backgroundColor: '#C7C7CC',
   },
   submitButtonText: {
     fontSize: 16,
