@@ -48,11 +48,38 @@ class HOAAdminTester:
         self.property_owner = None
         self.hoa_admin = None
         self.test_property = None
+    
+    def make_request(self, method: str, endpoint: str, data: dict = None, headers: dict = None) -> tuple:
+        """Make HTTP request and return (status, response_data)"""
+        url = f"{API_BASE}{endpoint}"
+        try:
+            response = self.session.request(method, url, json=data, headers=headers)
+            try:
+                response_data = response.json()
+            except:
+                response_data = response.text
+            return response.status_code, response_data
+        except Exception as e:
+            return 500, {"error": str(e)}
+    
+    def register_user(self, username: str, email: str, password: str) -> dict:
+        """Register a new user and return auth data"""
+        status, data = self.make_request("POST", "/auth/register", {
+            "username": username,
+            "email": email,
+            "password": password
+        })
         
-    def log(self, message):
-        print(f"[{datetime.now().strftime('%H:%M:%S')}] {message}")
-        
-    def register_and_login(self):
+        if status == 200:
+            return {
+                "user_id": data["user_id"],
+                "username": data["username"],
+                "token": data["access_token"],
+                "headers": {"Authorization": f"Bearer {data['access_token']}"}
+            }
+        return None
+    
+    def setup_test_users(self):
         """Register a test user and login to get access token"""
         try:
             # Register user
