@@ -78,11 +78,13 @@ export default function SuperAdminPanel() {
 
   const fetchAllUsers = async () => {
     try {
-      // This endpoint might not exist, so we'll use the admin list for now
-      // In a real app, you'd have an endpoint to get all users
-      setAllUsers(admins);
+      const response = await axios.get(`${API_URL}/api/admin/super/all-users`, {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      setAllUsers(response.data);
     } catch (error) {
       console.error('Error fetching users:', error);
+      Alert.alert('Error', 'Failed to load users');
     }
   };
 
