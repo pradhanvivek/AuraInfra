@@ -292,30 +292,72 @@ const styles = StyleSheet.create({
     marginBottom: 8,
     marginTop: 16,
   },
-  membersList: {
-    maxHeight: 60,
+  emptyState: {
+    alignItems: 'center',
+    paddingVertical: 40,
+    backgroundColor: '#F2F2F7',
+    borderRadius: 8,
   },
-  memberChip: {
+  emptyText: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#8E8E93',
+    marginTop: 16,
+  },
+  emptySubtext: {
+    fontSize: 13,
+    color: '#C7C7CC',
+    marginTop: 8,
+    textAlign: 'center',
+    paddingHorizontal: 20,
+  },
+  membersList: {
+    gap: 8,
+    maxHeight: 300,
+  },
+  memberItem: {
     flexDirection: 'row',
     alignItems: 'center',
+    backgroundColor: '#F2F2F7',
+    padding: 12,
+    borderRadius: 8,
+    gap: 12,
+    borderWidth: 2,
+    borderColor: 'transparent',
+  },
+  memberItemSelected: {
     backgroundColor: '#F0F8FF',
-    borderWidth: 1,
     borderColor: '#007AFF',
+  },
+  memberItemIcon: {
+    width: 40,
+    height: 40,
     borderRadius: 20,
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-    marginRight: 8,
+    backgroundColor: '#fff',
+    justifyContent: 'center',
+    alignItems: 'center',
   },
-  memberChipSelected: {
-    backgroundColor: '#007AFF',
+  memberItemInfo: {
+    flex: 1,
   },
-  memberChipText: {
-    fontSize: 14,
+  memberItemName: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#000',
+  },
+  memberItemNameSelected: {
     color: '#007AFF',
-    marginLeft: 6,
   },
-  memberChipTextSelected: {
-    color: '#fff',
+  memberItemEmail: {
+    fontSize: 13,
+    color: '#8E8E93',
+    marginTop: 2,
+  },
+  memberItemRole: {
+    fontSize: 11,
+    fontWeight: '600',
+    color: '#FF9500',
+    marginTop: 4,
   },
   input: {
     borderWidth: 1,
