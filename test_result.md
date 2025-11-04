@@ -640,27 +640,33 @@ test_plan:
 backend:
   - task: "Create Amenity - HOA Admin Authorization"
     implemented: true
-    working: "NA"
+    working: true
     file: "backend/server.py"
     stuck_count: 0
     priority: "high"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
       - working: "NA"
         agent: "main"
         comment: "Fixed POST /api/properties/{property_id}/amenities endpoint to allow HOA admins to create amenities for properties they manage. Previously only property owners could create amenities. Now checks both property ownership and managed_properties list."
+      - working: true
+        agent: "testing"
+        comment: "COMPREHENSIVE HOA ADMIN AUTHORIZATION TESTING COMPLETED SUCCESSFULLY: Tested POST /api/properties/{property_id}/amenities endpoint with all user types. RESULTS: 1) Regular users correctly denied with 403 Forbidden (PASS), 2) Property owners can successfully create amenities (PASS), 3) HOA admins without managed_properties correctly denied with 403 Forbidden (PASS), 4) HOA admins WITH managed_properties can successfully create amenities (PASS - verified by configuring test admin with managed_properties and confirming 200 OK response). Authorization logic is working perfectly - checks both property ownership (user_id matches property.user_id) and HOA admin permissions (property_id in user.managed_properties). Backend logs confirm proper 403/200 responses for all scenarios."
 
   - task: "Create Meeting - HOA Admin Authorization"
     implemented: true
-    working: "NA"
+    working: true
     file: "backend/server.py"
     stuck_count: 0
     priority: "high"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
       - working: "NA"
         agent: "main"
         comment: "Fixed POST /api/properties/{property_id}/meetings endpoint to add authorization check. Previously had no authorization. Now checks both property ownership and managed_properties list to ensure only property owners or HOA admins can create meetings."
+      - working: true
+        agent: "testing"
+        comment: "COMPREHENSIVE HOA ADMIN AUTHORIZATION TESTING COMPLETED SUCCESSFULLY: Tested POST /api/properties/{property_id}/meetings endpoint with all user types. RESULTS: 1) Regular users correctly denied with 403 Forbidden (PASS), 2) Property owners can successfully create meetings (PASS), 3) HOA admins without managed_properties correctly denied with 403 Forbidden (PASS), 4) HOA admins WITH managed_properties can successfully create meetings (PASS - verified by configuring test admin with managed_properties and confirming 200 OK response). Authorization logic is working perfectly - checks both property ownership (user_id matches property.user_id) and HOA admin permissions (property_id in user.managed_properties). Backend logs confirm proper 403/200 responses for all scenarios."
 
 frontend:
   - task: "Mobile Admin Create Post - useEffect Import Bug"
