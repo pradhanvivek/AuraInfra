@@ -20,8 +20,15 @@ import { propertyApi } from '../../services/api';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { getCurrencyInfo } from '../../utils/localeUtils';
 
-// Import GooglePlacesAutocomplete for all platforms
-import { GooglePlacesAutocomplete } from 'react-native-google-places-autocomplete';
+// Conditional import for GooglePlacesAutocomplete - only for native platforms
+let GooglePlacesAutocomplete: any = null;
+try {
+  if (Platform.OS !== 'web') {
+    GooglePlacesAutocomplete = require('react-native-google-places-autocomplete').GooglePlacesAutocomplete;
+  }
+} catch (error) {
+  console.log('GooglePlacesAutocomplete not available');
+}
 
 const GOOGLE_MAPS_API_KEY = process.env.EXPO_PUBLIC_GOOGLE_MAPS_API_KEY || Constants.expoConfig?.extra?.googleMapsApiKey || '';
 
