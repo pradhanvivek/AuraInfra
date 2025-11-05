@@ -110,7 +110,7 @@ class PropertyUpdate(BaseModel):
     purchase_cost: Optional[float] = None
     current_value: Optional[float] = None
 
-class Document(BaseModel):
+class PropertyDocument(BaseModel):
     id: str = Field(default_factory=lambda: str(uuid.uuid4()))
     property_id: str
     name: str
@@ -118,7 +118,7 @@ class Document(BaseModel):
     file_type: str
     uploaded_at: datetime = Field(default_factory=datetime.utcnow)
 
-class DocumentCreate(BaseModel):
+class PropertyDocumentCreate(BaseModel):
     name: str
     file_data: str  # base64 encoded
     file_type: str
