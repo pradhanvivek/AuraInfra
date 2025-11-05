@@ -315,8 +315,9 @@ export default function PropertiesScreen() {
                     styles.propertyOption,
                     selectedProperty?.id === property.id && styles.propertyOptionSelected
                   ]}
-                  onPress={() => {
+                  onPress={async () => {
                     setSelectedProperty(property);
+                    await saveSelectedProperty(property);
                     setSelectorModalVisible(false);
                   }}
                 >
