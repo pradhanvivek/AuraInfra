@@ -4524,16 +4524,24 @@ async def update_complaint(
 
 # ============= DOCUMENT REPOSITORY ENDPOINTS =============
 
-@api_router.post("/properties/{property_id}/documents", response_model=Document)
-async def upload_document(
+@api_router.post("/properties/{property_id}/hoa-documents", response_model=Document)
+async def upload_hoa_document(
     property_id: str,
     document_data: DocumentCreate,
     user_id: str = Depends(get_current_user)
 ):
-    """Upload a document"""
+    """Upload an HOA document (admin only)"""
+    # Verify user is HOA admin for this property
+    await verify_hoa_admin(property_id, user_id)
+    
+    # Remove property_id from document_data if it exists to avoid duplication
+    doc_dict = document_data.dict()
+    doc_dict.pop('property_id', None)
+    
     document = Document(
+        property_id=property_id,
         uploaded_by=user_id,
-        **document_data.dict()
+        **doc_dict
     )
     await db.documents.insert_one(document.dict())
     return document
