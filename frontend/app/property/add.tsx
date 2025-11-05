@@ -40,6 +40,30 @@ export default function AddProperty() {
   const [loading, setLoading] = useState(false);
   const autocompleteRef = useRef<any>(null);
 
+  // Debug logging
+  useEffect(() => {
+    console.log('[AddProperty] Component mounted');
+    return () => {
+      console.log('[AddProperty] Component unmounting');
+    };
+  }, []);
+
+  useEffect(() => {
+    console.log('[AddProperty] Name changed:', name);
+  }, [name]);
+
+  useEffect(() => {
+    console.log('[AddProperty] Address changed:', address);
+  }, [address]);
+
+  useEffect(() => {
+    console.log('[AddProperty] PurchaseCost changed:', purchaseCost);
+  }, [purchaseCost]);
+
+  useEffect(() => {
+    console.log('[AddProperty] CurrentValue changed:', currentValue);
+  }, [currentValue]);
+
   const handleSubmit = async () => {
     if (!name || !address) {
       Alert.alert('Error', 'Please fill in all fields');
