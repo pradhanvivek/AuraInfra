@@ -124,6 +124,11 @@ export default function FixturesScreen({ propertyId }: FixturesScreenProps) {
     setEditingFixtureId(null);
   };
 
+  const handleCloseModal = () => {
+    setModalVisible(false);
+    resetForm();
+  };
+
   const getWarrantyStatus = (expiryDate?: string) => {
     if (!expiryDate) return null;
     const today = new Date();
