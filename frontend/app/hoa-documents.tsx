@@ -41,6 +41,17 @@ export default function HOADocumentsScreen() {
   const [refreshing, setRefreshing] = useState(false);
   const [documents, setDocuments] = useState<Document[]>([]);
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
+  const [showUploadModal, setShowUploadModal] = useState(false);
+  const [uploading, setUploading] = useState(false);
+  const [uploadForm, setUploadForm] = useState({
+    title: '',
+    category: 'bylaws',
+    description: '',
+    fileUri: '',
+    fileName: '',
+    fileType: '',
+  });
+  const [isAdmin, setIsAdmin] = useState(false);
 
   const categories = [
     { id: 'all', name: 'All', icon: 'folder-open' },
