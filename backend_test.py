@@ -1,18 +1,21 @@
 #!/usr/bin/env python3
 """
-Backend Testing for HOA Admin Portal Bug Fixes
-Tests the 3 bug fixes for HOA admin authorization on amenities and meetings endpoints.
+Backend Testing Script for HOA Meetings Mobile Integration
+Tests the HOA meetings endpoints that will be used by the mobile hoa-meetings.tsx screen
 """
 
 import requests
 import json
 import uuid
 from datetime import datetime, timedelta
+import base64
 import os
 
-# Get backend URL from environment
-BACKEND_URL = os.environ.get('EXPO_PUBLIC_BACKEND_URL', 'https://hoa-portal-7.preview.emergentagent.com')
-API_BASE = f"{BACKEND_URL}/api"
+# Configuration
+BASE_URL = "https://hoa-portal-7.preview.emergentagent.com/api"
+TEST_USERNAME = f"test_hoa_user_{uuid.uuid4().hex[:8]}"
+TEST_EMAIL = f"test_{uuid.uuid4().hex[:8]}@example.com"
+TEST_PASSWORD = "TestPassword123!"
 
 class TestResults:
     def __init__(self):
