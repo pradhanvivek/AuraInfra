@@ -215,9 +215,8 @@ export default function AddProperty() {
                   },
                 }}
                 textInputProps={{
-                  value: address,
-                  onChangeText: setAddress,
                   autoFocus: false,
+                  placeholder: "Search for address...",
                 }}
                 listViewDisplayed="auto"
                 keyboardShouldPersistTaps="handled"
