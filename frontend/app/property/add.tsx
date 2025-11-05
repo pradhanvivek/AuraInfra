@@ -45,6 +45,11 @@ export default function AddProperty() {
   const [ownershipType, setOwnershipType] = useState<'owner' | 'tenant'>('owner');
   const [loading, setLoading] = useState(false);
   const autocompleteRef = useRef<any>(null);
+  
+  // Web autocomplete state
+  const [suggestions, setSuggestions] = useState<any[]>([]);
+  const [showSuggestions, setShowSuggestions] = useState(false);
+  const debounceTimer = useRef<any>(null);
 
   // Hide system header
   useEffect(() => {
