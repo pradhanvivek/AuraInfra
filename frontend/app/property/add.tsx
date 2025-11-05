@@ -226,7 +226,7 @@ export default function AddProperty() {
                 }}
                 listViewDisplayed="auto"
                 keyboardShouldPersistTaps="handled"
-                nestedScrollEnabled={true}
+                scrollEnabled={false}
                 renderRow={(rowData) => {
                   const title = rowData.structured_formatting.main_text;
                   const address = rowData.structured_formatting.secondary_text;
