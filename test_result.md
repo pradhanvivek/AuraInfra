@@ -626,13 +626,34 @@ frontend:
         agent: "main"
         comment: "Implemented comprehensive portfolio visualization and PDF export. Added pie chart using react-native-chart-kit to display asset distribution. Implemented full PDF generation using expo-print with styled HTML template including portfolio summary, asset breakdown, and stats. Added expo-sharing for PDF save/share functionality. Updated portfolio to include furniture and art categories. Chart only displays for categories with items. Added loading states for PDF generation. Installed required packages: react-native-chart-kit, react-native-svg, expo-print."
 
+  - task: "HOA Meetings Mobile Screen - GET Meetings Integration"
+    implemented: true
+    working: "NA"
+    file: "backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "Created hoa-meetings.tsx mobile screen that integrates with existing backend endpoints. Screen calls GET /api/properties/{property_id}/meetings?upcoming=true/false to fetch meetings. Backend endpoint was previously tested and confirmed working. Need to verify integration works correctly with new mobile UI."
+
+  - task: "HOA Meetings Mobile Screen - RSVP Integration"
+    implemented: true
+    working: "NA"
+    file: "backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "Mobile screen calls POST /api/meetings/rsvp with meeting_id, status (attending/maybe/not_attending), and guests_count. Also fetches user's RSVP status via GET /api/meetings/{meeting_id}/rsvps to display current status. Backend endpoints were previously tested. Need to verify RSVP flow works end-to-end from mobile UI."
+
 test_plan:
   current_focus:
-    - "Create Amenity - HOA Admin Authorization"
-    - "Create Meeting - HOA Admin Authorization"
-    - "Mobile Admin Create Post - useEffect Import Bug"
-    - "Web Admin Amenities Management - PropertyId Validation"
-    - "Web Admin Meetings Management - PropertyId Validation"
+    - "HOA Meetings Mobile Screen - GET Meetings Integration"
+    - "HOA Meetings Mobile Screen - RSVP Integration"
   stuck_tasks: []
   test_all: false
   test_priority: "high_first"
