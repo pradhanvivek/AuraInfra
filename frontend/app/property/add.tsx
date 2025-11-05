@@ -37,6 +37,7 @@ export default function AddProperty() {
   const [longitude, setLongitude] = useState<number | undefined>();
   const [purchaseCost, setPurchaseCost] = useState('');
   const [currentValue, setCurrentValue] = useState('');
+  const [ownershipType, setOwnershipType] = useState<'owner' | 'tenant'>('owner');
   const [loading, setLoading] = useState(false);
   const autocompleteRef = useRef<any>(null);
 
