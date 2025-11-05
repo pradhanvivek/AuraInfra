@@ -360,6 +360,7 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   content: {
+    flex: 1,
     padding: 16,
   },
   section: {
