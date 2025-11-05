@@ -1263,10 +1263,10 @@ async def delete_property(property_id: str, user_id: str = Depends(get_current_u
 
 # ============= DOCUMENT ENDPOINTS =============
 
-@api_router.post("/properties/{property_id}/documents", response_model=Document)
+@api_router.post("/properties/{property_id}/documents", response_model=PropertyDocument)
 async def create_document(
     property_id: str,
-    document: DocumentCreate,
+    document: PropertyDocumentCreate,
     user_id: str = Depends(get_current_user)
 ):
     # Verify property ownership
@@ -1274,24 +1274,24 @@ async def create_document(
     if not property_doc:
         raise HTTPException(status_code=404, detail="Property not found")
     
-    doc_obj = Document(
+    doc_obj = PropertyDocument(
         property_id=property_id,
         name=document.name,
         file_data=document.file_data,
         file_type=document.file_type
     )
-    await db.documents.insert_one(doc_obj.dict())
+    await db.property_documents.insert_one(doc_obj.dict())
     return doc_obj
 
-@api_router.get("/properties/{property_id}/documents", response_model=List[Document])
+@api_router.get("/properties/{property_id}/documents", response_model=List[PropertyDocument])
 async def get_documents(property_id: str, user_id: str = Depends(get_current_user)):
     # Verify property ownership
     property_doc = await db.properties.find_one({"id": property_id, "user_id": user_id})
     if not property_doc:
         raise HTTPException(status_code=404, detail="Property not found")
     
-    documents = await db.documents.find({"property_id": property_id}).to_list(1000)
-    return [Document(**doc) for doc in documents]
+    documents = await db.property_documents.find({"property_id": property_id}).to_list(1000)
+    return [PropertyDocument(**doc) for doc in documents]
 
 @api_router.delete("/properties/{property_id}/documents/{document_id}")
 async def delete_document(
