@@ -522,8 +522,7 @@ const styles = StyleSheet.create({
     marginRight: 5,
   },
   categoryChipActive: {
-    backgroundColor: '#007AFF',
-    borderColor: '#007AFF',
+    backgroundColor: '#E5F0FF',
   },
   categoryChipText: {
     marginLeft: 6,
