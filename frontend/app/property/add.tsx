@@ -288,7 +288,6 @@ export default function AddProperty() {
         </ScrollView>
       </KeyboardAvoidingView>
     </SafeAreaView>
-    </>
   );
 }
 
