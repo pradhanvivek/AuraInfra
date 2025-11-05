@@ -350,6 +350,96 @@ export default function HOADocumentsScreen() {
           documents.map(renderDocumentCard)
         )}
       </ScrollView>
+
+      {/* Floating Upload Button (Admin Only) */}
+      {isAdmin && (
+        <TouchableOpacity
+          style={styles.floatingButton}
+          onPress={() => setShowUploadModal(true)}
+        >
+          <Ionicons name="add" size={28} color="#fff" />
+        </TouchableOpacity>
+      )}
+
+      {/* Upload Modal */}
+      <Modal visible={showUploadModal} animationType="slide" transparent>
+        <KeyboardAvoidingView
+          behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+          style={styles.modalContainer}
+        >
+          <View style={styles.modalContent}>
+            <View style={styles.modalHeader}>
+              <Text style={styles.modalTitle}>Upload Document</Text>
+              <TouchableOpacity onPress={() => setShowUploadModal(false)}>
+                <Ionicons name="close" size={28} color="#000" />
+              </TouchableOpacity>
+            </View>
+
+            <ScrollView style={styles.modalBody}>
+              <Text style={styles.modalLabel}>Title *</Text>
+              <TextInput
+                style={styles.modalInput}
+                value={uploadForm.title}
+                onChangeText={(text) => setUploadForm({ ...uploadForm, title: text })}
+                placeholder="e.g., 2024 Annual Meeting Minutes"
+              />
+
+              <Text style={styles.modalLabel}>Category *</Text>
+              <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.categorySelector}>
+                {categories.filter(c => c.id !== 'all').map((cat) => (
+                  <TouchableOpacity
+                    key={cat.id}
+                    style={[
+                      styles.categoryChip,
+                      uploadForm.category === cat.id && styles.categoryChipActive
+                    ]}
+                    onPress={() => setUploadForm({ ...uploadForm, category: cat.id })}
+                  >
+                    <Ionicons
+                      name={cat.icon as any}
+                      size={18}
+                      color={uploadForm.category === cat.id ? '#fff' : '#007AFF'}
+                    />
+                    <Text style={[
+                      styles.categoryChipText,
+                      uploadForm.category === cat.id && styles.categoryChipTextActive
+                    ]}>
+                      {cat.name}
+                    </Text>
+                  </TouchableOpacity>
+                ))}
+              </ScrollView>
+
+              <Text style={styles.modalLabel}>Description</Text>
+              <TextInput
+                style={[styles.modalInput, styles.textArea]}
+                value={uploadForm.description}
+                onChangeText={(text) => setUploadForm({ ...uploadForm, description: text })}
+                placeholder="Brief description..."
+                multiline
+                numberOfLines={4}
+              />
+
+              <TouchableOpacity style={styles.filePickerButton} onPress={pickDocument}>
+                <Ionicons name="document-attach" size={20} color="#007AFF" />
+                <Text style={styles.filePickerText}>
+                  {uploadForm.fileName || 'Select Document (PDF, DOC, DOCX)'}
+                </Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                style={[styles.uploadButton, uploading && styles.uploadButtonDisabled]}
+                onPress={handleUpload}
+                disabled={uploading}
+              >
+                <Text style={styles.uploadButtonText}>
+                  {uploading ? 'Uploading...' : 'Upload Document'}
+                </Text>
+              </TouchableOpacity>
+            </ScrollView>
+          </View>
+        </KeyboardAvoidingView>
+      </Modal>
     </View>
   );
 }
