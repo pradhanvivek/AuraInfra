@@ -352,9 +352,6 @@ const styles = StyleSheet.create({
   keyboardView: {
     flex: 1,
   },
-  scrollView: {
-    flex: 1,
-  },
   content: {
     flex: 1,
     padding: 16,
