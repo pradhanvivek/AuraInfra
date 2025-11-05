@@ -92,6 +92,94 @@ export default function HOADocumentsScreen() {
     }
   };
 
+  const checkUserAdmin = async () => {
+    try {
+      const response = await axios.get(`${API_URL}/api/auth/profile`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      const isPropertyAdmin = response.data.is_hoa_admin && 
+        response.data.managed_properties?.includes(propertyId);
+      setIsAdmin(isPropertyAdmin || response.data.is_super_admin);
+    } catch (error) {
+      console.error('Error checking admin status:', error);
+    }
+  };
+
+  const pickDocument = async () => {
+    try {
+      const result = await DocumentPicker.getDocumentAsync({
+        type: ['application/pdf', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'],
+        copyToCacheDirectory: true,
+      });
+
+      if (!result.canceled && result.assets[0]) {
+        const file = result.assets[0];
+        setUploadForm({
+          ...uploadForm,
+          fileUri: file.uri,
+          fileName: file.name,
+          fileType: file.mimeType || 'application/pdf',
+        });
+      }
+    } catch (error) {
+      console.error('Error picking document:', error);
+      Alert.alert('Error', 'Failed to pick document');
+    }
+  };
+
+  const handleUpload = async () => {
+    if (!uploadForm.title || !uploadForm.fileUri) {
+      Alert.alert('Error', 'Please provide title and select a file');
+      return;
+    }
+
+    setUploading(true);
+    try {
+      const response = await fetch(uploadForm.fileUri);
+      const blob = await response.blob();
+      const reader = new FileReader();
+      
+      reader.onloadend = async () => {
+        const base64data = reader.result as string;
+        
+        try {
+          await axios.post(
+            `${API_URL}/api/properties/${propertyId}/hoa-documents`,
+            {
+              property_id: propertyId,
+              title: uploadForm.title,
+              category: uploadForm.category,
+              description: uploadForm.description,
+              file_data: base64data,
+              file_name: uploadForm.fileName,
+            },
+            { headers: { Authorization: `Bearer ${token}` } }
+          );
+
+          Alert.alert('Success', 'Document uploaded successfully');
+          setShowUploadModal(false);
+          setUploadForm({
+            title: '',
+            category: 'bylaws',
+            description: '',
+            fileUri: '',
+            fileName: '',
+            fileType: '',
+          });
+          fetchDocuments();
+        } catch (error: any) {
+          Alert.alert('Error', error.response?.data?.detail || 'Failed to upload document');
+        }
+      };
+      
+      reader.readAsDataURL(blob);
+    } catch (error) {
+      Alert.alert('Error', 'Failed to process file');
+    } finally {
+      setUploading(false);
+    }
+  };
+
   const onRefresh = () => {
     setRefreshing(true);
     fetchDocuments();
