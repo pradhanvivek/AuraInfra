@@ -135,7 +135,7 @@ export default function PropertiesScreen() {
       description: 'Schedule and RSVP to meetings',
       icon: 'calendar-sharp',
       color: '#00C7BE',
-      route: '/meetings',
+      route: '/hoa-meetings',
       isAd: false,
     },
     {
