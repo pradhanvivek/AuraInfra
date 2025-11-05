@@ -30,6 +30,7 @@ const GOOGLE_MAPS_API_KEY = process.env.EXPO_PUBLIC_GOOGLE_MAPS_API_KEY || Const
 
 export default function AddProperty() {
   const router = useRouter();
+  const navigation = useNavigation();
   const { token } = useAuth();
   const [name, setName] = useState('');
   const [address, setAddress] = useState('');
@@ -40,6 +41,13 @@ export default function AddProperty() {
   const [ownershipType, setOwnershipType] = useState<'owner' | 'tenant'>('owner');
   const [loading, setLoading] = useState(false);
   const autocompleteRef = useRef<any>(null);
+
+  // Hide system header
+  useEffect(() => {
+    navigation.setOptions({
+      headerShown: false,
+    });
+  }, [navigation]);
 
   // Debug logging
   useEffect(() => {
