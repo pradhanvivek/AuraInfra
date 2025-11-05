@@ -65,6 +65,7 @@ export default function HOADocumentsScreen() {
   useEffect(() => {
     if (propertyId) {
       fetchDocuments();
+      checkUserAdmin();
     }
   }, [propertyId, selectedCategory]);
 
