@@ -249,7 +249,43 @@ export default function AddProperty() {
 
           <View style={styles.section}>
             <Text style={styles.label}>Address</Text>
-            {GOOGLE_MAPS_API_KEY ? (
+            {Platform.OS === 'web' && GOOGLE_MAPS_API_KEY ? (
+              <View>
+                <TextInput
+                  style={styles.input}
+                  placeholder="Search for address..."
+                  value={address}
+                  onChangeText={handleAddressChange}
+                  autoCapitalize="words"
+                  editable={!loading}
+                />
+                {showSuggestions && suggestions.length > 0 && (
+                  <View style={styles.suggestionsContainer}>
+                    <ScrollView style={styles.suggestionsList} keyboardShouldPersistTaps="handled">
+                      {suggestions.map((suggestion, index) => (
+                        <TouchableOpacity
+                          key={index}
+                          style={styles.suggestionItem}
+                          onPress={() => selectSuggestion(suggestion)}
+                        >
+                          <Ionicons name="location-outline" size={20} color="#007AFF" />
+                          <View style={styles.suggestionText}>
+                            <Text style={styles.suggestionMain}>
+                              {suggestion.structured_formatting?.main_text || suggestion.description}
+                            </Text>
+                            {suggestion.structured_formatting?.secondary_text && (
+                              <Text style={styles.suggestionSecondary}>
+                                {suggestion.structured_formatting.secondary_text}
+                              </Text>
+                            )}
+                          </View>
+                        </TouchableOpacity>
+                      ))}
+                    </ScrollView>
+                  </View>
+                )}
+              </View>
+            ) : GOOGLE_MAPS_API_KEY && GooglePlacesAutocomplete ? (
               <GooglePlacesAutocomplete
                 ref={autocompleteRef}
                 placeholder="Search for address..."
@@ -334,14 +370,6 @@ export default function AddProperty() {
                 enablePoweredByContainer={false}
                 debounce={300}
                 onFail={(error) => console.error('Google Places Error:', error)}
-                requestUrl={
-                  Platform.OS === 'web' 
-                    ? {
-                        useOnPlatform: 'web',
-                        url: 'https://maps.googleapis.com/maps/api',
-                      }
-                    : undefined
-                }
               />
             ) : (
               <TextInput
