@@ -197,22 +197,32 @@ export default function Profile() {
   };
 
   const handleLogout = () => {
-    Alert.alert(
-      'Logout',
-      'Are you sure you want to logout?',
-      [
-        { text: 'Cancel', style: 'cancel' },
-        {
-          text: 'Logout',
-          style: 'destructive',
-          onPress: async () => {
-            await logout();
-            router.replace('/auth/login');
+    if (Platform.OS === 'web') {
+      // Use window.confirm for web
+      if (window.confirm('Are you sure you want to logout?')) {
+        logout().then(() => {
+          router.replace('/auth/login');
+        });
+      }
+    } else {
+      // Use Alert.alert for native
+      Alert.alert(
+        'Logout',
+        'Are you sure you want to logout?',
+        [
+          { text: 'Cancel', style: 'cancel' },
+          {
+            text: 'Logout',
+            style: 'destructive',
+            onPress: async () => {
+              await logout();
+              router.replace('/auth/login');
+            },
           },
-        },
-      ],
-      { cancelable: true }
-    );
+        ],
+        { cancelable: true }
+      );
+    }
   };
 
   const handleChangeAvatar = async () => {
