@@ -404,6 +404,33 @@ const styles = StyleSheet.create({
     height: 100,
     paddingTop: 16,
   },
+  ownershipSelector: {
+    flexDirection: 'row',
+    gap: 12,
+  },
+  ownershipOption: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#F2F2F7',
+    borderRadius: 12,
+    padding: 16,
+    gap: 12,
+    borderWidth: 2,
+    borderColor: 'transparent',
+  },
+  ownershipOptionActive: {
+    backgroundColor: '#E3F2FD',
+    borderColor: '#007AFF',
+  },
+  ownershipText: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#8E8E93',
+  },
+  ownershipTextActive: {
+    color: '#007AFF',
+  },
   coordinatesCard: {
     flexDirection: 'row',
     alignItems: 'center',
