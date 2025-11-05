@@ -196,13 +196,17 @@ export default function Profile() {
     }
   };
 
-  const handleLogout = () => {
+  const handleLogout = async () => {
     if (Platform.OS === 'web') {
       // Use window.confirm for web
       if (window.confirm('Are you sure you want to logout?')) {
-        logout().then(() => {
+        await logout();
+        // For web, use window.location to force a full page reload
+        if (typeof window !== 'undefined') {
+          window.location.href = '/auth/login';
+        } else {
           router.replace('/auth/login');
-        });
+        }
       }
     } else {
       // Use Alert.alert for native
