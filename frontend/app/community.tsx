@@ -525,13 +525,12 @@ const styles = StyleSheet.create({
     backgroundColor: '#E5F0FF',
   },
   categoryChipText: {
-    marginLeft: 6,
-    fontSize: 14,
+    fontSize: 13,
+    color: '#8E8E93',
     fontWeight: '600',
-    color: '#007AFF',
   },
   categoryChipTextActive: {
-    color: '#fff',
+    color: '#007AFF',
   },
   content: {
     paddingHorizontal: 16,
