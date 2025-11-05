@@ -82,6 +82,64 @@ export default function AddProperty() {
     console.log('[AddProperty] CurrentValue changed:', currentValue);
   }, [currentValue]);
 
+  // Web-specific autocomplete functions
+  const fetchPlaceSuggestions = async (input: string) => {
+    if (!input || input.length < 2 || !GOOGLE_MAPS_API_KEY) {
+      setSuggestions([]);
+      return;
+    }
+
+    try {
+      const response = await fetch(
+        `https://maps.googleapis.com/maps/api/place/autocomplete/json?input=${encodeURIComponent(input)}&key=${GOOGLE_MAPS_API_KEY}`
+      );
+      const data = await response.json();
+      if (data.predictions) {
+        setSuggestions(data.predictions);
+        setShowSuggestions(true);
+      }
+    } catch (error) {
+      console.error('Error fetching suggestions:', error);
+    }
+  };
+
+  const fetchPlaceDetails = async (placeId: string) => {
+    try {
+      const response = await fetch(
+        `https://maps.googleapis.com/maps/api/place/details/json?place_id=${placeId}&key=${GOOGLE_MAPS_API_KEY}`
+      );
+      const data = await response.json();
+      if (data.result) {
+        const location = data.result.geometry.location;
+        setLatitude(location.lat);
+        setLongitude(location.lng);
+      }
+    } catch (error) {
+      console.error('Error fetching place details:', error);
+    }
+  };
+
+  const handleAddressChange = (text: string) => {
+    setAddress(text);
+    if (Platform.OS === 'web' && GOOGLE_MAPS_API_KEY) {
+      if (debounceTimer.current) {
+        clearTimeout(debounceTimer.current);
+      }
+      debounceTimer.current = setTimeout(() => {
+        fetchPlaceSuggestions(text);
+      }, 300);
+    }
+  };
+
+  const selectSuggestion = (suggestion: any) => {
+    setAddress(suggestion.description);
+    setShowSuggestions(false);
+    setSuggestions([]);
+    if (suggestion.place_id) {
+      fetchPlaceDetails(suggestion.place_id);
+    }
+  };
+
   const handleSubmit = async () => {
     if (!name || !address) {
       Alert.alert('Error', 'Please fill in all fields');
