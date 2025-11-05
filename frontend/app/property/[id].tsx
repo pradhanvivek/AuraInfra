@@ -62,6 +62,12 @@ export default function PropertyDetails() {
       {/* Property Header with dynamic safe area padding */}
       <View style={[styles.headerWrapper, { paddingTop: insets.top }]}>
         <View style={styles.header}>
+          <TouchableOpacity 
+            onPress={() => router.back()} 
+            style={styles.backBtn}
+          >
+            <Ionicons name="arrow-back" size={24} color="#007AFF" />
+          </TouchableOpacity>
           <View style={styles.headerTextContainer}>
             <Text style={styles.propertyName} numberOfLines={1}>
               {property?.name || 'Property Details'}
