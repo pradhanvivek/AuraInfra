@@ -182,7 +182,7 @@ export default function AddProperty() {
 
           <View style={styles.section}>
             <Text style={styles.label}>Address</Text>
-            {GOOGLE_MAPS_API_KEY && GooglePlacesAutocomplete && Platform.OS !== 'web' ? (
+            {GOOGLE_MAPS_API_KEY && GooglePlacesAutocomplete ? (
               <GooglePlacesAutocomplete
                 ref={autocompleteRef}
                 placeholder="Search for address..."
