@@ -128,6 +128,50 @@ export default function AddProperty() {
           </View>
 
           <View style={styles.section}>
+            <Text style={styles.label}>Ownership Type</Text>
+            <View style={styles.ownershipSelector}>
+              <TouchableOpacity
+                style={[
+                  styles.ownershipOption,
+                  ownershipType === 'owner' && styles.ownershipOptionActive
+                ]}
+                onPress={() => setOwnershipType('owner')}
+              >
+                <Ionicons 
+                  name={ownershipType === 'owner' ? 'checkmark-circle' : 'ellipse-outline'} 
+                  size={24} 
+                  color={ownershipType === 'owner' ? '#007AFF' : '#8E8E93'} 
+                />
+                <Text style={[
+                  styles.ownershipText,
+                  ownershipType === 'owner' && styles.ownershipTextActive
+                ]}>
+                  Owner
+                </Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={[
+                  styles.ownershipOption,
+                  ownershipType === 'tenant' && styles.ownershipOptionActive
+                ]}
+                onPress={() => setOwnershipType('tenant')}
+              >
+                <Ionicons 
+                  name={ownershipType === 'tenant' ? 'checkmark-circle' : 'ellipse-outline'} 
+                  size={24} 
+                  color={ownershipType === 'tenant' ? '#007AFF' : '#8E8E93'} 
+                />
+                <Text style={[
+                  styles.ownershipText,
+                  ownershipType === 'tenant' && styles.ownershipTextActive
+                ]}>
+                  Tenant
+                </Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+
+          <View style={styles.section}>
             <Text style={styles.label}>Address</Text>
             {GOOGLE_MAPS_API_KEY && GooglePlacesAutocomplete && Platform.OS !== 'web' ? (
               <GooglePlacesAutocomplete
