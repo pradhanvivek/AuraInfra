@@ -207,6 +207,15 @@ export default function AdminDashboard() {
           <Text style={styles.actionText}>Manage Meetings</Text>
           <Ionicons name="chevron-forward" size={20} color="#C7C7CC" />
         </TouchableOpacity>
+
+        <TouchableOpacity
+          style={styles.actionButton}
+          onPress={() => router.push('/admin/booking-approvals')}
+        >
+          <Ionicons name="checkmark-done-outline" size={24} color="#007AFF" />
+          <Text style={styles.actionText}>Amenity Booking Approvals</Text>
+          <Ionicons name="chevron-forward" size={20} color="#C7C7CC" />
+        </TouchableOpacity>
       </View>
 
       {/* Super Admin Section */}
