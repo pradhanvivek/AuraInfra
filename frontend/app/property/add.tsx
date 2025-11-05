@@ -179,7 +179,7 @@ export default function AddProperty() {
 
           <View style={styles.section}>
             <Text style={styles.label}>Address</Text>
-            {GOOGLE_MAPS_API_KEY && GooglePlacesAutocomplete ? (
+            {GOOGLE_MAPS_API_KEY ? (
               <GooglePlacesAutocomplete
                 ref={autocompleteRef}
                 placeholder="Search for address..."
@@ -264,10 +264,14 @@ export default function AddProperty() {
                 enablePoweredByContainer={false}
                 debounce={300}
                 onFail={(error) => console.error('Google Places Error:', error)}
-                requestUrl={{
-                  useOnPlatform: 'web',
-                  url: 'https://cors-anywhere.herokuapp.com/https://maps.googleapis.com/maps/api',
-                }}
+                requestUrl={
+                  Platform.OS === 'web' 
+                    ? {
+                        useOnPlatform: 'web',
+                        url: 'https://maps.googleapis.com/maps/api',
+                      }
+                    : undefined
+                }
               />
             ) : (
               <TextInput
