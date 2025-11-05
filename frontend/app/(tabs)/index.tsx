@@ -30,6 +30,24 @@ export default function PropertiesScreen() {
     }, [token])
   );
 
+  const saveSelectedProperty = async (property: Property) => {
+    try {
+      await AsyncStorage.setItem('selectedProperty', JSON.stringify(property));
+    } catch (error) {
+      console.error('Error saving selected property:', error);
+    }
+  };
+
+  const loadSelectedProperty = async (): Promise<Property | null> => {
+    try {
+      const saved = await AsyncStorage.getItem('selectedProperty');
+      return saved ? JSON.parse(saved) : null;
+    } catch (error) {
+      console.error('Error loading selected property:', error);
+      return null;
+    }
+  };
+
   const fetchProperties = async () => {
     try {
       const response = await axios.get(
@@ -37,8 +55,17 @@ export default function PropertiesScreen() {
         { headers: { Authorization: `Bearer ${token}` } }
       );
       setProperties(response.data);
-      if (response.data.length > 0 && !selectedProperty) {
-        setSelectedProperty(response.data[0]);
+      
+      // Try to load previously selected property
+      const savedProperty = await loadSelectedProperty();
+      if (savedProperty && response.data.find((p: Property) => p.id === savedProperty.id)) {
+        // If saved property still exists in the list, use it
+        setSelectedProperty(savedProperty);
+      } else if (response.data.length > 0 && !selectedProperty) {
+        // Otherwise, default to first property
+        const firstProperty = response.data[0];
+        setSelectedProperty(firstProperty);
+        await saveSelectedProperty(firstProperty);
       }
     } catch (error) {
       console.error('Error fetching properties:', error);
