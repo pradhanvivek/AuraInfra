@@ -97,7 +97,7 @@ export default function AddProperty() {
           <Ionicons name="arrow-back" size={24} color="#007AFF" />
           <Text style={styles.headerButtonText}>Back</Text>
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>Add Property</Text>
+        <View style={{ width: 60 }} />
         <TouchableOpacity onPress={() => router.back()} style={styles.headerButton}>
           <Text style={styles.cancelText}>Cancel</Text>
         </TouchableOpacity>
