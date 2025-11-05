@@ -170,7 +170,6 @@ export default function AddProperty() {
                 styles={{
                   container: {
                     flex: 0,
-                    zIndex: 1,
                   },
                   textInputContainer: {
                     backgroundColor: '#F2F2F7',
@@ -188,8 +187,6 @@ export default function AddProperty() {
                     borderColor: '#E5E5EA',
                   },
                   listView: {
-                    position: 'absolute',
-                    top: 58,
                     backgroundColor: '#fff',
                     borderRadius: 12,
                     marginTop: 8,
@@ -199,7 +196,6 @@ export default function AddProperty() {
                     shadowOpacity: 0.1,
                     shadowRadius: 4,
                     maxHeight: 200,
-                    zIndex: 999,
                   },
                   row: {
                     backgroundColor: '#fff',
