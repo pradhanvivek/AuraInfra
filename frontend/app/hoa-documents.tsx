@@ -484,8 +484,10 @@ const styles = StyleSheet.create({
   },
   categoriesContent: {
     paddingHorizontal: 16,
-    paddingVertical: 10,
+    paddingTop: 8,
+    paddingBottom: 8,
     gap: 8,
+    alignItems: 'center',
   },
   categoryChip: {
     flexDirection: 'row',
