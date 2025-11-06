@@ -306,35 +306,36 @@ export default function CommunityBoardScreen() {
         </View>
 
       {/* Category Filter */}
-      <ScrollView
-        horizontal
-        showsHorizontalScrollIndicator={false}
-        style={styles.categoriesContainer}
-        contentContainerStyle={styles.categoriesContent}
-      >
-        {categories.map((cat) => (
-          <TouchableOpacity
-            key={cat.id}
-            style={[
-              styles.categoryChip,
-              selectedCategory === cat.id && styles.categoryChipActive
-            ]}
-            onPress={() => setSelectedCategory(cat.id)}
-          >
-            <Ionicons
-              name={cat.icon as any}
-              size={14}
-              color={selectedCategory === cat.id ? '#fff' : '#007AFF'}
-            />
-            <Text style={[
-              styles.categoryChipText,
-              selectedCategory === cat.id && styles.categoryChipTextActive
-            ]}>
-              {cat.name}
-            </Text>
-          </TouchableOpacity>
-        ))}
-      </ScrollView>
+      <View style={styles.categoriesContainer}>
+        <ScrollView
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          contentContainerStyle={styles.categoriesContent}
+        >
+          {categories.map((cat) => (
+            <TouchableOpacity
+              key={cat.id}
+              style={[
+                styles.categoryChip,
+                selectedCategory === cat.id && styles.categoryChipActive
+              ]}
+              onPress={() => setSelectedCategory(cat.id)}
+            >
+              <Ionicons
+                name={cat.icon as any}
+                size={14}
+                color={selectedCategory === cat.id ? '#fff' : '#007AFF'}
+              />
+              <Text style={[
+                styles.categoryChipText,
+                selectedCategory === cat.id && styles.categoryChipTextActive
+              ]}>
+                {cat.name}
+              </Text>
+            </TouchableOpacity>
+          ))}
+        </ScrollView>
+      </View>
 
       <ScrollView
         contentContainerStyle={styles.content}
@@ -512,6 +513,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#fff',
     borderBottomWidth: 1,
     borderBottomColor: '#E5E5EA',
+    height: 50,
   },
   categoriesContent: {
     paddingHorizontal: 16,
@@ -846,5 +848,11 @@ const styles = StyleSheet.create({
   },
   commentSendButton: {
     padding: 8,
+  },
+  modalDescription: {
+    fontSize: 14,
+    color: '#8E8E93',
+    marginBottom: 24,
+    lineHeight: 20,
   },
 });
