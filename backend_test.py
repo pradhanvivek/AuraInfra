@@ -209,11 +209,8 @@ class VehicleScanTester:
     def test_vehicle_scan_gemini_integration(self):
         """Test that Gemini AI integration is working"""
         try:
-            # Use a more realistic vehicle image for better AI recognition
-            # This is a small car image encoded in base64
-            car_image = "/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAYEBQYFBAYGBQYHBwYIChAKCgkJChQODwwQFxQYGBcUFhYaHSUfGhsjHBYWICwgIyYnKSopGR8tMC0oMCUoKSj/2wBDAQcHBwoIChMKChMoGhYaKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCj/wAARCAABAAEDASIAAhEBAxEB/8QAFQABAQAAAAAAAAAAAAAAAAAAAAv/xAAUEAEAAAAAAAAAAAAAAAAAAAAA/8QAFQEBAQAAAAAAAAAAAAAAAAAAAAX/xAAUEQEAAAAAAAAAAAAAAAAAAAAA/9oADAMBAAIRAxEAPwCdABmX/9k="
-            
-            scan_data = {"image": car_image}
+            # Use the same realistic car image as the main test
+            scan_data = {"image": SAMPLE_VEHICLE_IMAGE}
             response = requests.post(f"{API_BASE}/vehicles/scan", json=scan_data, headers=self.get_auth_headers())
             
             if response.status_code == 200:
