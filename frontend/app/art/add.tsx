@@ -271,6 +271,28 @@ export default function AddArtScreen() {
             </TouchableOpacity>
           </View>
 
+          {!isEditing && (
+            <View style={styles.aiScanContainer}>
+              <TouchableOpacity
+                style={styles.aiScanButton}
+                onPress={handleAIScan}
+                disabled={scanning}
+              >
+                {scanning ? (
+                  <>
+                    <ActivityIndicator color="#fff" size="small" />
+                    <Text style={styles.aiScanText}>Scanning...</Text>
+                  </>
+                ) : (
+                  <>
+                    <Ionicons name="scan" size={20} color="#fff" />
+                    <Text style={styles.aiScanText}>AI Scan Artwork</Text>
+                  </>
+                )}
+              </TouchableOpacity>
+            </View>
+          )}
+
           <ScrollView style={styles.form} showsVerticalScrollIndicator={false}>
             <View style={styles.section}>
               <Text style={styles.label}>Name *</Text>
