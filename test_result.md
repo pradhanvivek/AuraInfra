@@ -105,6 +105,27 @@
 user_problem_statement: "Verify Vehicle AI Scanning Fix - Backend endpoint was updated to use Pydantic model (VehicleScanRequest) instead of generic dict to resolve 'Provided image is not valid' error. Need to test that POST /api/vehicles/scan endpoint now correctly processes base64 images and returns structured vehicle data from Gemini AI without errors."
 
 backend:
+  - task: "Vehicle AI Scanning - POST /api/vehicles/scan"
+    implemented: true
+    working: "NA"
+    file: "backend/server.py"
+    stuck_count: 2
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: false
+        agent: "user"
+        comment: "User reported 'Failed to generate chat completion: Provided image is not valid' error when using vehicle AI scanning from camera/gallery."
+      - working: false
+        agent: "main"
+        comment: "Multiple frontend fixes attempted - image formatting, base64 handling, mirroring appliance scan logic. Issue persisted."
+      - working: "NA"
+        agent: "troubleshoot"
+        comment: "CRITICAL ROOT CAUSE IDENTIFIED: Backend endpoint using generic dict for scan_data instead of Pydantic model like working appliance scan. This causes improper data validation and structure."
+      - working: "NA"
+        agent: "main"
+        comment: "CRITICAL FIX APPLIED: Created VehicleScanRequest Pydantic model and updated POST /api/vehicles/scan endpoint to use scan_request: VehicleScanRequest instead of scan_data: dict. Updated all references to use scan_request.image. This mirrors the working appliance scan implementation. Backend service restarted. Need to test that vehicle scanning now works correctly without image validation errors."
+
   - task: "User Authentication - Register"
     implemented: true
     working: true
