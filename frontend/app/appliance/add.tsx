@@ -223,14 +223,86 @@ export default function AddApplianceScreen() {
   };
 
   const handleScanReceipt = async () => {
-    if (!permission?.granted) {
-      const result = await requestPermission();
-      if (!result.granted) {
-        Alert.alert('Permission Required', 'Camera permission needed');
-        return;
+    if (Platform.OS === 'web') {
+      // Use file input for web
+      handleWebReceiptPicker();
+    } else {
+      // Use camera for native
+      if (!permission?.granted) {
+        const result = await requestPermission();
+        if (!result.granted) {
+          Alert.alert('Permission Required', 'Camera permission needed');
+          return;
+        }
       }
+      setReceiptCameraVisible(true);
     }
-    setReceiptCameraVisible(true);
+  };
+
+  const handleWebReceiptPicker = () => {
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.accept = 'image/*';
+    input.capture = 'environment'; // Use back camera on mobile web
+    input.onchange = async (e: any) => {
+      const file = e.target.files[0];
+      if (file) {
+        const reader = new FileReader();
+        reader.onload = async (event) => {
+          const base64 = event.target?.result as string;
+          const base64Data = base64.split(',')[1]; // Remove data:image/jpeg;base64, prefix
+          await processReceiptScan(base64Data);
+        };
+        reader.readAsDataURL(file);
+      }
+    };
+    input.click();
+  };
+
+  const processReceiptScan = async (base64Data: string) => {
+    setScanningReceipt(true);
+    try {
+      const response = await axios.post(
+        `${API_URL}/api/scan-receipt`,
+        { image: base64Data },
+        { 
+          headers: { Authorization: `Bearer ${token}` },
+          timeout: 60000
+        }
+      );
+
+      const data = response.data;
+      // Auto-populate form fields from receipt data
+      if (data.item_name && !name) setName(data.item_name);
+      if (data.brand) setBrand(data.brand);
+      if (data.model) setModel(data.model);
+      if (data.serial_number) setSerialNumber(data.serial_number);
+      if (data.purchase_date) setPurchaseDate(data.purchase_date);
+      if (data.purchase_cost) setPurchaseCost(data.purchase_cost.toString());
+      if (data.warranty_info) setWarrantyInfo(data.warranty_info);
+      if (data.warranty_months && data.purchase_date) {
+        // Calculate warranty expiry from purchase date + warranty months
+        const purchaseD = new Date(data.purchase_date);
+        purchaseD.setMonth(purchaseD.getMonth() + data.warranty_months);
+        setWarrantyExpiry(purchaseD.toISOString().split('T')[0]);
+      }
+      setInvoice(`data:image/jpeg;base64,${base64Data}`);
+      
+      if (Platform.OS === 'web') {
+        alert(`Receipt Scanned!\nForm fields have been auto-populated. Please review and complete.`);
+      } else {
+        Alert.alert('Receipt Scanned!', 'Form fields have been auto-populated. Please review and complete.');
+      }
+    } catch (error: any) {
+      console.error('Receipt scan error:', error);
+      if (Platform.OS === 'web') {
+        alert('Failed to scan receipt');
+      } else {
+        Alert.alert('Error', 'Failed to scan receipt');
+      }
+    } finally {
+      setScanningReceipt(false);
+    }
   };
 
   const handleTakeReceiptPicture = async () => {
