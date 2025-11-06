@@ -3,7 +3,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useState, useEffect } from 'react';
 import { useAuth } from '../../contexts/AuthContext';
 import { notificationApi } from '../../services/api';
-import { View, Text, StyleSheet } from 'react-native';
+import { View, Text, StyleSheet, Platform } from 'react-native';
 
 export default function TabsLayout() {
   const { token } = useAuth();
