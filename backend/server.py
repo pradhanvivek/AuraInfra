@@ -1578,7 +1578,7 @@ async def delete_vehicle(vehicle_id: str, user_id: str = Depends(get_current_use
     return {"message": "Vehicle deleted successfully"}
 
 @api_router.post("/vehicles/scan")
-async def scan_vehicle(scan_data: dict, user_id: str = Depends(get_current_user)):
+async def scan_vehicle(scan_request: VehicleScanRequest, user_id: str = Depends(get_current_user)):
     """AI scan for vehicle identification"""
     try:
         from emergentintegrations.llm.chat import LlmChat, UserMessage, ImageContent
