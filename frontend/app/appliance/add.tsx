@@ -111,14 +111,79 @@ export default function AddApplianceScreen() {
     }
   };
   const handleScan = async () => {
-    if (!permission?.granted) {
-      const result = await requestPermission();
-      if (!result.granted) {
-        Alert.alert('Permission Required', 'Camera permission needed');
-        return;
+    if (Platform.OS === 'web') {
+      // Use file input for web
+      handleWebImagePicker();
+    } else {
+      // Use camera for native
+      if (!permission?.granted) {
+        const result = await requestPermission();
+        if (!result.granted) {
+          Alert.alert('Permission Required', 'Camera permission needed');
+          return;
+        }
       }
+      setCameraVisible(true);
     }
-    setCameraVisible(true);
+  };
+
+  const handleWebImagePicker = () => {
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.accept = 'image/*';
+    input.capture = 'environment'; // Use back camera on mobile web
+    input.onchange = async (e: any) => {
+      const file = e.target.files[0];
+      if (file) {
+        const reader = new FileReader();
+        reader.onload = async (event) => {
+          const base64 = event.target?.result as string;
+          const base64Data = base64.split(',')[1]; // Remove data:image/jpeg;base64, prefix
+          await processApplianceScan(base64Data);
+        };
+        reader.readAsDataURL(file);
+      }
+    };
+    input.click();
+  };
+
+  const processApplianceScan = async (base64Data: string) => {
+    setScanning(true);
+    try {
+      const response = await axios.post(
+        `${API_URL}/api/fixtures/scan-appliance`,
+        { image: base64Data },
+        { 
+          headers: { Authorization: `Bearer ${token}` },
+          timeout: 60000
+        }
+      );
+
+      const data = response.data;
+      if (data.name) setName(data.name);
+      if (data.category) setCategory(data.category);
+      if (data.make) setBrand(data.make);
+      if (data.model) setModel(data.model);
+      if (data.serial_number) setSerialNumber(data.serial_number);
+      setPhotos([`data:image/jpeg;base64,${base64Data}`]);
+      
+      if (Platform.OS === 'web') {
+        alert(`Appliance Detected!\n${data.name || 'Appliance'} identified. Please review and complete the details.`);
+      } else {
+        Alert.alert(
+          'Appliance Detected!',
+          `${data.name || 'Appliance'} identified. Please review and complete the details.`
+        );
+      }
+    } catch (error: any) {
+      if (Platform.OS === 'web') {
+        alert('Failed to scan appliance');
+      } else {
+        Alert.alert('Error', 'Failed to scan appliance');
+      }
+    } finally {
+      setScanning(false);
+    }
   };
 
   const handleTakePicture = async () => {
