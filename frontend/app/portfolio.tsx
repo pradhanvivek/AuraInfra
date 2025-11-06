@@ -451,27 +451,43 @@ export default function PortfolioScreen() {
 
       // Debug: Log a snippet of the HTML to verify images are included
       console.log('HTML snippet (first 2000 chars):', htmlContent.substring(0, 2000));
+      console.log('HTML length:', htmlContent.length);
 
-      // Generate PDF
-      const { uri } = await Print.printToFileAsync({
+      // Generate PDF with error handling
+      console.log('Starting PDF generation...');
+      const result = await Print.printToFileAsync({
         html: htmlContent,
         base64: false,
       });
 
+      console.log('PDF generation result:', result);
+
+      if (!result || !result.uri) {
+        throw new Error('PDF generation failed - no URI returned');
+      }
+
       // Share PDF
       if (await Sharing.isAvailableAsync()) {
-        await Sharing.shareAsync(uri, {
+        await Sharing.shareAsync(result.uri, {
           mimeType: 'application/pdf',
           dialogTitle: 'Insurance Report - AuraInfra.ai',
           UTI: 'com.adobe.pdf',
         });
         Alert.alert('Success', 'Insurance report generated successfully!');
       } else {
-        Alert.alert('Success', `PDF saved to: ${uri}`);
+        Alert.alert('Success', `PDF saved to: ${result.uri}`);
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error generating insurance report:', error);
-      Alert.alert('Error', 'Failed to generate insurance report. Please try again.');
+      console.error('Error details:', {
+        message: error.message,
+        stack: error.stack,
+        name: error.name
+      });
+      Alert.alert(
+        'Error', 
+        `Failed to generate insurance report: ${error.message || 'Unknown error'}. Please try again.`
+      );
     } finally {
       setGeneratingPDF(false);
     }
