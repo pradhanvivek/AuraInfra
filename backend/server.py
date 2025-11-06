@@ -507,9 +507,14 @@ class VehicleScanRequest(BaseModel):
     image: str  # base64 encoded
 
 class VehicleScanResult(BaseModel):
-    make: str
-    model: str
+    make: Optional[str] = None
+    model: Optional[str] = None
     year: Optional[int] = None
+    color: Optional[str] = None
+    body_type: Optional[str] = None
+    vin: Optional[str] = None
+    license_plate: Optional[str] = None
+    estimated_value: Optional[float] = None
     confidence: float
 
 class JewelryScanResult(BaseModel):
