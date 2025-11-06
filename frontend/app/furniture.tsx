@@ -159,11 +159,16 @@ export default function FurnitureScreen() {
       >
         <Ionicons name="scan" size={28} color="#fff" />
       </TouchableOpacity>
-    </View>
+      </View>
+    </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
+  safeArea: {
+    flex: 1,
+    backgroundColor: '#F2F2F7',
+  },
   container: {
     flex: 1,
     backgroundColor: '#F2F2F7',
