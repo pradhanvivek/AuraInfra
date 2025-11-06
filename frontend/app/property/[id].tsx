@@ -59,8 +59,8 @@ export default function PropertyDetails() {
 
   return (
     <View style={styles.container}>
-      {/* Property Header with dynamic safe area padding */}
-      <View style={[styles.headerWrapper, { paddingTop: insets.top }]}>
+      {/* Property Header with dynamic safe area padding - only for native */}
+      <View style={[styles.headerWrapper, { paddingTop: Platform.OS === 'web' ? 0 : insets.top }]}>
         <View style={styles.header}>
           <TouchableOpacity 
             onPress={() => router.back()} 
