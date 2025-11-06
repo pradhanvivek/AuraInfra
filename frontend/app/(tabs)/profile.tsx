@@ -56,12 +56,22 @@ export default function Profile() {
   const [uploadingAvatar, setUploadingAvatar] = useState(false);
 
   useEffect(() => {
-    fetchProfile();
-  }, []);
+    // Only fetch profile if token is available and valid
+    if (token && token !== 'null' && token.length > 10) {
+      fetchProfile();
+    } else {
+      setLoading(false);
+    }
+  }, [token]);
 
   const fetchProfile = async () => {
+    if (!token || token === 'null' || token.length < 10) {
+      setLoading(false);
+      return;
+    }
+    
     try {
-      const data = await authApi.getProfile(token!);
+      const data = await authApi.getProfile(token);
       setProfile(data);
       setSelectedReminderDays(data.warranty_reminder_days || 30);
       setSelectedGeomancy(data.geomancy_preference || 'vastu');
