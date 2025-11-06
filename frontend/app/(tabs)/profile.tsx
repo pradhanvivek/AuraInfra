@@ -213,37 +213,29 @@ export default function Profile() {
     }
   };
 
-  const handleLogout = async () => {
-    if (Platform.OS === 'web') {
-      // Use window.confirm for web
-      if (window.confirm('Are you sure you want to logout?')) {
-        await logout();
-        // For web, use window.location to force a full page reload
-        if (typeof window !== 'undefined') {
-          window.location.href = '/auth/login';
-        } else {
-          router.replace('/auth/login');
-        }
-      }
-    } else {
-      // Use Alert.alert for native
-      Alert.alert(
-        'Logout',
-        'Are you sure you want to logout?',
-        [
-          { text: 'Cancel', style: 'cancel' },
-          {
-            text: 'Logout',
-            style: 'destructive',
-            onPress: async () => {
+  const handleLogout = () => {
+    // Use Alert.alert for both web and native - works on Safari
+    Alert.alert(
+      'Logout',
+      'Are you sure you want to logout?',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Logout',
+          style: 'destructive',
+          onPress: async () => {
+            try {
               await logout();
-              router.replace('/auth/login');
-            },
+              // Use router navigation - more reliable than window.location on Safari
+              router.replace('/(auth)/login');
+            } catch (error) {
+              console.error('Logout error:', error);
+            }
           },
-        ],
-        { cancelable: true }
-      );
-    }
+        },
+      ],
+      { cancelable: true }
+    );
   };
 
   const handleChangeAvatar = async () => {
