@@ -62,14 +62,60 @@ export default function AddVehicleScreen() {
   const [datePickerMode, setDatePickerMode] = useState<'purchase' | 'insurance' | 'lastMaint' | 'nextMaint'>('purchase');
 
   const handleScan = async () => {
-    if (!permission?.granted) {
-      const result = await requestPermission();
-      if (!result.granted) {
-        Alert.alert('Permission Required', 'Camera permission needed');
-        return;
+    // Check if we're on web
+    if (Platform.OS === 'web') {
+      // On web, use image picker instead of camera
+      const result = await ImagePicker.launchImageLibraryAsync({
+        mediaTypes: ['images'],
+        allowsEditing: false,
+        quality: 0.7,
+        base64: true,
+      });
+
+      if (!result.canceled && result.assets[0].base64) {
+        // Process the image with AI
+        try {
+          setScanning(true);
+          const response = await axios.post(
+            `${API_URL}/api/vehicles/scan`,
+            { image: result.assets[0].base64 },
+            { 
+              headers: { Authorization: `Bearer ${token}` },
+              timeout: 60000
+            }
+          );
+
+          const data = response.data;
+          if (data.make) setMake(data.make);
+          if (data.model) setModel(data.model);
+          if (data.year) setYear(data.year.toString());
+          if (!name && data.make && data.model) {
+            setName(`${data.make} ${data.model}`);
+          }
+          setPhotos([`data:image/jpeg;base64,${result.assets[0].base64}`]);
+          
+          Alert.alert(
+            'Vehicle Detected!',
+            `${data.make || ''} ${data.model || ''} identified. Please review and complete the details.`
+          );
+        } catch (error: any) {
+          console.error('Scan error:', error);
+          Alert.alert('Error', 'Failed to scan vehicle. Please enter details manually.');
+        } finally {
+          setScanning(false);
+        }
       }
+    } else {
+      // Native app: use camera
+      if (!permission?.granted) {
+        const result = await requestPermission();
+        if (!result.granted) {
+          Alert.alert('Permission Required', 'Camera permission needed');
+          return;
+        }
+      }
+      setCameraVisible(true);
     }
-    setCameraVisible(true);
   };
 
   const handleTakePicture = async () => {
