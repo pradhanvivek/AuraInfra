@@ -2195,10 +2195,10 @@ async def scan_appliance(
     user_id: str = Depends(get_current_user)
 ):
     """
-    Use Gemini Vision AI to identify appliance from image
+    Use OpenAI Vision AI to identify appliance from image
     """
     try:
-        from emergentintegrations.llm.chat import LlmChat, UserMessage, ImageContent
+        from emergentintegrations import openai_client
         import json
         import base64
         
@@ -2206,7 +2206,7 @@ async def scan_appliance(
         if not api_key:
             raise HTTPException(status_code=500, detail="API key not configured")
         
-        # Clean and validate base64 string
+        # Clean base64 string - remove any data URL prefix if present
         image_data = scan_request.image
         if image_data.startswith('data:'):
             # Remove data:image/...;base64, prefix
@@ -2221,15 +2221,19 @@ async def scan_appliance(
         
         logger.info(f"Processing appliance scan with image data length: {len(image_data)}")
         
-        chat = LlmChat(
-            api_key=api_key,
-            session_id=f"appliance_scan_{user_id}_{uuid.uuid4()}",
-            system_message="You are an expert in identifying home appliances and electrical fixtures."
-        ).with_model("gemini", "gemini-2.0-flash")
+        # Use OpenAI Vision to analyze the appliance
+        client = openai_client.get_openai_client(api_key=api_key)
         
-        user_message = UserMessage(
-            text="""Analyze this image and identify the appliance or electrical fixture. 
-            
+        response = client.chat.completions.create(
+            model="gpt-4o",
+            messages=[
+                {
+                    "role": "user",
+                    "content": [
+                        {
+                            "type": "text",
+                            "text": """Analyze this image and identify the appliance or electrical fixture. 
+                            
 Return ONLY a valid JSON object with this structure:
 {
   "name": "Specific name (e.g., 'Ceiling Fan', 'LED TV', 'Refrigerator')",
@@ -2241,22 +2245,33 @@ Return ONLY a valid JSON object with this structure:
 }
 
 If you can't identify the item clearly, set confidence lower. 
-Return ONLY the JSON object, no additional text.""",
-            file_contents=[ImageContent(image_base64=image_data)]
+Return ONLY the JSON object, no additional text."""
+                        },
+                        {
+                            "type": "image_url",
+                            "image_url": {
+                                "url": f"data:image/jpeg;base64,{image_data}"
+                            }
+                        }
+                    ]
+                }
+            ],
+            max_tokens=500
         )
         
-        response = await chat.send_message(user_message)
-        logger.info(f"Appliance scan response: {response}")
+        # Parse the response
+        response_text = response.choices[0].message.content
+        logger.info(f"Appliance scan response: {response_text}")
         
         # Parse JSON response
         try:
-            json_start = response.find('{')
-            json_end = response.rfind('}') + 1
+            json_start = response_text.find('{')
+            json_end = response_text.rfind('}') + 1
             if json_start != -1 and json_end > json_start:
-                json_str = response[json_start:json_end]
+                json_str = response_text[json_start:json_end]
                 result = json.loads(json_str)
             else:
-                result = json.loads(response)
+                result = json.loads(response_text)
             
             return ApplianceScanResult(**result)
             
