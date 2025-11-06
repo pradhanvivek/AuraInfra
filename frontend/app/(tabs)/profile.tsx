@@ -41,7 +41,7 @@ export default function Profile() {
   const { username, logout, token, loading: authLoading } = useAuth();
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState(true);
-  const hasFetched = useRef(false);
+  const [fetchComplete, setFetchComplete] = useState(false);
   const [editModalVisible, setEditModalVisible] = useState(false);
   const [editField, setEditField] = useState<'email' | 'phone' | null>(null);
   const [editValue, setEditValue] = useState('');
