@@ -111,42 +111,46 @@ export default function NotificationsScreen() {
 
   if (loading) {
     return (
-      <View style={styles.centerContainer}>
-        <ActivityIndicator size="large" color="#007AFF" />
-      </View>
+      <SafeAreaView style={styles.safeArea} edges={['top']}>
+        <View style={styles.centerContainer}>
+          <ActivityIndicator size="large" color="#007AFF" />
+        </View>
+      </SafeAreaView>
     );
   }
 
   return (
-    <View style={styles.container}>
-      <View style={styles.header}>
-        <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
-          <Ionicons name="arrow-back" size={24} color="#007AFF" />
-        </TouchableOpacity>
-        <Text style={styles.headerTitle}>Notifications</Text>
-        <View style={{ width: 24 }} />
-      </View>
-
-      {notifications.length === 0 ? (
-        <View style={styles.emptyContainer}>
-          <Ionicons name="notifications-off-outline" size={64} color="#C7C7CC" />
-          <Text style={styles.emptyTitle}>No Notifications</Text>
-          <Text style={styles.emptySubtitle}>
-            You're all caught up! Check back later.
-          </Text>
+    <SafeAreaView style={styles.safeArea} edges={['top']}>
+      <View style={styles.container}>
+        <View style={styles.header}>
+          <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
+            <Ionicons name="arrow-back" size={24} color="#007AFF" />
+          </TouchableOpacity>
+          <Text style={styles.headerTitle}>Notifications</Text>
+          <View style={{ width: 24 }} />
         </View>
-      ) : (
-        <FlatList
-          data={notifications}
-          renderItem={renderNotification}
-          keyExtractor={(item) => item.id}
-          contentContainerStyle={styles.listContent}
-          refreshControl={
-            <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
-          }
-        />
-      )}
-    </View>
+
+        {notifications.length === 0 ? (
+          <View style={styles.emptyContainer}>
+            <Ionicons name="notifications-off-outline" size={64} color="#C7C7CC" />
+            <Text style={styles.emptyTitle}>No Notifications</Text>
+            <Text style={styles.emptySubtitle}>
+              You're all caught up! Check back later.
+            </Text>
+          </View>
+        ) : (
+          <FlatList
+            data={notifications}
+            renderItem={renderNotification}
+            keyExtractor={(item) => item.id}
+            contentContainerStyle={styles.listContent}
+            refreshControl={
+              <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+            }
+          />
+        )}
+      </View>
+    </SafeAreaView>
   );
 }
 
