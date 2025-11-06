@@ -372,6 +372,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-between',
     marginBottom: 6,
+    height: 50,
   },
   greetingContainer: {
     flex: 1,
