@@ -66,10 +66,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       const storedUserId = await storage.getItem('userId');
       const storedUsername = await storage.getItem('username');
       
-      if (storedToken) {
+      // Check for valid token (not null, not 'null' string, not empty)
+      if (storedToken && storedToken !== 'null' && storedToken.trim().length > 0) {
         setToken(storedToken);
-        setUserId(storedUserId);
-        setUsername(storedUsername);
+        setUserId(storedUserId && storedUserId !== 'null' ? storedUserId : null);
+        setUsername(storedUsername && storedUsername !== 'null' ? storedUsername : null);
       }
     } catch (error) {
       console.error('Error loading auth:', error);
