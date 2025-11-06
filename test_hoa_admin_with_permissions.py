@@ -12,7 +12,7 @@ import os
 from pymongo import MongoClient
 
 # Get backend URL from environment
-BACKEND_URL = os.environ.get('EXPO_PUBLIC_BACKEND_URL', 'https://assetapp.preview.emergentagent.com')
+BACKEND_URL = os.environ.get('EXPO_PUBLIC_BACKEND_URL', 'https://property-ai-scan.preview.emergentagent.com')
 API_BASE = f"{BACKEND_URL}/api"
 
 # MongoDB connection
