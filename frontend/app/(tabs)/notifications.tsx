@@ -24,6 +24,7 @@ interface Notification {
 }
 
 export default function NotificationsScreen() {
+  const router = useRouter();
   const { token } = useAuth();
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [loading, setLoading] = useState(true);
