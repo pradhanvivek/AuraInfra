@@ -493,13 +493,16 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginBottom: 20,
   },
+  iconWrapper: {
+    position: 'relative',
+    marginBottom: 8,
+  },
   iconContainer: {
     width: 56,
     height: 56,
     borderRadius: 12,
     alignItems: 'center',
     justifyContent: 'center',
-    marginBottom: 8,
   },
   tileTitle: {
     fontSize: 11,
