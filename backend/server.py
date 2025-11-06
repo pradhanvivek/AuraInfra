@@ -2224,7 +2224,9 @@ async def scan_appliance(
         # Use OpenAI Vision to analyze the appliance
         client = OpenAI(
             api_key=api_key,
-            base_url="https://llm.api.emergentmethods.ai/v1"
+            base_url="https://llm.api.emergentmethods.ai/v1",
+            timeout=60.0,  # Increase timeout for vision models
+            max_retries=2
         )
         
         response = client.chat.completions.create(
