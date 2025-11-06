@@ -295,15 +295,17 @@ export default function DashboardScreen() {
                 onPress={() => handleTilePress(category.route)}
                 activeOpacity={0.8}
               >
-                <View style={[styles.iconContainer, { backgroundColor: category.color + '20' }]}>
-                  <Ionicons name={category.icon as any} size={32} color={category.color} />
+                <View style={styles.iconWrapper}>
+                  <View style={[styles.iconContainer, { backgroundColor: category.color + '20' }]}>
+                    <Ionicons name={category.icon as any} size={32} color={category.color} />
+                  </View>
+                  {category.count > 0 && (
+                    <View style={[styles.badge, { backgroundColor: category.color }]}>
+                      <Text style={styles.badgeText}>{category.count}</Text>
+                    </View>
+                  )}
                 </View>
                 <Text style={styles.tileTitle}>{category.title}</Text>
-                {category.count > 0 && (
-                  <View style={[styles.badge, { backgroundColor: category.color }]}>
-                    <Text style={styles.badgeText}>{category.count}</Text>
-                  </View>
-                )}
               </TouchableOpacity>
             ))}
           </View>
