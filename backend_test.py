@@ -19,8 +19,16 @@ TEST_USERNAME = "vehicle_test_user"
 TEST_PASSWORD = "VehicleTest123!"
 TEST_EMAIL = "vehicle.test@example.com"
 
-# Sample base64 encoded vehicle image (small test image)
-SAMPLE_VEHICLE_IMAGE = "/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAYEBQYFBAYGBQYHBwYIChAKCgkJChQODwwQFxQYGBcUFhYaHSUfGhsjHBYWICwgIyYnKSopGR8tMC0oMCUoKSj/2wBDAQcHBwoIChMKChMoGhYaKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCj/wAARCAABAAEDASIAAhEBAxEB/8QAFQABAQAAAAAAAAAAAAAAAAAAAAv/xAAUEAEAAAAAAAAAAAAAAAAAAAAA/8QAFQEBAQAAAAAAAAAAAAAAAAAAAAX/xAAUEQEAAAAAAAAAAAAAAAAAAAAA/9oADAMBAAIRAxEAPwCdABmX/9k="
+# Load the realistic car image
+def load_test_car_image():
+    try:
+        with open('/app/test_car_image.txt', 'r') as f:
+            return f.read().strip()
+    except FileNotFoundError:
+        # Fallback to a simple base64 image if file not found
+        return "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChAI9jU77yQAAAABJRU5ErkJggg=="
+
+SAMPLE_VEHICLE_IMAGE = load_test_car_image()
 
 class VehicleScanTester:
     def __init__(self):
