@@ -115,6 +115,13 @@ export const generateInsuranceReportHTML = (
                   ${item.artist ? `<div class="detail-item"><strong>Artist:</strong> ${item.artist}</div>` : ''}
                   ${item.material ? `<div class="detail-item"><strong>Material:</strong> ${item.material}</div>` : ''}
                   ${item.serial_number ? `<div class="detail-item"><strong>Serial #:</strong> ${item.serial_number}</div>` : ''}
+                  ${item.supplier ? `<div class="detail-item"><strong>Supplier:</strong> ${item.supplier}</div>` : ''}
+                  ${item.invoice_number ? `<div class="detail-item"><strong>Invoice #:</strong> ${item.invoice_number}</div>` : ''}
+                  ${item.invoice_date ? `
+                    <div class="detail-item">
+                      <strong>Invoice Date:</strong> ${new Date(item.invoice_date).toLocaleDateString()}
+                    </div>
+                  ` : ''}
                   ${item.purchase_date ? `
                     <div class="detail-item">
                       <strong>Purchase Date:</strong> ${new Date(item.purchase_date).toLocaleDateString()}
