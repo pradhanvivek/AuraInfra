@@ -2195,16 +2195,19 @@ async def scan_appliance(
     user_id: str = Depends(get_current_user)
 ):
     """
-    Use OpenAI Vision AI to identify appliance from image
+    Use OpenAI Vision AI to identify appliance from image with fallback
     """
     try:
         from openai import OpenAI
         import json
         import base64
         
-        api_key = os.environ.get('EMERGENT_LLM_KEY')
-        if not api_key:
-            raise HTTPException(status_code=500, detail="API key not configured")
+        # Check for API keys
+        emergent_key = os.environ.get('EMERGENT_LLM_KEY')
+        openai_key = os.environ.get('OPENAI_API_KEY')
+        
+        if not emergent_key and not openai_key:
+            raise HTTPException(status_code=500, detail="No API key configured")
         
         # Clean base64 string - remove any data URL prefix if present
         image_data = scan_request.image
@@ -2221,13 +2224,68 @@ async def scan_appliance(
         
         logger.info(f"Processing appliance scan with image data length: {len(image_data)}")
         
-        # Use OpenAI Vision to analyze the appliance
-        client = OpenAI(
-            api_key=api_key,
-            base_url="https://llm.api.emergentmethods.ai/v1",
-            timeout=60.0,  # Increase timeout for vision models
-            max_retries=2
-        )
+        # Try Emergent LLM endpoint first, then fallback to OpenAI
+        client = None
+        using_fallback = False
+        
+        if emergent_key:
+            try:
+                logger.info("Trying Emergent LLM endpoint...")
+                client = OpenAI(
+                    api_key=emergent_key,
+                    base_url="https://llm.api.emergentmethods.ai/v1",
+                    timeout=30.0,
+                    max_retries=1
+                )
+                # Test the connection with a quick request
+                response = client.chat.completions.create(
+                    model="gpt-4o",
+                    messages=[
+                        {
+                            "role": "user",
+                            "content": [
+                                {
+                                    "type": "text",
+                                    "text": """Analyze this image and identify the appliance or electrical fixture. 
+                            
+Return ONLY a valid JSON object with this structure:
+{
+  "name": "Specific name (e.g., 'Ceiling Fan', 'LED TV', 'Refrigerator')",
+  "category": "Category (lights, fans, electrical appliances)",
+  "make": "Brand name if visible (e.g., 'Samsung', 'LG', 'Crompton')",
+  "model": "Model number if visible",
+  "serial_number": "Serial number if visible",
+  "confidence": 0.95
+}
+
+If you can't identify the item clearly, set confidence lower. 
+Return ONLY the JSON object, no additional text."""
+                                },
+                                {
+                                    "type": "image_url",
+                                    "image_url": {
+                                        "url": f"data:image/jpeg;base64,{image_data}"
+                                    }
+                                }
+                            ]
+                        }
+                    ],
+                    max_tokens=500
+                )
+                logger.info("Successfully used Emergent LLM endpoint")
+            except Exception as e:
+                logger.warning(f"Emergent LLM endpoint failed: {str(e)}")
+                client = None
+        
+        # Fallback to standard OpenAI if Emergent failed or not available
+        if client is None and openai_key:
+            logger.info("Falling back to standard OpenAI API...")
+            using_fallback = True
+            client = OpenAI(
+                api_key=openai_key,
+                timeout=60.0,
+                max_retries=2
+            )
         
         response = client.chat.completions.create(
             model="gpt-4o",
