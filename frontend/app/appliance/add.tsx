@@ -446,7 +446,7 @@ export default function AddApplianceScreen() {
               <Ionicons name="camera" size={24} color="#fff" />
               <Text style={styles.scanButtonText}>Scan Appliance with AI</Text>
             </TouchableOpacity>
-            
+
             <TouchableOpacity style={styles.receiptButton} onPress={handleScanReceipt}>
               <Ionicons name="receipt" size={24} color="#007AFF" />
               <Text style={styles.receiptButtonText}>Scan Receipt/Invoice</Text>
@@ -455,7 +455,7 @@ export default function AddApplianceScreen() {
         )}
 
         <Text style={styles.sectionTitle}>Basic Information</Text>
-        
+
         <Text style={styles.label}>Name *</Text>
         <TextInput
           style={styles.input}
