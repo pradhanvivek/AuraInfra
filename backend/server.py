@@ -1616,17 +1616,24 @@ async def scan_vehicle(scan_request: VehicleScanRequest, user_id: str = Depends(
         ).with_model("gemini", "gemini-2.0-flash")
         
         user_message = UserMessage(
-            text="""Analyze this vehicle image and identify it.
+            text="""Analyze this vehicle image and identify it in detail.
 
-Return ONLY a valid JSON object:
+Return ONLY a valid JSON object with this structure:
 {
   "make": "BMW",
-  "model": "3 Series",
+  "model": "3 Series", 
   "year": 2020,
+  "color": "Blue",
+  "body_type": "Sedan",
+  "vin": null,
+  "license_plate": null,
+  "estimated_value": 25000.0,
   "confidence": 0.95
 }
 
-If year is not clear, set it to null. Return ONLY JSON, no additional text.""",
+If any field is not visible or identifiable, set it to null. 
+For confidence, use a value between 0.0 and 1.0 based on how certain you are.
+Return ONLY the JSON object, no additional text.""",
             file_contents=[ImageContent(image_base64=image_data)]
         )
         
