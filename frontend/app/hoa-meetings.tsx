@@ -46,7 +46,7 @@ interface RSVP {
 export default function HOAMeetingsScreen() {
   const router = useRouter();
   const { propertyId } = useLocalSearchParams<{ propertyId: string }>();
-  const { token } = useAuth();
+  const { token, userId } = useAuth();
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [meetings, setMeetings] = useState<Meeting[]>([]);
