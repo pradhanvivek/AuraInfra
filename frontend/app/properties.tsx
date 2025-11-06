@@ -122,18 +122,19 @@ export default function Properties() {
   }
 
   return (
-    <View style={styles.container}>
-      <View style={styles.header}>
-        <TouchableOpacity onPress={() => router.back()} style={styles.backBtn}>
-          <Ionicons name="arrow-back" size={24} color="#007AFF" />
-        </TouchableOpacity>
-        <Text style={styles.headerTitle}>My Properties</Text>
-        <Image 
-          source={{ uri: LOGO_URL }}
-          style={styles.logo}
-          resizeMode="contain"
-        />
-      </View>
+    <SafeAreaView style={styles.safeArea} edges={['top']}>
+      <View style={styles.container}>
+        <View style={styles.header}>
+          <TouchableOpacity onPress={() => router.back()} style={styles.backBtn}>
+            <Ionicons name="arrow-back" size={24} color="#007AFF" />
+          </TouchableOpacity>
+          <Text style={styles.headerTitle}>My Properties</Text>
+          <Image 
+            source={{ uri: LOGO_URL }}
+            style={styles.logo}
+            resizeMode="contain"
+          />
+        </View>
 
       {/* Search Bar */}
       {properties.length > 0 && (
