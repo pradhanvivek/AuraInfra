@@ -116,7 +116,7 @@ export default function AddProperty() {
 
   const handleAddressChange = (text: string) => {
     setAddress(text);
-    if (Platform.OS === 'web' && GOOGLE_MAPS_API_KEY) {
+    if (Platform.OS === 'web') {
       if (debounceTimer.current) {
         clearTimeout(debounceTimer.current);
       }
