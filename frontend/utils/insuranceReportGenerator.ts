@@ -17,6 +17,10 @@ export interface AssetItem {
   serial_number?: string;
   photos?: string[];
   notes?: string;
+  invoice_number?: string;
+  invoice_date?: string;
+  supplier?: string;
+  receipt_photo?: string;
 }
 
 export interface PortfolioData {
