@@ -980,14 +980,18 @@ def create_access_token(data: dict):
 
 def verify_token(token: str):
     try:
+        logger.info(f"Attempting to verify token (length: {len(token)})")
         payload = jwt.decode(token, JWT_SECRET, algorithms=[JWT_ALGORITHM])
+        logger.info(f"Token verified successfully for user: {payload.get('user_id')}")
         return payload
-    except jwt.ExpiredSignatureError:
+    except jwt.ExpiredSignatureError as e:
+        logger.error(f"Token expired: {str(e)}")
         raise HTTPException(status_code=401, detail="Token has expired")
-    except jwt.InvalidTokenError:
+    except jwt.InvalidTokenError as e:
+        logger.error(f"Invalid token error: {str(e)}")
         raise HTTPException(status_code=401, detail="Invalid token")
     except Exception as e:
-        logger.error(f"Token verification error: {str(e)}")
+        logger.error(f"Token verification error: {type(e).__name__} - {str(e)}")
         raise HTTPException(status_code=401, detail="Invalid token")
 
 async def get_current_user(credentials: HTTPAuthorizationCredentials = Depends(security)):
