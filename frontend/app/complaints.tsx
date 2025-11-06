@@ -222,16 +222,17 @@ export default function ComplaintsScreen() {
   }
 
   return (
-    <View style={styles.container}>
-      <View style={styles.header}>
-        <TouchableOpacity onPress={() => router.back()}>
-          <Ionicons name="arrow-back" size={28} color="#007AFF" />
-        </TouchableOpacity>
-        <Text style={styles.headerTitle}>Service Requests</Text>
-        <TouchableOpacity onPress={() => setAddModalVisible(true)}>
-          <Ionicons name="add-circle" size={28} color="#007AFF" />
-        </TouchableOpacity>
-      </View>
+    <SafeAreaView style={styles.safeArea} edges={['top']}>
+      <View style={styles.container}>
+        <View style={styles.header}>
+          <TouchableOpacity onPress={() => router.back()}>
+            <Ionicons name="arrow-back" size={28} color="#007AFF" />
+          </TouchableOpacity>
+          <Text style={styles.headerTitle}>Service Requests</Text>
+          <TouchableOpacity onPress={() => setAddModalVisible(true)}>
+            <Ionicons name="add-circle" size={28} color="#007AFF" />
+          </TouchableOpacity>
+        </View>
 
       {/* Tabs */}
       <View style={styles.tabsContainer}>
