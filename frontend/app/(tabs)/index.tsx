@@ -339,7 +339,8 @@ export default function PropertiesScreen() {
           </View>
         </View>
       </Modal>
-    </View>
+      </View>
+    </SafeAreaView>
   );
 }
 
