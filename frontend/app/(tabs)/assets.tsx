@@ -282,14 +282,10 @@ export default function DashboardScreen() {
           </View>
         )}
 
-        {/* Horizontally Scrollable Tiles */}
+        {/* 2x4 Grid Layout */}
         <View style={styles.tilesSection}>
           <Text style={styles.sectionTitle}>Your Assets</Text>
-          <ScrollView
-            horizontal
-            showsHorizontalScrollIndicator={false}
-            contentContainerStyle={styles.tilesContainer}
-          >
+          <View style={styles.tilesGrid}>
             {categories.map((category) => (
               <TouchableOpacity
                 key={category.id}
@@ -311,7 +307,7 @@ export default function DashboardScreen() {
                 </View>
               </TouchableOpacity>
             ))}
-          </ScrollView>
+          </View>
         </View>
 
         <View style={styles.quickActions}>
