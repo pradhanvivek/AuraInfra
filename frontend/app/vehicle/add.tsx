@@ -251,7 +251,9 @@ export default function AddVehicleScreen() {
         {!scanMode && (
           <TouchableOpacity style={styles.scanButton} onPress={handleScan}>
             <Ionicons name="camera" size={24} color="#fff" />
-            <Text style={styles.scanButtonText}>Scan Vehicle with AI</Text>
+            <Text style={styles.scanButtonText}>
+              {Platform.OS === 'web' ? 'Upload & Scan Vehicle with AI' : 'Scan Vehicle with AI'}
+            </Text>
           </TouchableOpacity>
         )}
 
