@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import {
   View,
   Text,
@@ -18,6 +18,7 @@ import { useAuth } from '../../contexts/AuthContext';
 import axios from 'axios';
 import Constants from 'expo-constants';
 import * as ImagePicker from 'expo-image-picker';
+import { CameraView, useCameraPermissions } from 'expo-camera';
 import DateTimePickerModal from 'react-native-modal-datetime-picker';
 import { getCurrencyInfo } from '../../utils/localeUtils';
 
