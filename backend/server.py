@@ -2316,6 +2316,72 @@ async def get_nearby_places(
         logger.error(f"Nearby places error: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))
 
+@api_router.get("/places/autocomplete")
+async def get_places_autocomplete(
+    input: str,
+    user_id: str = Depends(get_current_user)
+):
+    """
+    Proxy endpoint for Google Places Autocomplete API to avoid CORS issues on web
+    """
+    try:
+        import httpx
+        
+        api_key = os.environ.get('GOOGLE_MAPS_API_KEY', '')
+        if not api_key:
+            raise HTTPException(status_code=500, detail="Google Maps API key not configured")
+        
+        url = "https://maps.googleapis.com/maps/api/place/autocomplete/json"
+        params = {
+            "input": input,
+            "key": api_key
+        }
+        
+        async with httpx.AsyncClient() as client:
+            response = await client.get(url, params=params, timeout=10.0)
+            response.raise_for_status()
+            return response.json()
+            
+    except httpx.HTTPError as e:
+        logger.error(f"Google Places Autocomplete API error: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Failed to fetch autocomplete: {str(e)}")
+    except Exception as e:
+        logger.error(f"Places autocomplete error: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@api_router.get("/places/details")
+async def get_place_details(
+    place_id: str,
+    user_id: str = Depends(get_current_user)
+):
+    """
+    Proxy endpoint for Google Places Details API to avoid CORS issues on web
+    """
+    try:
+        import httpx
+        
+        api_key = os.environ.get('GOOGLE_MAPS_API_KEY', '')
+        if not api_key:
+            raise HTTPException(status_code=500, detail="Google Maps API key not configured")
+        
+        url = "https://maps.googleapis.com/maps/api/place/details/json"
+        params = {
+            "place_id": place_id,
+            "key": api_key
+        }
+        
+        async with httpx.AsyncClient() as client:
+            response = await client.get(url, params=params, timeout=10.0)
+            response.raise_for_status()
+            return response.json()
+            
+    except httpx.HTTPError as e:
+        logger.error(f"Google Places Details API error: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Failed to fetch place details: {str(e)}")
+    except Exception as e:
+        logger.error(f"Place details error: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
 # ============= PAINT ESTIMATION ENDPOINTS =============
 
 @api_router.post("/paint-estimation/analyze-wall", response_model=PaintEstimate)
