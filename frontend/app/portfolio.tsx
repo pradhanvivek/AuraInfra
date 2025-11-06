@@ -537,29 +537,78 @@ export default function PortfolioScreen() {
       console.log('HTML snippet (first 2000 chars):', htmlContent.substring(0, 2000));
       console.log('HTML length:', htmlContent.length);
 
-      // Generate PDF with error handling
-      console.log('Starting PDF generation...');
-      const result = await Print.printToFileAsync({
-        html: htmlContent,
-        base64: false,
-      });
-
-      console.log('PDF generation result:', result);
-
-      if (!result || !result.uri) {
-        throw new Error('PDF generation failed - no URI returned');
-      }
-
-      // Share PDF
-      if (await Sharing.isAvailableAsync()) {
-        await Sharing.shareAsync(result.uri, {
-          mimeType: 'application/pdf',
-          dialogTitle: 'Insurance Report - AuraInfra.ai',
-          UTI: 'com.adobe.pdf',
-        });
-        Alert.alert('Success', 'Insurance report generated successfully!');
+      // Check if we're on web
+      if (Platform.OS === 'web') {
+        // Web: Open in new window for printing or download
+        const printWindow = window.open('', '_blank');
+        if (printWindow) {
+          printWindow.document.write(htmlContent);
+          printWindow.document.close();
+          
+          // Add print button and download functionality
+          setTimeout(() => {
+            // Add print and download buttons
+            const buttonContainer = printWindow.document.createElement('div');
+            buttonContainer.style.cssText = 'position: fixed; top: 20px; right: 20px; z-index: 10000; display: flex; gap: 10px;';
+            
+            const printBtn = printWindow.document.createElement('button');
+            printBtn.textContent = '🖨️ Print PDF';
+            printBtn.style.cssText = 'padding: 12px 24px; background: #007AFF; color: white; border: none; border-radius: 8px; font-size: 16px; font-weight: bold; cursor: pointer; box-shadow: 0 2px 8px rgba(0,0,0,0.2);';
+            printBtn.onclick = () => printWindow.print();
+            
+            const downloadBtn = printWindow.document.createElement('button');
+            downloadBtn.textContent = '⬇️ Download HTML';
+            downloadBtn.style.cssText = 'padding: 12px 24px; background: #34C759; color: white; border: none; border-radius: 8px; font-size: 16px; font-weight: bold; cursor: pointer; box-shadow: 0 2px 8px rgba(0,0,0,0.2);';
+            downloadBtn.onclick = () => {
+              const blob = new Blob([htmlContent], { type: 'text/html' });
+              const url = URL.createObjectURL(blob);
+              const a = printWindow.document.createElement('a');
+              a.href = url;
+              a.download = 'Insurance-Report-AuraInfra.html';
+              a.click();
+              URL.revokeObjectURL(url);
+            };
+            
+            buttonContainer.appendChild(printBtn);
+            buttonContainer.appendChild(downloadBtn);
+            printWindow.document.body.insertBefore(buttonContainer, printWindow.document.body.firstChild);
+          }, 500);
+          
+          Alert.alert(
+            'Report Generated',
+            'The insurance report has opened in a new window. You can print it to PDF using your browser\'s print dialog (Ctrl+P or Cmd+P).'
+          );
+        } else {
+          Alert.alert(
+            'Popup Blocked',
+            'Please allow popups for this site to view the insurance report.'
+          );
+        }
       } else {
-        Alert.alert('Success', `PDF saved to: ${result.uri}`);
+        // Native: Use expo-print
+        console.log('Starting PDF generation...');
+        const result = await Print.printToFileAsync({
+          html: htmlContent,
+          base64: false,
+        });
+
+        console.log('PDF generation result:', result);
+
+        if (!result || !result.uri) {
+          throw new Error('PDF generation failed - no URI returned');
+        }
+
+        // Share PDF
+        if (await Sharing.isAvailableAsync()) {
+          await Sharing.shareAsync(result.uri, {
+            mimeType: 'application/pdf',
+            dialogTitle: 'Insurance Report - AuraInfra.ai',
+            UTI: 'com.adobe.pdf',
+          });
+          Alert.alert('Success', 'Insurance report generated successfully!');
+        } else {
+          Alert.alert('Success', `PDF saved to: ${result.uri}`);
+        }
       }
     } catch (error: any) {
       console.error('Error generating insurance report:', error);
