@@ -1580,10 +1580,26 @@ async def scan_vehicle(scan_data: dict, user_id: str = Depends(get_current_user)
     try:
         from emergentintegrations.llm.chat import LlmChat, UserMessage, ImageContent
         import json
+        import base64
         
         api_key = os.environ.get('EMERGENT_LLM_KEY')
         if not api_key:
             raise HTTPException(status_code=500, detail="API key not configured")
+        
+        # Clean base64 string - remove any data URL prefix if present
+        image_data = scan_data['image']
+        if image_data.startswith('data:'):
+            # Remove data:image/...;base64, prefix
+            image_data = image_data.split(',', 1)[1] if ',' in image_data else image_data
+        
+        # Validate base64
+        try:
+            base64.b64decode(image_data)
+        except Exception as e:
+            logger.error(f"Invalid base64 image: {str(e)}")
+            raise HTTPException(status_code=400, detail="Invalid image data")
+        
+        logger.info(f"Processing vehicle scan with image data length: {len(image_data)}")
         
         chat = LlmChat(
             api_key=api_key,
@@ -1603,7 +1619,7 @@ Return ONLY a valid JSON object:
 }
 
 If year is not clear, set it to null. Return ONLY JSON, no additional text.""",
-            file_contents=[ImageContent(image_base64=scan_data['image'])]
+            file_contents=[ImageContent(image_base64=image_data)]
         )
         
         response = await chat.send_message(user_message)
