@@ -12,14 +12,14 @@ const storage = {
     if (Platform.OS === 'web') {
       localStorage.setItem(key, value);
     } else {
-      await storage.setItem(key, value);
+      await AsyncStorage.setItem(key, value);
     }
   },
   getItem: async (key: string): Promise<string | null> => {
     if (Platform.OS === 'web') {
       return localStorage.getItem(key);
     } else {
-      return await storage.getItem(key);
+      return await AsyncStorage.getItem(key);
     }
   },
   removeItem: async (key: string) => {
