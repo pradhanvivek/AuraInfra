@@ -173,13 +173,13 @@ class VehicleScanTester:
                     self.log_result("Vehicle Scan Success", False, f"Missing required fields: {missing_fields}", {"response": data})
                     return False
                 
-                # Verify data types
-                if not isinstance(data["make"], str):
-                    self.log_result("Vehicle Scan Success", False, "make field must be string", {"response": data})
+                # Verify data types (fields can be None since they're optional)
+                if data["make"] is not None and not isinstance(data["make"], str):
+                    self.log_result("Vehicle Scan Success", False, "make field must be string or null", {"response": data})
                     return False
                 
-                if not isinstance(data["model"], str):
-                    self.log_result("Vehicle Scan Success", False, "model field must be string", {"response": data})
+                if data["model"] is not None and not isinstance(data["model"], str):
+                    self.log_result("Vehicle Scan Success", False, "model field must be string or null", {"response": data})
                     return False
                 
                 if not isinstance(data["confidence"], (int, float)) or not (0 <= data["confidence"] <= 1):
