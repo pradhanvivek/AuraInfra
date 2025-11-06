@@ -214,28 +214,44 @@ export default function Profile() {
   };
 
   const handleLogout = () => {
-    // Use Alert.alert for both web and native - works on Safari
-    Alert.alert(
-      'Logout',
-      'Are you sure you want to logout?',
-      [
-        { text: 'Cancel', style: 'cancel' },
-        {
-          text: 'Logout',
-          style: 'destructive',
-          onPress: async () => {
-            try {
-              await logout();
-              // Use router navigation - more reliable than window.location on Safari
-              router.replace('/(auth)/login');
-            } catch (error) {
-              console.error('Logout error:', error);
-            }
+    if (Platform.OS === 'web') {
+      // On web, confirm and logout directly
+      const confirmed = window.confirm('Are you sure you want to logout?');
+      if (confirmed) {
+        logout().then(() => {
+          // Clear all storage
+          if (typeof window !== 'undefined') {
+            localStorage.clear();
+          }
+          // Force navigation to login
+          router.replace('/(auth)/login');
+        }).catch((error) => {
+          console.error('Logout error:', error);
+        });
+      }
+    } else {
+      // Use Alert.alert for native
+      Alert.alert(
+        'Logout',
+        'Are you sure you want to logout?',
+        [
+          { text: 'Cancel', style: 'cancel' },
+          {
+            text: 'Logout',
+            style: 'destructive',
+            onPress: async () => {
+              try {
+                await logout();
+                router.replace('/(auth)/login');
+              } catch (error) {
+                console.error('Logout error:', error);
+              }
+            },
           },
-        },
-      ],
-      { cancelable: true }
-    );
+        ],
+        { cancelable: true }
+      );
+    }
   };
 
   const handleChangeAvatar = async () => {
