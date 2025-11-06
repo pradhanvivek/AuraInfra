@@ -432,6 +432,11 @@ export default function PortfolioScreen() {
       );
       const detailedData = response.data;
 
+      // Debug: Log the data to check photos
+      console.log('Portfolio details fetched:', detailedData);
+      console.log('Sample vehicle photos:', detailedData.vehicles[0]?.photos);
+      console.log('Sample appliance photos:', detailedData.appliances[0]?.photos);
+
       // Prepare data for insurance report
       const categories = getCategoriesData();
 
@@ -443,6 +448,9 @@ export default function PortfolioScreen() {
         insuranceNotes,
         selectedAssets.size > 0 ? selectedAssets : undefined
       );
+
+      // Debug: Log a snippet of the HTML to verify images are included
+      console.log('HTML snippet (first 2000 chars):', htmlContent.substring(0, 2000));
 
       // Generate PDF
       const { uri } = await Print.printToFileAsync({
