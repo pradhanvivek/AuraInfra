@@ -2198,7 +2198,7 @@ async def scan_appliance(
     Use OpenAI Vision AI to identify appliance from image
     """
     try:
-        from emergentintegrations import openai_client
+        from openai import OpenAI
         import json
         import base64
         
@@ -2222,7 +2222,10 @@ async def scan_appliance(
         logger.info(f"Processing appliance scan with image data length: {len(image_data)}")
         
         # Use OpenAI Vision to analyze the appliance
-        client = openai_client.get_openai_client(api_key=api_key)
+        client = OpenAI(
+            api_key=api_key,
+            base_url="https://llm.api.emergentmethods.ai/v1"
+        )
         
         response = client.chat.completions.create(
             model="gpt-4o",
