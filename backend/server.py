@@ -1590,7 +1590,7 @@ async def scan_vehicle(scan_request: VehicleScanRequest, user_id: str = Depends(
             raise HTTPException(status_code=500, detail="API key not configured")
         
         # Clean base64 string - remove any data URL prefix if present
-        image_data = scan_data['image']
+        image_data = scan_request.image
         if image_data.startswith('data:'):
             # Remove data:image/...;base64, prefix
             image_data = image_data.split(',', 1)[1] if ',' in image_data else image_data
