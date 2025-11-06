@@ -67,77 +67,14 @@ export default function AddVehicleScreen() {
     if (Platform.OS === 'web') {
       // On web, use image picker instead of camera
       const result = await ImagePicker.launchImageLibraryAsync({
-        mediaTypes: ['images'],
+        mediaTypes: ImagePicker.MediaTypeOptions.Images,
         allowsEditing: false,
         quality: 0.7,
         base64: true,
       });
 
       if (!result.canceled && result.assets[0].base64) {
-        // Process the image with AI
-        try {
-          setScanning(true);
-          
-          // Ensure image is properly formatted
-          let imageBase64 = result.assets[0].base64;
-          
-          // Remove any existing data URI prefix if present
-          imageBase64 = imageBase64.replace(/^data:image\/[a-z]+;base64,/, '');
-          
-          console.log('Sending image to AI scan, length:', imageBase64.length);
-          console.log('Image preview (first 100 chars):', imageBase64.substring(0, 100));
-          
-          const response = await axios.post(
-            `${API_URL}/api/vehicles/scan`,
-            { image: imageBase64 },
-            { 
-              headers: { Authorization: `Bearer ${token}` },
-              timeout: 60000
-            }
-          );
-
-          const data = response.data;
-          console.log('AI scan result:', data);
-          
-          if (data.make) setMake(data.make);
-          if (data.model) setModel(data.model);
-          if (data.year) setYear(data.year.toString());
-          if (!name && data.make && data.model) {
-            setName(`${data.make} ${data.model}`);
-          }
-          
-          // Store with proper data URI format
-          const imageDataUri = `data:image/jpeg;base64,${imageBase64}`;
-          setPhotos([imageDataUri]);
-          
-          if (data.make || data.model) {
-            Alert.alert(
-              'Vehicle Detected!',
-              `${data.make || ''} ${data.model || ''} ${data.year || ''} identified. Please review and complete the details.`
-            );
-          } else {
-            Alert.alert(
-              'Scan Complete',
-              'Could not detect vehicle details from image. Please enter manually.'
-            );
-          }
-        } catch (error: any) {
-          console.error('Scan error:', error);
-          console.error('Full error:', JSON.stringify(error.response?.data || error.message));
-          
-          // Still save the photo even if AI fails
-          if (result.assets[0].base64) {
-            const imageBase64 = result.assets[0].base64.replace(/^data:image\/[a-z]+;base64,/, '');
-            setPhotos([`data:image/jpeg;base64,${imageBase64}`]);
-          }
-          
-          Alert.alert(
-            'AI Scan Failed', 
-            'Could not analyze image automatically. Photo saved - please enter vehicle details manually.'
-          );
-        } finally {
-          setScanning(false);
-        }
+        await processVehicleScan(result.assets[0].base64);
       }
     } else {
       // Native app: use camera
