@@ -62,6 +62,47 @@ export default function AddVehicleScreen() {
   const [datePickerVisible, setDatePickerVisible] = useState(false);
   const [datePickerMode, setDatePickerMode] = useState<'purchase' | 'insurance' | 'lastMaint' | 'nextMaint'>('purchase');
 
+  const processVehicleScan = async (base64Data: string) => {
+    setScanning(true);
+    try {
+      const response = await axios.post(
+        `${API_URL}/api/vehicles/scan`,
+        { image: base64Data },
+        { 
+          headers: { Authorization: `Bearer ${token}` },
+          timeout: 60000
+        }
+      );
+
+      const data = response.data;
+      if (data.make) setMake(data.make);
+      if (data.model) setModel(data.model);
+      if (data.year) setYear(data.year.toString());
+      if (!name && data.make && data.model) {
+        setName(`${data.make} ${data.model}`);
+      }
+      setPhotos([`data:image/jpeg;base64,${base64Data}`]);
+      
+      if (Platform.OS === 'web') {
+        alert(`Vehicle Detected!\n${data.make || ''} ${data.model || ''} ${data.year || ''} identified. Please review and complete the details.`);
+      } else {
+        Alert.alert(
+          'Vehicle Detected!',
+          `${data.make || ''} ${data.model || ''} ${data.year || ''} identified. Please review and complete the details.`
+        );
+      }
+    } catch (error: any) {
+      console.error('Scan error:', error);
+      if (Platform.OS === 'web') {
+        alert('Failed to scan vehicle. Please enter details manually.');
+      } else {
+        Alert.alert('Error', 'Failed to scan vehicle. Please enter details manually.');
+      }
+    } finally {
+      setScanning(false);
+    }
+  };
+
   const handleScan = async () => {
     // Check if we're on web
     if (Platform.OS === 'web') {
