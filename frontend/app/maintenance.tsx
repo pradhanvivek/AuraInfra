@@ -386,11 +386,16 @@ export default function MaintenanceScreen() {
           currentData.map((item) => renderMaintenanceCard(item, activeTab !== 'completed'))
         )}
       </ScrollView>
-    </View>
+      </View>
+    </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
+  safeArea: {
+    flex: 1,
+    backgroundColor: '#F2F2F7',
+  },
   container: {
     flex: 1,
     backgroundColor: '#F2F2F7',
