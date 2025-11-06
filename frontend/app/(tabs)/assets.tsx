@@ -384,12 +384,12 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   helloText: {
-    fontSize: 16,
+    fontSize: 14,
     color: '#666',
     marginBottom: 2,
   },
   usernameText: {
-    fontSize: 32,
+    fontSize: 24,
     fontWeight: 'bold',
     color: '#000',
   },
