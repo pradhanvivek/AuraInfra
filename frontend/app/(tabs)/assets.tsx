@@ -400,8 +400,8 @@ const styles = StyleSheet.create({
   },
   valueCard: {
     backgroundColor: '#f8f9fa',
-    paddingVertical: 12,
-    paddingHorizontal: 16,
+    paddingVertical: 8,
+    paddingHorizontal: 12,
     borderRadius: 12,
   },
   valueCardHeader: {
