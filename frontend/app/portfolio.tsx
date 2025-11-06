@@ -688,7 +688,7 @@ export default function PortfolioScreen() {
 
           <TouchableOpacity 
             style={styles.actionButton}
-            onPress={handleGenerateInsuranceReport}
+            onPress={() => setShowAssetSelectionModal(true)}
             disabled={generatingPDF}
           >
             <View style={[styles.actionIcon, { backgroundColor: '#E8F5E9' }]}>
