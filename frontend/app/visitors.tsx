@@ -18,6 +18,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useAuth } from '../contexts/AuthContext';
 import axios from 'axios';
 import Constants from 'expo-constants';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 const API_URL = Constants.expoConfig?.extra?.EXPO_PUBLIC_BACKEND_URL || process.env.EXPO_PUBLIC_BACKEND_URL;
 
@@ -266,151 +267,157 @@ export default function VisitorsScreen() {
   }
 
   return (
-    <View style={styles.container}>
-      <View style={styles.header}>
-        <TouchableOpacity onPress={() => router.back()}>
-          <Ionicons name="arrow-back" size={28} color="#007AFF" />
-        </TouchableOpacity>
-        <Text style={styles.headerTitle}>Visitor Management</Text>
-        <TouchableOpacity onPress={() => setAddModalVisible(true)}>
-          <Ionicons name="add-circle" size={28} color="#007AFF" />
-        </TouchableOpacity>
-      </View>
+    <SafeAreaView style={styles.safeArea} edges={['top']}>
+      <View style={styles.container}>
+        <View style={styles.header}>
+          <TouchableOpacity onPress={() => router.back()}>
+            <Ionicons name="arrow-back" size={28} color="#007AFF" />
+          </TouchableOpacity>
+          <Text style={styles.headerTitle}>Visitor Management</Text>
+          <TouchableOpacity onPress={() => setAddModalVisible(true)}>
+            <Ionicons name="add-circle" size={28} color="#007AFF" />
+          </TouchableOpacity>
+        </View>
 
-      {/* Tabs */}
-      <View style={styles.tabsContainer}>
-        <TouchableOpacity
-          style={[styles.tab, activeTab === 'today' && styles.activeTab]}
-          onPress={() => setActiveTab('today')}
-        >
-          <Text style={[styles.tabText, activeTab === 'today' && styles.activeTabText]}>
-            Today
-          </Text>
-        </TouchableOpacity>
-
-        <TouchableOpacity
-          style={[styles.tab, activeTab === 'upcoming' && styles.activeTab]}
-          onPress={() => setActiveTab('upcoming')}
-        >
-          <Text style={[styles.tabText, activeTab === 'upcoming' && styles.activeTabText]}>
-            Upcoming
-          </Text>
-        </TouchableOpacity>
-
-        <TouchableOpacity
-          style={[styles.tab, activeTab === 'past' && styles.activeTab]}
-          onPress={() => setActiveTab('past')}
-        >
-          <Text style={[styles.tabText, activeTab === 'past' && styles.activeTabText]}>
-            Past
-          </Text>
-        </TouchableOpacity>
-      </View>
-
-      <ScrollView
-        contentContainerStyle={styles.content}
-        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
-      >
-        {visitors.length === 0 ? (
-          <View style={styles.emptyContainer}>
-            <Ionicons name="people-outline" size={64} color="#C7C7CC" />
-            <Text style={styles.emptyText}>No visitors</Text>
-            <Text style={styles.emptySubtext}>
-              {activeTab === 'today'
-                ? 'No visitors expected today'
-                : activeTab === 'upcoming'
-                ? 'No upcoming visitors'
-                : 'No past visitors'}
+        {/* Tabs */}
+        <View style={styles.tabsContainer}>
+          <TouchableOpacity
+            style={[styles.tab, activeTab === 'today' && styles.activeTab]}
+            onPress={() => setActiveTab('today')}
+          >
+            <Text style={[styles.tabText, activeTab === 'today' && styles.activeTabText]}>
+              Today
             </Text>
-          </View>
-        ) : (
-          visitors.map(renderVisitorCard)
-        )}
-      </ScrollView>
+          </TouchableOpacity>
 
-      {/* Add Visitor Modal */}
-      <Modal
-        visible={addModalVisible}
-        transparent
-        animationType="slide"
-        onRequestClose={() => setAddModalVisible(false)}
-      >
-        <KeyboardAvoidingView
-          behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-          style={styles.modalOverlay}
+          <TouchableOpacity
+            style={[styles.tab, activeTab === 'upcoming' && styles.activeTab]}
+            onPress={() => setActiveTab('upcoming')}
+          >
+            <Text style={[styles.tabText, activeTab === 'upcoming' && styles.activeTabText]}>
+              Upcoming
+            </Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            style={[styles.tab, activeTab === 'past' && styles.activeTab]}
+            onPress={() => setActiveTab('past')}
+          >
+            <Text style={[styles.tabText, activeTab === 'past' && styles.activeTabText]}>
+              Past
+            </Text>
+          </TouchableOpacity>
+        </View>
+
+        <ScrollView
+          contentContainerStyle={styles.content}
+          refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
         >
-          <View style={styles.modalContent}>
-            <View style={styles.modalHeader}>
-              <Text style={styles.modalTitle}>Register Visitor</Text>
-              <TouchableOpacity onPress={() => setAddModalVisible(false)}>
-                <Ionicons name="close-circle" size={28} color="#8E8E93" />
-              </TouchableOpacity>
+          {visitors.length === 0 ? (
+            <View style={styles.emptyContainer}>
+              <Ionicons name="people-outline" size={64} color="#C7C7CC" />
+              <Text style={styles.emptyText}>No visitors</Text>
+              <Text style={styles.emptySubtext}>
+                {activeTab === 'today'
+                  ? 'No visitors expected today'
+                  : activeTab === 'upcoming'
+                  ? 'No upcoming visitors'
+                  : 'No past visitors'}
+              </Text>
             </View>
+          ) : (
+            visitors.map(renderVisitorCard)
+          )}
+        </ScrollView>
 
-            <ScrollView style={styles.modalForm} keyboardShouldPersistTaps="handled">
-              <Text style={styles.inputLabel}>Visitor Name *</Text>
-              <TextInput
-                style={styles.input}
-                value={formData.visitor_name}
-                onChangeText={(text) => setFormData({ ...formData, visitor_name: text })}
-                placeholder="Enter visitor name"
-              />
+        {/* Add Visitor Modal */}
+        <Modal
+          visible={addModalVisible}
+          transparent
+          animationType="slide"
+          onRequestClose={() => setAddModalVisible(false)}
+        >
+          <KeyboardAvoidingView
+            behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+            style={styles.modalOverlay}
+          >
+            <View style={styles.modalContent}>
+              <View style={styles.modalHeader}>
+                <Text style={styles.modalTitle}>Register Visitor</Text>
+                <TouchableOpacity onPress={() => setAddModalVisible(false)}>
+                  <Ionicons name="close-circle" size={28} color="#8E8E93" />
+                </TouchableOpacity>
+              </View>
 
-              <Text style={styles.inputLabel}>Phone Number *</Text>
-              <TextInput
-                style={styles.input}
-                value={formData.visitor_phone}
-                onChangeText={(text) => setFormData({ ...formData, visitor_phone: text })}
-                placeholder="Enter phone number"
-                keyboardType="phone-pad"
-              />
+              <ScrollView style={styles.modalForm} keyboardShouldPersistTaps="handled">
+                <Text style={styles.inputLabel}>Visitor Name *</Text>
+                <TextInput
+                  style={styles.input}
+                  value={formData.visitor_name}
+                  onChangeText={(text) => setFormData({ ...formData, visitor_name: text })}
+                  placeholder="Enter visitor name"
+                />
 
-              <Text style={styles.inputLabel}>Purpose *</Text>
-              <TextInput
-                style={styles.input}
-                value={formData.purpose}
-                onChangeText={(text) => setFormData({ ...formData, purpose: text })}
-                placeholder="e.g., Delivery, Guest, Meeting"
-              />
+                <Text style={styles.inputLabel}>Phone Number *</Text>
+                <TextInput
+                  style={styles.input}
+                  value={formData.visitor_phone}
+                  onChangeText={(text) => setFormData({ ...formData, visitor_phone: text })}
+                  placeholder="Enter phone number"
+                  keyboardType="phone-pad"
+                />
 
-              <Text style={styles.inputLabel}>Expected Date *</Text>
-              <TextInput
-                style={styles.input}
-                value={formData.expected_date}
-                onChangeText={(text) => setFormData({ ...formData, expected_date: text })}
-                placeholder="YYYY-MM-DD"
-              />
+                <Text style={styles.inputLabel}>Purpose *</Text>
+                <TextInput
+                  style={styles.input}
+                  value={formData.purpose}
+                  onChangeText={(text) => setFormData({ ...formData, purpose: text })}
+                  placeholder="e.g., Delivery, Guest, Meeting"
+                />
 
-              <Text style={styles.inputLabel}>Expected Time (Optional)</Text>
-              <TextInput
-                style={styles.input}
-                value={formData.expected_time}
-                onChangeText={(text) => setFormData({ ...formData, expected_time: text })}
-                placeholder="e.g., 2:00 PM"
-              />
+                <Text style={styles.inputLabel}>Expected Date *</Text>
+                <TextInput
+                  style={styles.input}
+                  value={formData.expected_date}
+                  onChangeText={(text) => setFormData({ ...formData, expected_date: text })}
+                  placeholder="YYYY-MM-DD"
+                />
 
-              <Text style={styles.inputLabel}>Notes (Optional)</Text>
-              <TextInput
-                style={[styles.input, styles.textArea]}
-                value={formData.notes}
-                onChangeText={(text) => setFormData({ ...formData, notes: text })}
-                placeholder="Additional notes"
-                multiline
-                numberOfLines={3}
-              />
+                <Text style={styles.inputLabel}>Expected Time (Optional)</Text>
+                <TextInput
+                  style={styles.input}
+                  value={formData.expected_time}
+                  onChangeText={(text) => setFormData({ ...formData, expected_time: text })}
+                  placeholder="e.g., 2:00 PM"
+                />
 
-              <TouchableOpacity style={styles.submitButton} onPress={handleAddVisitor}>
-                <Text style={styles.submitButtonText}>Register Visitor</Text>
-              </TouchableOpacity>
-            </ScrollView>
-          </View>
-        </KeyboardAvoidingView>
-      </Modal>
-    </View>
+                <Text style={styles.inputLabel}>Notes (Optional)</Text>
+                <TextInput
+                  style={[styles.input, styles.textArea]}
+                  value={formData.notes}
+                  onChangeText={(text) => setFormData({ ...formData, notes: text })}
+                  placeholder="Additional notes"
+                  multiline
+                  numberOfLines={3}
+                />
+
+                <TouchableOpacity style={styles.submitButton} onPress={handleAddVisitor}>
+                  <Text style={styles.submitButtonText}>Register Visitor</Text>
+                </TouchableOpacity>
+              </ScrollView>
+            </View>
+          </KeyboardAvoidingView>
+        </Modal>
+      </View>
+    </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
+  safeArea: {
+    flex: 1,
+    backgroundColor: '#fff',
+  },
   container: {
     flex: 1,
     backgroundColor: '#F2F2F7',
@@ -425,7 +432,7 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     alignItems: 'center',
     padding: 16,
-    paddingTop: 16,
+    paddingTop: 12,
     backgroundColor: '#fff',
     borderBottomWidth: 1,
     borderBottomColor: '#E5E5EA',

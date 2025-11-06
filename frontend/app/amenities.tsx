@@ -18,6 +18,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useAuth } from '../contexts/AuthContext';
 import axios from 'axios';
 import Constants from 'expo-constants';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 const API_URL = Constants.expoConfig?.extra?.EXPO_PUBLIC_BACKEND_URL || process.env.EXPO_PUBLIC_BACKEND_URL;
 
@@ -247,132 +248,138 @@ export default function AmenitiesScreen() {
   }
 
   return (
-    <View style={styles.container}>
-      <View style={styles.header}>
-        <TouchableOpacity onPress={() => router.back()}>
-          <Ionicons name="arrow-back" size={28} color="#007AFF" />
-        </TouchableOpacity>
-        <Text style={styles.headerTitle}>Amenities</Text>
-        <View style={{ width: 28 }} />
-      </View>
+    <SafeAreaView style={styles.safeArea} edges={['top']}>
+      <View style={styles.container}>
+        <View style={styles.header}>
+          <TouchableOpacity onPress={() => router.back()}>
+            <Ionicons name="arrow-back" size={28} color="#007AFF" />
+          </TouchableOpacity>
+          <Text style={styles.headerTitle}>Amenities</Text>
+          <View style={{ width: 28 }} />
+        </View>
 
-      {/* Tabs */}
-      <View style={styles.tabsContainer}>
-        <TouchableOpacity
-          style={[styles.tab, activeTab === 'amenities' && styles.activeTab]}
-          onPress={() => setActiveTab('amenities')}
-        >
-          <Text style={[styles.tabText, activeTab === 'amenities' && styles.activeTabText]}>
-            Available
-          </Text>
-        </TouchableOpacity>
+        {/* Tabs */}
+        <View style={styles.tabsContainer}>
+          <TouchableOpacity
+            style={[styles.tab, activeTab === 'amenities' && styles.activeTab]}
+            onPress={() => setActiveTab('amenities')}
+          >
+            <Text style={[styles.tabText, activeTab === 'amenities' && styles.activeTabText]}>
+              Available
+            </Text>
+          </TouchableOpacity>
 
-        <TouchableOpacity
-          style={[styles.tab, activeTab === 'bookings' && styles.activeTab]}
-          onPress={() => setActiveTab('bookings')}
+          <TouchableOpacity
+            style={[styles.tab, activeTab === 'bookings' && styles.activeTab]}
+            onPress={() => setActiveTab('bookings')}
+          >
+            <Text style={[styles.tabText, activeTab === 'bookings' && styles.activeTabText]}>
+              My Bookings
+            </Text>
+            {bookings.length > 0 && (
+              <View style={styles.badge}>
+                <Text style={styles.badgeText}>{bookings.length}</Text>
+              </View>
+            )}
+          </TouchableOpacity>
+        </View>
+
+        <ScrollView
+          contentContainerStyle={styles.content}
+          refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
         >
-          <Text style={[styles.tabText, activeTab === 'bookings' && styles.activeTabText]}>
-            My Bookings
-          </Text>
-          {bookings.length > 0 && (
-            <View style={styles.badge}>
-              <Text style={styles.badgeText}>{bookings.length}</Text>
-            </View>
+          {activeTab === 'amenities' ? (
+            amenities.length === 0 ? (
+              <View style={styles.emptyContainer}>
+                <Ionicons name="business-outline" size={64} color="#C7C7CC" />
+                <Text style={styles.emptyText}>No amenities available</Text>
+              </View>
+            ) : (
+              amenities.map(renderAmenityCard)
+            )
+          ) : (
+            bookings.length === 0 ? (
+              <View style={styles.emptyContainer}>
+                <Ionicons name="calendar-outline" size={64} color="#C7C7CC" />
+                <Text style={styles.emptyText}>No bookings yet</Text>
+              </View>
+            ) : (
+              bookings.map(renderBookingCard)
+            )
           )}
-        </TouchableOpacity>
-      </View>
+        </ScrollView>
 
-      <ScrollView
-        contentContainerStyle={styles.content}
-        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
-      >
-        {activeTab === 'amenities' ? (
-          amenities.length === 0 ? (
-            <View style={styles.emptyContainer}>
-              <Ionicons name="business-outline" size={64} color="#C7C7CC" />
-              <Text style={styles.emptyText}>No amenities available</Text>
-            </View>
-          ) : (
-            amenities.map(renderAmenityCard)
-          )
-        ) : (
-          bookings.length === 0 ? (
-            <View style={styles.emptyContainer}>
-              <Ionicons name="calendar-outline" size={64} color="#C7C7CC" />
-              <Text style={styles.emptyText}>No bookings yet</Text>
-            </View>
-          ) : (
-            bookings.map(renderBookingCard)
-          )
-        )}
-      </ScrollView>
-
-      {/* Booking Modal */}
-      <Modal
-        visible={bookModalVisible}
-        transparent
-        animationType="slide"
-        onRequestClose={() => setBookModalVisible(false)}
-      >
-        <KeyboardAvoidingView
-          behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-          style={styles.modalOverlay}
+        {/* Booking Modal */}
+        <Modal
+          visible={bookModalVisible}
+          transparent
+          animationType="slide"
+          onRequestClose={() => setBookModalVisible(false)}
         >
-          <View style={styles.modalContent}>
-            <View style={styles.modalHeader}>
-              <Text style={styles.modalTitle}>Book {selectedAmenity?.name}</Text>
-              <TouchableOpacity onPress={() => setBookModalVisible(false)}>
-                <Ionicons name="close-circle" size={28} color="#8E8E93" />
-              </TouchableOpacity>
+          <KeyboardAvoidingView
+            behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+            style={styles.modalOverlay}
+          >
+            <View style={styles.modalContent}>
+              <View style={styles.modalHeader}>
+                <Text style={styles.modalTitle}>Book {selectedAmenity?.name}</Text>
+                <TouchableOpacity onPress={() => setBookModalVisible(false)}>
+                  <Ionicons name="close-circle" size={28} color="#8E8E93" />
+                </TouchableOpacity>
+              </View>
+
+              <ScrollView style={styles.modalForm} keyboardShouldPersistTaps="handled">
+                <Text style={styles.inputLabel}>Booking Date *</Text>
+                <TextInput
+                  style={styles.input}
+                  value={bookingForm.booking_date}
+                  onChangeText={(text) => setBookingForm({ ...bookingForm, booking_date: text })}
+                  placeholder="YYYY-MM-DD"
+                />
+
+                <Text style={styles.inputLabel}>Start Time *</Text>
+                <TextInput
+                  style={styles.input}
+                  value={bookingForm.start_time}
+                  onChangeText={(text) => setBookingForm({ ...bookingForm, start_time: text })}
+                  placeholder="HH:MM (e.g., 09:00)"
+                />
+
+                <Text style={styles.inputLabel}>End Time *</Text>
+                <TextInput
+                  style={styles.input}
+                  value={bookingForm.end_time}
+                  onChangeText={(text) => setBookingForm({ ...bookingForm, end_time: text })}
+                  placeholder="HH:MM (e.g., 11:00)"
+                />
+
+                <Text style={styles.inputLabel}>Purpose (Optional)</Text>
+                <TextInput
+                  style={[styles.input, styles.textArea]}
+                  value={bookingForm.purpose}
+                  onChangeText={(text) => setBookingForm({ ...bookingForm, purpose: text })}
+                  placeholder="Enter purpose of booking"
+                  multiline
+                  numberOfLines={3}
+                />
+
+                <TouchableOpacity style={styles.submitButton} onPress={handleSubmitBooking}>
+                  <Text style={styles.submitButtonText}>Submit Booking</Text>
+                </TouchableOpacity>
+              </ScrollView>
             </View>
-
-            <ScrollView style={styles.modalForm} keyboardShouldPersistTaps="handled">
-              <Text style={styles.inputLabel}>Booking Date *</Text>
-              <TextInput
-                style={styles.input}
-                value={bookingForm.booking_date}
-                onChangeText={(text) => setBookingForm({ ...bookingForm, booking_date: text })}
-                placeholder="YYYY-MM-DD"
-              />
-
-              <Text style={styles.inputLabel}>Start Time *</Text>
-              <TextInput
-                style={styles.input}
-                value={bookingForm.start_time}
-                onChangeText={(text) => setBookingForm({ ...bookingForm, start_time: text })}
-                placeholder="HH:MM (e.g., 09:00)"
-              />
-
-              <Text style={styles.inputLabel}>End Time *</Text>
-              <TextInput
-                style={styles.input}
-                value={bookingForm.end_time}
-                onChangeText={(text) => setBookingForm({ ...bookingForm, end_time: text })}
-                placeholder="HH:MM (e.g., 11:00)"
-              />
-
-              <Text style={styles.inputLabel}>Purpose (Optional)</Text>
-              <TextInput
-                style={[styles.input, styles.textArea]}
-                value={bookingForm.purpose}
-                onChangeText={(text) => setBookingForm({ ...bookingForm, purpose: text })}
-                placeholder="Enter purpose of booking"
-                multiline
-                numberOfLines={3}
-              />
-
-              <TouchableOpacity style={styles.submitButton} onPress={handleSubmitBooking}>
-                <Text style={styles.submitButtonText}>Submit Booking</Text>
-              </TouchableOpacity>
-            </ScrollView>
-          </View>
-        </KeyboardAvoidingView>
-      </Modal>
-    </View>
+          </KeyboardAvoidingView>
+        </Modal>
+      </View>
+    </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
+  safeArea: {
+    flex: 1,
+    backgroundColor: '#fff',
+  },
   container: {
     flex: 1,
     backgroundColor: '#F2F2F7',
@@ -387,7 +394,7 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     alignItems: 'center',
     padding: 16,
-    paddingTop: 16,
+    paddingTop: 12,
     backgroundColor: '#fff',
     borderBottomWidth: 1,
     borderBottomColor: '#E5E5EA',
