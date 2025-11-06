@@ -259,14 +259,15 @@ export default function HOAMaintenanceScreen() {
   const currentCharges = activeTab === 'pending' ? pendingCharges : paidCharges;
 
   return (
-    <View style={styles.container}>
-      <View style={styles.header}>
-        <TouchableOpacity onPress={() => router.back()}>
-          <Ionicons name="arrow-back" size={28} color="#007AFF" />
-        </TouchableOpacity>
-        <Text style={styles.headerTitle}>HOA Maintenance</Text>
-        <View style={{ width: 28 }} />
-      </View>
+    <SafeAreaView style={styles.safeArea} edges={['top']}>
+      <View style={styles.container}>
+        <View style={styles.header}>
+          <TouchableOpacity onPress={() => router.back()}>
+            <Ionicons name="arrow-back" size={28} color="#007AFF" />
+          </TouchableOpacity>
+          <Text style={styles.headerTitle}>HOA Maintenance</Text>
+          <View style={{ width: 28 }} />
+        </View>
 
       {/* Tabs */}
       <View style={styles.tabsContainer}>
