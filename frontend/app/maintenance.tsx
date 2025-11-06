@@ -300,16 +300,17 @@ export default function MaintenanceScreen() {
   const currentData = getCurrentData();
 
   return (
-    <View style={styles.container}>
-      <View style={styles.header}>
-        <TouchableOpacity onPress={() => router.back()}>
-          <Ionicons name="arrow-back" size={28} color="#007AFF" />
-        </TouchableOpacity>
-        <Text style={styles.headerTitle}>Maintenance</Text>
-        <TouchableOpacity onPress={() => router.push('/maintenance/add' as any)}>
-          <Ionicons name="add-circle" size={28} color="#007AFF" />
-        </TouchableOpacity>
-      </View>
+    <SafeAreaView style={styles.safeArea} edges={['top']}>
+      <View style={styles.container}>
+        <View style={styles.header}>
+          <TouchableOpacity onPress={() => router.back()}>
+            <Ionicons name="arrow-back" size={28} color="#007AFF" />
+          </TouchableOpacity>
+          <Text style={styles.headerTitle}>Maintenance</Text>
+          <TouchableOpacity onPress={() => router.push('/maintenance/add' as any)}>
+            <Ionicons name="add-circle" size={28} color="#007AFF" />
+          </TouchableOpacity>
+        </View>
 
       {/* Tabs */}
       <View style={styles.tabsContainer}>
