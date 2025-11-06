@@ -120,7 +120,7 @@ export default function DashboardScreen() {
       title: 'Art',
       icon: 'color-palette',
       color: '#AF52DE',
-      route: '/arts',
+      route: '/art',
       count: portfolioData?.art_count || 0,
     },
     {
