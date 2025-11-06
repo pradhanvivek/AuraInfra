@@ -289,22 +289,19 @@ export default function DashboardScreen() {
             {categories.map((category) => (
               <TouchableOpacity
                 key={category.id}
-                style={[styles.tile, { backgroundColor: category.color }]}
+                style={styles.tile}
                 onPress={() => handleTilePress(category.route)}
                 activeOpacity={0.8}
               >
-                <View style={styles.tileTop}>
-                  <Ionicons name={category.icon as any} size={28} color="#fff" />
-                  {category.count > 0 && (
-                    <View style={styles.badge}>
-                      <Text style={styles.badgeText}>{category.count}</Text>
-                    </View>
-                  )}
+                <View style={[styles.iconContainer, { backgroundColor: category.color + '20' }]}>
+                  <Ionicons name={category.icon as any} size={32} color={category.color} />
                 </View>
-                <View style={styles.tileBottom}>
-                  <Text style={styles.tileTitle}>{category.title}</Text>
-                  <Ionicons name="arrow-forward" size={14} color="rgba(255,255,255,0.7)" />
-                </View>
+                <Text style={styles.tileTitle}>{category.title}</Text>
+                {category.count > 0 && (
+                  <View style={[styles.badge, { backgroundColor: category.color }]}>
+                    <Text style={styles.badgeText}>{category.count}</Text>
+                  </View>
+                )}
               </TouchableOpacity>
             ))}
           </View>
