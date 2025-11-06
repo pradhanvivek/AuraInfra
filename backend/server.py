@@ -2247,12 +2247,8 @@ Return ONLY the JSON object, no additional text.""",
             file_contents=[ImageContent(image_base64=image_data)]
         )
         
-        # Get AI response
-        response = await chat.send_message(user_message)
-        logger.info(f"Appliance scan response: {response}")
-        
-        # Parse the response
-        response_text = response.choices[0].message.content
+        # Get AI response (LlmChat returns string directly)
+        response_text = await chat.send_message(user_message)
         logger.info(f"Appliance scan response: {response_text}")
         
         # Parse JSON response
