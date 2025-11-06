@@ -682,9 +682,9 @@ frontend:
 
 test_plan:
   current_focus:
-    - "Vehicle AI Scanning - POST /api/vehicles/scan"
-  stuck_tasks:
-    - "Vehicle AI Scanning - POST /api/vehicles/scan (was stuck, fix applied)"
+    - "Profile - Warranty Reminder Settings"
+    - "Near Me Feature - Location-based Services"
+  stuck_tasks: []
   test_all: false
   test_priority: "high_first"
 
