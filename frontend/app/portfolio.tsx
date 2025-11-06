@@ -54,6 +54,8 @@ export default function PortfolioScreen() {
   const [showInsuranceNotesModal, setShowInsuranceNotesModal] = useState(false);
   const [selectedAssets, setSelectedAssets] = useState<Set<string>>(new Set());
   const [insuranceNotes, setInsuranceNotes] = useState('');
+  const [detailedData, setDetailedData] = useState<any>(null);
+  const [loadingAssets, setLoadingAssets] = useState(false);
 
   useEffect(() => {
     fetchPortfolio();
