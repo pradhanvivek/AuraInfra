@@ -507,8 +507,10 @@ const styles = StyleSheet.create({
     borderBottomColor: '#E5E5EA',
   },
   categoriesContent: {
-    paddingHorizontal: 12,
-    paddingVertical: 12,
+    paddingHorizontal: 16,
+    paddingTop: 8,
+    paddingBottom: 16,
+    gap: 6,
   },
   categoryChip: {
     flexDirection: 'row',
