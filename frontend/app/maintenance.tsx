@@ -403,10 +403,11 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     alignItems: 'center',
     padding: 16,
-    paddingTop: 60,
+    paddingTop: 5,
     backgroundColor: '#fff',
     borderBottomWidth: 1,
     borderBottomColor: '#E5E5EA',
+    height: 50,
   },
   headerTitle: {
     fontSize: 20,
