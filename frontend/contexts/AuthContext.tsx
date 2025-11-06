@@ -62,9 +62,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const loadStoredAuth = async () => {
     try {
-      const storedToken = await AsyncStorage.getItem('token');
-      const storedUserId = await AsyncStorage.getItem('userId');
-      const storedUsername = await AsyncStorage.getItem('username');
+      const storedToken = await storage.getItem('token');
+      const storedUserId = await storage.getItem('userId');
+      const storedUsername = await storage.getItem('username');
       
       if (storedToken) {
         setToken(storedToken);
