@@ -770,7 +770,10 @@ export default function PortfolioScreen() {
 
           <TouchableOpacity 
             style={styles.actionButton}
-            onPress={() => setShowAssetSelectionModal(true)}
+            onPress={() => {
+              fetchDetailedAssets();
+              setShowAssetSelectionModal(true);
+            }}
             disabled={generatingPDF}
           >
             <View style={[styles.actionIcon, { backgroundColor: '#E8F5E9' }]}>
