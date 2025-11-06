@@ -22,27 +22,26 @@ TEST_EMAIL = "vehicle.test@example.com"
 # Sample base64 encoded vehicle image (small test image)
 SAMPLE_VEHICLE_IMAGE = "/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAYEBQYFBAYGBQYHBwYIChAKCgkJChQODwwQFxQYGBcUFhYaHSUfGhsjHBYWICwgIyYnKSopGR8tMC0oMCUoKSj/2wBDAQcHBwoIChMKChMoGhYaKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCj/wAARCAABAAEDASIAAhEBAxEB/8QAFQABAQAAAAAAAAAAAAAAAAAAAAv/xAAUEAEAAAAAAAAAAAAAAAAAAAAA/8QAFQEBAQAAAAAAAAAAAAAAAAAAAAX/xAAUEQEAAAAAAAAAAAAAAAAAAAAA/9oADAMBAAIRAxEAPwCdABmX/9k="
 
-class HOAMeetingsBackendTester:
+class VehicleScanTester:
     def __init__(self):
-        self.session = requests.Session()
-        self.access_token = None
+        self.auth_token = None
         self.user_id = None
-        self.property_id = None
-        self.test_meetings = []
         self.test_results = []
         
-    def log_result(self, test_name, success, details=""):
+    def log_result(self, test_name, success, message, details=None):
         """Log test result"""
-        status = "✅ PASS" if success else "❌ FAIL"
-        result = f"{status} - {test_name}"
-        if details:
-            result += f": {details}"
-        print(result)
-        self.test_results.append({
+        result = {
             "test": test_name,
             "success": success,
-            "details": details
-        })
+            "message": message,
+            "timestamp": datetime.now().isoformat(),
+            "details": details or {}
+        }
+        self.test_results.append(result)
+        status = "✅ PASS" if success else "❌ FAIL"
+        print(f"{status}: {test_name} - {message}")
+        if details and not success:
+            print(f"   Details: {details}")
         
     def setup_authentication(self):
         """Setup test user and authentication"""
