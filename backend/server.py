@@ -2287,15 +2287,25 @@ Return ONLY the JSON object, no additional text."""
                 max_retries=2
             )
         
-        response = client.chat.completions.create(
-            model="gpt-4o",
-            messages=[
-                {
-                    "role": "user",
-                    "content": [
-                        {
-                            "type": "text",
-                            "text": """Analyze this image and identify the appliance or electrical fixture. 
+        # If no client available, cannot proceed
+        if client is None:
+            raise HTTPException(status_code=500, detail="No working API endpoint available")
+        
+        # Make the vision API call
+        if not using_fallback:
+            # Already got response during test
+            pass
+        else:
+            # Make request with fallback client
+            response = client.chat.completions.create(
+                model="gpt-4o",
+                messages=[
+                    {
+                        "role": "user",
+                        "content": [
+                            {
+                                "type": "text",
+                                "text": """Analyze this image and identify the appliance or electrical fixture. 
                             
 Return ONLY a valid JSON object with this structure:
 {
@@ -2309,18 +2319,18 @@ Return ONLY a valid JSON object with this structure:
 
 If you can't identify the item clearly, set confidence lower. 
 Return ONLY the JSON object, no additional text."""
-                        },
-                        {
-                            "type": "image_url",
-                            "image_url": {
-                                "url": f"data:image/jpeg;base64,{image_data}"
+                            },
+                            {
+                                "type": "image_url",
+                                "image_url": {
+                                    "url": f"data:image/jpeg;base64,{image_data}"
+                                }
                             }
-                        }
-                    ]
-                }
-            ],
-            max_tokens=500
-        )
+                        ]
+                    }
+                ],
+                max_tokens=500
+            )
         
         # Parse the response
         response_text = response.choices[0].message.content
