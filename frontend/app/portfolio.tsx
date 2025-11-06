@@ -23,6 +23,7 @@ import { formatCurrency } from '../utils/localeUtils';
 import { PieChart } from 'react-native-chart-kit';
 import * as Print from 'expo-print';
 import * as Sharing from 'expo-sharing';
+import { generateInsuranceReportHTML } from '../utils/insuranceReportGenerator';
 
 const API_URL = Constants.expoConfig?.extra?.EXPO_PUBLIC_BACKEND_URL || process.env.EXPO_PUBLIC_BACKEND_URL;
 const screenWidth = Dimensions.get('window').width;
