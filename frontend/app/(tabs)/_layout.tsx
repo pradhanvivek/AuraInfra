@@ -35,9 +35,21 @@ export default function TabsLayout() {
           backgroundColor: '#fff',
           borderTopWidth: 1,
           borderTopColor: '#E5E5EA',
-          height: 90,
-          paddingBottom: 10,
-          paddingTop: 15,
+          height: Platform.select({
+            ios: 90,
+            android: 70,
+            web: 70,
+          }),
+          paddingBottom: Platform.select({
+            ios: 25,      // More padding for iOS devices with home indicator
+            android: 10,  // Standard padding for Android
+            web: 10,      // Standard padding for web
+          }),
+          paddingTop: Platform.select({
+            ios: 10,
+            android: 8,
+            web: 8,
+          }),
         },
         tabBarLabelStyle: {
           fontSize: 12,
