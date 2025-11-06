@@ -2285,6 +2285,46 @@ Return ONLY the JSON object, no additional text."""
         logger.error(f"Appliance scan error: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))
 
+# ============= GOOGLE PLACES PROXY ENDPOINT =============
+
+@api_router.get("/places/nearby")
+async def get_nearby_places(
+    lat: float,
+    lon: float,
+    radius: int = 2000,
+    place_type: str = "hospital",
+    user_id: str = Depends(get_current_user)
+):
+    """
+    Proxy endpoint for Google Places API to avoid CORS issues on web
+    """
+    try:
+        import httpx
+        
+        api_key = os.environ.get('GOOGLE_MAPS_API_KEY', '')
+        if not api_key:
+            raise HTTPException(status_code=500, detail="Google Maps API key not configured")
+        
+        url = f"https://maps.googleapis.com/maps/api/place/nearbysearch/json"
+        params = {
+            "location": f"{lat},{lon}",
+            "radius": radius,
+            "type": place_type,
+            "key": api_key
+        }
+        
+        async with httpx.AsyncClient() as client:
+            response = await client.get(url, params=params, timeout=10.0)
+            response.raise_for_status()
+            return response.json()
+            
+    except httpx.HTTPError as e:
+        logger.error(f"Google Places API error: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Failed to fetch places: {str(e)}")
+    except Exception as e:
+        logger.error(f"Nearby places error: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
 # ============= PAINT ESTIMATION ENDPOINTS =============
 
 @api_router.post("/paint-estimation/analyze-wall", response_model=PaintEstimate)
