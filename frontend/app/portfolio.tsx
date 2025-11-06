@@ -827,27 +827,63 @@ export default function PortfolioScreen() {
             <View style={styles.selectionActions}>
               <TouchableOpacity
                 style={styles.selectionButton}
-                onPress={() => {
-                  // Select all will be implemented when we have detailed data
-                  Alert.alert('Info', 'All assets are included by default');
-                }}
+                onPress={selectAllAssets}
               >
                 <Text style={styles.selectionButtonText}>Select All</Text>
               </TouchableOpacity>
               
               <TouchableOpacity
                 style={[styles.selectionButton, styles.selectionButtonSecondary]}
-                onPress={() => setSelectedAssets(new Set())}
+                onPress={deselectAllAssets}
               >
                 <Text style={styles.selectionButtonTextSecondary}>Deselect All</Text>
               </TouchableOpacity>
             </View>
 
             <ScrollView style={styles.modalScroll}>
-              <Text style={styles.infoText}>
-                📝 By default, all your assets will be included in the insurance report. 
-                You can customize this feature in future updates.
-              </Text>
+              {loadingAssets ? (
+                <View style={styles.loadingContainer}>
+                  <ActivityIndicator size="large" color="#007AFF" />
+                  <Text style={styles.loadingText}>Loading assets...</Text>
+                </View>
+              ) : detailedData ? (
+                <>
+                  {Object.entries(detailedData).map(([category, items]: [string, any]) => {
+                    if (!Array.isArray(items) || items.length === 0) return null;
+                    
+                    return (
+                      <View key={category} style={styles.categoryGroup}>
+                        <Text style={styles.categoryHeader}>
+                          {category.charAt(0).toUpperCase() + category.slice(1)} ({items.length})
+                        </Text>
+                        {items.map((item: any) => (
+                          <TouchableOpacity
+                            key={item.id}
+                            style={styles.assetItem}
+                            onPress={() => toggleAssetSelection(item.id)}
+                          >
+                            <View style={styles.checkbox}>
+                              {selectedAssets.has(item.id) && (
+                                <Ionicons name="checkmark" size={18} color="#007AFF" />
+                              )}
+                            </View>
+                            <View style={styles.assetItemInfo}>
+                              <Text style={styles.assetItemName}>
+                                {item.name || item.model || item.brand || 'Unnamed'}
+                              </Text>
+                              {item.brand && <Text style={styles.assetItemDetail}>{item.brand}</Text>}
+                            </View>
+                          </TouchableOpacity>
+                        ))}
+                      </View>
+                    );
+                  })}
+                </>
+              ) : (
+                <Text style={styles.infoText}>
+                  📝 Loading asset information...
+                </Text>
+              )}
             </ScrollView>
 
             <TouchableOpacity
