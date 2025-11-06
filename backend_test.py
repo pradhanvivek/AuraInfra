@@ -42,32 +42,48 @@ class VehicleScanTester:
         print(f"{status}: {test_name} - {message}")
         if details and not success:
             print(f"   Details: {details}")
-        
-    def setup_authentication(self):
-        """Setup test user and authentication"""
-        print("\n=== AUTHENTICATION SETUP ===")
-        
-        # Register test user
-        register_data = {
-            "username": TEST_USERNAME,
-            "email": TEST_EMAIL,
-            "password": TEST_PASSWORD
-        }
-        
+    
+    def setup_test_user(self):
+        """Create or login test user"""
         try:
-            response = self.session.post(f"{BASE_URL}/auth/register", json=register_data)
+            # Try to register new user
+            register_data = {
+                "username": TEST_USERNAME,
+                "email": TEST_EMAIL,
+                "password": TEST_PASSWORD
+            }
+            
+            response = requests.post(f"{API_BASE}/auth/register", json=register_data)
+            
             if response.status_code == 200:
                 data = response.json()
-                self.access_token = data["access_token"]
+                self.auth_token = data["access_token"]
                 self.user_id = data["user_id"]
-                self.session.headers.update({"Authorization": f"Bearer {self.access_token}"})
-                self.log_result("User Registration", True, f"User ID: {self.user_id}")
+                self.log_result("User Registration", True, f"Created new test user: {TEST_USERNAME}")
                 return True
+            elif response.status_code == 400 and "already exists" in response.text:
+                # User exists, try to login
+                login_data = {
+                    "username": TEST_USERNAME,
+                    "password": TEST_PASSWORD
+                }
+                
+                response = requests.post(f"{API_BASE}/auth/login", json=login_data)
+                if response.status_code == 200:
+                    data = response.json()
+                    self.auth_token = data["access_token"]
+                    self.user_id = data["user_id"]
+                    self.log_result("User Login", True, f"Logged in existing user: {TEST_USERNAME}")
+                    return True
+                else:
+                    self.log_result("User Login", False, f"Login failed: {response.status_code}", {"response": response.text})
+                    return False
             else:
-                self.log_result("User Registration", False, f"Status: {response.status_code}, Response: {response.text}")
+                self.log_result("User Registration", False, f"Registration failed: {response.status_code}", {"response": response.text})
                 return False
+                
         except Exception as e:
-            self.log_result("User Registration", False, f"Exception: {str(e)}")
+            self.log_result("User Setup", False, f"Exception during user setup: {str(e)}")
             return False
     
     def create_test_property(self):
