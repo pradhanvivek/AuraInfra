@@ -538,7 +538,6 @@ const styles = StyleSheet.create({
   content: {
     paddingHorizontal: 16,
     paddingBottom: 16,
-    paddingTop: 0,
   },
   postCard: {
     backgroundColor: '#fff',
