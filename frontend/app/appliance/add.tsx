@@ -213,8 +213,17 @@ export default function AddApplianceScreen() {
 
   const handleScanReceipt = async () => {
     if (Platform.OS === 'web') {
-      // Use file input for web
-      handleWebReceiptPicker();
+      // Use ImagePicker for web (works with React Native Web)
+      const result = await ImagePicker.launchImageLibraryAsync({
+        mediaTypes: ImagePicker.MediaTypeOptions.Images,
+        allowsEditing: false,
+        quality: 0.7,
+        base64: true,
+      });
+
+      if (!result.canceled && result.assets[0].base64) {
+        await processReceiptScan(result.assets[0].base64);
+      }
     } else {
       // Use camera for native
       if (!permission?.granted) {
@@ -226,26 +235,6 @@ export default function AddApplianceScreen() {
       }
       setReceiptCameraVisible(true);
     }
-  };
-
-  const handleWebReceiptPicker = () => {
-    const input = document.createElement('input');
-    input.type = 'file';
-    input.accept = 'image/*';
-    input.capture = 'environment'; // Use back camera on mobile web
-    input.onchange = async (e: any) => {
-      const file = e.target.files[0];
-      if (file) {
-        const reader = new FileReader();
-        reader.onload = async (event) => {
-          const base64 = event.target?.result as string;
-          const base64Data = base64.split(',')[1]; // Remove data:image/jpeg;base64, prefix
-          await processReceiptScan(base64Data);
-        };
-        reader.readAsDataURL(file);
-      }
-    };
-    input.click();
   };
 
   const processReceiptScan = async (base64Data: string) => {
