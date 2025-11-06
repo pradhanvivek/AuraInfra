@@ -75,16 +75,17 @@ export default function AddProperty() {
     console.log('[AddProperty] CurrentValue changed:', currentValue);
   }, [currentValue]);
 
-  // Web-specific autocomplete functions
+  // Web-specific autocomplete functions using backend proxy
   const fetchPlaceSuggestions = async (input: string) => {
-    if (!input || input.length < 2 || !GOOGLE_MAPS_API_KEY) {
+    if (!input || input.length < 2) {
       setSuggestions([]);
       return;
     }
 
     try {
       const response = await fetch(
-        `https://maps.googleapis.com/maps/api/place/autocomplete/json?input=${encodeURIComponent(input)}&key=${GOOGLE_MAPS_API_KEY}`
+        `${API_URL}/api/places/autocomplete?input=${encodeURIComponent(input)}`,
+        { headers: { Authorization: `Bearer ${token}` } }
       );
       const data = await response.json();
       if (data.predictions) {
@@ -99,7 +100,8 @@ export default function AddProperty() {
   const fetchPlaceDetails = async (placeId: string) => {
     try {
       const response = await fetch(
-        `https://maps.googleapis.com/maps/api/place/details/json?place_id=${placeId}&key=${GOOGLE_MAPS_API_KEY}`
+        `${API_URL}/api/places/details?place_id=${placeId}`,
+        { headers: { Authorization: `Bearer ${token}` } }
       );
       const data = await response.json();
       if (data.result) {
