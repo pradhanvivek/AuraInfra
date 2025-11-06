@@ -19,7 +19,7 @@ const storage = {
     if (Platform.OS === 'web') {
       return localStorage.getItem(key);
     } else {
-      return await AsyncStorage.getItem(key);
+      return await storage.getItem(key);
     }
   },
   removeItem: async (key: string) => {
