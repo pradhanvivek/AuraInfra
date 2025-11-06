@@ -500,20 +500,21 @@ export default function PortfolioScreen() {
                      portfolio.furniture_count + portfolio.art_count;
 
   return (
-    <View style={styles.container}>
-      <View style={styles.header}>
-        <TouchableOpacity onPress={() => router.back()}>
-          <Ionicons name="arrow-back" size={28} color="#007AFF" />
-        </TouchableOpacity>
-        <Text style={styles.headerTitle}>Portfolio</Text>
-        <TouchableOpacity onPress={handleGeneratePDF} disabled={generatingPDF}>
-          <Ionicons 
-            name={generatingPDF ? "hourglass-outline" : "download-outline"} 
-            size={28} 
-            color="#007AFF" 
-          />
-        </TouchableOpacity>
-      </View>
+    <SafeAreaView style={styles.safeArea} edges={['top']}>
+      <View style={styles.container}>
+        <View style={styles.header}>
+          <TouchableOpacity onPress={() => router.back()}>
+            <Ionicons name="arrow-back" size={28} color="#007AFF" />
+          </TouchableOpacity>
+          <Text style={styles.headerTitle}>Portfolio</Text>
+          <TouchableOpacity onPress={handleGeneratePDF} disabled={generatingPDF}>
+            <Ionicons 
+              name={generatingPDF ? "hourglass-outline" : "download-outline"} 
+              size={28} 
+              color="#007AFF" 
+            />
+          </TouchableOpacity>
+        </View>
 
       <ScrollView contentContainerStyle={styles.content}>
         {/* Total Value Card */}
