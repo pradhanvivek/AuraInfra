@@ -419,6 +419,56 @@ export default function PortfolioScreen() {
     }
   };
 
+  const handleGenerateInsuranceReport = async () => {
+    if (!portfolio) return;
+
+    try {
+      setGeneratingPDF(true);
+
+      // Fetch detailed asset data
+      const response = await axios.get(
+        `${API_URL}/api/portfolio/details`,
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      const detailedData = response.data;
+
+      // Prepare data for insurance report
+      const categories = getCategoriesData();
+
+      // Generate comprehensive insurance report using new generator
+      const htmlContent = generateInsuranceReportHTML(
+        portfolio,
+        detailedData,
+        categories,
+        insuranceNotes,
+        selectedAssets.size > 0 ? selectedAssets : undefined
+      );
+
+      // Generate PDF
+      const { uri } = await Print.printToFileAsync({
+        html: htmlContent,
+        base64: false,
+      });
+
+      // Share PDF
+      if (await Sharing.isAvailableAsync()) {
+        await Sharing.shareAsync(uri, {
+          mimeType: 'application/pdf',
+          dialogTitle: 'Insurance Report - AuraInfra.ai',
+          UTI: 'com.adobe.pdf',
+        });
+        Alert.alert('Success', 'Insurance report generated successfully!');
+      } else {
+        Alert.alert('Success', `PDF saved to: ${uri}`);
+      }
+    } catch (error) {
+      console.error('Error generating insurance report:', error);
+      Alert.alert('Error', 'Failed to generate insurance report. Please try again.');
+    } finally {
+      setGeneratingPDF(false);
+    }
+  };
+
   const getCategoriesData = () => {
     if (!portfolio) return [];
     
