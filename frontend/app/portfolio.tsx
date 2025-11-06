@@ -490,10 +490,36 @@ export default function PortfolioScreen() {
       );
       const detailedData = response.data;
 
-      // Debug: Log the data to check photos
-      console.log('Portfolio details fetched:', detailedData);
-      console.log('Sample vehicle photos:', detailedData.vehicles[0]?.photos);
-      console.log('Sample appliance photos:', detailedData.appliances[0]?.photos);
+      // Debug: Log the data to check photos and invoice details
+      console.log('Portfolio details fetched:', JSON.stringify(detailedData, null, 2));
+      
+      // Check if we have any vehicles
+      if (detailedData.vehicles && detailedData.vehicles.length > 0) {
+        const sampleVehicle = detailedData.vehicles[0];
+        console.log('Sample vehicle:', {
+          name: sampleVehicle.name,
+          brand: sampleVehicle.brand,
+          photos: sampleVehicle.photos,
+          photoType: typeof sampleVehicle.photos,
+          photoLength: sampleVehicle.photos?.length,
+          invoice_number: sampleVehicle.invoice_number,
+          invoice_date: sampleVehicle.invoice_date,
+          purchase_date: sampleVehicle.purchase_date,
+        });
+      }
+      
+      // Check all categories for photos
+      ['vehicles', 'appliances', 'jewelry', 'furniture', 'art', 'properties'].forEach(cat => {
+        if (detailedData[cat]?.length > 0) {
+          console.log(`${cat} sample:`, {
+            hasPhotos: !!detailedData[cat][0].photos,
+            photosLength: detailedData[cat][0].photos?.length,
+            firstPhotoPreview: detailedData[cat][0].photos?.[0]?.substring(0, 100),
+            invoice_number: detailedData[cat][0].invoice_number,
+            invoice_date: detailedData[cat][0].invoice_date,
+          });
+        }
+      });
 
       // Prepare data for insurance report
       const categories = getCategoriesData();
