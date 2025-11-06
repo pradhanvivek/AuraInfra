@@ -292,10 +292,6 @@ export default function Profile() {
 
   return (
     <View style={styles.container}>
-      <View style={styles.header}>
-        <Text style={styles.headerTitle}>Profile</Text>
-      </View>
-
       <ScrollView style={styles.content}>
         <View style={styles.profileSection}>
           <TouchableOpacity 
