@@ -40,7 +40,7 @@ const CATEGORY_ICONS: { [key: string]: string } = {
   restaurant: 'restaurant',
   bank: 'card',
   pharmacy: 'medkit',
-  'fuel_station': 'gas-station',
+  'fuel_station': 'flame',
   'police_station': 'shield',
   default: 'location',
 };
