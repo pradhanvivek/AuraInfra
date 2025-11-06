@@ -102,7 +102,7 @@
 # Testing Data - Main Agent and testing sub agent both should log testing data below this section
 #====================================================================================================
 
-user_problem_statement: "1) Verify Community Board icon size fix is applied correctly. 2) Complete HOA screens implementation: Create hoa-meetings.tsx for mobile app with meeting viewing, RSVP functionality, meeting details modal, and proper navigation."
+user_problem_statement: "Verify Vehicle AI Scanning Fix - Backend endpoint was updated to use Pydantic model (VehicleScanRequest) instead of generic dict to resolve 'Provided image is not valid' error. Need to test that POST /api/vehicles/scan endpoint now correctly processes base64 images and returns structured vehicle data from Gemini AI without errors."
 
 backend:
   - task: "User Authentication - Register"
