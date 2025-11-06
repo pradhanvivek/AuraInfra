@@ -224,7 +224,7 @@ export default function Profile() {
             localStorage.clear();
           }
           // Force navigation to login
-          router.replace('/(auth)/login');
+          router.replace('/auth/login');
         }).catch((error) => {
           console.error('Logout error:', error);
         });
@@ -242,7 +242,7 @@ export default function Profile() {
             onPress: async () => {
               try {
                 await logout();
-                router.replace('/(auth)/login');
+                router.replace('/auth/login');
               } catch (error) {
                 console.error('Logout error:', error);
               }
