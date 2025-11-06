@@ -113,6 +113,7 @@ export default function TabsLayout() {
         name="notifications"
         options={{
           href: null, // Hide from tab bar
+          headerShown: false, // Hide the default header
         }}
       />
     </Tabs>
