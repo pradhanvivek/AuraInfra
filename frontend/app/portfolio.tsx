@@ -421,6 +421,62 @@ export default function PortfolioScreen() {
     }
   };
 
+  const fetchDetailedAssets = async () => {
+    if (detailedData) return; // Already fetched
+    
+    try {
+      setLoadingAssets(true);
+      const response = await axios.get(
+        `${API_URL}/api/portfolio/details`,
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      setDetailedData(response.data);
+      
+      // Initialize all assets as selected by default
+      const allIds = new Set<string>();
+      Object.values(response.data).forEach((category: any) => {
+        if (Array.isArray(category)) {
+          category.forEach((item: any) => {
+            if (item.id) allIds.add(item.id);
+          });
+        }
+      });
+      setSelectedAssets(allIds);
+    } catch (error) {
+      console.error('Error fetching assets:', error);
+      Alert.alert('Error', 'Failed to load assets');
+    } finally {
+      setLoadingAssets(false);
+    }
+  };
+
+  const toggleAssetSelection = (assetId: string) => {
+    const newSelection = new Set(selectedAssets);
+    if (newSelection.has(assetId)) {
+      newSelection.delete(assetId);
+    } else {
+      newSelection.add(assetId);
+    }
+    setSelectedAssets(newSelection);
+  };
+
+  const selectAllAssets = () => {
+    if (!detailedData) return;
+    const allIds = new Set<string>();
+    Object.values(detailedData).forEach((category: any) => {
+      if (Array.isArray(category)) {
+        category.forEach((item: any) => {
+          if (item.id) allIds.add(item.id);
+        });
+      }
+    });
+    setSelectedAssets(allIds);
+  };
+
+  const deselectAllAssets = () => {
+    setSelectedAssets(new Set());
+  };
+
   const handleGenerateInsuranceReport = async () => {
     if (!portfolio) return;
 
