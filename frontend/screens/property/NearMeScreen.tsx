@@ -132,11 +132,12 @@ export default function NearMeScreen({ propertyId }: NearMeScreenProps) {
       
       const allPlaces: NearbyPlace[] = [];
       
-      // Fetch places for each type
+      // Fetch places for each type via backend proxy to avoid CORS issues
       for (const type of types) {
         try {
           const response = await fetch(
-            `https://maps.googleapis.com/maps/api/place/nearbysearch/json?location=${lat},${lon}&radius=${radius}&type=${type}&key=${apiKey}`
+            `${API_URL}/api/places/nearby?lat=${lat}&lon=${lon}&radius=${radius}&place_type=${type}`,
+            { headers: { Authorization: `Bearer ${token}` } }
           );
           
           if (!response.ok) {
