@@ -481,6 +481,9 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     borderBottomColor: '#E5E5EA',
     height: 50,
+    maxHeight: 50,
+    flexGrow: 0,
+    flexShrink: 0,
   },
   categoriesContent: {
     paddingHorizontal: 16,
@@ -488,6 +491,7 @@ const styles = StyleSheet.create({
     paddingBottom: 8,
     gap: 8,
     alignItems: 'center',
+    minHeight: 50,
   },
   categoryChip: {
     flexDirection: 'row',
