@@ -41,7 +41,7 @@ export default function Login() {
     setLoading(true);
     try {
       await login(username, password);
-      router.replace('/(tabs)/dashboard');
+      router.replace('/(tabs)');
     } catch (error: any) {
       Alert.alert('Login Failed', error.message);
     } finally {
