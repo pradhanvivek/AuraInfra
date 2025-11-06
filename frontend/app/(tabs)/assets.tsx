@@ -375,6 +375,8 @@ const styles = StyleSheet.create({
   },
   greetingContainer: {
     flex: 1,
+    height: 50,
+    justifyContent: 'center',
   },
   helloText: {
     fontSize: 14,
