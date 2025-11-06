@@ -12,7 +12,7 @@ import base64
 import os
 
 # Configuration
-BASE_URL = "https://hoa-portal-7.preview.emergentagent.com/api"
+BASE_URL = "https://aurafix.preview.emergentagent.com/api"
 TEST_USERNAME = f"test_hoa_user_{uuid.uuid4().hex[:8]}"
 TEST_EMAIL = f"test_{uuid.uuid4().hex[:8]}@example.com"
 TEST_PASSWORD = "TestPassword123!"
