@@ -38,6 +38,11 @@ export default function AddArtScreen() {
 
   const [loading, setLoading] = useState(isEditing);
   const [saving, setSaving] = useState(false);
+  const [scanning, setScanning] = useState(false);
+  const [cameraVisible, setCameraVisible] = useState(false);
+  const [permission, requestPermission] = useCameraPermissions();
+  const cameraRef = useRef<any>(null);
+
   const [name, setName] = useState('');
   const [type, setType] = useState('Painting');
   const [artist, setArtist] = useState('');
