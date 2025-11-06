@@ -57,13 +57,16 @@ export default function Profile() {
   const [uploadingAvatar, setUploadingAvatar] = useState(false);
 
   useEffect(() => {
-    // Only fetch profile once when auth is ready, token is valid, and we haven't fetched yet
-    if (!authLoading && !fetchComplete && token && token !== 'null' && token.length > 10) {
-      fetchProfile();
-    } else if (!authLoading && (!token || token === 'null')) {
-      setLoading(false);
+    // Only fetch profile once when auth is ready and we haven't fetched yet
+    if (!authLoading && !fetchComplete) {
+      if (token && token !== 'null' && token.length > 10) {
+        fetchProfile();
+      } else {
+        setLoading(false);
+        setFetchComplete(true);
+      }
     }
-  }, [authLoading, fetchComplete, token]);
+  }, [authLoading, fetchComplete]); // Removed token dependency to prevent Safari reference issues
 
   const fetchProfile = async () => {
     if (!token || token === 'null' || token.length < 10) {
