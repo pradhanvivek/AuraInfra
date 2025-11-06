@@ -154,6 +154,56 @@ export default function AddArtScreen() {
     }
   };
 
+  const handleAIScan = async () => {
+    if (!permission?.granted) {
+      const result = await requestPermission();
+      if (!result.granted) {
+        Alert.alert('Permission Required', 'Camera permission is needed to scan art');
+        return;
+      }
+    }
+    setCameraVisible(true);
+  };
+
+  const handleTakePicture = async () => {
+    if (!cameraRef.current) return;
+
+    try {
+      const photo = await cameraRef.current.takePictureAsync({ base64: true, quality: 0.7 });
+      setCameraVisible(false);
+      setScanning(true);
+
+      // Call AI art recognition API
+      const response = await axios.post(
+        `${API_URL}/api/art/scan`,
+        { image: photo.base64 },
+        { 
+          headers: { Authorization: `Bearer ${token}` },
+          timeout: 60000
+        }
+      );
+
+      const data = response.data;
+      if (data.name) setName(data.name);
+      if (data.type) setType(data.type);
+      if (data.artist) setArtist(data.artist);
+      if (data.medium) setMedium(data.medium);
+      if (data.estimated_period) setYearCreated(data.estimated_period);
+      if (data.subject_matter) setNotes(data.subject_matter);
+      setPhotos([photo.base64!]);
+      
+      Alert.alert(
+        'Art Identified!',
+        `${data.name || 'Artwork'} detected (${Math.round(data.confidence * 100)}% confidence). Please review and complete the details.`
+      );
+    } catch (error: any) {
+      console.error('Scan error:', error);
+      Alert.alert('Error', error.response?.data?.detail || 'Failed to scan art. Please enter details manually.');
+    } finally {
+      setScanning(false);
+    }
+  };
+
   const pickImage = async () => {
     const result = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ImagePicker.MediaTypeOptions.Images,
