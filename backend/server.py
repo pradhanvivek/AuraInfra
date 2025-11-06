@@ -2288,7 +2288,10 @@ Return ONLY the JSON object, no additional text."""
         raise
     except Exception as e:
         logger.error(f"Appliance scan error: {str(e)}")
-        raise HTTPException(status_code=500, detail=str(e))
+        logger.error(f"Error type: {type(e).__name__}")
+        import traceback
+        logger.error(f"Traceback: {traceback.format_exc()}")
+        raise HTTPException(status_code=500, detail=f"Failed to scan appliance: {str(e)}")
 
 # ============= GOOGLE PLACES PROXY ENDPOINT =============
 
