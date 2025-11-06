@@ -2211,6 +2211,12 @@ async def scan_appliance(
             system_message="You are an expert in identifying home appliances and electrical fixtures."
         ).with_model("gemini", "gemini-2.0-flash")
         
+        # Clean base64 string - remove any data URL prefix if present
+        image_data = scan_request.image
+        if image_data.startswith('data:'):
+            # Remove data:image/...;base64, prefix
+            image_data = image_data.split(',', 1)[1] if ',' in image_data else image_data
+        
         user_message = UserMessage(
             text="""Analyze this image and identify the appliance or electrical fixture. 
             
@@ -2226,7 +2232,7 @@ Return ONLY a valid JSON object with this structure:
 
 If you can't identify the item clearly, set confidence lower. 
 Return ONLY the JSON object, no additional text.""",
-            file_contents=[ImageContent(image_base64=scan_request.image)]
+            file_contents=[ImageContent(image_base64=image_data)]
         )
         
         response = await chat.send_message(user_message)
