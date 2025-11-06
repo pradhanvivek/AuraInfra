@@ -68,6 +68,7 @@ export default function Profile() {
   const fetchProfile = async () => {
     if (!token || token === 'null' || token.length < 10) {
       setLoading(false);
+      setFetchComplete(true);
       return;
     }
     
@@ -88,8 +89,10 @@ export default function Profile() {
       if (data.measurement_system) {
         await setMeasurementPreference(data.measurement_system);
       }
+      setFetchComplete(true);
     } catch (error: any) {
       Alert.alert('Error', 'Failed to load profile');
+      setFetchComplete(true);
     } finally {
       setLoading(false);
     }
