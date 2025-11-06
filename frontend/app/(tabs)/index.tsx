@@ -181,9 +181,10 @@ export default function PropertiesScreen() {
   }
 
   return (
-    <View style={styles.container}>
-      {/* Header with Property Address and Dropdown */}
-      <View style={styles.header}>
+    <SafeAreaView style={styles.safeArea} edges={['top']}>
+      <View style={styles.container}>
+        {/* Header with Property Address and Dropdown */}
+        <View style={styles.header}>
         <View style={styles.logoContainer}>
           <Image 
             source={require('../../assets/logo.png')} 
