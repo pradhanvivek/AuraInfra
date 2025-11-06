@@ -125,7 +125,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const logout = async () => {
     try {
-      await AsyncStorage.multiRemove(['token', 'userId', 'username']);
+      await storage.removeItem('token');
+      await storage.removeItem('userId');
+      await storage.removeItem('username');
       setToken(null);
       setUserId(null);
       setUsername(null);
