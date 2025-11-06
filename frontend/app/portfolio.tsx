@@ -719,6 +719,126 @@ export default function PortfolioScreen() {
           </View>
         </View>
       </ScrollView>
+
+      {/* Asset Selection Modal */}
+      <Modal
+        visible={showAssetSelectionModal}
+        animationType="slide"
+        transparent={true}
+      >
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalContainer}>
+            <View style={styles.modalHeader}>
+              <Text style={styles.modalTitle}>Select Assets for Report</Text>
+              <TouchableOpacity onPress={() => setShowAssetSelectionModal(false)}>
+                <Ionicons name="close-circle" size={28} color="#8E8E93" />
+              </TouchableOpacity>
+            </View>
+            
+            <Text style={styles.modalSubtitle}>
+              {selectedAssets.size} items selected • All items included by default
+            </Text>
+
+            <View style={styles.selectionActions}>
+              <TouchableOpacity
+                style={styles.selectionButton}
+                onPress={() => {
+                  // Select all will be implemented when we have detailed data
+                  Alert.alert('Info', 'All assets are included by default');
+                }}
+              >
+                <Text style={styles.selectionButtonText}>Select All</Text>
+              </TouchableOpacity>
+              
+              <TouchableOpacity
+                style={[styles.selectionButton, styles.selectionButtonSecondary]}
+                onPress={() => setSelectedAssets(new Set())}
+              >
+                <Text style={styles.selectionButtonTextSecondary}>Deselect All</Text>
+              </TouchableOpacity>
+            </View>
+
+            <ScrollView style={styles.modalScroll}>
+              <Text style={styles.infoText}>
+                📝 By default, all your assets will be included in the insurance report. 
+                You can customize this feature in future updates.
+              </Text>
+            </ScrollView>
+
+            <TouchableOpacity
+              style={styles.continueButton}
+              onPress={() => {
+                setShowAssetSelectionModal(false);
+                setShowInsuranceNotesModal(true);
+              }}
+            >
+              <Text style={styles.continueButtonText}>Continue to Notes</Text>
+              <Ionicons name="arrow-forward" size={20} color="#fff" />
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
+
+      {/* Insurance Notes Modal */}
+      <Modal
+        visible={showInsuranceNotesModal}
+        animationType="slide"
+        transparent={true}
+      >
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalContainer}>
+            <View style={styles.modalHeader}>
+              <Text style={styles.modalTitle}>Add Insurance Notes</Text>
+              <TouchableOpacity onPress={() => setShowInsuranceNotesModal(false)}>
+                <Ionicons name="close-circle" size={28} color="#8E8E93" />
+              </TouchableOpacity>
+            </View>
+
+            <Text style={styles.modalSubtitle}>
+              Optional: Add any additional information for insurance purposes
+            </Text>
+
+            <ScrollView style={styles.modalScroll}>
+              <TextInput
+                style={styles.notesInput}
+                value={insuranceNotes}
+                onChangeText={setInsuranceNotes}
+                placeholder="e.g., Special handling instructions, appraisal details, claims history..."
+                multiline
+                numberOfLines={8}
+                maxLength={1000}
+                textAlignVertical="top"
+              />
+              <Text style={styles.charCount}>
+                {insuranceNotes.length}/1000 characters
+              </Text>
+            </ScrollView>
+
+            <View style={styles.modalActions}>
+              <TouchableOpacity
+                style={[styles.modalActionButton, styles.skipButton]}
+                onPress={() => {
+                  setShowInsuranceNotesModal(false);
+                  handleGenerateInsuranceReport();
+                }}
+              >
+                <Text style={styles.skipButtonText}>Skip</Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                style={[styles.modalActionButton, styles.generateButton]}
+                onPress={() => {
+                  setShowInsuranceNotesModal(false);
+                  handleGenerateInsuranceReport();
+                }}
+              >
+                <Text style={styles.generateButtonText}>Generate Report</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </Modal>
+
       </View>
     </SafeAreaView>
   );
