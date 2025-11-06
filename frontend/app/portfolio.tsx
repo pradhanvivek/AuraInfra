@@ -688,12 +688,8 @@ export default function PortfolioScreen() {
 
           <TouchableOpacity 
             style={styles.actionButton}
-            onPress={() => {
-              Alert.alert(
-                'Insurance Report',
-                'Coming soon: Generate insurance-ready asset report with appraisal values.'
-              );
-            }}
+            onPress={handleGenerateInsuranceReport}
+            disabled={generatingPDF}
           >
             <View style={[styles.actionIcon, { backgroundColor: '#E8F5E9' }]}>
               <Ionicons name="shield-checkmark" size={24} color="#34C759" />
