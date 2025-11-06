@@ -12,7 +12,7 @@ const storage = {
     if (Platform.OS === 'web') {
       localStorage.setItem(key, value);
     } else {
-      await AsyncStorage.setItem(key, value);
+      await storage.setItem(key, value);
     }
   },
   getItem: async (key: string): Promise<string | null> => {
@@ -87,9 +87,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
       const { access_token, user_id, username: userName } = response.data;
 
-      await AsyncStorage.setItem('token', access_token);
-      await AsyncStorage.setItem('userId', user_id);
-      await AsyncStorage.setItem('username', userName);
+      await storage.setItem('token', access_token);
+      await storage.setItem('userId', user_id);
+      await storage.setItem('username', userName);
 
       setToken(access_token);
       setUserId(user_id);
@@ -110,9 +110,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
       const { access_token, user_id, username: userName } = response.data;
 
-      await AsyncStorage.setItem('token', access_token);
-      await AsyncStorage.setItem('userId', user_id);
-      await AsyncStorage.setItem('username', userName);
+      await storage.setItem('token', access_token);
+      await storage.setItem('userId', user_id);
+      await storage.setItem('username', userName);
 
       setToken(access_token);
       setUserId(user_id);
