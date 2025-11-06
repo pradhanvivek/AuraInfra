@@ -90,7 +90,7 @@ export default function HOAMeetingsScreen() {
         `${API_URL}/api/meetings/${meetingId}/rsvps`,
         { headers: { Authorization: `Bearer ${token}` } }
       );
-      const myRsvp = response.data.find((r: RSVP) => r.user_id === token);
+      const myRsvp = response.data.find((r: RSVP) => r.user_id === userId);
       if (myRsvp) {
         setRsvps(prev => ({ ...prev, [meetingId]: myRsvp }));
       }
