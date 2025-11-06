@@ -566,6 +566,34 @@ export default function AddArtScreen() {
             onConfirm={handleDateConfirm}
             onCancel={() => setDatePickerVisible(false)}
           />
+
+          <Modal visible={cameraVisible} animationType="slide">
+            <View style={styles.cameraContainer}>
+              <CameraView
+                style={styles.camera}
+                facing="back"
+                ref={cameraRef}
+              >
+                <View style={styles.cameraOverlay}>
+                  <TouchableOpacity
+                    style={styles.cameraCloseBtn}
+                    onPress={() => setCameraVisible(false)}
+                  >
+                    <Ionicons name="close" size={32} color="#fff" />
+                  </TouchableOpacity>
+                  <View style={styles.cameraControls}>
+                    <TouchableOpacity
+                      style={styles.captureButton}
+                      onPress={handleTakePicture}
+                    >
+                      <View style={styles.captureButtonInner} />
+                    </TouchableOpacity>
+                  </View>
+                  <Text style={styles.cameraHint}>Position artwork in frame</Text>
+                </View>
+              </CameraView>
+            </View>
+          </Modal>
         </>
       )}
     </View>
