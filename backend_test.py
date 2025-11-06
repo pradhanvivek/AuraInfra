@@ -1,21 +1,26 @@
 #!/usr/bin/env python3
 """
-Backend Testing Script for HOA Meetings Mobile Integration
-Tests the HOA meetings endpoints that will be used by the mobile hoa-meetings.tsx screen
+Backend API Testing Script for Vehicle AI Scanning Fix
+Tests the POST /api/vehicles/scan endpoint fix that was applied to resolve "Provided image is not valid" error.
 """
 
 import requests
 import json
-import uuid
-from datetime import datetime, timedelta
 import base64
 import os
+from datetime import datetime
 
-# Configuration
-BASE_URL = "https://property-ai-scan.preview.emergentagent.com/api"
-TEST_USERNAME = f"test_hoa_user_{uuid.uuid4().hex[:8]}"
-TEST_EMAIL = f"test_{uuid.uuid4().hex[:8]}@example.com"
-TEST_PASSWORD = "TestPassword123!"
+# Get backend URL from environment
+BACKEND_URL = os.environ.get('REACT_APP_BACKEND_URL', 'https://property-ai-scan.preview.emergentagent.com')
+API_BASE = f"{BACKEND_URL}/api"
+
+# Test configuration
+TEST_USERNAME = "vehicle_test_user"
+TEST_PASSWORD = "VehicleTest123!"
+TEST_EMAIL = "vehicle.test@example.com"
+
+# Sample base64 encoded vehicle image (small test image)
+SAMPLE_VEHICLE_IMAGE = "/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAYEBQYFBAYGBQYHBwYIChAKCgkJChQODwwQFxQYGBcUFhYaHSUfGhsjHBYWICwgIyYnKSopGR8tMC0oMCUoKSj/2wBDAQcHBwoIChMKChMoGhYaKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCj/wAARCAABAAEDASIAAhEBAxEB/8QAFQABAQAAAAAAAAAAAAAAAAAAAAv/xAAUEAEAAAAAAAAAAAAAAAAAAAAA/8QAFQEBAQAAAAAAAAAAAAAAAAAAAAX/xAAUEQEAAAAAAAAAAAAAAAAAAAAA/9oADAMBAAIRAxEAPwCdABmX/9k="
 
 class HOAMeetingsBackendTester:
     def __init__(self):
