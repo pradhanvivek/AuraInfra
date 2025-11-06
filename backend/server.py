@@ -503,6 +503,9 @@ class ArtCreate(BaseModel):
     notes: Optional[str] = None
 
 # AI Scan Results
+class VehicleScanRequest(BaseModel):
+    image: str  # base64 encoded
+
 class VehicleScanResult(BaseModel):
     make: str
     model: str
