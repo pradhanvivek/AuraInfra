@@ -432,13 +432,32 @@ export default function FixturesScreen({ propertyId }: FixturesScreenProps) {
         input.value = warrantyExpiryDate;
       }
       
+      // Style to make it invisible but functional
+      input.style.position = 'absolute';
+      input.style.opacity = '0';
+      input.style.pointerEvents = 'none';
+      
       input.onchange = (e: any) => {
         const selectedDate = e.target.value;
         if (selectedDate) {
           setWarrantyExpiryDate(selectedDate);
         }
+        // Remove the input after selection
+        document.body.removeChild(input);
       };
       
+      input.onblur = () => {
+        // Remove the input if user cancels
+        setTimeout(() => {
+          if (document.body.contains(input)) {
+            document.body.removeChild(input);
+          }
+        }, 100);
+      };
+      
+      // Add to DOM and trigger
+      document.body.appendChild(input);
+      input.focus();
       input.click();
     } else {
       setDatePickerVisibility(true);
