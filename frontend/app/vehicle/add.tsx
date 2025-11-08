@@ -524,7 +524,7 @@ export default function AddVehicleScreen() {
         
         <Text style={styles.label}>Purchase Date</Text>
         {Platform.OS === 'web' && ReactDatePicker ? (
-          <View style={styles.webDatePickerWrapper} className="vehicle-datepicker-wrapper">
+          <View style={styles.datePickerContainer}>
             <ReactDatePicker
               selected={purchaseDate ? new Date(purchaseDate) : null}
               onChange={(date: Date | null) => {
@@ -540,9 +540,14 @@ export default function AddVehicleScreen() {
               dropdownMode="select"
               yearDropdownItemNumber={10}
               scrollableYearDropdown
-              className="vehicle-datepicker-input"
-              onFocus={(e: any) => e.target.blur()}
-              readOnly
+              customInput={
+                <View style={styles.customDateInput}>
+                  <Text style={purchaseDate ? styles.dateText : styles.datePlaceholder}>
+                    {purchaseDate || 'Select purchase date'}
+                  </Text>
+                  <Ionicons name="calendar" size={20} color="#8E8E93" />
+                </View>
+              }
             />
           </View>
         ) : (
