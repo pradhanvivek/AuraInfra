@@ -515,7 +515,20 @@ export default function AddVehicleScreen() {
               scrollableYearDropdown
               popperPlacement="top-start"
               popperProps={{
-                strategy: 'fixed'
+                strategy: 'absolute',
+                modifiers: [
+                  {
+                    name: 'preventOverflow',
+                    options: {
+                      mainAxis: false,
+                      altAxis: false,
+                    },
+                  },
+                  {
+                    name: 'flip',
+                    enabled: false,
+                  },
+                ],
               }}
               customInput={
                 <View style={styles.customDateInput}>
@@ -561,7 +574,20 @@ export default function AddVehicleScreen() {
               scrollableYearDropdown
               popperPlacement="top-start"
               popperProps={{
-                strategy: 'fixed'
+                strategy: 'absolute',
+                modifiers: [
+                  {
+                    name: 'preventOverflow',
+                    options: {
+                      mainAxis: false,
+                      altAxis: false,
+                    },
+                  },
+                  {
+                    name: 'flip',
+                    enabled: false,
+                  },
+                ],
               }}
               customInput={
                 <View style={styles.customDateInput}>
@@ -632,7 +658,20 @@ export default function AddVehicleScreen() {
               scrollableYearDropdown
               popperPlacement="top-start"
               popperProps={{
-                strategy: 'fixed'
+                strategy: 'absolute',
+                modifiers: [
+                  {
+                    name: 'preventOverflow',
+                    options: {
+                      mainAxis: false,
+                      altAxis: false,
+                    },
+                  },
+                  {
+                    name: 'flip',
+                    enabled: false,
+                  },
+                ],
               }}
               customInput={
                 <View style={styles.customDateInput}>
@@ -676,7 +715,20 @@ export default function AddVehicleScreen() {
               scrollableYearDropdown
               popperPlacement="top-start"
               popperProps={{
-                strategy: 'fixed'
+                strategy: 'absolute',
+                modifiers: [
+                  {
+                    name: 'preventOverflow',
+                    options: {
+                      mainAxis: false,
+                      altAxis: false,
+                    },
+                  },
+                  {
+                    name: 'flip',
+                    enabled: false,
+                  },
+                ],
               }}
               customInput={
                 <View style={styles.customDateInput}>
