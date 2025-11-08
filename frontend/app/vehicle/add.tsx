@@ -684,6 +684,10 @@ const styles = StyleSheet.create({
   content: {
     padding: 16,
   },
+  webDatePickerWrapper: {
+    width: '100%',
+    marginBottom: 16,
+  },
   scanButton: {
     flexDirection: 'row',
     backgroundColor: '#007AFF',
