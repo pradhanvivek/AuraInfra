@@ -217,25 +217,40 @@ export default function DocumentsScreen({ propertyId }: DocumentsScreenProps) {
   };
 
   const handleDeleteDocument = (doc: Document) => {
-    Alert.alert(
-      'Delete Document',
-      `Are you sure you want to delete "${doc.name}"?`,
-      [
-        { text: 'Cancel', style: 'cancel' },
-        {
-          text: 'Delete',
-          style: 'destructive',
-          onPress: async () => {
-            try {
-              await documentApi.delete(token!, propertyId, doc.id);
-              fetchDocuments();
-            } catch (error: any) {
-              Alert.alert('Error', 'Failed to delete document');
-            }
+    if (Platform.OS === 'web') {
+      // Web: use confirm dialog
+      if (confirm(`Are you sure you want to delete "${doc.name}"?`)) {
+        (async () => {
+          try {
+            await documentApi.delete(token!, propertyId, doc.id);
+            fetchDocuments();
+          } catch (error: any) {
+            alert('Failed to delete document');
+          }
+        })();
+      }
+    } else {
+      // Native: use Alert
+      Alert.alert(
+        'Delete Document',
+        `Are you sure you want to delete "${doc.name}"?`,
+        [
+          { text: 'Cancel', style: 'cancel' },
+          {
+            text: 'Delete',
+            style: 'destructive',
+            onPress: async () => {
+              try {
+                await documentApi.delete(token!, propertyId, doc.id);
+                fetchDocuments();
+              } catch (error: any) {
+                Alert.alert('Error', 'Failed to delete document');
+              }
+            },
           },
-        },
-      ]
-    );
+        ]
+      );
+    }
   };
 
   const getFileIcon = (fileType: string) => {
