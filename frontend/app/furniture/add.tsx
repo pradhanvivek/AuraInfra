@@ -875,6 +875,20 @@ const styles = StyleSheet.create({
   halfInput: {
     flex: 1,
   },
+  datePickerContainer: {
+    marginBottom: 0,
+  },
+  customDateInput: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    backgroundColor: '#fff',
+    padding: 14,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: '#E5E5EA',
+    cursor: 'pointer',
+  },
   dateInput: {
     flexDirection: 'row',
     alignItems: 'center',
