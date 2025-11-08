@@ -671,8 +671,7 @@ export default function FixturesScreen({ propertyId }: FixturesScreenProps) {
 
             <Text style={styles.label}>Warranty Expiry Date (Optional)</Text>
             {Platform.OS === 'web' && ReactDatePicker ? (
-              <View style={styles.datePickerButton}>
-                <Ionicons name="calendar-outline" size={20} color="#007AFF" />
+              <View style={styles.webDatePickerWrapper}>
                 <ReactDatePicker
                   selected={warrantyExpiryDate ? new Date(warrantyExpiryDate) : null}
                   onChange={(date: Date | null) => {
@@ -682,13 +681,31 @@ export default function FixturesScreen({ propertyId }: FixturesScreenProps) {
                   }}
                   minDate={new Date()}
                   dateFormat="yyyy-MM-dd"
-                  placeholderText="Select date"
-                  customInput={
-                    <Text style={[styles.datePickerText, !warrantyExpiryDate && styles.datePickerPlaceholder]}>
-                      {warrantyExpiryDate || 'Select date'}
-                    </Text>
-                  }
-                  calendarClassName="custom-datepicker"
+                  placeholderText="Select warranty expiry date"
+                  showMonthDropdown
+                  showYearDropdown
+                  dropdownMode="select"
+                  yearDropdownItemNumber={10}
+                  scrollableYearDropdown
+                  popperPlacement="bottom-start"
+                  popperModifiers={[
+                    {
+                      name: 'offset',
+                      options: {
+                        offset: [0, 8],
+                      },
+                    },
+                    {
+                      name: 'preventOverflow',
+                      options: {
+                        rootBoundary: 'viewport',
+                        tether: false,
+                        altAxis: true,
+                      },
+                    },
+                  ]}
+                  wrapperClassName="datepicker-wrapper"
+                  className="custom-datepicker-input"
                 />
               </View>
             ) : (
