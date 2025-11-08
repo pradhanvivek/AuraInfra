@@ -792,6 +792,20 @@ const styles = StyleSheet.create({
     width: '100%',
     marginBottom: 16,
   },
+  datePickerContainer: {
+    marginBottom: 16,
+  },
+  customDateInput: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    backgroundColor: '#fff',
+    padding: 14,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: '#E5E5EA',
+    cursor: 'pointer',
+  },
   scanButton: {
     flexDirection: 'row',
     backgroundColor: '#007AFF',
