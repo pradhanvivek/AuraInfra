@@ -503,6 +503,10 @@ export default function AddVehicleScreen() {
               dropdownMode="select"
               yearDropdownItemNumber={10}
               scrollableYearDropdown
+              popperPlacement="top-start"
+              popperProps={{
+                strategy: 'fixed'
+              }}
               customInput={
                 <View style={styles.customDateInput}>
                   <Text style={insuranceExpiry ? styles.dateText : styles.datePlaceholder}>
