@@ -1907,10 +1907,38 @@ async def delete_art(art_id: str, user_id: str = Depends(get_current_user)):
 async def scan_furniture(scan_request: ImageScanRequest, user_id: str = Depends(get_current_user)):
     """AI scan furniture from image"""
     try:
-        image_base64 = scan_request.image
+        from emergentintegrations.llm.chat import LlmChat, UserMessage, ImageContent
+        import json
+        import base64
         
-        prompt = f"""Analyze this furniture image and extract the following information in JSON format:
-{{
+        api_key = os.environ.get('EMERGENT_LLM_KEY')
+        if not api_key:
+            raise HTTPException(status_code=500, detail="API key not configured")
+        
+        # Clean base64 string - remove any data URL prefix if present
+        image_data = scan_request.image
+        if image_data.startswith('data:'):
+            # Remove data:image/...;base64, prefix
+            image_data = image_data.split(',', 1)[1] if ',' in image_data else image_data
+        
+        # Validate base64
+        try:
+            base64.b64decode(image_data)
+        except Exception as e:
+            logger.error(f"Invalid base64 image: {str(e)}")
+            raise HTTPException(status_code=400, detail="Invalid image data")
+        
+        logger.info(f"Processing furniture scan with image data length: {len(image_data)}")
+        
+        chat = LlmChat(
+            api_key=api_key,
+            session_id=f"furniture_scan_{user_id}_{uuid.uuid4()}",
+            system_message="You are an expert in furniture identification and appraisal."
+        ).with_model("gemini", "gemini-2.0-flash")
+        
+        user_message = UserMessage(
+            text="""Analyze this furniture image and extract the following information in JSON format:
+{
   "name": "Descriptive name of the furniture piece",
   "category": "Sofa/Table/Chair/Bed/Cabinet/Desk/Shelf/Wardrobe/Other",
   "brand": "Brand name if visible or identifiable",
@@ -1918,32 +1946,22 @@ async def scan_furniture(scan_request: ImageScanRequest, user_id: str = Depends(
   "style": "Design style (Modern/Contemporary/Traditional/Vintage/Industrial/Scandinavian/etc)",
   "estimated_age": "Approximate age or era (New/5-10 years/Vintage/Antique)",
   "condition": "Excellent/Good/Fair/Poor based on visible condition",
-  "confidence": "Confidence score 0.0-1.0"
-}}
+  "confidence": 0.85
+}
 
-Provide your best assessment based on visible features, construction, design elements, and any visible branding or labels."""
-
-        genai.configure(api_key=EMERGENT_LLM_KEY)
-        model = genai.GenerativeModel("gemini-2.0-flash-exp")
+Provide your best assessment based on visible features, construction, design elements, and any visible branding or labels.
+Return ONLY the JSON object, no additional text.""",
+            file_contents=[ImageContent(image_base64=image_data)]
+        )
         
-        image_data = base64.b64decode(image_base64)
-        
-        response = model.generate_content([
-            prompt,
-            {
-                "mime_type": "image/jpeg",
-                "data": image_base64
-            }
-        ])
-        
-        result_text = response.text.strip()
-        if result_text.startswith("```json"):
-            result_text = result_text[7:]
-        if result_text.endswith("```"):
-            result_text = result_text[:-3]
-        result_text = result_text.strip()
-        
-        result = json.loads(result_text)
+        response = await chat.send_message(user_message)
+        json_start = response.find('{')
+        json_end = response.rfind('}') + 1
+        if json_start != -1 and json_end > json_start:
+            json_str = response[json_start:json_end]
+            result = json.loads(json_str)
+        else:
+            result = json.loads(response)
         
         return FurnitureScanResult(**result)
     except Exception as e:
