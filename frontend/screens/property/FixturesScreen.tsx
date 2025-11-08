@@ -670,23 +670,45 @@ export default function FixturesScreen({ propertyId }: FixturesScreenProps) {
             />
 
             <Text style={styles.label}>Warranty Expiry Date (Optional)</Text>
-            <TouchableOpacity style={styles.datePickerButton} onPress={showDatePicker}>
-              <Ionicons name="calendar-outline" size={20} color="#007AFF" />
-              <Text style={[styles.datePickerText, !warrantyExpiryDate && styles.datePickerPlaceholder]}>
-                {warrantyExpiryDate || 'Select date'}
-              </Text>
-            </TouchableOpacity>
+            {Platform.OS === 'web' && ReactDatePicker ? (
+              <View style={styles.datePickerButton}>
+                <Ionicons name="calendar-outline" size={20} color="#007AFF" />
+                <ReactDatePicker
+                  selected={warrantyExpiryDate ? new Date(warrantyExpiryDate) : null}
+                  onChange={(date: Date | null) => {
+                    if (date) {
+                      setWarrantyExpiryDate(date.toISOString().split('T')[0]);
+                    }
+                  }}
+                  minDate={new Date()}
+                  dateFormat="yyyy-MM-dd"
+                  placeholderText="Select date"
+                  customInput={
+                    <Text style={[styles.datePickerText, !warrantyExpiryDate && styles.datePickerPlaceholder]}>
+                      {warrantyExpiryDate || 'Select date'}
+                    </Text>
+                  }
+                  calendarClassName="custom-datepicker"
+                />
+              </View>
+            ) : (
+              <>
+                <TouchableOpacity style={styles.datePickerButton} onPress={showDatePicker}>
+                  <Ionicons name="calendar-outline" size={20} color="#007AFF" />
+                  <Text style={[styles.datePickerText, !warrantyExpiryDate && styles.datePickerPlaceholder]}>
+                    {warrantyExpiryDate || 'Select date'}
+                  </Text>
+                </TouchableOpacity>
 
-            {/* Only render DateTimePickerModal on native platforms */}
-            {Platform.OS !== 'web' ? (
-              <DateTimePickerModal
-                isVisible={isDatePickerVisible}
-                mode="date"
-                onConfirm={handleConfirmDate}
-                onCancel={hideDatePicker}
-                minimumDate={new Date()}
-              />
-            ) : null}
+                <DateTimePickerModal
+                  isVisible={isDatePickerVisible}
+                  mode="date"
+                  onConfirm={handleConfirmDate}
+                  onCancel={hideDatePicker}
+                  minimumDate={new Date()}
+                />
+              </>
+            )}
 
             {/* Warranty Status Display */}
             {warrantyExpiryDate && (
