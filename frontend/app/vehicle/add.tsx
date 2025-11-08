@@ -603,6 +603,8 @@ export default function AddVehicleScreen() {
               yearDropdownItemNumber={10}
               scrollableYearDropdown
               className="vehicle-datepicker-input"
+              onFocus={(e: any) => e.target.blur()}
+              readOnly
             />
           </View>
         ) : (
