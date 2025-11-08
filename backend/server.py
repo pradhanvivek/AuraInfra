@@ -2089,20 +2089,24 @@ Instructions:
 - Look for warranty period mentions like "1 year", "2 years", "6 months" etc.
 - Extract furniture-specific details like material, dimensions if visible
 
-Return ONLY a valid JSON object with this exact structure (use null for fields you cannot find):
+Return ONLY a valid JSON object with this exact structure.
+
+CRITICAL: Use null (not "unknown", "N/A", "not visible", or empty string) for any field you cannot confidently identify:
 {
-  "vendor_name": "Store or vendor name (e.g., IKEA, Pepperfry, Urban Ladder)",
-  "purchase_date": "YYYY-MM-DD format date (convert from DD/MM/YYYY if needed)",
-  "item_name": "Furniture item name (e.g., 'Sofa Set', 'Dining Table')",
-  "item_description": "Brief description including material, dimensions if visible",
-  "brand": "Brand name",
-  "model": "Model number, SKU, or product code if visible",
-  "serial_number": "Serial number if visible",
+  "vendor_name": "Store or vendor name (e.g., IKEA, Pepperfry, Urban Ladder) OR null",
+  "purchase_date": "YYYY-MM-DD format date (convert from DD/MM/YYYY if needed) OR null",
+  "item_name": "Furniture item name (e.g., 'Sofa Set', 'Dining Table') OR null",
+  "item_description": "Brief description including material, dimensions if visible OR null",
+  "brand": "Brand name OR null",
+  "model": "Model number, SKU, or product code if visible OR null",
+  "serial_number": null,
   "purchase_cost": 0.00,
-  "warranty_info": "Warranty details if mentioned (e.g., '1 year manufacturer warranty')",
+  "warranty_info": "Warranty details if mentioned (e.g., '1 year manufacturer warranty') OR null",
   "warranty_months": 0,
   "confidence": 0.95
 }
+
+IMPORTANT: For serial_number specifically - ONLY include if you can clearly see it on the receipt. Most furniture receipts do NOT have serial numbers. Use null if not present.
 
 Examples:
 - If date shows "30/10/2025", convert to "2025-10-30"
