@@ -423,7 +423,26 @@ export default function FixturesScreen({ propertyId }: FixturesScreenProps) {
 
 
   const showDatePicker = () => {
-    setDatePickerVisibility(true);
+    if (Platform.OS === 'web') {
+      // On web, use HTML input type="date"
+      const input = document.createElement('input');
+      input.type = 'date';
+      input.min = new Date().toISOString().split('T')[0]; // Set minimum date to today
+      if (warrantyExpiryDate) {
+        input.value = warrantyExpiryDate;
+      }
+      
+      input.onchange = (e: any) => {
+        const selectedDate = e.target.value;
+        if (selectedDate) {
+          setWarrantyExpiryDate(selectedDate);
+        }
+      };
+      
+      input.click();
+    } else {
+      setDatePickerVisibility(true);
+    }
   };
 
   const hideDatePicker = () => {
