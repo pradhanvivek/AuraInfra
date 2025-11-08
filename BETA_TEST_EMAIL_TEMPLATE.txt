@@ -1,0 +1,90 @@
+Subject: You're Invited! Beta Test AuraInfra.ai 🎉
+
+Hi [Customer Name],
+
+Thank you for agreeing to beta test AuraInfra.ai! We're excited to have you as one of our first users.
+
+═══════════════════════════════════════════════════
+
+🚀 QUICK START
+
+Access the app here:
+https://hoa-portal-fixes.emergent.host/
+
+Best Browser: Safari (iPhone/iPad) or Chrome (Desktop)
+
+═══════════════════════════════════════════════════
+
+📋 WHAT TO DO
+
+1. Register and create your account
+2. Add a property and upload a document
+3. Add some assets (vehicles, jewelry, appliances, etc.)
+4. Try the AI scanning feature - it's pretty cool!
+5. Generate a portfolio PDF
+6. Explore other features you find interesting
+
+Expected time: 30-45 minutes
+
+═══════════════════════════════════════════════════
+
+📚 HELPFUL RESOURCES
+
+We've prepared detailed guides to help you:
+
+1. QUICK START CARD - One-page overview
+2. BETA TESTING RUNBOOK - Complete step-by-step guide with troubleshooting
+3. Both attached to this email
+
+═══════════════════════════════════════════════════
+
+🐛 FOUND A BUG?
+
+Please let us know! Send us:
+- What you were trying to do
+- What happened
+- Which device/browser you're using
+- A screenshot if possible
+
+Every bug you find helps us improve!
+
+═══════════════════════════════════════════════════
+
+⏰ TIMELINE
+
+Testing Period: [Start Date] - [End Date]
+Feedback Deadline: [Deadline]
+
+Please try to complete testing by [Deadline] and send us your feedback.
+
+═══════════════════════════════════════════════════
+
+💬 QUESTIONS?
+
+Reply to this email anytime! We're here to help.
+
+Email: [Your Email]
+Phone: [Your Phone] (for urgent issues)
+
+═══════════════════════════════════════════════════
+
+🙏 THANK YOU
+
+Your feedback will directly shape the final product. We truly appreciate your time and honest input!
+
+Happy Testing!
+
+Best regards,
+[Your Name]
+[Your Title]
+AuraInfra.ai Team
+
+═══════════════════════════════════════════════════
+
+P.S. Your test data is real and will be kept after launch - so feel free to add your actual assets if you'd like!
+
+---
+
+ATTACHMENTS:
+- QUICK_START_CARD.pdf
+- BETA_TESTING_RUNBOOK.pdf
