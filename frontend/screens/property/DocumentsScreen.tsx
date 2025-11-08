@@ -57,7 +57,11 @@ export default function DocumentsScreen({ propertyId }: DocumentsScreenProps) {
       const data = await documentApi.getAll(token!, propertyId);
       setDocuments(data);
     } catch (error: any) {
-      Alert.alert('Error', error.message || 'Failed to load documents');
+      if (Platform.OS === 'web') {
+        alert('Failed to load documents: ' + (error.message || 'Unknown error'));
+      } else {
+        Alert.alert('Error', error.message || 'Failed to load documents');
+      }
     } finally {
       setLoading(false);
     }
