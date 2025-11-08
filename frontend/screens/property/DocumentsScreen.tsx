@@ -65,31 +65,69 @@ export default function DocumentsScreen({ propertyId }: DocumentsScreenProps) {
 
   const handleUploadDocument = async () => {
     try {
-      const result = await DocumentPicker.getDocumentAsync({
-        type: '*/*',
-        copyToCacheDirectory: true,
-      });
+      // Web-specific implementation
+      if (Platform.OS === 'web') {
+        const input = document.createElement('input');
+        input.type = 'file';
+        input.accept = '*/*';
+        
+        input.onchange = async (e: any) => {
+          const file = e.target.files?.[0];
+          if (!file) return;
+          
+          try {
+            // Read file as base64
+            const reader = new FileReader();
+            reader.onload = () => {
+              const base64 = (reader.result as string).split(',')[1]; // Remove data URL prefix
+              const fileType = file.type || 'application/octet-stream';
+              
+              setTempFileData({ base64: base64, type: fileType });
+              setDocumentName(file.name || 'Document');
+              setNameModalVisible(true);
+            };
+            reader.onerror = () => {
+              alert('Failed to read file');
+            };
+            reader.readAsDataURL(file);
+          } catch (error: any) {
+            console.error('File read error:', error);
+            alert('Failed to read file: ' + error.message);
+          }
+        };
+        
+        input.click();
+      } else {
+        // Native mobile implementation
+        const result = await DocumentPicker.getDocumentAsync({
+          type: '*/*',
+          copyToCacheDirectory: true,
+        });
 
-      if (result.canceled || !result.assets || result.assets.length === 0) {
-        return;
+        if (result.canceled || !result.assets || result.assets.length === 0) {
+          return;
+        }
+
+        const file = result.assets[0];
+        
+        // Read file as base64
+        const base64 = await FileSystem.readAsStringAsync(file.uri, {
+          encoding: 'base64',
+        });
+        
+        const fileType = file.mimeType || 'application/octet-stream';
+        
+        setTempFileData({ base64: base64, type: fileType });
+        setDocumentName(file.name || 'Document');
+        setNameModalVisible(true);
       }
-
-      const file = result.assets[0];
-      
-      // Read file as base64
-      const base64 = await FileSystem.readAsStringAsync(file.uri, {
-        encoding: 'base64',
-      });
-      
-      const fileType = file.mimeType || 'application/octet-stream';
-      
-      setTempFileData({ base64: base64, type: fileType });
-      setDocumentName(file.name || 'Document');
-      setNameModalVisible(true);
-
     } catch (error: any) {
       console.error('Document picker error:', error);
-      Alert.alert('Error', error.message || 'Failed to select document');
+      if (Platform.OS === 'web') {
+        alert('Failed to select document: ' + error.message);
+      } else {
+        Alert.alert('Error', error.message || 'Failed to select document');
+      }
     }
   };
 
