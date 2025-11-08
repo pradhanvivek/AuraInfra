@@ -30,6 +30,93 @@ let ReactDatePicker: any = null;
 if (Platform.OS === 'web') {
   ReactDatePicker = require('react-datepicker').default;
   require('react-datepicker/dist/react-datepicker.css');
+  
+  // Add custom CSS for better positioning and mobile support
+  const style = document.createElement('style');
+  style.textContent = `
+    .custom-datepicker-input {
+      width: 100%;
+      padding: 14px;
+      font-size: 16px;
+      border: 1px solid #E5E5EA;
+      border-radius: 12px;
+      background-color: #fff;
+      color: #000;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    }
+    
+    .datepicker-wrapper {
+      width: 100%;
+      display: block;
+    }
+    
+    .react-datepicker-popper {
+      z-index: 9999 !important;
+    }
+    
+    .react-datepicker {
+      font-size: 1rem;
+      border-radius: 12px;
+      border: 1px solid #E5E5EA;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    }
+    
+    .react-datepicker__header {
+      background-color: #007AFF;
+      border-bottom: none;
+      border-radius: 12px 12px 0 0;
+      padding-top: 12px;
+    }
+    
+    .react-datepicker__current-month,
+    .react-datepicker__day-name {
+      color: #fff;
+    }
+    
+    .react-datepicker__day--selected,
+    .react-datepicker__day--keyboard-selected {
+      background-color: #007AFF;
+      color: #fff;
+    }
+    
+    .react-datepicker__day:hover {
+      background-color: #E5E5EA;
+    }
+    
+    /* Month and Year dropdowns */
+    .react-datepicker__month-dropdown,
+    .react-datepicker__year-dropdown {
+      background-color: #fff;
+      border: 1px solid #E5E5EA;
+      border-radius: 8px;
+      max-height: 200px;
+      overflow-y: auto;
+    }
+    
+    .react-datepicker__month-option:hover,
+    .react-datepicker__year-option:hover {
+      background-color: #E5E5EA;
+    }
+    
+    .react-datepicker__month-option--selected,
+    .react-datepicker__year-option--selected {
+      background-color: #007AFF;
+      color: #fff;
+    }
+    
+    /* Mobile optimization */
+    @media (max-width: 768px) {
+      .react-datepicker {
+        font-size: 0.9rem;
+      }
+      
+      .react-datepicker__day {
+        width: 2.2rem;
+        line-height: 2.2rem;
+      }
+    }
+  `;
+  document.head.appendChild(style);
 }
 
 const API_URL = Constants.expoConfig?.extra?.EXPO_PUBLIC_BACKEND_URL || process.env.EXPO_PUBLIC_BACKEND_URL;
