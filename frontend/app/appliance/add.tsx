@@ -86,6 +86,112 @@ export default function AddApplianceScreen() {
     }
   }, [editId]);
 
+  // Inject custom CSS for react-datepicker on web
+  useEffect(() => {
+    if (Platform.OS === 'web' && typeof document !== 'undefined') {
+      const baseCssId = 'react-datepicker-base-css-appliance';
+      if (!document.getElementById(baseCssId)) {
+        const link = document.createElement('link');
+        link.id = baseCssId;
+        link.rel = 'stylesheet';
+        link.href = 'https://cdn.jsdelivr.net/npm/react-datepicker@6.9.0/dist/react-datepicker.min.css';
+        document.head.appendChild(link);
+      }
+      
+      const styleId = 'custom-datepicker-styles-appliance';
+      if (!document.getElementById(styleId)) {
+        const style = document.createElement('style');
+        style.id = styleId;
+        style.textContent = `
+          .appliance-datepicker-input {
+            width: 100%;
+            padding: 14px;
+            font-size: 16px;
+            border: 1px solid #E5E5EA;
+            border-radius: 12px;
+            background-color: #fff;
+            color: #000;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            cursor: pointer;
+          }
+          
+          .react-datepicker-popper {
+            z-index: 99999 !important;
+            position: absolute !important;
+          }
+          
+          .react-datepicker {
+            font-size: 1rem;
+            border-radius: 12px;
+            border: 1px solid #E5E5EA;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.25);
+            background-color: #fff;
+            z-index: 99999;
+          }
+          
+          .react-datepicker__triangle {
+            display: none;
+          }
+          
+          .react-datepicker__header {
+            background-color: #007AFF;
+            border-bottom: none;
+            border-radius: 12px 12px 0 0;
+            padding-top: 12px;
+          }
+          
+          .react-datepicker__current-month,
+          .react-datepicker__day-name {
+            color: #fff;
+          }
+          
+          .react-datepicker__day--selected,
+          .react-datepicker__day--keyboard-selected {
+            background-color: #007AFF;
+            color: #fff;
+          }
+          
+          .react-datepicker__day:hover {
+            background-color: #E5E5EA;
+          }
+          
+          .react-datepicker__month-dropdown,
+          .react-datepicker__year-dropdown {
+            background-color: #fff;
+            border: 1px solid #E5E5EA;
+            border-radius: 8px;
+            max-height: 200px;
+            overflow-y: auto;
+          }
+          
+          .react-datepicker__month-option:hover,
+          .react-datepicker__year-option:hover {
+            background-color: #E5E5EA;
+          }
+          
+          .react-datepicker__month-option--selected,
+          .react-datepicker__year-option--selected {
+            background-color: #007AFF;
+            color: #fff;
+          }
+          
+          .react-datepicker__navigation {
+            top: 12px;
+          }
+          
+          .react-datepicker__navigation--previous {
+            border-right-color: #fff;
+          }
+          
+          .react-datepicker__navigation--next {
+            border-left-color: #fff;
+          }
+        `;
+        document.head.appendChild(style);
+      }
+    }
+  }, []);
+
   const fetchAppliance = async () => {
     try {
       const response = await axios.get(
