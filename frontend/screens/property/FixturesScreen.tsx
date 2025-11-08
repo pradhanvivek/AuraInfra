@@ -117,22 +117,41 @@ export default function FixturesScreen({ propertyId }: FixturesScreenProps) {
             background-color: #fff;
             color: #000;
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            cursor: pointer;
           }
           
           .datepicker-wrapper {
             width: 100%;
             display: block;
+            position: relative;
+          }
+          
+          .react-datepicker-wrapper {
+            width: 100%;
+            display: block;
+          }
+          
+          .react-datepicker__input-container {
+            width: 100%;
+            display: block;
           }
           
           .react-datepicker-popper {
-            z-index: 9999 !important;
+            z-index: 99999 !important;
+            position: absolute !important;
           }
           
           .react-datepicker {
             font-size: 1rem;
             border-radius: 12px;
             border: 1px solid #E5E5EA;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.25);
+            background-color: #fff;
+            z-index: 99999;
+          }
+          
+          .react-datepicker__triangle {
+            display: none;
           }
           
           .react-datepicker__header {
@@ -175,6 +194,18 @@ export default function FixturesScreen({ propertyId }: FixturesScreenProps) {
           .react-datepicker__year-option--selected {
             background-color: #007AFF;
             color: #fff;
+          }
+          
+          .react-datepicker__navigation {
+            top: 12px;
+          }
+          
+          .react-datepicker__navigation--previous {
+            border-right-color: #fff;
+          }
+          
+          .react-datepicker__navigation--next {
+            border-left-color: #fff;
           }
           
           @media (max-width: 768px) {
