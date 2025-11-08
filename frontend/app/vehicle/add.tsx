@@ -440,15 +440,38 @@ export default function AddVehicleScreen() {
         <Text style={styles.sectionTitle}>Financial</Text>
         
         <Text style={styles.label}>Purchase Date</Text>
-        <TouchableOpacity 
-          style={styles.dateInput}
-          onPress={() => showDatePicker('purchase')}
-        >
-          <Text style={purchaseDate ? styles.dateText : styles.datePlaceholder}>
-            {purchaseDate || 'Select date'}
-          </Text>
-          <Ionicons name="calendar" size={20} color="#8E8E93" />
-        </TouchableOpacity>
+        {Platform.OS === 'web' && ReactDatePicker ? (
+          <View style={styles.webDatePickerWrapper} className="vehicle-datepicker-wrapper">
+            <ReactDatePicker
+              selected={purchaseDate ? new Date(purchaseDate) : null}
+              onChange={(date: Date | null) => {
+                if (date) {
+                  setPurchaseDate(date.toISOString().split('T')[0]);
+                }
+              }}
+              dateFormat="yyyy-MM-dd"
+              placeholderText="Select purchase date"
+              showMonthDropdown
+              showYearDropdown
+              dropdownMode="select"
+              yearDropdownItemNumber={10}
+              scrollableYearDropdown
+              popperPlacement="bottom-start"
+              withPortal={false}
+              className="vehicle-datepicker-input"
+            />
+          </View>
+        ) : (
+          <TouchableOpacity 
+            style={styles.dateInput}
+            onPress={() => showDatePicker('purchase')}
+          >
+            <Text style={purchaseDate ? styles.dateText : styles.datePlaceholder}>
+              {purchaseDate || 'Select date'}
+            </Text>
+            <Ionicons name="calendar" size={20} color="#8E8E93" />
+          </TouchableOpacity>
+        )}
 
         <View style={styles.row}>
           <View style={styles.halfInput}>
