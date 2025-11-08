@@ -1177,6 +1177,10 @@ const styles = StyleSheet.create({
     color: '#007AFF',
     marginLeft: 8,
   },
+  webDatePickerWrapper: {
+    width: '100%',
+    marginBottom: 16,
+  },
   input: {
     backgroundColor: '#fff',
     borderRadius: 12,
