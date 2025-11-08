@@ -690,7 +690,7 @@ export default function FixturesScreen({ propertyId }: FixturesScreenProps) {
             </TouchableOpacity>
 
             {/* Only render DateTimePickerModal on native platforms */}
-            {Platform.OS !== 'web' && (
+            {Platform.OS !== 'web' ? (
               <DateTimePickerModal
                 isVisible={isDatePickerVisible}
                 mode="date"
@@ -698,7 +698,7 @@ export default function FixturesScreen({ propertyId }: FixturesScreenProps) {
                 onCancel={hideDatePicker}
                 minimumDate={new Date()}
               />
-            )}
+            ) : null}
 
             {/* Warranty Status Display */}
             {warrantyExpiryDate && (
