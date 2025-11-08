@@ -532,6 +532,7 @@ export default function AddVehicleScreen() {
                   setPurchaseDate(date.toISOString().split('T')[0]);
                 }
               }}
+              maxDate={new Date()}
               dateFormat="yyyy-MM-dd"
               placeholderText="Select purchase date"
               showMonthDropdown
