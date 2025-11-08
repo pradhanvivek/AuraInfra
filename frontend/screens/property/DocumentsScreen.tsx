@@ -181,9 +181,36 @@ export default function DocumentsScreen({ propertyId }: DocumentsScreenProps) {
     if (doc.file_type === 'application/pdf') {
       try {
         if (Platform.OS === 'web') {
-          // Web: Open PDF in new tab
-          const pdfDataUrl = `data:application/pdf;base64,${doc.file_data}`;
-          window.open(pdfDataUrl, '_blank');
+          // Web: Convert base64 to blob and open (Safari compatible)
+          try {
+            // Decode base64 to binary
+            const binaryString = atob(doc.file_data);
+            const bytes = new Uint8Array(binaryString.length);
+            for (let i = 0; i < binaryString.length; i++) {
+              bytes[i] = binaryString.charCodeAt(i);
+            }
+            
+            // Create blob from binary data
+            const blob = new Blob([bytes], { type: 'application/pdf' });
+            
+            // Create blob URL
+            const blobUrl = URL.createObjectURL(blob);
+            
+            // Open in new tab
+            const newWindow = window.open(blobUrl, '_blank');
+            
+            // Clean up blob URL after a delay
+            setTimeout(() => {
+              URL.revokeObjectURL(blobUrl);
+            }, 100);
+            
+            if (!newWindow) {
+              alert('Please allow pop-ups for this site to view PDFs');
+            }
+          } catch (error: any) {
+            console.error('PDF conversion error:', error);
+            alert('Failed to open PDF. The file may be corrupted.');
+          }
         } else {
           // Native: Save to file system and open with native viewer
           setLoading(true);
