@@ -637,9 +637,9 @@ export default function FixturesScreen({ propertyId }: FixturesScreenProps) {
             )}
 
             <View style={styles.divider}>
-              <View style={styles.dividerLine} />
+              <View style={styles.dividerLine}></View>
               <Text style={styles.dividerText}>OR ENTER MANUALLY</Text>
-              <View style={styles.dividerLine} />
+              <View style={styles.dividerLine}></View>
             </View>
 
             <Text style={styles.label}>Make</Text>
