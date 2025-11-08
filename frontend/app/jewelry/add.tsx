@@ -502,15 +502,50 @@ export default function AddJewelryScreen() {
         </View>
 
         <Text style={styles.label}>Appraisal Date</Text>
-        <TouchableOpacity 
-          style={styles.dateInput}
-          onPress={() => showDatePicker('appraisal')}
-        >
-          <Text style={appraisalDate ? styles.dateText : styles.datePlaceholder}>
-            {appraisalDate || 'Select date'}
-          </Text>
-          <Ionicons name="calendar" size={20} color="#8E8E93" />
-        </TouchableOpacity>
+        {Platform.OS === 'web' && ReactDatePicker ? (
+          <View style={styles.datePickerContainer}>
+            <ReactDatePicker
+              selected={appraisalDate ? new Date(appraisalDate) : null}
+              onChange={(date: Date | null) => {
+                if (date) setAppraisalDate(date.toISOString().split('T')[0]);
+              }}
+              maxDate={new Date()}
+              dateFormat="yyyy-MM-dd"
+              placeholderText="Select appraisal date"
+              showMonthDropdown
+              showYearDropdown
+              dropdownMode="select"
+              yearDropdownItemNumber={10}
+              scrollableYearDropdown
+              popperPlacement="top-start"
+              popperProps={{
+                strategy: 'absolute',
+                modifiers: [
+                  { name: 'preventOverflow', options: { mainAxis: false, altAxis: false }},
+                  { name: 'flip', enabled: false },
+                ],
+              }}
+              customInput={
+                <View style={styles.customDateInput}>
+                  <Text style={appraisalDate ? styles.dateText : styles.datePlaceholder}>
+                    {appraisalDate || 'Select appraisal date'}
+                  </Text>
+                  <Ionicons name="calendar" size={20} color="#8E8E93" />
+                </View>
+              }
+            />
+          </View>
+        ) : (
+          <TouchableOpacity 
+            style={styles.dateInput}
+            onPress={() => showDatePicker('appraisal')}
+          >
+            <Text style={appraisalDate ? styles.dateText : styles.datePlaceholder}>
+              {appraisalDate || 'Select date'}
+            </Text>
+            <Ionicons name="calendar" size={20} color="#8E8E93" />
+          </TouchableOpacity>
+        )}
 
         <Text style={styles.sectionTitle}>Certificate & Warranty</Text>
         
