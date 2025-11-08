@@ -23,6 +23,13 @@ import Constants from 'expo-constants';
 import DateTimePickerModal from 'react-native-modal-datetime-picker';
 import { getCurrencyInfo } from '../../utils/localeUtils';
 
+// Conditionally import react-datepicker only on web
+let ReactDatePicker: any = null;
+if (Platform.OS === 'web') {
+  ReactDatePicker = require('react-datepicker').default;
+  require('react-datepicker/dist/react-datepicker.css');
+}
+
 const API_URL = Constants.expoConfig?.extra?.EXPO_PUBLIC_BACKEND_URL || process.env.EXPO_PUBLIC_BACKEND_URL;
 
 export default function AddVehicleScreen() {
