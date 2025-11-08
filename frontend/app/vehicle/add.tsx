@@ -488,7 +488,7 @@ export default function AddVehicleScreen() {
 
         <Text style={styles.label}>Insurance Expiry</Text>
         {Platform.OS === 'web' && ReactDatePicker ? (
-          <View style={styles.webDatePickerWrapper} className="vehicle-datepicker-wrapper">
+          <View style={styles.datePickerContainer}>
             <ReactDatePicker
               selected={insuranceExpiry ? new Date(insuranceExpiry) : null}
               onChange={(date: Date | null) => {
@@ -503,9 +503,14 @@ export default function AddVehicleScreen() {
               dropdownMode="select"
               yearDropdownItemNumber={10}
               scrollableYearDropdown
-              className="vehicle-datepicker-input"
-              onFocus={(e: any) => e.target.blur()}
-              readOnly
+              customInput={
+                <View style={styles.customDateInput}>
+                  <Text style={insuranceExpiry ? styles.dateText : styles.datePlaceholder}>
+                    {insuranceExpiry || 'Select insurance expiry date'}
+                  </Text>
+                  <Ionicons name="calendar" size={20} color="#8E8E93" />
+                </View>
+              }
             />
           </View>
         ) : (
