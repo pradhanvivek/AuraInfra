@@ -501,26 +501,74 @@ export default function AddVehicleScreen() {
         <Text style={styles.sectionTitle}>Maintenance</Text>
         
         <Text style={styles.label}>Last Maintenance</Text>
-        <TouchableOpacity 
-          style={styles.dateInput}
-          onPress={() => showDatePicker('lastMaint')}
-        >
-          <Text style={lastMaintenance ? styles.dateText : styles.datePlaceholder}>
-            {lastMaintenance || 'Select date'}
-          </Text>
-          <Ionicons name="calendar" size={20} color="#8E8E93" />
-        </TouchableOpacity>
+        {Platform.OS === 'web' && ReactDatePicker ? (
+          <View style={styles.webDatePickerWrapper} className="vehicle-datepicker-wrapper">
+            <ReactDatePicker
+              selected={lastMaintenance ? new Date(lastMaintenance) : null}
+              onChange={(date: Date | null) => {
+                if (date) {
+                  setLastMaintenance(date.toISOString().split('T')[0]);
+                }
+              }}
+              maxDate={new Date()}
+              dateFormat="yyyy-MM-dd"
+              placeholderText="Select last maintenance date"
+              showMonthDropdown
+              showYearDropdown
+              dropdownMode="select"
+              yearDropdownItemNumber={10}
+              scrollableYearDropdown
+              popperPlacement="bottom-start"
+              withPortal={false}
+              className="vehicle-datepicker-input"
+            />
+          </View>
+        ) : (
+          <TouchableOpacity 
+            style={styles.dateInput}
+            onPress={() => showDatePicker('lastMaint')}
+          >
+            <Text style={lastMaintenance ? styles.dateText : styles.datePlaceholder}>
+              {lastMaintenance || 'Select date'}
+            </Text>
+            <Ionicons name="calendar" size={20} color="#8E8E93" />
+          </TouchableOpacity>
+        )}
 
         <Text style={styles.label}>Next Maintenance</Text>
-        <TouchableOpacity 
-          style={styles.dateInput}
-          onPress={() => showDatePicker('nextMaint')}
-        >
-          <Text style={nextMaintenance ? styles.dateText : styles.datePlaceholder}>
-            {nextMaintenance || 'Select date'}
-          </Text>
-          <Ionicons name="calendar" size={20} color="#8E8E93" />
-        </TouchableOpacity>
+        {Platform.OS === 'web' && ReactDatePicker ? (
+          <View style={styles.webDatePickerWrapper} className="vehicle-datepicker-wrapper">
+            <ReactDatePicker
+              selected={nextMaintenance ? new Date(nextMaintenance) : null}
+              onChange={(date: Date | null) => {
+                if (date) {
+                  setNextMaintenance(date.toISOString().split('T')[0]);
+                }
+              }}
+              minDate={new Date()}
+              dateFormat="yyyy-MM-dd"
+              placeholderText="Select next maintenance date"
+              showMonthDropdown
+              showYearDropdown
+              dropdownMode="select"
+              yearDropdownItemNumber={10}
+              scrollableYearDropdown
+              popperPlacement="bottom-start"
+              withPortal={false}
+              className="vehicle-datepicker-input"
+            />
+          </View>
+        ) : (
+          <TouchableOpacity 
+            style={styles.dateInput}
+            onPress={() => showDatePicker('nextMaint')}
+          >
+            <Text style={nextMaintenance ? styles.dateText : styles.datePlaceholder}>
+              {nextMaintenance || 'Select date'}
+            </Text>
+            <Ionicons name="calendar" size={20} color="#8E8E93" />
+          </TouchableOpacity>
+        )}
 
         <Text style={styles.label}>Maintenance Frequency (months)</Text>
         <TextInput
