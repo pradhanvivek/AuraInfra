@@ -69,6 +69,47 @@ export default function AddVehicleScreen() {
   const [datePickerVisible, setDatePickerVisible] = useState(false);
   const [datePickerMode, setDatePickerMode] = useState<'purchase' | 'insurance' | 'lastMaint' | 'nextMaint'>('purchase');
 
+  // Inject custom CSS for react-datepicker on web
+  useEffect(() => {
+    if (Platform.OS === 'web' && typeof document !== 'undefined') {
+      const styleId = 'custom-datepicker-styles-vehicle';
+      if (!document.getElementById(styleId)) {
+        const style = document.createElement('style');
+        style.id = styleId;
+        style.textContent = `
+          .vehicle-datepicker-input {
+            width: 100%;
+            padding: 14px;
+            font-size: 16px;
+            border: 1px solid #E5E5EA;
+            border-radius: 12px;
+            background-color: #fff;
+            color: #000;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            cursor: pointer;
+          }
+          
+          .vehicle-datepicker-wrapper {
+            width: 100%;
+            display: block;
+            position: relative;
+          }
+          
+          .vehicle-datepicker-wrapper .react-datepicker-wrapper {
+            width: 100%;
+            display: block;
+          }
+          
+          .vehicle-datepicker-wrapper .react-datepicker__input-container {
+            width: 100%;
+            display: block;
+          }
+        `;
+        document.head.appendChild(style);
+      }
+    }
+  }, []);
+
   const processVehicleScan = async (base64Data: string) => {
     setScanning(true);
     try {
