@@ -72,6 +72,16 @@ export default function AddVehicleScreen() {
   // Inject custom CSS for react-datepicker on web
   useEffect(() => {
     if (Platform.OS === 'web' && typeof document !== 'undefined') {
+      // Ensure react-datepicker base CSS is loaded
+      const baseCssId = 'react-datepicker-base-css';
+      if (!document.getElementById(baseCssId)) {
+        const link = document.createElement('link');
+        link.id = baseCssId;
+        link.rel = 'stylesheet';
+        link.href = 'https://cdn.jsdelivr.net/npm/react-datepicker@6.9.0/dist/react-datepicker.min.css';
+        document.head.appendChild(link);
+      }
+      
       const styleId = 'custom-datepicker-styles-vehicle';
       if (!document.getElementById(styleId)) {
         const style = document.createElement('style');
