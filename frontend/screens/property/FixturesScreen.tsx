@@ -779,22 +779,7 @@ export default function FixturesScreen({ propertyId }: FixturesScreenProps) {
                   yearDropdownItemNumber={10}
                   scrollableYearDropdown
                   popperPlacement="bottom-start"
-                  popperModifiers={[
-                    {
-                      name: 'offset',
-                      options: {
-                        offset: [0, 8],
-                      },
-                    },
-                    {
-                      name: 'preventOverflow',
-                      options: {
-                        rootBoundary: 'viewport',
-                        tether: false,
-                        altAxis: true,
-                      },
-                    },
-                  ]}
+                  withPortal={false}
                   wrapperClassName="datepicker-wrapper"
                   className="custom-datepicker-input"
                 />
