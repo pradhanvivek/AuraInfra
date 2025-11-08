@@ -596,7 +596,7 @@ export default function AddVehicleScreen() {
         
         <Text style={styles.label}>Last Maintenance</Text>
         {Platform.OS === 'web' && ReactDatePicker ? (
-          <View style={styles.webDatePickerWrapper} className="vehicle-datepicker-wrapper">
+          <View style={styles.datePickerContainer}>
             <ReactDatePicker
               selected={lastMaintenance ? new Date(lastMaintenance) : null}
               onChange={(date: Date | null) => {
@@ -612,9 +612,14 @@ export default function AddVehicleScreen() {
               dropdownMode="select"
               yearDropdownItemNumber={10}
               scrollableYearDropdown
-              className="vehicle-datepicker-input"
-              onFocus={(e: any) => e.target.blur()}
-              readOnly
+              customInput={
+                <View style={styles.customDateInput}>
+                  <Text style={lastMaintenance ? styles.dateText : styles.datePlaceholder}>
+                    {lastMaintenance || 'Select last maintenance date'}
+                  </Text>
+                  <Ionicons name="calendar" size={20} color="#8E8E93" />
+                </View>
+              }
             />
           </View>
         ) : (
@@ -631,7 +636,7 @@ export default function AddVehicleScreen() {
 
         <Text style={styles.label}>Next Maintenance</Text>
         {Platform.OS === 'web' && ReactDatePicker ? (
-          <View style={styles.webDatePickerWrapper} className="vehicle-datepicker-wrapper">
+          <View style={styles.datePickerContainer}>
             <ReactDatePicker
               selected={nextMaintenance ? new Date(nextMaintenance) : null}
               onChange={(date: Date | null) => {
@@ -647,9 +652,14 @@ export default function AddVehicleScreen() {
               dropdownMode="select"
               yearDropdownItemNumber={10}
               scrollableYearDropdown
-              className="vehicle-datepicker-input"
-              onFocus={(e: any) => e.target.blur()}
-              readOnly
+              customInput={
+                <View style={styles.customDateInput}>
+                  <Text style={nextMaintenance ? styles.dateText : styles.datePlaceholder}>
+                    {nextMaintenance || 'Select next maintenance date'}
+                  </Text>
+                  <Ionicons name="calendar" size={20} color="#8E8E93" />
+                </View>
+              }
             />
           </View>
         ) : (
