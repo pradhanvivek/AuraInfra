@@ -11,6 +11,7 @@ import {
   Image,
   Modal,
   useColorScheme,
+  Platform,
 } from 'react-native';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
@@ -21,6 +22,13 @@ import * as ImagePicker from 'expo-image-picker';
 import DateTimePickerModal from 'react-native-modal-datetime-picker';
 import { getCurrencyInfo } from '../../utils/localeUtils';
 import { CameraView, useCameraPermissions } from 'expo-camera';
+
+// Conditionally import react-datepicker only on web
+let ReactDatePicker: any = null;
+if (Platform.OS === 'web') {
+  ReactDatePicker = require('react-datepicker').default;
+  require('react-datepicker/dist/react-datepicker.css');
+}
 
 const API_URL = Constants.expoConfig?.extra?.EXPO_PUBLIC_BACKEND_URL || process.env.EXPO_PUBLIC_BACKEND_URL;
 
