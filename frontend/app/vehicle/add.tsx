@@ -620,6 +620,10 @@ export default function AddVehicleScreen() {
               dropdownMode="select"
               yearDropdownItemNumber={10}
               scrollableYearDropdown
+              popperPlacement="top-start"
+              popperProps={{
+                strategy: 'fixed'
+              }}
               customInput={
                 <View style={styles.customDateInput}>
                   <Text style={lastMaintenance ? styles.dateText : styles.datePlaceholder}>
@@ -660,6 +664,10 @@ export default function AddVehicleScreen() {
               dropdownMode="select"
               yearDropdownItemNumber={10}
               scrollableYearDropdown
+              popperPlacement="top-start"
+              popperProps={{
+                strategy: 'fixed'
+              }}
               customInput={
                 <View style={styles.customDateInput}>
                   <Text style={nextMaintenance ? styles.dateText : styles.datePlaceholder}>
