@@ -420,15 +420,34 @@ export default function AddArtScreen() {
 
             <View style={styles.section}>
               <Text style={styles.label}>Purchase Date</Text>
-              <TouchableOpacity
-                style={styles.dateInput}
-                onPress={() => showDatePicker('purchase')}
-              >
-                <Ionicons name="calendar-outline" size={20} color="#8E8E93" />
-                <Text style={purchaseDate ? styles.dateText : styles.datePlaceholder}>
-                  {purchaseDate || 'Select date'}
-                </Text>
-              </TouchableOpacity>
+              {Platform.OS === 'web' ? (
+                <input
+                  type="date"
+                  value={purchaseDate}
+                  onChange={(e: any) => setPurchaseDate(e.target.value)}
+                  max={new Date().toISOString().split('T')[0]}
+                  style={{
+                    width: '100%',
+                    padding: '16px',
+                    fontSize: '16px',
+                    border: '1px solid #E5E5EA',
+                    borderRadius: '12px',
+                    backgroundColor: '#fff',
+                    color: '#000',
+                    fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
+                  }}
+                />
+              ) : (
+                <TouchableOpacity
+                  style={styles.dateInput}
+                  onPress={() => showDatePicker('purchase')}
+                >
+                  <Ionicons name="calendar-outline" size={20} color="#8E8E93" />
+                  <Text style={purchaseDate ? styles.dateText : styles.datePlaceholder}>
+                    {purchaseDate || 'Select date'}
+                  </Text>
+                </TouchableOpacity>
+              )}
             </View>
 
             <View style={styles.section}>
