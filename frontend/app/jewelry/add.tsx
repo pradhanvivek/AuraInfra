@@ -92,6 +92,20 @@ export default function AddJewelryScreen() {
     }
   }, [editId]);
 
+  // Inject custom CSS for react-datepicker on web
+  useEffect(() => {
+    if (Platform.OS === 'web' && typeof document !== 'undefined') {
+      const baseCssId = 'react-datepicker-base-css-jewelry';
+      if (!document.getElementById(baseCssId)) {
+        const link = document.createElement('link');
+        link.id = baseCssId;
+        link.rel = 'stylesheet';
+        link.href = 'https://cdn.jsdelivr.net/npm/react-datepicker@6.9.0/dist/react-datepicker.min.css';
+        document.head.appendChild(link);
+      }
+    }
+  }, []);
+
   const fetchJewelry = async () => {
     try {
       const response = await axios.get(
