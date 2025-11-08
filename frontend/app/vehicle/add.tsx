@@ -539,7 +539,6 @@ export default function AddVehicleScreen() {
               dropdownMode="select"
               yearDropdownItemNumber={10}
               scrollableYearDropdown
-              withPortal
               className="vehicle-datepicker-input"
             />
           </View>
