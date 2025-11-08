@@ -5345,6 +5345,93 @@ async def get_approval_status(
 
 app.include_router(api_router)
 
+# ============= ERROR MONITORING & ALERTING =============
+from collections import defaultdict
+from starlette.middleware.base import BaseHTTPMiddleware
+from starlette.responses import Response
+import time
+
+class ErrorMonitoringMiddleware(BaseHTTPMiddleware):
+    """Middleware to track and alert on endpoint failures"""
+    
+    def __init__(self, app, alert_threshold: int = 5):
+        super().__init__(app)
+        self.alert_threshold = alert_threshold
+        self.error_counts = defaultdict(int)  # endpoint -> error count
+        self.error_window = defaultdict(list)  # endpoint -> list of error timestamps
+        self.window_duration = 300  # 5 minutes window
+        self.alerted_endpoints = set()  # Track which endpoints have been alerted
+        
+    async def dispatch(self, request: Request, call_next):
+        endpoint = f"{request.method} {request.url.path}"
+        
+        try:
+            response = await call_next(request)
+            
+            # Track errors (5xx status codes)
+            if response.status_code >= 500:
+                await self.track_error(endpoint)
+            # Reset on success
+            elif response.status_code < 400:
+                await self.reset_error_count(endpoint)
+                
+            return response
+        except Exception as e:
+            await self.track_error(endpoint)
+            raise
+    
+    async def track_error(self, endpoint: str):
+        """Track error for an endpoint and trigger alert if threshold exceeded"""
+        current_time = time.time()
+        
+        # Add error to window
+        if endpoint not in self.error_window:
+            self.error_window[endpoint] = []
+        self.error_window[endpoint].append(current_time)
+        
+        # Clean old errors outside window
+        self.error_window[endpoint] = [
+            t for t in self.error_window[endpoint] 
+            if current_time - t < self.window_duration
+        ]
+        
+        # Count errors in current window
+        error_count = len(self.error_window[endpoint])
+        
+        # Trigger alert if threshold exceeded and not already alerted
+        if error_count >= self.alert_threshold and endpoint not in self.alerted_endpoints:
+            self.alerted_endpoints.add(endpoint)
+            await self.trigger_alert(endpoint, error_count)
+    
+    async def reset_error_count(self, endpoint: str):
+        """Reset error count on successful request"""
+        if endpoint in self.error_window:
+            self.error_window[endpoint] = []
+        if endpoint in self.alerted_endpoints:
+            self.alerted_endpoints.remove(endpoint)
+            logger.info(f"✅ ALERT CLEARED: {endpoint} is now working correctly")
+    
+    async def trigger_alert(self, endpoint: str, error_count: int):
+        """Trigger alert for endpoint with too many errors"""
+        alert_message = f"""
+╔══════════════════════════════════════════════════════════════╗
+║  🚨 CRITICAL ALERT: HIGH ERROR RATE DETECTED                 ║
+╠══════════════════════════════════════════════════════════════╣
+║  Endpoint: {endpoint:<50} ║
+║  Error Count: {error_count} errors in last 5 minutes          ║
+║  Threshold: {self.alert_threshold} errors                      ║
+║  Status: REQUIRES IMMEDIATE ATTENTION                        ║
+╚══════════════════════════════════════════════════════════════╝
+        """
+        logger.error(alert_message)
+        
+        # Additional: Could send to external monitoring service, Slack, email, etc.
+        # await send_to_slack(alert_message)
+        # await send_email_alert(endpoint, error_count)
+
+# Add error monitoring middleware
+app.add_middleware(ErrorMonitoringMiddleware, alert_threshold=5)
+
 app.add_middleware(
     CORSMiddleware,
     allow_credentials=True,
