@@ -504,15 +504,50 @@ export default function AddFurnitureScreen() {
 
             <View style={styles.section}>
               <Text style={styles.label}>Purchase Date</Text>
-              <TouchableOpacity
-                style={styles.dateInput}
-                onPress={() => showDatePicker('purchase')}
-              >
-                <Ionicons name="calendar-outline" size={20} color="#8E8E93" />
-                <Text style={purchaseDate ? styles.dateText : styles.datePlaceholder}>
-                  {purchaseDate || 'Select date'}
-                </Text>
-              </TouchableOpacity>
+              {Platform.OS === 'web' && ReactDatePicker ? (
+                <View style={styles.datePickerContainer}>
+                  <ReactDatePicker
+                    selected={purchaseDate ? new Date(purchaseDate) : null}
+                    onChange={(date: Date | null) => {
+                      if (date) setPurchaseDate(date.toISOString().split('T')[0]);
+                    }}
+                    maxDate={new Date()}
+                    dateFormat="yyyy-MM-dd"
+                    placeholderText="Select purchase date"
+                    showMonthDropdown
+                    showYearDropdown
+                    dropdownMode="select"
+                    yearDropdownItemNumber={10}
+                    scrollableYearDropdown
+                    popperPlacement="top-start"
+                    popperProps={{
+                      strategy: 'absolute',
+                      modifiers: [
+                        { name: 'preventOverflow', options: { mainAxis: false, altAxis: false }},
+                        { name: 'flip', enabled: false },
+                      ],
+                    }}
+                    customInput={
+                      <View style={styles.customDateInput}>
+                        <Text style={purchaseDate ? styles.dateText : styles.datePlaceholder}>
+                          {purchaseDate || 'Select purchase date'}
+                        </Text>
+                        <Ionicons name="calendar" size={20} color="#8E8E93" />
+                      </View>
+                    }
+                  />
+                </View>
+              ) : (
+                <TouchableOpacity
+                  style={styles.dateInput}
+                  onPress={() => showDatePicker('purchase')}
+                >
+                  <Ionicons name="calendar-outline" size={20} color="#8E8E93" />
+                  <Text style={purchaseDate ? styles.dateText : styles.datePlaceholder}>
+                    {purchaseDate || 'Select date'}
+                  </Text>
+                </TouchableOpacity>
+              )}
             </View>
 
             <View style={styles.section}>
