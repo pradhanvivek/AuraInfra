@@ -689,13 +689,16 @@ export default function FixturesScreen({ propertyId }: FixturesScreenProps) {
               </Text>
             </TouchableOpacity>
 
-            <DateTimePickerModal
-              isVisible={isDatePickerVisible}
-              mode="date"
-              onConfirm={handleConfirmDate}
-              onCancel={hideDatePicker}
-              minimumDate={new Date()}
-            />
+            {/* Only render DateTimePickerModal on native platforms */}
+            {Platform.OS !== 'web' && (
+              <DateTimePickerModal
+                isVisible={isDatePickerVisible}
+                mode="date"
+                onConfirm={handleConfirmDate}
+                onCancel={hideDatePicker}
+                minimumDate={new Date()}
+              />
+            )}
 
             {/* Warranty Status Display */}
             {warrantyExpiryDate && (
