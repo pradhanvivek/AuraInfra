@@ -2228,20 +2228,24 @@ Instructions:
 - Convert any Indian rupee amounts (₹) to numeric format without currency symbol
 - Look for warranty period mentions like "1 year", "2 years", "6 months" etc.
 
-Return ONLY a valid JSON object with this exact structure (use null for fields you cannot find):
+Return ONLY a valid JSON object with this exact structure.
+
+CRITICAL: Use null (not "unknown", "N/A", "not visible", or empty string) for any field you cannot confidently identify:
 {
-  "vendor_name": "Store or vendor name (e.g., Reliance Digital, Amazon, Flipkart)",
-  "purchase_date": "YYYY-MM-DD format date (convert from DD/MM/YYYY if needed)",
-  "item_name": "Main product name (focus on the primary expensive item if multiple)",
-  "item_description": "Brief description including model details",
-  "brand": "Brand name (e.g., Apple, Samsung, LG)",
-  "model": "Model number or code (e.g., MBA-13 MW133HN A)",
-  "serial_number": "Serial number or IMEI if visible",
+  "vendor_name": "Store or vendor name (e.g., Reliance Digital, Amazon, Flipkart) OR null if not visible",
+  "purchase_date": "YYYY-MM-DD format date (convert from DD/MM/YYYY if needed) OR null if not visible",
+  "item_name": "Main product name (focus on the primary expensive item if multiple) OR null if not visible",
+  "item_description": "Brief description including model details OR null if not visible",
+  "brand": "Brand name (e.g., Apple, Samsung, LG) OR null if not visible",
+  "model": "Model number or code (e.g., MBA-13 MW133HN A) OR null if not visible",
+  "serial_number": null,
   "purchase_cost": 0.00,
-  "warranty_info": "Warranty details if mentioned (e.g., '1 year manufacturer warranty')",
+  "warranty_info": "Warranty details if mentioned (e.g., '1 year manufacturer warranty') OR null if not visible",
   "warranty_months": 0,
   "confidence": 0.95
 }
+
+IMPORTANT: For serial_number specifically - ONLY include if you can clearly see it on the receipt. Most receipts do NOT have serial numbers. Use null if not present.
 
 Examples:
 - If date shows "30/10/2025", convert to "2025-10-30"
