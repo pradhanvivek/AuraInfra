@@ -2326,17 +2326,23 @@ async def scan_appliance(
         user_message = UserMessage(
             text="""Analyze this image and identify the appliance or electrical fixture. 
             
+CRITICAL: Use null (not "unknown", "N/A", "not visible", or empty string) for any field you cannot confidently identify.
+
 Return ONLY a valid JSON object with this structure:
 {
-  "name": "Specific name (e.g., 'Ceiling Fan', 'LED TV', 'Refrigerator')",
-  "category": "Category (lights, fans, electrical appliances)",
-  "make": "Brand name if visible (e.g., 'Samsung', 'LG', 'Crompton')",
-  "model": "Model number if visible",
-  "serial_number": "Serial number if visible",
+  "name": "Specific name (e.g., 'Ceiling Fan', 'LED TV', 'Refrigerator') OR null",
+  "category": "Category (lights, fans, electrical appliances) OR null",
+  "make": "Brand name if visible (e.g., 'Samsung', 'LG', 'Crompton') OR null",
+  "model": "Model number if visible OR null",
+  "serial_number": null,
   "confidence": 0.95
 }
 
-If you can't identify the item clearly, set confidence lower. 
+IMPORTANT: 
+- For serial_number specifically - ONLY include if you can CLEARLY see it in the image. Serial numbers are rarely visible in photos. Use null if not clearly visible.
+- If you can't identify the item clearly, set confidence lower.
+- Never use "unknown", "N/A", "not visible" - always use null for missing fields.
+
 Return ONLY the JSON object, no additional text.""",
             file_contents=[ImageContent(image_base64=image_data)]
         )
