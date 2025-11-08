@@ -152,13 +152,21 @@ export default function DocumentsScreen({ propertyId }: DocumentsScreenProps) {
         file_type: tempFileData.type,
       });
 
-      Alert.alert('Success', 'Document uploaded successfully');
+      if (Platform.OS === 'web') {
+        alert('Document uploaded successfully');
+      } else {
+        Alert.alert('Success', 'Document uploaded successfully');
+      }
       setTempFileData(null);
       setDocumentName('');
       await fetchDocuments();
     } catch (error: any) {
       console.error('Upload error:', error);
-      Alert.alert('Error', error.message || 'Failed to upload document');
+      if (Platform.OS === 'web') {
+        alert('Failed to upload document: ' + (error.message || 'Unknown error'));
+      } else {
+        Alert.alert('Error', error.message || 'Failed to upload document');
+      }
     } finally {
       setUploading(false);
     }
