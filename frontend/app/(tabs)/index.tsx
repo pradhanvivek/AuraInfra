@@ -118,14 +118,6 @@ export default function PropertiesScreen() {
       isAd: false,
     },
     {
-      id: 'paint',
-      title: 'Paint Estimate',
-      icon: 'color-palette-outline',
-      color: '#FF3B30',
-      route: '/property-paint/[id]',
-      isAd: false,
-    },
-    {
       id: 'builder',
       title: 'My Builder',
       icon: 'business-outline',
@@ -140,6 +132,74 @@ export default function PropertiesScreen() {
       color: '#FF2D55',
       route: null,
       isAd: true,
+    },
+    {
+      id: 'view-more',
+      title: 'View More',
+      icon: 'ellipsis-horizontal-circle-outline',
+      color: '#8E8E93',
+      route: null,
+      isAd: false,
+      isViewMore: true,
+    },
+  ];
+
+  const allPropertyFeatures = [
+    {
+      id: 'documents',
+      title: 'My Documents',
+      icon: 'document-text-outline',
+      color: '#007AFF',
+      route: '/property-documents/[id]',
+    },
+    {
+      id: 'fixtures',
+      title: 'My Fixtures',
+      icon: 'construct-outline',
+      color: '#34C759',
+      route: '/property-fixtures/[id]',
+    },
+    {
+      id: 'measurements',
+      title: 'House Measurements',
+      icon: 'resize-outline',
+      color: '#FF9500',
+      route: '/property-measurements/[id]',
+    },
+    {
+      id: 'vastu',
+      title: 'Vastu',
+      icon: 'compass-outline',
+      color: '#AF52DE',
+      route: '/property-vastu/[id]',
+    },
+    {
+      id: 'fengshui',
+      title: 'Feng Shui',
+      icon: 'leaf-outline',
+      color: '#34C759',
+      route: '/property-fengshui/[id]',
+    },
+    {
+      id: 'paint',
+      title: 'Paint Estimate',
+      icon: 'color-palette-outline',
+      color: '#FF3B30',
+      route: '/property-paint/[id]',
+    },
+    {
+      id: 'health',
+      title: 'Property Health',
+      icon: 'fitness-outline',
+      color: '#00C7BE',
+      route: '/property/[id]',
+    },
+    {
+      id: 'builder',
+      title: 'My Builder',
+      icon: 'business-outline',
+      color: '#5856D6',
+      route: '/my-builder',
     },
   ];
 
