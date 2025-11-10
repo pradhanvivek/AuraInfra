@@ -861,6 +861,7 @@ const styles = StyleSheet.create({
     borderTopLeftRadius: 24,
     borderTopRightRadius: 24,
     maxHeight: '80%',
+    height: '80%',
     paddingBottom: 20,
   },
   viewMoreHeader: {
@@ -878,6 +879,7 @@ const styles = StyleSheet.create({
   },
   viewMoreScroll: {
     flex: 1,
+    minHeight: 200,
   },
   viewMoreGrid: {
     padding: 16,
