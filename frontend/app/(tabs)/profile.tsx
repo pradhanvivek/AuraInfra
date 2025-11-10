@@ -494,8 +494,8 @@ export default function Profile() {
               <Ionicons name="person-outline" size={24} color="#007AFF" />
             </View>
             <View style={styles.infoContent}>
-              <Text style={styles.infoLabel}>Username</Text>
-              <Text style={styles.infoValue}>{profile?.username}</Text>
+              <Text style={[styles.infoLabel, { color: isDark ? '#A0A0A0' : '#8E8E93' }]}>Username</Text>
+              <Text style={[styles.infoValue, { color: isDark ? '#FFFFFF' : '#000' }]}>{profile?.username}</Text>
             </View>
           </View>
 
