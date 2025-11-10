@@ -277,6 +277,54 @@ export default function AdminDashboard() {
           </TouchableOpacity>
         </View>
       )}
+
+      {/* Property Selector Modal */}
+      <Modal
+        visible={selectorVisible}
+        transparent
+        animationType="slide"
+        onRequestClose={() => setSelectorVisible(false)}
+      >
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalContent}>
+            <View style={styles.modalHeader}>
+              <Text style={styles.modalTitle}>Select Property</Text>
+              <TouchableOpacity onPress={() => setSelectorVisible(false)}>
+                <Ionicons name="close" size={28} color="#000" />
+              </TouchableOpacity>
+            </View>
+            
+            <ScrollView style={styles.propertiesList}>
+              {managedProperties.map((property) => (
+                <TouchableOpacity
+                  key={property.id}
+                  style={[
+                    styles.propertyItem,
+                    selectedProperty === property.id && styles.selectedPropertyItem
+                  ]}
+                  onPress={() => {
+                    setSelectedProperty(property.id);
+                    setSelectorVisible(false);
+                  }}
+                >
+                  <View style={styles.propertyInfo}>
+                    <Text style={[
+                      styles.propertyItemName,
+                      selectedProperty === property.id && styles.selectedPropertyText
+                    ]}>
+                      {property.name}
+                    </Text>
+                    <Text style={styles.propertyItemAddress}>{property.address}</Text>
+                  </View>
+                  {selectedProperty === property.id && (
+                    <Ionicons name="checkmark-circle" size={24} color="#007AFF" />
+                  )}
+                </TouchableOpacity>
+              ))}
+            </ScrollView>
+          </View>
+        </View>
+      </Modal>
     </ScrollView>
   );
 }
