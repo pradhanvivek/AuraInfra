@@ -35,6 +35,8 @@ export default function AdminDashboard() {
   const [selectedProperty, setSelectedProperty] = useState<string>('');
   const [propertyName, setPropertyName] = useState<string>('');
   const [stats, setStats] = useState<DashboardStats | null>(null);
+  const [managedProperties, setManagedProperties] = useState<any[]>([]);
+  const [selectorVisible, setSelectorVisible] = useState(false);
 
   useEffect(() => {
     fetchProfile();
