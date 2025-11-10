@@ -388,25 +388,6 @@ export default function PropertiesScreen() {
           ))}
         </View>
 
-        {/* Property Actions */}
-        <Text style={styles.sectionTitle}>Property Actions</Text>
-        <TouchableOpacity
-          style={styles.actionCard}
-          onPress={() => router.push('/property/add' as any)}
-        >
-          <Ionicons name="add-circle-outline" size={24} color="#007AFF" />
-          <Text style={styles.actionText}>Add New Property</Text>
-          <Ionicons name="chevron-forward" size={20} color="#C7C7CC" />
-        </TouchableOpacity>
-
-        <TouchableOpacity
-          style={styles.actionCard}
-          onPress={() => router.push(`/property/${selectedProperty?.id}` as any)}
-        >
-          <Ionicons name="settings-outline" size={24} color="#007AFF" />
-          <Text style={styles.actionText}>Property Details & Settings</Text>
-          <Ionicons name="chevron-forward" size={20} color="#C7C7CC" />
-        </TouchableOpacity>
       </ScrollView>
 
       {/* Property Selector Modal */}
