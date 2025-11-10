@@ -638,20 +638,21 @@ const styles = StyleSheet.create({
     borderRadius: 12,
   },
   propertyLogoNameContainer: {
-    flex: 1,
     flexDirection: 'row',
     alignItems: 'center',
     marginRight: 8,
-    gap: 12,
+    gap: 8,
+    maxWidth: '85%',
   },
   propertyLogo: {
-    width: 48,
-    height: 48,
+    width: 40,
+    height: 40,
     borderRadius: 8,
     backgroundColor: '#F2F2F7',
   },
   propertyTextContainer: {
     flex: 1,
+    minWidth: 0,
   },
   addressContent: {
     flex: 1,
