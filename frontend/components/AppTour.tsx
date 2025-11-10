@@ -361,12 +361,18 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     marginBottom: 12,
   },
+  descriptionScroll: {
+    maxHeight: 200,
+    marginBottom: 16,
+  },
+  descriptionContent: {
+    flexGrow: 1,
+  },
   description: {
     fontSize: 16,
     lineHeight: 24,
     color: '#3C3C43',
     textAlign: 'center',
-    marginBottom: 24,
   },
   dotsContainer: {
     flexDirection: 'row',
