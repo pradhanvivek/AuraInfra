@@ -178,7 +178,7 @@ export default function Login() {
               <TouchableOpacity
                 style={[styles.button, loading && styles.buttonDisabled]}
                 onPress={handleLogin}
-                disabled={loading}
+                disabled={loading || googleLoading}
               >
                 {loading ? (
                   <ActivityIndicator color="#fff" />
@@ -187,9 +187,34 @@ export default function Login() {
                 )}
               </TouchableOpacity>
 
+              {/* Divider */}
+              <View style={styles.divider}>
+                <View style={[styles.dividerLine, { backgroundColor: inputBorderColor }]} />
+                <Text style={[styles.dividerText, { color: subtextColor }]}>OR</Text>
+                <View style={[styles.dividerLine, { backgroundColor: inputBorderColor }]} />
+              </View>
+
+              {/* Google Sign-In Button */}
+              <TouchableOpacity
+                style={[styles.googleButton, { borderColor: inputBorderColor }]}
+                onPress={handleGoogleSignIn}
+                disabled={loading || googleLoading}
+              >
+                {googleLoading ? (
+                  <ActivityIndicator color="#007AFF" />
+                ) : (
+                  <>
+                    <Ionicons name="logo-google" size={20} color="#DB4437" />
+                    <Text style={[styles.googleButtonText, { color: textColor }]}>
+                      Continue with Google
+                    </Text>
+                  </>
+                )}
+              </TouchableOpacity>
+
               <TouchableOpacity
                 onPress={() => router.push('/auth/register')}
-                disabled={loading}
+                disabled={loading || googleLoading}
               >
                 <Text style={styles.linkText}>Don't have an account? Register</Text>
               </TouchableOpacity>
