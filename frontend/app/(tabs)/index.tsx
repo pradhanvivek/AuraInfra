@@ -373,6 +373,8 @@ export default function PropertiesScreen() {
               onPress={() => {
                 if (card.isAd) {
                   console.log('Ad tile tapped');
+                } else if ((card as any).isViewMore) {
+                  setViewMoreModalVisible(true);
                 } else {
                   router.push({
                     pathname: card.route,
