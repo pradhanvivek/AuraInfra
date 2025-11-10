@@ -461,8 +461,8 @@ export default function Profile() {
               <Ionicons name="mail-outline" size={24} color="#007AFF" />
             </View>
             <View style={styles.infoContent}>
-              <Text style={styles.infoLabel}>Email</Text>
-              <Text style={styles.infoValue}>
+              <Text style={[styles.infoLabel, { color: isDark ? '#A0A0A0' : '#8E8E93' }]}>Email</Text>
+              <Text style={[styles.infoValue, { color: isDark ? '#FFFFFF' : '#000' }]}>
                 {profile?.email || 'Not provided'}
               </Text>
             </View>
