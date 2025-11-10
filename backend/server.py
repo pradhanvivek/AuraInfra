@@ -107,6 +107,7 @@ class Property(BaseModel):
     longitude: Optional[float] = None
     purchase_cost: Optional[float] = None
     current_value: Optional[float] = None
+    logo: Optional[str] = None  # base64 encoded image
     user_id: str
     created_at: datetime = Field(default_factory=datetime.utcnow)
 
@@ -117,6 +118,7 @@ class PropertyCreate(BaseModel):
     longitude: Optional[float] = None
     purchase_cost: Optional[float] = None
     current_value: Optional[float] = None
+    logo: Optional[str] = None  # base64 encoded image
 
 class PropertyUpdate(BaseModel):
     name: Optional[str] = None
@@ -125,6 +127,7 @@ class PropertyUpdate(BaseModel):
     longitude: Optional[float] = None
     purchase_cost: Optional[float] = None
     current_value: Optional[float] = None
+    logo: Optional[str] = None  # base64 encoded image
 
 class PropertyDocument(BaseModel):
     id: str = Field(default_factory=lambda: str(uuid.uuid4()))
