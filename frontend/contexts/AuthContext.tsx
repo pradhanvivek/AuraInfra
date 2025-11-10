@@ -43,9 +43,10 @@ interface AuthContextType {
   userId: string | null;
   username: string | null;
   loading: boolean;
-  login: (username: string, password: string) => Promise<void>;
+  login: (username: string, password: string) => Promise<string>;
   register: (username: string, email: string, password: string) => Promise<void>;
   logout: () => Promise<void>;
+  setToken: (token: string) => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
