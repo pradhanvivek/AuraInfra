@@ -108,6 +108,9 @@ export default function AdminDashboard() {
       {/* Header */}
       <View style={styles.header}>
         <Text style={styles.headerTitle}>Admin Dashboard</Text>
+        {propertyName && (
+          <Text style={styles.propertyName}>{propertyName}</Text>
+        )}
         <Text style={styles.headerSubtitle}>
           {profile.is_super_admin ? 'Super Admin' : 'HOA Admin'}
         </Text>
