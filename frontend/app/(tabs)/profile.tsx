@@ -345,7 +345,7 @@ export default function Profile() {
         </View>
 
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Preferences</Text>
+          <Text style={[styles.sectionTitle, { color: isDark ? '#A0A0A0' : '#8E8E93' }]}>Preferences</Text>
 
           <TouchableOpacity
             style={styles.infoCard}
