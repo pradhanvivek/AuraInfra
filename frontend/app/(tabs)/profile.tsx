@@ -489,7 +489,7 @@ export default function Profile() {
         <View style={styles.section}>
           <Text style={[styles.sectionTitle, { color: isDark ? '#A0A0A0' : '#8E8E93' }]}>Account</Text>
 
-          <View style={styles.infoCard}>
+          <View style={[styles.infoCard, { backgroundColor: isDark ? '#1C1C1E' : '#fff', borderBottomColor: isDark ? '#2C2C2E' : '#F2F2F7' }]}>
             <View style={styles.infoIcon}>
               <Ionicons name="person-outline" size={24} color="#007AFF" />
             </View>
@@ -499,7 +499,7 @@ export default function Profile() {
             </View>
           </View>
 
-          <TouchableOpacity style={styles.replayTourCard} onPress={resetTour}>
+          <TouchableOpacity style={[styles.replayTourCard, { backgroundColor: isDark ? '#1C1C1E' : '#fff' }]} onPress={resetTour}>
             <View style={styles.infoIcon}>
               <Ionicons name="school-outline" size={24} color="#007AFF" />
             </View>
@@ -507,7 +507,7 @@ export default function Profile() {
             <Ionicons name="chevron-forward" size={20} color="#C7C7CC" />
           </TouchableOpacity>
 
-          <TouchableOpacity style={styles.logoutCard} onPress={handleLogout}>
+          <TouchableOpacity style={[styles.logoutCard, { backgroundColor: isDark ? '#1C1C1E' : '#fff' }]} onPress={handleLogout}>
             <View style={styles.infoIcon}>
               <Ionicons name="log-out-outline" size={24} color="#FF3B30" />
             </View>
