@@ -28,6 +28,7 @@ export default function TabsLayout() {
   };
 
   return (
+    <>
     <Tabs
       initialRouteName="index"
       screenOptions={{
