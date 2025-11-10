@@ -1051,6 +1051,13 @@ async def register(user: UserRegister):
         "email": user.email,
         "password": hashed_password.decode('utf-8'),
         "phone": None,
+        "warranty_reminder_days": 30,
+        "geomancy_preference": "vastu",
+        "is_super_admin": False,
+        "is_hoa_admin": False,
+        "managed_properties": [],
+        "disclaimer_accepted": False,
+        "disclaimer_accepted_at": None,
         "created_at": datetime.utcnow()
     }
     
