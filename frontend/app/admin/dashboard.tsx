@@ -73,6 +73,15 @@ export default function AdminDashboard() {
         }
       );
       setStats(response.data);
+      
+      // Fetch property name
+      const propResponse = await axios.get(
+        `${API_URL}/api/properties/${selectedProperty}`,
+        {
+          headers: { 'Authorization': `Bearer ${token}` }
+        }
+      );
+      setPropertyName(propResponse.data.name || 'Community');
     } catch (error) {
       console.error('Error fetching stats:', error);
     }
