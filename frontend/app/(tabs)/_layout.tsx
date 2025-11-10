@@ -4,10 +4,12 @@ import { useState, useEffect } from 'react';
 import { useAuth } from '../../contexts/AuthContext';
 import { notificationApi } from '../../services/api';
 import { View, Text, StyleSheet, Platform } from 'react-native';
+import AppTour, { useAppTour } from '../../components/AppTour';
 
 export default function TabsLayout() {
   const { token } = useAuth();
   const [unreadCount, setUnreadCount] = useState(0);
+  const { tourVisible, completeTour, skipTour } = useAppTour();
 
   useEffect(() => {
     fetchUnreadCount();
