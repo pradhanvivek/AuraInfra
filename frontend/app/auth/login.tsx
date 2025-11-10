@@ -112,7 +112,24 @@ export default function Login() {
 
     setLoading(true);
     try {
-      await login(username, password);
+      const loginToken = await login(username, password);
+      
+      // Check if user needs to accept disclaimer
+      const userResponse = await fetch(`${API_URL}/api/auth/profile`, {
+        headers: {
+          'Authorization': `Bearer ${loginToken}`,
+        },
+      });
+      
+      if (userResponse.ok) {
+        const userData = await userResponse.json();
+        if (!userData.disclaimer_accepted) {
+          // Navigate to disclaimer page
+          router.replace('/auth/disclaimer');
+          return;
+        }
+      }
+      
       router.replace('/(tabs)');
     } catch (error: any) {
       Alert.alert('Login Failed', error.message);
