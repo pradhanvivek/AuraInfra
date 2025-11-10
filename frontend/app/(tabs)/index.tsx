@@ -636,6 +636,22 @@ const styles = StyleSheet.create({
     backgroundColor: '#F2F2F7',
     borderRadius: 12,
   },
+  propertyLogoNameContainer: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginRight: 8,
+    gap: 12,
+  },
+  propertyLogo: {
+    width: 48,
+    height: 48,
+    borderRadius: 8,
+    backgroundColor: '#F2F2F7',
+  },
+  propertyTextContainer: {
+    flex: 1,
+  },
   addressContent: {
     flex: 1,
     marginRight: 8,
