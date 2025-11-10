@@ -55,8 +55,19 @@ export default function AdminDashboard() {
       });
       setProfile(response.data);
       
-      // Set first managed property as default
+      // Fetch full details for all managed properties
       if (response.data.managed_properties?.length > 0) {
+        const propertyDetailsPromises = response.data.managed_properties.map((propId: string) =>
+          axios.get(`${API_URL}/api/properties/${propId}`, {
+            headers: { 'Authorization': `Bearer ${token}` }
+          })
+        );
+        
+        const propertyDetailsResponses = await Promise.all(propertyDetailsPromises);
+        const properties = propertyDetailsResponses.map(res => res.data);
+        setManagedProperties(properties);
+        
+        // Set first managed property as default
         setSelectedProperty(response.data.managed_properties[0]);
       }
     } catch (error) {
