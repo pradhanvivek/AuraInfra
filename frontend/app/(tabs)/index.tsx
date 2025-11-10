@@ -16,6 +16,7 @@ interface Property {
   name: string;
   address: string;
   user_role: string;
+  logo?: string;
 }
 
 export default function PropertiesScreen() {
