@@ -141,44 +141,45 @@ export default function AppTour({ visible, onComplete, onSkip }: AppTourProps) {
 
         {/* Content card */}
         <View style={styles.contentContainer}>
+          {/* Icon */}
+          <View style={styles.iconContainer}>
+            <View style={styles.iconCircle}>
+              <Ionicons name={step.icon as any} size={48} color="#007AFF" />
+            </View>
+          </View>
+
+          {/* Step counter */}
+          <View style={styles.stepCounter}>
+            <Text style={styles.stepText}>
+              Step {currentStep + 1} of {tourSteps.length}
+            </Text>
+          </View>
+
+          {/* Title */}
+          <Text style={styles.title}>{step.title}</Text>
+
+          {/* Description - Scrollable */}
           <ScrollView
-            style={styles.scrollView}
-            contentContainerStyle={styles.scrollContent}
-            showsVerticalScrollIndicator={false}
+            style={styles.descriptionScroll}
+            contentContainerStyle={styles.descriptionContent}
+            showsVerticalScrollIndicator={true}
+            bounces={false}
           >
-            {/* Icon */}
-            <View style={styles.iconContainer}>
-              <View style={styles.iconCircle}>
-                <Ionicons name={step.icon as any} size={48} color="#007AFF" />
-              </View>
-            </View>
-
-            {/* Step counter */}
-            <View style={styles.stepCounter}>
-              <Text style={styles.stepText}>
-                Step {currentStep + 1} of {tourSteps.length}
-              </Text>
-            </View>
-
-            {/* Title */}
-            <Text style={styles.title}>{step.title}</Text>
-
-            {/* Description */}
             <Text style={styles.description}>{step.description}</Text>
-
-            {/* Progress dots */}
-            <View style={styles.dotsContainer}>
-              {tourSteps.map((_, index) => (
-                <View
-                  key={index}
-                  style={[
-                    styles.dot,
-                    index === currentStep && styles.activeDot,
-                  ]}
-                />
-              ))}
-            </View>
           </ScrollView>
+
+          {/* Progress dots */}
+          <View style={styles.dotsContainer}>
+            {tourSteps.map((_, index) => (
+              <View
+                key={index}
+                style={[
+                  styles.dot,
+                  index === currentStep && styles.activeDot,
+                ]}
+              />
+            ))}
+          </View>
 
           {/* Navigation buttons */}
           <View style={styles.buttonContainer}>
