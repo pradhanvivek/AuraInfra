@@ -499,6 +499,51 @@ export default function PropertiesScreen() {
           </View>
         </View>
       </Modal>
+
+      {/* View More Modal */}
+      <Modal
+        visible={viewMoreModalVisible}
+        transparent
+        animationType="slide"
+        onRequestClose={() => setViewMoreModalVisible(false)}
+      >
+        <View style={styles.modalOverlay}>
+          <View style={styles.viewMoreModalContent}>
+            <View style={styles.viewMoreHeader}>
+              <Text style={styles.viewMoreTitle}>All Property Features</Text>
+              <TouchableOpacity onPress={() => setViewMoreModalVisible(false)}>
+                <Ionicons name="close" size={28} color="#000" />
+              </TouchableOpacity>
+            </View>
+            <ScrollView style={styles.viewMoreScroll} contentContainerStyle={styles.viewMoreGrid}>
+              {allPropertyFeatures.map((feature) => (
+                <TouchableOpacity
+                  key={feature.id}
+                  style={styles.viewMoreCard}
+                  onPress={() => {
+                    setViewMoreModalVisible(false);
+                    router.push({
+                      pathname: feature.route,
+                      params: { id: selectedProperty?.id }
+                    } as any);
+                  }}
+                  activeOpacity={0.7}
+                >
+                  <View style={[
+                    styles.viewMoreIcon,
+                    { backgroundColor: feature.color + '20' }
+                  ]}>
+                    <Ionicons name={feature.icon as any} size={32} color={feature.color} />
+                  </View>
+                  <Text style={styles.viewMoreLabel} numberOfLines={2}>
+                    {feature.title}
+                  </Text>
+                </TouchableOpacity>
+              ))}
+            </ScrollView>
+          </View>
+        </View>
+      </Modal>
       </View>
     </SafeAreaView>
   );
