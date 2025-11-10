@@ -487,7 +487,7 @@ export default function Profile() {
         </View>
 
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Account</Text>
+          <Text style={[styles.sectionTitle, { color: isDark ? '#A0A0A0' : '#8E8E93' }]}>Account</Text>
 
           <View style={styles.infoCard}>
             <View style={styles.infoIcon}>
