@@ -1159,6 +1159,162 @@ async def update_profile(profile: UserProfileUpdate, user_id: str = Depends(get_
         created_at=user_doc["created_at"]
     )
 
+# ============= GOOGLE OAUTH SESSION ENDPOINTS =============
+
+import httpx
+from fastapi.responses import JSONResponse
+from datetime import timezone
+
+# Helper function to get user from session token (checks both cookie and header)
+async def get_user_from_session(request: Request):
+    """Get user from session token (cookie or Authorization header)"""
+    # First check cookie
+    session_token = request.cookies.get("session_token")
+    
+    # Fall back to Authorization header
+    if not session_token:
+        auth_header = request.headers.get("Authorization")
+        if auth_header and auth_header.startswith("Bearer "):
+            session_token = auth_header.replace("Bearer ", "")
+    
+    if not session_token:
+        raise HTTPException(status_code=401, detail="Not authenticated")
+    
+    # Find session in database
+    session = await db.user_sessions.find_one({"session_token": session_token})
+    if not session:
+        raise HTTPException(status_code=401, detail="Invalid session")
+    
+    # Check if session expired
+    if session["expires_at"] < datetime.now(timezone.utc):
+        await db.user_sessions.delete_one({"session_token": session_token})
+        raise HTTPException(status_code=401, detail="Session expired")
+    
+    # Get user
+    user_doc = await db.users.find_one({"id": session["user_id"]})
+    if not user_doc:
+        raise HTTPException(status_code=404, detail="User not found")
+    
+    return user_doc
+
+@api_router.post("/auth/session")
+async def process_session_id(request: Request):
+    """Process session_id from Emergent Auth and create user session"""
+    try:
+        # Get session_id from header
+        session_id = request.headers.get("X-Session-ID")
+        if not session_id:
+            raise HTTPException(status_code=400, detail="Missing X-Session-ID header")
+        
+        # Call Emergent Auth API to get user data
+        async with httpx.AsyncClient() as client:
+            response = await client.get(
+                "https://demobackend.emergentagent.com/auth/v1/env/oauth/session-data",
+                headers={"X-Session-ID": session_id},
+                timeout=10.0
+            )
+            
+            if response.status_code != 200:
+                raise HTTPException(status_code=400, detail="Invalid session ID")
+            
+            google_user_data = response.json()
+        
+        # Check if user exists by email
+        existing_user = await db.users.find_one({"email": google_user_data["email"]})
+        
+        if existing_user:
+            user_id = existing_user["id"]
+        else:
+            # Create new user
+            user_id = str(uuid.uuid4())
+            user_doc = {
+                "id": user_id,
+                "username": google_user_data["email"].split("@")[0],  # Use email prefix as username
+                "email": google_user_data["email"],
+                "name": google_user_data.get("name", ""),
+                "avatar": google_user_data.get("picture"),
+                "warranty_reminder_days": 30,
+                "geomancy_preference": "vastu",
+                "is_super_admin": False,
+                "is_hoa_admin": False,
+                "managed_properties": [],
+                "created_at": datetime.now(timezone.utc),
+                "auth_provider": "google"
+            }
+            await db.users.insert_one(user_doc)
+        
+        # Create session in database
+        session_token = google_user_data["session_token"]
+        expires_at = datetime.now(timezone.utc) + timedelta(days=7)
+        
+        session_doc = {
+            "user_id": user_id,
+            "session_token": session_token,
+            "expires_at": expires_at,
+            "created_at": datetime.now(timezone.utc)
+        }
+        await db.user_sessions.insert_one(session_doc)
+        
+        # Create response with cookie
+        response = JSONResponse({
+            "id": user_id,
+            "email": google_user_data["email"],
+            "name": google_user_data.get("name", ""),
+            "picture": google_user_data.get("picture"),
+            "session_token": session_token
+        })
+        
+        # Set httpOnly cookie
+        response.set_cookie(
+            key="session_token",
+            value=session_token,
+            httponly=True,
+            secure=True,
+            samesite="none",
+            path="/",
+            max_age=7 * 24 * 60 * 60  # 7 days
+        )
+        
+        return response
+        
+    except httpx.RequestError as e:
+        logger.error(f"Error calling Emergent Auth API: {str(e)}")
+        raise HTTPException(status_code=500, detail="Authentication service error")
+    except Exception as e:
+        logger.error(f"Session processing error: {str(e)}")
+        raise HTTPException(status_code=500, detail="Internal server error")
+
+@api_router.get("/auth/me")
+async def get_current_session_user(request: Request):
+    """Get current user from session"""
+    user_doc = await get_user_from_session(request)
+    return {
+        "id": user_doc["id"],
+        "username": user_doc.get("username"),
+        "email": user_doc.get("email"),
+        "name": user_doc.get("name"),
+        "avatar": user_doc.get("avatar"),
+        "warranty_reminder_days": user_doc.get("warranty_reminder_days", 30),
+        "geomancy_preference": user_doc.get("geomancy_preference", "vastu"),
+        "currency_preference": user_doc.get("currency_preference"),
+        "measurement_system": user_doc.get("measurement_system"),
+    }
+
+@api_router.post("/auth/logout")
+async def logout(request: Request):
+    """Logout user and clear session"""
+    try:
+        session_token = request.cookies.get("session_token")
+        if session_token:
+            await db.user_sessions.delete_one({"session_token": session_token})
+        
+        response = JSONResponse({"message": "Logged out successfully"})
+        response.delete_cookie(key="session_token", path="/")
+        return response
+    except Exception as e:
+        logger.error(f"Logout error: {str(e)}")
+        raise HTTPException(status_code=500, detail="Logout failed")
+
 # ============= ADMIN ENDPOINTS =============
 
 @api_router.get("/admin/stats")
