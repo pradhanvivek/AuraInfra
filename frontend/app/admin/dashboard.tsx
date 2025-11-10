@@ -33,6 +33,7 @@ export default function AdminDashboard() {
   const [loading, setLoading] = useState(true);
   const [profile, setProfile] = useState<any>(null);
   const [selectedProperty, setSelectedProperty] = useState<string>('');
+  const [propertyName, setPropertyName] = useState<string>('');
   const [stats, setStats] = useState<DashboardStats | null>(null);
 
   useEffect(() => {
