@@ -75,6 +75,73 @@ export default function PropertiesScreen() {
     }
   };
 
+  const myPropertyCards = [
+    {
+      id: 'documents',
+      title: 'My Documents',
+      icon: 'document-text-outline',
+      color: '#007AFF',
+      route: '/property/[id]',
+      isAd: false,
+    },
+    {
+      id: 'fixtures',
+      title: 'My Fixtures',
+      icon: 'construct-outline',
+      color: '#34C759',
+      route: '/property/[id]',
+      isAd: false,
+    },
+    {
+      id: 'measurements',
+      title: 'House Measurements',
+      icon: 'resize-outline',
+      color: '#FF9500',
+      route: '/property/[id]',
+      isAd: false,
+    },
+    {
+      id: 'vastu',
+      title: 'Vastu',
+      icon: 'compass-outline',
+      color: '#AF52DE',
+      route: '/property/[id]',
+      isAd: false,
+    },
+    {
+      id: 'fengshui',
+      title: 'Feng Shui',
+      icon: 'leaf-outline',
+      color: '#34C759',
+      route: '/property/[id]',
+      isAd: false,
+    },
+    {
+      id: 'paint',
+      title: 'Paint Estimate',
+      icon: 'color-palette-outline',
+      color: '#FF3B30',
+      route: '/property/[id]',
+      isAd: false,
+    },
+    {
+      id: 'builder',
+      title: 'My Builder',
+      icon: 'business-outline',
+      color: '#5856D6',
+      route: '/my-builder',
+      isAd: false,
+    },
+    {
+      id: 'ad-tile',
+      title: 'Ad Space',
+      icon: 'megaphone-outline',
+      color: '#FF2D55',
+      route: null,
+      isAd: true,
+    },
+  ];
+
   const managementCards = [
     {
       id: 'hoa',
