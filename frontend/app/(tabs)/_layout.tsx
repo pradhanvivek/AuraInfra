@@ -5,6 +5,10 @@ import { useAuth } from '../../contexts/AuthContext';
 import { notificationApi } from '../../services/api';
 import { View, Text, StyleSheet, Platform } from 'react-native';
 import AppTour, { useAppTour } from '../../components/AppTour';
+import axios from 'axios';
+import Constants from 'expo-constants';
+
+const API_URL = Constants.expoConfig?.extra?.EXPO_PUBLIC_BACKEND_URL || process.env.EXPO_PUBLIC_BACKEND_URL;
 
 export default function TabsLayout() {
   const { token } = useAuth();
