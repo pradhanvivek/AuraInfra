@@ -375,9 +375,7 @@ const styles = StyleSheet.create({
   },
   googleButton: {
     flexDirection: 'row',
-    backgroundColor: '#fff',
     borderWidth: 1,
-    borderColor: '#e0e0e0',
     borderRadius: 12,
     padding: 16,
     alignItems: 'center',
@@ -385,7 +383,6 @@ const styles = StyleSheet.create({
     gap: 12,
   },
   googleButtonText: {
-    color: '#000',
     fontSize: 16,
     fontWeight: '500',
   },
