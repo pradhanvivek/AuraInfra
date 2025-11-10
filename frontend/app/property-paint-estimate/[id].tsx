@@ -6,15 +6,15 @@ import { useState, useEffect } from 'react';
 import axios from 'axios';
 import Constants from 'expo-constants';
 import { useAuth } from '../../contexts/AuthContext';
-import MeasurementsScreen from '../../screens/property/MeasurementsScreen';
+import PaintEstimationScreen from '../../screens/property/PaintEstimationScreen';
 
 const API_URL = Constants.expoConfig?.extra?.EXPO_PUBLIC_BACKEND_URL || process.env.EXPO_PUBLIC_BACKEND_URL;
 
-export default function PropertyMeasurementsRoute() {
+export default function PropertyPaintEstimateRoute() {
   const { id } = useLocalSearchParams();
   const router = useRouter();
   const { token } = useAuth();
-  const [propertyName, setPropertyName] = useState<string>('Measurements');
+  const [propertyName, setPropertyName] = useState<string>('Paint Estimate');
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -26,7 +26,7 @@ export default function PropertyMeasurementsRoute() {
       const response = await axios.get(`${API_URL}/api/properties/${id}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
-      setPropertyName(response.data.name || 'Measurements');
+      setPropertyName(response.data.name || 'Paint Estimate');
     } catch (error) {
       console.error('Error fetching property:', error);
     } finally {
@@ -44,13 +44,13 @@ export default function PropertyMeasurementsRoute() {
           <ActivityIndicator size="small" color="#007AFF" />
         ) : (
           <View style={styles.headerTitleContainer}>
-            <Text style={styles.headerSubtitle}>Measurements</Text>
+            <Text style={styles.headerSubtitle}>Paint Estimate</Text>
             <Text style={styles.headerTitle}>{propertyName}</Text>
           </View>
         )}
         <View style={styles.placeholder} />
       </View>
-      <MeasurementsScreen propertyId={id as string} />
+      <PaintEstimationScreen propertyId={id as string} />
     </SafeAreaView>
   );
 }

@@ -1,12 +1,38 @@
-import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, ActivityIndicator } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
-import VastuScreen from '../../screens/property/VastuScreen';
+import { useState, useEffect } from 'react';
+import axios from 'axios';
+import Constants from 'expo-constants';
+import { useAuth } from '../../contexts/AuthContext';
+import VastuScreen from '../../screens/VastuScreen';
+
+const API_URL = Constants.expoConfig?.extra?.EXPO_PUBLIC_BACKEND_URL || process.env.EXPO_PUBLIC_BACKEND_URL;
 
 export default function PropertyVastuRoute() {
   const { id } = useLocalSearchParams();
   const router = useRouter();
+  const { token } = useAuth();
+  const [propertyName, setPropertyName] = useState<string>('Vastu');
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetchPropertyName();
+  }, [id]);
+
+  const fetchPropertyName = async () => {
+    try {
+      const response = await axios.get(`${API_URL}/api/properties/${id}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      setPropertyName(response.data.name || 'Vastu');
+    } catch (error) {
+      console.error('Error fetching property:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <SafeAreaView style={styles.container} edges={['top']}>
@@ -14,10 +40,17 @@ export default function PropertyVastuRoute() {
         <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
           <Ionicons name="arrow-back" size={24} color="#007AFF" />
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>Vastu Analysis</Text>
+        {loading ? (
+          <ActivityIndicator size="small" color="#007AFF" />
+        ) : (
+          <View style={styles.headerTitleContainer}>
+            <Text style={styles.headerSubtitle}>Vastu</Text>
+            <Text style={styles.headerTitle}>{propertyName}</Text>
+          </View>
+        )}
         <View style={styles.placeholder} />
       </View>
-      <VastuScreen propertyId={id as string} geomancyType="vastu" />
+      <VastuScreen propertyId={id as string} />
     </SafeAreaView>
   );
 }
@@ -39,6 +72,14 @@ const styles = StyleSheet.create({
   },
   backButton: {
     padding: 4,
+  },
+  headerTitleContainer: {
+    alignItems: 'center',
+  },
+  headerSubtitle: {
+    fontSize: 12,
+    color: '#8E8E93',
+    marginBottom: 2,
   },
   headerTitle: {
     fontSize: 18,
