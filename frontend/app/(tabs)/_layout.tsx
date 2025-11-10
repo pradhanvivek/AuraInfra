@@ -9,6 +9,7 @@ import AppTour, { useAppTour } from '../../components/AppTour';
 export default function TabsLayout() {
   const { token } = useAuth();
   const [unreadCount, setUnreadCount] = useState(0);
+  const [isAdmin, setIsAdmin] = useState(false);
   const { tourVisible, completeTour, skipTour } = useAppTour();
 
   useEffect(() => {
