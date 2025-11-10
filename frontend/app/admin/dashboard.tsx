@@ -129,6 +129,24 @@ export default function AdminDashboard() {
         </Text>
       </View>
 
+      {/* Property Selector - only show if admin manages multiple properties */}
+      {managedProperties.length > 1 && (
+        <View style={styles.selectorContainer}>
+          <TouchableOpacity
+            style={styles.propertySelector}
+            onPress={() => setSelectorVisible(true)}
+          >
+            <View style={styles.selectorContent}>
+              <Ionicons name="business" size={20} color="#007AFF" />
+              <Text style={styles.selectorText}>
+                {managedProperties.find(p => p.id === selectedProperty)?.name || 'Select Property'}
+              </Text>
+            </View>
+            <Ionicons name="chevron-down" size={20} color="#007AFF" />
+          </TouchableOpacity>
+        </View>
+      )}
+
       {/* Stats Cards */}
       {stats && (
         <View style={styles.statsGrid}>
