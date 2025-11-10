@@ -1317,12 +1317,9 @@ async def get_current_session_user(request: Request):
     }
 
 @api_router.post("/auth/accept-disclaimer")
-async def accept_disclaimer(request: Request):
-    """Accept disclaimer and update user record"""
+async def accept_disclaimer(user_id: str = Depends(get_current_user)):
+    """Accept disclaimer and update user record - works with both JWT and session tokens"""
     try:
-        user_doc = await get_user_from_session(request)
-        user_id = user_doc["id"]
-        
         # Update user record
         await db.users.update_one(
             {"id": user_id},
