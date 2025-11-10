@@ -16,10 +16,12 @@ BACKEND_URL = "https://propmanager-app.preview.emergentagent.com/api"
 # Test data - small base64 encoded PNG image (1x1 pixel red dot)
 SAMPLE_LOGO_BASE64 = "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8/5+hHgAHggJ/PchI7wAAAABJRU5ErkJggg=="
 
-class VehicleScanTester:
+class PropertyLogoTester:
     def __init__(self):
-        self.auth_token = None
+        self.session = requests.Session()
+        self.access_token = None
         self.user_id = None
+        self.test_property_id = None
         self.test_results = []
         
     def log_result(self, test_name, success, message, details=None):
@@ -28,228 +30,266 @@ class VehicleScanTester:
             "test": test_name,
             "success": success,
             "message": message,
-            "timestamp": datetime.now().isoformat(),
-            "details": details or {}
+            "details": details,
+            "timestamp": datetime.now().isoformat()
         }
         self.test_results.append(result)
         status = "✅ PASS" if success else "❌ FAIL"
         print(f"{status}: {test_name} - {message}")
-        if details and not success:
+        if details:
             print(f"   Details: {details}")
     
-    def setup_test_user(self):
-        """Create or login test user"""
+    def register_and_login(self):
+        """Register a test user and login"""
         try:
-            # Try to register new user
+            # Register user
             register_data = {
-                "username": TEST_USERNAME,
-                "email": TEST_EMAIL,
-                "password": TEST_PASSWORD
+                "username": f"logotest_{datetime.now().strftime('%Y%m%d_%H%M%S')}",
+                "email": f"logotest_{datetime.now().strftime('%Y%m%d_%H%M%S')}@test.com",
+                "password": "LogoTest123!"
             }
             
-            response = requests.post(f"{API_BASE}/auth/register", json=register_data)
-            
+            response = self.session.post(f"{BACKEND_URL}/auth/register", json=register_data)
             if response.status_code == 200:
                 data = response.json()
-                self.auth_token = data["access_token"]
+                self.access_token = data["access_token"]
                 self.user_id = data["user_id"]
-                self.log_result("User Registration", True, f"Created new test user: {TEST_USERNAME}")
+                self.session.headers.update({"Authorization": f"Bearer {self.access_token}"})
+                self.log_result("User Registration", True, f"User registered successfully: {register_data['username']}")
                 return True
-            elif response.status_code == 400 and "already exists" in response.text:
-                # User exists, try to login
-                login_data = {
-                    "username": TEST_USERNAME,
-                    "password": TEST_PASSWORD
-                }
+            else:
+                self.log_result("User Registration", False, f"Registration failed: {response.status_code} - {response.text}")
+                return False
                 
-                response = requests.post(f"{API_BASE}/auth/login", json=login_data)
-                if response.status_code == 200:
-                    data = response.json()
-                    self.auth_token = data["access_token"]
-                    self.user_id = data["user_id"]
-                    self.log_result("User Login", True, f"Logged in existing user: {TEST_USERNAME}")
+        except Exception as e:
+            self.log_result("User Registration", False, f"Registration error: {str(e)}")
+            return False
+    
+    def create_test_property(self):
+        """Create a test property for logo testing"""
+        try:
+            property_data = {
+                "name": "Logo Test Property",
+                "address": "123 Test Street, Logo City, LC 12345",
+                "purchase_cost": 500000.0,
+                "current_value": 550000.0
+            }
+            
+            response = self.session.post(f"{BACKEND_URL}/properties", json=property_data)
+            if response.status_code == 200:
+                data = response.json()
+                self.test_property_id = data["id"]
+                self.log_result("Property Creation", True, f"Test property created: {self.test_property_id}")
+                return True
+            else:
+                self.log_result("Property Creation", False, f"Property creation failed: {response.status_code} - {response.text}")
+                return False
+                
+        except Exception as e:
+            self.log_result("Property Creation", False, f"Property creation error: {str(e)}")
+            return False
+    
+    def test_put_property_with_logo(self):
+        """Test PUT /api/properties/{id} with logo field"""
+        try:
+            update_data = {
+                "name": "Logo Test Property Updated",
+                "logo": SAMPLE_LOGO_BASE64
+            }
+            
+            response = self.session.put(f"{BACKEND_URL}/properties/{self.test_property_id}", json=update_data)
+            if response.status_code == 200:
+                data = response.json()
+                if "logo" in data and data["logo"] == SAMPLE_LOGO_BASE64:
+                    self.log_result("PUT Property with Logo", True, "Property logo updated successfully", 
+                                  f"Logo field present and matches: {len(data['logo'])} chars")
                     return True
                 else:
-                    self.log_result("User Login", False, f"Login failed: {response.status_code}", {"response": response.text})
+                    self.log_result("PUT Property with Logo", False, "Logo field missing or incorrect in response",
+                                  f"Response logo: {data.get('logo', 'MISSING')[:50]}...")
                     return False
             else:
-                self.log_result("User Registration", False, f"Registration failed: {response.status_code}", {"response": response.text})
+                self.log_result("PUT Property with Logo", False, f"PUT request failed: {response.status_code} - {response.text}")
                 return False
                 
         except Exception as e:
-            self.log_result("User Setup", False, f"Exception during user setup: {str(e)}")
+            self.log_result("PUT Property with Logo", False, f"PUT property error: {str(e)}")
             return False
     
-    def get_auth_headers(self):
-        """Get authorization headers"""
-        return {"Authorization": f"Bearer {self.auth_token}"}
-    
-    def test_vehicle_scan_authentication(self):
-        """Test that vehicle scan endpoint requires authentication"""
+    def test_get_property_with_logo(self):
+        """Test GET /api/properties/{id} returns logo field"""
         try:
-            # Test without authentication
-            scan_data = {"image": SAMPLE_VEHICLE_IMAGE}
-            response = requests.post(f"{API_BASE}/vehicles/scan", json=scan_data)
-            
-            if response.status_code == 403:
-                self.log_result("Vehicle Scan Authentication", True, "Endpoint correctly requires authentication (403 Forbidden)")
-                return True
-            else:
-                self.log_result("Vehicle Scan Authentication", False, f"Expected 403, got {response.status_code}", {"response": response.text})
-                return False
-                
-        except Exception as e:
-            self.log_result("Vehicle Scan Authentication", False, f"Exception: {str(e)}")
-            return False
-    
-    def test_vehicle_scan_missing_image(self):
-        """Test error handling for missing image field"""
-        try:
-            # Test with missing image field
-            response = requests.post(f"{API_BASE}/vehicles/scan", json={}, headers=self.get_auth_headers())
-            
-            if response.status_code == 422:
-                self.log_result("Vehicle Scan Missing Image", True, "Correctly returns 422 for missing image field")
-                return True
-            else:
-                self.log_result("Vehicle Scan Missing Image", False, f"Expected 422, got {response.status_code}", {"response": response.text})
-                return False
-                
-        except Exception as e:
-            self.log_result("Vehicle Scan Missing Image", False, f"Exception: {str(e)}")
-            return False
-    
-    def test_vehicle_scan_invalid_image(self):
-        """Test error handling for invalid base64 image"""
-        try:
-            # Test with invalid base64
-            scan_data = {"image": "invalid_base64_data"}
-            response = requests.post(f"{API_BASE}/vehicles/scan", json=scan_data, headers=self.get_auth_headers())
-            
-            # Backend returns 500 with proper error message, which is acceptable
-            if response.status_code in [400, 500] and "Invalid image data" in response.text:
-                self.log_result("Vehicle Scan Invalid Image", True, f"Correctly handles invalid base64 image (status: {response.status_code})")
-                return True
-            else:
-                self.log_result("Vehicle Scan Invalid Image", False, f"Expected 400/500 with error message, got {response.status_code}", {"response": response.text})
-                return False
-                
-        except Exception as e:
-            self.log_result("Vehicle Scan Invalid Image", False, f"Exception: {str(e)}")
-            return False
-    
-    def test_vehicle_scan_success(self):
-        """Test successful vehicle scanning with valid image"""
-        try:
-            # Test with valid base64 image
-            scan_data = {"image": SAMPLE_VEHICLE_IMAGE}
-            response = requests.post(f"{API_BASE}/vehicles/scan", json=scan_data, headers=self.get_auth_headers())
-            
-            print(f"Vehicle scan response status: {response.status_code}")
-            print(f"Vehicle scan response: {response.text}")
-            
+            response = self.session.get(f"{BACKEND_URL}/properties/{self.test_property_id}")
             if response.status_code == 200:
                 data = response.json()
-                
-                # Verify response structure matches VehicleScanResult
-                required_fields = ["make", "model", "confidence"]
-                optional_fields = ["year"]
-                
-                missing_fields = [field for field in required_fields if field not in data]
-                if missing_fields:
-                    self.log_result("Vehicle Scan Success", False, f"Missing required fields: {missing_fields}", {"response": data})
+                if "logo" in data and data["logo"] == SAMPLE_LOGO_BASE64:
+                    self.log_result("GET Property with Logo", True, "Property logo retrieved successfully",
+                                  f"Logo field present: {len(data['logo'])} chars")
+                    return True
+                else:
+                    self.log_result("GET Property with Logo", False, "Logo field missing or incorrect",
+                                  f"Response logo: {data.get('logo', 'MISSING')}")
                     return False
-                
-                # Verify data types (fields can be None since they're optional)
-                if data["make"] is not None and not isinstance(data["make"], str):
-                    self.log_result("Vehicle Scan Success", False, "make field must be string or null", {"response": data})
-                    return False
-                
-                if data["model"] is not None and not isinstance(data["model"], str):
-                    self.log_result("Vehicle Scan Success", False, "model field must be string or null", {"response": data})
-                    return False
-                
-                if not isinstance(data["confidence"], (int, float)) or not (0 <= data["confidence"] <= 1):
-                    self.log_result("Vehicle Scan Success", False, "confidence must be float between 0-1", {"response": data})
-                    return False
-                
-                if "year" in data and data["year"] is not None and not isinstance(data["year"], int):
-                    self.log_result("Vehicle Scan Success", False, "year field must be integer or null", {"response": data})
-                    return False
-                
-                # Check that we don't get the "Provided image is not valid" error
-                if "Provided image is not valid" in response.text:
-                    self.log_result("Vehicle Scan Success", False, "Still getting 'Provided image is not valid' error", {"response": response.text})
-                    return False
-                
-                self.log_result("Vehicle Scan Success", True, f"Successfully scanned vehicle: {data['make']} {data['model']} (confidence: {data['confidence']})", {"response": data})
-                return True
             else:
-                self.log_result("Vehicle Scan Success", False, f"Expected 200, got {response.status_code}", {"response": response.text})
+                self.log_result("GET Property with Logo", False, f"GET request failed: {response.status_code} - {response.text}")
                 return False
                 
         except Exception as e:
-            self.log_result("Vehicle Scan Success", False, f"Exception: {str(e)}")
+            self.log_result("GET Property with Logo", False, f"GET property error: {str(e)}")
             return False
     
-    def test_vehicle_scan_gemini_integration(self):
-        """Test that Gemini AI integration is working"""
+    def test_get_properties_list_with_logo(self):
+        """Test GET /api/properties returns properties with logo fields"""
         try:
-            # Use the same realistic car image as the main test
-            scan_data = {"image": SAMPLE_VEHICLE_IMAGE}
-            response = requests.post(f"{API_BASE}/vehicles/scan", json=scan_data, headers=self.get_auth_headers())
-            
+            response = self.session.get(f"{BACKEND_URL}/properties")
             if response.status_code == 200:
                 data = response.json()
-                
-                # Check if AI provided meaningful results (confidence > 0 indicates processing worked)
-                if data["confidence"] > 0:
-                    # AI successfully processed the image, even if it couldn't identify specific make/model
-                    details = []
-                    if data["make"]: details.append(f"make: {data['make']}")
-                    if data["model"]: details.append(f"model: {data['model']}")
-                    if data["color"]: details.append(f"color: {data['color']}")
-                    if data["body_type"]: details.append(f"body_type: {data['body_type']}")
+                if isinstance(data, list) and len(data) > 0:
+                    # Find our test property
+                    test_property = None
+                    for prop in data:
+                        if prop.get("id") == self.test_property_id:
+                            test_property = prop
+                            break
                     
-                    result_summary = ", ".join(details) if details else "basic vehicle detected"
-                    self.log_result("Gemini AI Integration", True, f"AI successfully analyzed image ({result_summary}, confidence: {data['confidence']})", {"response": data})
-                    return True
+                    if test_property and "logo" in test_property and test_property["logo"] == SAMPLE_LOGO_BASE64:
+                        self.log_result("GET Properties List with Logo", True, "Properties list includes logo field",
+                                      f"Found test property with logo: {len(test_property['logo'])} chars")
+                        return True
+                    else:
+                        self.log_result("GET Properties List with Logo", False, "Logo field missing in properties list",
+                                      f"Test property logo: {test_property.get('logo', 'MISSING') if test_property else 'PROPERTY NOT FOUND'}")
+                        return False
                 else:
-                    self.log_result("Gemini AI Integration", False, "AI returned zero confidence", {"response": data})
+                    self.log_result("GET Properties List with Logo", False, "No properties returned or invalid format",
+                                  f"Response: {data}")
                     return False
             else:
-                self.log_result("Gemini AI Integration", False, f"AI scan failed with status {response.status_code}", {"response": response.text})
+                self.log_result("GET Properties List with Logo", False, f"GET properties failed: {response.status_code} - {response.text}")
                 return False
                 
         except Exception as e:
-            self.log_result("Gemini AI Integration", False, f"Exception: {str(e)}")
+            self.log_result("GET Properties List with Logo", False, f"GET properties error: {str(e)}")
+            return False
+    
+    def test_logo_field_optional(self):
+        """Test that logo field is optional (can be null/omitted)"""
+        try:
+            # Test 1: Update property without logo field
+            update_data = {
+                "name": "Logo Test Property - No Logo Update"
+            }
+            
+            response = self.session.put(f"{BACKEND_URL}/properties/{self.test_property_id}", json=update_data)
+            if response.status_code == 200:
+                data = response.json()
+                # Logo should still be present from previous test
+                if "logo" in data and data["logo"] == SAMPLE_LOGO_BASE64:
+                    self.log_result("Logo Field Optional - Omitted", True, "Logo field preserved when omitted from update")
+                else:
+                    self.log_result("Logo Field Optional - Omitted", False, "Logo field lost when omitted from update")
+                    return False
+            else:
+                self.log_result("Logo Field Optional - Omitted", False, f"Update without logo failed: {response.status_code}")
+                return False
+            
+            # Test 2: Explicitly set logo to null
+            update_data = {
+                "name": "Logo Test Property - Null Logo",
+                "logo": None
+            }
+            
+            response = self.session.put(f"{BACKEND_URL}/properties/{self.test_property_id}", json=update_data)
+            if response.status_code == 200:
+                data = response.json()
+                if data.get("logo") is None:
+                    self.log_result("Logo Field Optional - Null", True, "Logo field can be set to null")
+                    return True
+                else:
+                    self.log_result("Logo Field Optional - Null", False, f"Logo field not null: {data.get('logo')}")
+                    return False
+            else:
+                self.log_result("Logo Field Optional - Null", False, f"Update with null logo failed: {response.status_code}")
+                return False
+                
+        except Exception as e:
+            self.log_result("Logo Field Optional", False, f"Optional logo test error: {str(e)}")
+            return False
+    
+    def test_invalid_base64_logo(self):
+        """Test error handling for invalid base64 logo data"""
+        try:
+            update_data = {
+                "name": "Logo Test Property - Invalid Logo",
+                "logo": "invalid_base64_data_here"
+            }
+            
+            response = self.session.put(f"{BACKEND_URL}/properties/{self.test_property_id}", json=update_data)
+            # This should either succeed (backend doesn't validate base64) or return appropriate error
+            if response.status_code == 200:
+                self.log_result("Invalid Base64 Logo", True, "Backend accepts invalid base64 (no validation)", 
+                              "Note: Backend doesn't validate base64 format")
+                return True
+            elif response.status_code == 400:
+                self.log_result("Invalid Base64 Logo", True, "Backend properly validates base64 format",
+                              f"Validation error: {response.text}")
+                return True
+            else:
+                self.log_result("Invalid Base64 Logo", False, f"Unexpected response: {response.status_code} - {response.text}")
+                return False
+                
+        except Exception as e:
+            self.log_result("Invalid Base64 Logo", False, f"Invalid base64 test error: {str(e)}")
+            return False
+    
+    def test_large_logo_handling(self):
+        """Test handling of larger logo files"""
+        try:
+            # Create a larger base64 string (simulate a small actual image)
+            large_logo = SAMPLE_LOGO_BASE64 * 100  # Repeat to make it larger
+            
+            update_data = {
+                "name": "Logo Test Property - Large Logo",
+                "logo": large_logo
+            }
+            
+            response = self.session.put(f"{BACKEND_URL}/properties/{self.test_property_id}", json=update_data)
+            if response.status_code == 200:
+                data = response.json()
+                if "logo" in data and data["logo"] == large_logo:
+                    self.log_result("Large Logo Handling", True, f"Large logo handled successfully: {len(large_logo)} chars")
+                    return True
+                else:
+                    self.log_result("Large Logo Handling", False, "Large logo not stored correctly")
+                    return False
+            else:
+                self.log_result("Large Logo Handling", False, f"Large logo upload failed: {response.status_code} - {response.text}")
+                return False
+                
+        except Exception as e:
+            self.log_result("Large Logo Handling", False, f"Large logo test error: {str(e)}")
             return False
     
     def run_all_tests(self):
-        """Run all vehicle scan tests"""
+        """Run all property logo tests"""
+        print("🚀 Starting Property Logo Management Backend Testing")
         print("=" * 60)
-        print("VEHICLE AI SCANNING ENDPOINT TESTING")
-        print("=" * 60)
-        print(f"Testing endpoint: {API_BASE}/vehicles/scan")
-        print(f"Backend URL: {BACKEND_URL}")
-        print()
         
-        # Setup test user
-        if not self.setup_test_user():
-            print("❌ Cannot proceed without valid authentication")
+        # Setup
+        if not self.register_and_login():
             return False
         
-        print()
-        print("Running Vehicle AI Scanning Tests...")
-        print("-" * 40)
+        if not self.create_test_property():
+            return False
         
-        # Run all tests
+        # Core logo functionality tests
         tests = [
-            self.test_vehicle_scan_authentication,
-            self.test_vehicle_scan_missing_image,
-            self.test_vehicle_scan_invalid_image,
-            self.test_vehicle_scan_success,
-            self.test_vehicle_scan_gemini_integration
+            self.test_put_property_with_logo,
+            self.test_get_property_with_logo,
+            self.test_get_properties_list_with_logo,
+            self.test_logo_field_optional,
+            self.test_invalid_base64_logo,
+            self.test_large_logo_handling
         ]
         
         passed = 0
@@ -259,25 +299,28 @@ class VehicleScanTester:
             if test():
                 passed += 1
         
-        print()
-        print("=" * 60)
-        print("VEHICLE AI SCANNING TEST SUMMARY")
-        print("=" * 60)
-        print(f"Tests Passed: {passed}/{total}")
-        print(f"Success Rate: {(passed/total)*100:.1f}%")
+        print("\n" + "=" * 60)
+        print(f"📊 TEST SUMMARY: {passed}/{total} tests passed")
         
         if passed == total:
-            print("🎉 ALL TESTS PASSED - Vehicle AI Scanning fix is working correctly!")
+            print("🎉 ALL PROPERTY LOGO TESTS PASSED!")
+            return True
         else:
-            print("⚠️  Some tests failed - Vehicle AI Scanning needs attention")
+            print(f"⚠️  {total - passed} tests failed")
+            return False
+    
+    def get_summary(self):
+        """Get test summary for reporting"""
+        passed = sum(1 for result in self.test_results if result["success"])
+        total = len(self.test_results)
         
-        print()
-        print("Detailed Results:")
-        for result in self.test_results:
-            status = "✅" if result["success"] else "❌"
-            print(f"{status} {result['test']}: {result['message']}")
-        
-        return passed == total
+        return {
+            "total_tests": total,
+            "passed": passed,
+            "failed": total - passed,
+            "success_rate": f"{(passed/total*100):.1f}%" if total > 0 else "0%",
+            "results": self.test_results
+        }
 
 def main():
     """Main test execution"""
