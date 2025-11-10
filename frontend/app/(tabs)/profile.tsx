@@ -19,6 +19,7 @@ import { Ionicons } from '@expo/vector-icons';
 import * as ImagePicker from 'expo-image-picker';
 import { useAuth } from '../../contexts/AuthContext';
 import { authApi } from '../../services/api';
+import { useAppTour } from '../../components/AppTour';
 
 interface UserProfile {
   id: string;
