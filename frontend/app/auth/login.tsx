@@ -325,6 +325,37 @@ const styles = StyleSheet.create({
     fontSize: 14,
     marginTop: 8,
   },
+  divider: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginVertical: 16,
+  },
+  dividerLine: {
+    flex: 1,
+    height: 1,
+    backgroundColor: '#e0e0e0',
+  },
+  dividerText: {
+    paddingHorizontal: 16,
+    fontSize: 14,
+    color: '#666',
+  },
+  googleButton: {
+    flexDirection: 'row',
+    backgroundColor: '#fff',
+    borderWidth: 1,
+    borderColor: '#e0e0e0',
+    borderRadius: 12,
+    padding: 16,
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 12,
+  },
+  googleButtonText: {
+    color: '#000',
+    fontSize: 16,
+    fontWeight: '500',
+  },
   footer: {
     paddingVertical: 24,
     paddingHorizontal: 24,
