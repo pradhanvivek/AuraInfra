@@ -355,8 +355,8 @@ export default function Profile() {
               <Ionicons name="time-outline" size={24} color="#007AFF" />
             </View>
             <View style={styles.infoContent}>
-              <Text style={styles.infoLabel}>Warranty Reminder</Text>
-              <Text style={styles.infoValue}>
+              <Text style={[styles.infoLabel, { color: isDark ? '#A0A0A0' : '#8E8E93' }]}>Warranty Reminder</Text>
+              <Text style={[styles.infoValue, { color: isDark ? '#FFFFFF' : '#000' }]}>
                 {profile?.warranty_reminder_days} days before expiry
               </Text>
             </View>
