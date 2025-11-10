@@ -1300,7 +1300,32 @@ async def get_current_session_user(request: Request):
         "geomancy_preference": user_doc.get("geomancy_preference", "vastu"),
         "currency_preference": user_doc.get("currency_preference"),
         "measurement_system": user_doc.get("measurement_system"),
+        "disclaimer_accepted": user_doc.get("disclaimer_accepted", False),
+        "disclaimer_accepted_at": user_doc.get("disclaimer_accepted_at"),
     }
+
+@api_router.post("/auth/accept-disclaimer")
+async def accept_disclaimer(request: Request):
+    """Accept disclaimer and update user record"""
+    try:
+        user_doc = await get_user_from_session(request)
+        user_id = user_doc["id"]
+        
+        # Update user record
+        await db.users.update_one(
+            {"id": user_id},
+            {
+                "$set": {
+                    "disclaimer_accepted": True,
+                    "disclaimer_accepted_at": datetime.now(timezone.utc)
+                }
+            }
+        )
+        
+        return {"message": "Disclaimer accepted", "disclaimer_accepted": True}
+    except Exception as e:
+        logger.error(f"Accept disclaimer error: {str(e)}")
+        raise HTTPException(status_code=500, detail="Failed to accept disclaimer")
 
 @api_router.post("/auth/logout")
 async def logout(request: Request):
