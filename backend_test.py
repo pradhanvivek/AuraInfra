@@ -324,17 +324,16 @@ class PropertyLogoTester:
 
 def main():
     """Main test execution"""
-    tester = VehicleScanTester()
+    tester = PropertyLogoTester()
     success = tester.run_all_tests()
     
-    if success:
-        print("\n🎯 CONCLUSION: Vehicle AI Scanning endpoint fix has been successfully verified!")
-        print("   - No 'Provided image is not valid' error")
-        print("   - Gemini AI integration working")
-        print("   - Proper authentication and validation")
-        print("   - Structured response format correct")
-    else:
-        print("\n🚨 CONCLUSION: Vehicle AI Scanning endpoint still has issues that need to be addressed.")
+    # Print detailed results
+    summary = tester.get_summary()
+    print(f"\n📋 DETAILED RESULTS:")
+    print(f"   Total Tests: {summary['total_tests']}")
+    print(f"   Passed: {summary['passed']}")
+    print(f"   Failed: {summary['failed']}")
+    print(f"   Success Rate: {summary['success_rate']}")
     
     return success
 
