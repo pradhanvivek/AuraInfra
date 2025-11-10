@@ -327,21 +327,41 @@ export default function PropertiesScreen() {
           style={styles.addressDropdown}
           onPress={() => setSelectorModalVisible(true)}
         >
-          <View style={styles.addressContent}>
-            {selectedProperty ? (
-              <>
-                <Text style={styles.propertyNameHeader} numberOfLines={1}>
-                  {selectedProperty.name}
-                </Text>
-                <Text style={styles.propertyAddressHeader} numberOfLines={1}>
-                  {selectedProperty.address}
-                </Text>
-              </>
-            ) : (
-              <Text style={styles.selectText}>Select Property</Text>
-            )}
-          </View>
-          <Ionicons name="chevron-down-circle" size={24} color="#007AFF" />
+          {selectedProperty ? (
+            <>
+              <View style={styles.propertyLogoNameContainer}>
+                {selectedProperty.logo ? (
+                  <Image
+                    source={{ uri: selectedProperty.logo }}
+                    style={styles.propertyLogo}
+                    resizeMode="contain"
+                  />
+                ) : (
+                  <Image
+                    source={require('../../assets/images/level-constructions-logo.png')}
+                    style={styles.propertyLogo}
+                    resizeMode="contain"
+                  />
+                )}
+                <View style={styles.propertyTextContainer}>
+                  <Text style={styles.propertyNameHeader} numberOfLines={1}>
+                    {selectedProperty.name}
+                  </Text>
+                  <Text style={styles.propertyAddressHeader} numberOfLines={1}>
+                    {selectedProperty.address}
+                  </Text>
+                </View>
+              </View>
+              <Ionicons name="chevron-down-circle" size={24} color="#007AFF" />
+            </>
+          ) : (
+            <>
+              <View style={styles.addressContent}>
+                <Text style={styles.selectText}>Select Property</Text>
+              </View>
+              <Ionicons name="chevron-down-circle" size={24} color="#007AFF" />
+            </>
+          )}
         </TouchableOpacity>
       </View>
 
