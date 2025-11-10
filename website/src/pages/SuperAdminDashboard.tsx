@@ -231,6 +231,78 @@ export default function SuperAdminDashboard() {
           </div>
         </div>
 
+        {/* Property Logo Management */}
+        <div className="bg-white rounded-lg shadow p-6 mb-8">
+          <h2 className="text-xl font-bold mb-4">Property Logo Management</h2>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Select Property
+              </label>
+              <select
+                value={logoPropertyId}
+                onChange={(e) => setLogoPropertyId(e.target.value)}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500"
+              >
+                <option value="">-- Choose Property --</option>
+                {properties.map((prop) => (
+                  <option key={prop.id} value={prop.id}>
+                    {prop.name} - {prop.address}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Upload Logo
+              </label>
+              <input
+                type="file"
+                accept="image/*"
+                onChange={handleLogoFileChange}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500"
+              />
+              <p className="mt-1 text-xs text-gray-500">Max size: 2MB, PNG/JPG/JPEG</p>
+            </div>
+
+            <div className="flex items-end">
+              <button
+                onClick={handleUploadLogo}
+                disabled={logoUploading || !logoPropertyId || !logoFile}
+                className="w-full px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 disabled:bg-gray-400"
+              >
+                {logoUploading ? 'Uploading...' : 'Upload Logo'}
+              </button>
+            </div>
+          </div>
+
+          {/* Logo Preview */}
+          {logoPreview && (
+            <div className="mt-4">
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Logo Preview
+              </label>
+              <div className="flex items-center space-x-4">
+                <img
+                  src={logoPreview}
+                  alt="Logo preview"
+                  className="w-24 h-24 object-contain border border-gray-300 rounded-lg"
+                />
+                <button
+                  onClick={() => {
+                    setLogoFile(null);
+                    setLogoPreview('');
+                  }}
+                  className="px-3 py-1 text-sm bg-red-500 text-white rounded hover:bg-red-600"
+                >
+                  Remove
+                </button>
+              </div>
+            </div>
+          )}
+        </div>
+
         {/* Properties List */}
         <div className="bg-white rounded-lg shadow p-6 mb-8">
           <h2 className="text-xl font-bold mb-4">All Properties ({properties.length})</h2>
