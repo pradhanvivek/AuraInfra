@@ -81,7 +81,7 @@ export default function PropertiesScreen() {
       title: 'My Documents',
       icon: 'document-text-outline',
       color: '#007AFF',
-      route: '/property/[id]',
+      route: '/property-documents/[id]',
       isAd: false,
     },
     {
@@ -89,7 +89,7 @@ export default function PropertiesScreen() {
       title: 'My Fixtures',
       icon: 'construct-outline',
       color: '#34C759',
-      route: '/property/[id]',
+      route: '/property-fixtures/[id]',
       isAd: false,
     },
     {
@@ -97,7 +97,7 @@ export default function PropertiesScreen() {
       title: 'House Measurements',
       icon: 'resize-outline',
       color: '#FF9500',
-      route: '/property/[id]',
+      route: '/property-measurements/[id]',
       isAd: false,
     },
     {
@@ -105,7 +105,7 @@ export default function PropertiesScreen() {
       title: 'Vastu',
       icon: 'compass-outline',
       color: '#AF52DE',
-      route: '/property/[id]',
+      route: '/property-vastu/[id]',
       isAd: false,
     },
     {
@@ -113,7 +113,7 @@ export default function PropertiesScreen() {
       title: 'Feng Shui',
       icon: 'leaf-outline',
       color: '#34C759',
-      route: '/property/[id]',
+      route: '/property-fengshui/[id]',
       isAd: false,
     },
     {
@@ -121,7 +121,7 @@ export default function PropertiesScreen() {
       title: 'Paint Estimate',
       icon: 'color-palette-outline',
       color: '#FF3B30',
-      route: '/property/[id]',
+      route: '/property-paint/[id]',
       isAd: false,
     },
     {
