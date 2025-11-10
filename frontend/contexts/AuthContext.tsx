@@ -80,7 +80,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
 
-  const login = async (username: string, password: string) => {
+  const login = async (username: string, password: string): Promise<string> => {
     try {
       const response = await axios.post(`${API_URL}/api/auth/login`, {
         username,
@@ -96,6 +96,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       setToken(access_token);
       setUserId(user_id);
       setUsername(userName);
+      
+      return access_token;
     } catch (error: any) {
       console.error('Login error:', error);
       throw new Error(error.response?.data?.detail || 'Login failed');
