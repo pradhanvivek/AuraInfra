@@ -261,7 +261,8 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingHorizontal: 20,
+    paddingLeft: 20,
+    paddingRight: 16,
     paddingVertical: 16,
     borderBottomWidth: 1,
     borderBottomColor: '#E5E5EA',
@@ -270,9 +271,12 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: '700',
     color: '#000',
+    flex: 1,
+    marginRight: 16,
   },
   closeButton: {
-    padding: 4,
+    padding: 8,
+    marginRight: 4,
   },
   iconContainer: {
     width: 120,
