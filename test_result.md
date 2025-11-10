@@ -102,7 +102,7 @@
 # Testing Data - Main Agent and testing sub agent both should log testing data below this section
 #====================================================================================================
 
-user_problem_statement: "Verify Vehicle AI Scanning Fix - Backend endpoint was updated to use Pydantic model (VehicleScanRequest) instead of generic dict to resolve 'Provided image is not valid' error. Need to test that POST /api/vehicles/scan endpoint now correctly processes base64 images and returns structured vehicle data from Gemini AI without errors."
+user_problem_statement: "Fix property logo display issue on mobile app and add admin UI for logo management. User reported display issue with property name and logo in the properties tab. Additionally, implement property logo upload functionality in the super admin dashboard accessible only to admins."
 
 backend:
   - task: "Vehicle AI Scanning - POST /api/vehicles/scan"
