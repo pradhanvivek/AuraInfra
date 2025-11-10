@@ -3,8 +3,12 @@ import { AuthProvider } from '../contexts/AuthContext';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { useEffect } from 'react';
 import { initializePreferences } from '../utils/localeUtils';
+import { StatusBar } from 'expo-status-bar';
+import { useColorScheme } from 'react-native';
 
 export default function RootLayout() {
+  const colorScheme = useColorScheme();
+
   useEffect(() => {
     // Initialize locale preferences on app start
     initializePreferences();
@@ -12,6 +16,7 @@ export default function RootLayout() {
 
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
+      <StatusBar style={colorScheme === 'dark' ? 'light' : 'dark'} />
       <AuthProvider>
         <Stack screenOptions={{ headerShown: false }}>
           <Stack.Screen name="index" />
