@@ -310,6 +310,7 @@ export default function SuperAdminDashboard() {
             <table className="min-w-full divide-y divide-gray-200">
               <thead className="bg-gray-50">
                 <tr>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Logo</th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Name</th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Address</th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">ID</th>
@@ -318,6 +319,19 @@ export default function SuperAdminDashboard() {
               <tbody className="bg-white divide-y divide-gray-200">
                 {properties.map((prop) => (
                   <tr key={prop.id}>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      {prop.logo ? (
+                        <img
+                          src={prop.logo}
+                          alt={`${prop.name} logo`}
+                          className="w-12 h-12 object-contain rounded"
+                        />
+                      ) : (
+                        <div className="w-12 h-12 bg-gray-200 rounded flex items-center justify-center">
+                          <span className="text-gray-400 text-xs">No Logo</span>
+                        </div>
+                      )}
+                    </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
                       {prop.name}
                     </td>
