@@ -303,13 +303,22 @@ const styles = StyleSheet.create({
     color: '#000',
     textAlign: 'center',
     marginBottom: 12,
+    paddingHorizontal: 20,
+  },
+  descriptionScroll: {
+    maxHeight: 200,
+    marginBottom: 16,
+    width: '100%',
+  },
+  descriptionContent: {
+    flexGrow: 1,
+    paddingHorizontal: 20,
   },
   description: {
     fontSize: 16,
     lineHeight: 24,
     color: '#3C3C43',
     textAlign: 'center',
-    marginBottom: 24,
   },
   dotsContainer: {
     flexDirection: 'row',
