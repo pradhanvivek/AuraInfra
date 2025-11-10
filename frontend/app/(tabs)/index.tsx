@@ -316,14 +316,6 @@ export default function PropertiesScreen() {
       <View style={styles.container}>
         {/* Header with Property Address and Dropdown */}
         <View style={styles.header}>
-        <View style={styles.logoContainer}>
-          <Image 
-            source={require('../../assets/logo.png')} 
-            style={styles.logo} 
-            resizeMode="contain"
-          />
-        </View>
-        
         <TouchableOpacity
           style={styles.addressDropdown}
           onPress={() => setSelectorModalVisible(true)}
