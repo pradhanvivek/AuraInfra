@@ -83,6 +83,20 @@ class UserProfileUpdate(BaseModel):
     currency_preference: Optional[str] = None  # "USD", "INR", "EUR", etc.
     measurement_system: Optional[str] = None  # "imperial" or "metric"
 
+# Google OAuth Session Models
+class UserSession(BaseModel):
+    user_id: str
+    session_token: str
+    expires_at: datetime
+    created_at: datetime = Field(default_factory=datetime.utcnow)
+
+class GoogleUser(BaseModel):
+    id: str
+    email: str
+    name: str
+    picture: Optional[str] = None
+    session_token: str
+
 class Property(BaseModel):
     id: str = Field(default_factory=lambda: str(uuid.uuid4()))
     name: str
