@@ -71,6 +71,22 @@ export default function Login() {
             // Clean URL fragment
             window.history.replaceState(null, '', window.location.pathname);
             
+            // Check if user needs to accept disclaimer
+            const userResponse = await fetch(`${API_URL}/api/auth/me`, {
+              headers: {
+                'Authorization': `Bearer ${data.session_token}`,
+              },
+            });
+            
+            if (userResponse.ok) {
+              const userData = await userResponse.json();
+              if (!userData.disclaimer_accepted) {
+                // Navigate to disclaimer page
+                router.replace('/auth/disclaimer');
+                return;
+              }
+            }
+            
             // Navigate to main app
             router.replace('/(tabs)');
           } catch (error: any) {
