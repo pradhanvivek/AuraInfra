@@ -274,19 +274,13 @@ const styles = StyleSheet.create({
   closeButton: {
     padding: 4,
   },
-  scrollView: {
-    flex: 1,
-  },
-  scrollContent: {
-    padding: 24,
-    alignItems: 'center',
-  },
   iconContainer: {
     width: 120,
     height: 120,
     borderRadius: 60,
     justifyContent: 'center',
     alignItems: 'center',
+    marginTop: 20,
     marginBottom: 20,
   },
   stepCounter: {
