@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
-Backend API Testing Script for Vehicle AI Scanning Fix
-Tests the POST /api/vehicles/scan endpoint fix that was applied to resolve "Provided image is not valid" error.
+Backend API Testing for Property Logo Management
+Tests property logo upload, retrieval, and management functionality
 """
 
 import requests
@@ -10,25 +10,11 @@ import base64
 import os
 from datetime import datetime
 
-# Get backend URL from environment
-BACKEND_URL = os.environ.get('REACT_APP_BACKEND_URL', 'https://propmanager-app.preview.emergentagent.com')
-API_BASE = f"{BACKEND_URL}/api"
+# Configuration
+BACKEND_URL = "https://propmanager-app.preview.emergentagent.com/api"
 
-# Test configuration
-TEST_USERNAME = "vehicle_test_user"
-TEST_PASSWORD = "VehicleTest123!"
-TEST_EMAIL = "vehicle.test@example.com"
-
-# Load the realistic car image
-def load_test_car_image():
-    try:
-        with open('/app/test_car_image.txt', 'r') as f:
-            return f.read().strip()
-    except FileNotFoundError:
-        # Fallback to a simple base64 image if file not found
-        return "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChAI9jU77yQAAAABJRU5ErkJggg=="
-
-SAMPLE_VEHICLE_IMAGE = load_test_car_image()
+# Test data - small base64 encoded PNG image (1x1 pixel red dot)
+SAMPLE_LOGO_BASE64 = "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8/5+hHgAHggJ/PchI7wAAAABJRU5ErkJggg=="
 
 class VehicleScanTester:
     def __init__(self):
