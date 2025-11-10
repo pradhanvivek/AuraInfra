@@ -597,7 +597,7 @@ const styles = StyleSheet.create({
   },
   header: {
     backgroundColor: '#fff',
-    paddingTop: 5,
+    paddingTop: 8,
     paddingBottom: 12,
     paddingHorizontal: 16,
     borderBottomWidth: 1,
@@ -609,14 +609,14 @@ const styles = StyleSheet.create({
     elevation: 3,
   },
   addressDropdown: {
-    flex: 1,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingVertical: 8,
+    paddingVertical: 12,
     paddingHorizontal: 12,
     backgroundColor: '#F2F2F7',
     borderRadius: 12,
+    minHeight: 64,
   },
   propertyLogoNameContainer: {
     flexDirection: 'row',
