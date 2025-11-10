@@ -607,17 +607,6 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.1,
     shadowRadius: 4,
     elevation: 3,
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 12,
-  },
-  logoContainer: {
-    width: 50,
-    height: 50,
-  },
-  logo: {
-    width: '100%',
-    height: '100%',
   },
   addressDropdown: {
     flex: 1,
