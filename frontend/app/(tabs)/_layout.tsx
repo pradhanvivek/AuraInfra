@@ -105,6 +105,19 @@ export default function TabsLayout() {
           ),
         }}
       />
+      {/* Conditionally show Admin tab only for admins */}
+      {isAdmin && (
+        <Tabs.Screen
+          name="admin"
+          options={{
+            title: 'Admin',
+            headerShown: false,
+            tabBarIcon: ({ color, size }) => (
+              <Ionicons name="shield-outline" size={size} color={color} />
+            ),
+          }}
+        />
+      )}
       <Tabs.Screen
         name="profile"
         options={{
