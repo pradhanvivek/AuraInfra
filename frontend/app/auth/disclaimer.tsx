@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import {
   View,
   Text,
@@ -7,6 +7,8 @@ import {
   TouchableOpacity,
   ActivityIndicator,
   Alert,
+  BackHandler,
+  Platform,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
@@ -22,6 +24,46 @@ export default function DisclaimerScreen() {
   const { token, logout } = useAuth();
   const [accepting, setAccepting] = useState(false);
   const [declining, setDeclining] = useState(false);
+
+  // Prevent back navigation on disclaimer page - it's mandatory!
+  useEffect(() => {
+    if (Platform.OS === 'android') {
+      const backHandler = BackHandler.addEventListener('hardwareBackPress', () => {
+        // Show alert when user tries to go back
+        Alert.alert(
+          'Accept Terms',
+          'You must accept or decline the terms to continue.',
+          [{ text: 'OK', style: 'cancel' }]
+        );
+        return true; // Prevent default back behavior
+      });
+
+      return () => backHandler.remove();
+    }
+  }, []);
+
+  // For web, prevent browser back button
+  useEffect(() => {
+    if (Platform.OS === 'web' && typeof window !== 'undefined') {
+      const handlePopState = (e: PopStateEvent) => {
+        e.preventDefault();
+        Alert.alert(
+          'Accept Terms',
+          'You must accept or decline the terms to continue.'
+        );
+        // Push state back to keep user on disclaimer page
+        window.history.pushState(null, '', window.location.pathname);
+      };
+
+      // Push initial state
+      window.history.pushState(null, '', window.location.pathname);
+      window.addEventListener('popstate', handlePopState);
+
+      return () => {
+        window.removeEventListener('popstate', handlePopState);
+      };
+    }
+  }, []);
 
   const handleAccept = async () => {
     console.log('Accept button clicked');
