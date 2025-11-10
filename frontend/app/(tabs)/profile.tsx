@@ -451,7 +451,7 @@ export default function Profile() {
         )}
 
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Contact Information</Text>
+          <Text style={[styles.sectionTitle, { color: isDark ? '#A0A0A0' : '#8E8E93' }]}>Contact Information</Text>
 
           <TouchableOpacity
             style={styles.infoCard}
