@@ -93,6 +93,68 @@ export default function SuperAdminDashboard() {
     }
   };
 
+  const handleLogoFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      // Validate file type
+      if (!file.type.startsWith('image/')) {
+        alert('Please select an image file');
+        return;
+      }
+      
+      // Validate file size (max 2MB)
+      if (file.size > 2 * 1024 * 1024) {
+        alert('Image size should be less than 2MB');
+        return;
+      }
+      
+      setLogoFile(file);
+      
+      // Create preview
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setLogoPreview(reader.result as string);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const handleUploadLogo = async () => {
+    if (!logoPropertyId || !logoFile) {
+      alert('Please select a property and upload a logo image');
+      return;
+    }
+
+    setLogoUploading(true);
+    try {
+      // Convert file to base64
+      const reader = new FileReader();
+      reader.onloadend = async () => {
+        const base64Logo = reader.result as string;
+        
+        // Update property with logo
+        await axios.put(
+          `${API_URL}/api/properties/${logoPropertyId}`,
+          { logo: base64Logo },
+          {
+            headers: { 'Authorization': `Bearer ${token}` }
+          }
+        );
+
+        alert('Property logo updated successfully!');
+        fetchData();
+        setLogoPropertyId('');
+        setLogoFile(null);
+        setLogoPreview('');
+      };
+      reader.readAsDataURL(logoFile);
+    } catch (error: any) {
+      alert(error.response?.data?.detail || 'Failed to upload logo');
+    } finally {
+      setLogoUploading(false);
+    }
+  };
+
   const handleLogout = () => {
     localStorage.clear();
     navigate('/admin/login');
