@@ -542,12 +542,12 @@ export default function Profile() {
             </TouchableOpacity>
           </View>
 
-          <View style={styles.modalContent}>
-            <Text style={styles.label}>
+          <View style={[styles.modalContent, { backgroundColor: isDark ? '#000' : '#F2F2F7' }]}>
+            <Text style={[styles.label, { color: isDark ? '#FFFFFF' : '#000' }]}>
               {editField === 'email' ? 'Email Address' : 'Phone Number'}
             </Text>
             <TextInput
-              style={styles.input}
+              style={[styles.input, { backgroundColor: isDark ? '#1C1C1E' : '#fff', color: isDark ? '#FFFFFF' : '#000', borderColor: isDark ? '#2C2C2E' : '#E5E5EA' }]}
               placeholder={
                 editField === 'email' 
                   ? 'your.email@example.com' 
