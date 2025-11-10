@@ -320,7 +320,7 @@ const styles = StyleSheet.create({
     maxHeight: SCREEN_HEIGHT * 0.8,
     backgroundColor: '#fff',
     borderRadius: 24,
-    padding: 24,
+    overflow: 'hidden',
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 8 },
     shadowOpacity: 0.3,
@@ -329,8 +329,10 @@ const styles = StyleSheet.create({
   },
   scrollView: {
     flex: 1,
+    maxHeight: SCREEN_HEIGHT * 0.55,
   },
   scrollContent: {
+    padding: 24,
     alignItems: 'center',
   },
   iconContainer: {
