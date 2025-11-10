@@ -431,7 +431,7 @@ export default function Profile() {
         {/* Admin Access Section - Only for HOA Admins and Super Admins */}
         {(profile?.is_hoa_admin || profile?.is_super_admin) && (
           <View style={styles.section}>
-            <Text style={styles.sectionTitle}>Administration</Text>
+            <Text style={[styles.sectionTitle, { color: isDark ? '#A0A0A0' : '#8E8E93' }]}>Administration</Text>
             <TouchableOpacity
               style={[styles.infoCard, styles.adminCard]}
               onPress={() => router.push('/admin/dashboard')}
