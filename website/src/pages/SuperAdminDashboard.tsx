@@ -8,6 +8,7 @@ interface Property {
   id: string;
   name: string;
   address: string;
+  logo?: string;
 }
 
 interface Admin {
