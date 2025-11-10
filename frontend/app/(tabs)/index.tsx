@@ -546,6 +546,22 @@ export default function PropertiesScreen() {
           </View>
         </View>
       </Modal>
+
+      {/* Page Demo */}
+      <PageDemo
+        visible={demoVisible}
+        onClose={() => setDemoVisible(false)}
+        title="Properties Page Guide"
+        steps={propertiesPageSteps}
+      />
+
+      {/* Floating Help Button */}
+      <TouchableOpacity
+        style={styles.helpButton}
+        onPress={() => setDemoVisible(true)}
+      >
+        <Ionicons name="help-circle" size={28} color="#fff" />
+      </TouchableOpacity>
       </View>
     </SafeAreaView>
   );
