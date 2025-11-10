@@ -526,9 +526,9 @@ export default function Profile() {
       >
         <KeyboardAvoidingView
           behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-          style={styles.modalContainer}
+          style={[styles.modalContainer, { backgroundColor: isDark ? '#000' : '#F2F2F7' }]}
         >
-          <View style={styles.modalHeader}>
+          <View style={[styles.modalHeader, { backgroundColor: isDark ? '#1C1C1E' : '#fff', borderBottomColor: isDark ? '#2C2C2E' : '#E5E5EA' }]}>
             <TouchableOpacity onPress={() => setEditModalVisible(false)}>
               <Text style={styles.cancelButton}>Cancel</Text>
             </TouchableOpacity>
