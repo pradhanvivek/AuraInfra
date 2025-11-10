@@ -112,11 +112,11 @@ export default function PropertiesScreen() {
       isAd: false,
     },
     {
-      id: 'fengshui',
-      title: 'Feng Shui',
-      icon: 'leaf-outline',
-      color: '#34C759',
-      route: '/property-fengshui/[id]',
+      id: 'nearme',
+      title: 'Near Me',
+      icon: 'location-outline',
+      color: '#00C7BE',
+      route: '/near-me',
       isAd: false,
     },
     {
