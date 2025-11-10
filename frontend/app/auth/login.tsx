@@ -229,7 +229,10 @@ export default function Login() {
 
               {/* Google Sign-In Button */}
               <TouchableOpacity
-                style={[styles.googleButton, { borderColor: inputBorderColor }]}
+                style={[styles.googleButton, { 
+                  borderColor: inputBorderColor,
+                  backgroundColor: inputBgColor 
+                }]}
                 onPress={handleGoogleSignIn}
                 disabled={loading || googleLoading}
               >
