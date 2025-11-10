@@ -176,7 +176,7 @@ export default function Login() {
               <Text style={[styles.tagline, { color: subtextColor }]}>Your Digital Vault for Physical Assets</Text>
             </View>
 
-            <Text style={[styles.title, { color: textColor }]}>Welcome Back</Text>
+            <Text style={[styles.title, { color: textColor }]}>AuraInfra.ai</Text>
             <Text style={[styles.subtitle, { color: subtextColor }]}>Sign in to continue</Text>
 
             <View style={styles.form}>
