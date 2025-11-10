@@ -421,8 +421,8 @@ export default function Profile() {
               <Ionicons name="notifications-outline" size={24} color="#007AFF" />
             </View>
             <View style={styles.infoContent}>
-              <Text style={styles.infoLabel}>View Notifications</Text>
-              <Text style={styles.infoValue}>Warranty reminders and alerts</Text>
+              <Text style={[styles.infoLabel, { color: isDark ? '#A0A0A0' : '#8E8E93' }]}>View Notifications</Text>
+              <Text style={[styles.infoValue, { color: isDark ? '#FFFFFF' : '#000' }]}>Warranty reminders and alerts</Text>
             </View>
             <Ionicons name="chevron-forward" size={20} color="#C7C7CC" />
           </TouchableOpacity>
