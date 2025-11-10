@@ -25,6 +25,10 @@ export default function SuperAdminDashboard() {
   const [selectedProperty, setSelectedProperty] = useState('');
   const [selectedUser, setSelectedUser] = useState('');
   const [assignLoading, setAssignLoading] = useState(false);
+  const [logoPropertyId, setLogoPropertyId] = useState('');
+  const [logoFile, setLogoFile] = useState<File | null>(null);
+  const [logoPreview, setLogoPreview] = useState<string>('');
+  const [logoUploading, setLogoUploading] = useState(false);
   const navigate = useNavigate();
 
   const token = localStorage.getItem('admin_token');
