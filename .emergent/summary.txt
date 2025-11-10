@@ -1,120 +1,127 @@
 <analysis>
-The AI engineer's work within this trajectory primarily focused on extensive UI/UX refinements and feature enhancements for the AuraInfra.ai mobile application. Key areas addressed included:
-1. **Dashboard Overhaul:** Implementing horizontal scrolling for asset tiles, dynamic currency-based number formatting, a privacy toggle for portfolio value, an integrated pie chart, and a professional header with a company logo and user greeting. This involved significant styling adjustments for responsiveness, spacing, and font sizes.
-2. **Navigation and Layout Fixes:** Correcting header flashing on property detail pages, resolving unmatched routes for health score breakdown, and ensuring consistent header padding and logo placement across all asset listing and detail screens.
-3. **Functional Enhancements:** Adding a FAB (Floating Action Button) for adding properties, ensuring correct Indian numbering system for currency, and fixing a critical backend  integration error for the quick asset scan feature.
-4. **General UI Consistency:** Standardizing header styles, safe area handling, and removing unnecessary padding across various screens. The work ended with resolving a dynamic safe area layout shift on property detail pages.
+The AI engineer's trajectory shows a systematic approach to enhancing the AuraInfra.ai application, focusing heavily on web/Safari compatibility, UI/UX improvements, and new feature implementation. Key efforts included exhaustive  integration across various asset forms and addressing iOS modal display issues for app tours and property features. The engineer also implemented Google OAuth, a mandatory disclaimer page, and a new My Property section with dynamic navigation. Debugging involved meticulous log analysis and iterative code adjustments for issues like date-time comparisons and hardcoded styling for dark mode. The process demonstrated a strong emphasis on user experience and cross-platform consistency. The trajectory concluded with resolving display issues for the property logo.
 </analysis>
 
 <product_requirements>
-The AuraInfra.ai app is a personal asset management system, initially focused on properties, now expanded to include vehicles, appliances, and jewelry, with new additions for furniture and art. It provides property listing, detailed views (documents, fixtures, health score, Vastu, AI floor plans, paint estimation), user profiles with avatar/preferences, and notifications. Core features include a dashboard with tile-based navigation, CRUD operations for assets (manual and AI-powered data entry), warranty tracking, and a portfolio dashboard for total asset value with PDF export. Recent improvements fixed dark mode, login navigation, dynamic currency display, full-screen image viewing/sharing, AI receipt scanning (Indian receipts supported), avatar uploads, and robust backend/frontend communication. The system also now includes a quick asset scan and an admin dashboard for user statistics.
+The AuraInfra.ai app is a personal asset management system for properties, offering detailed views, CRUD, and PDF exports. Initial focus was on UI redesign, HOA management features, and various usability fixes.
+
+Explicit requests addressed in this trajectory include:
+*   Date picker fixes for web/Safari across , , , , and .
+*   Fixing maintenance add unmatched route by creating .
+*   Revamping the properties tab: My Property section, tiles for My Documents, My Fixtures, House Measurements, Vastu, Fengshui, Paint Estimate, My Builder, and an ad tile.
+*   Ensuring property tiles navigate to correct individual screens (e.g., ).
+*   Adding headers and back buttons to new property-related pages.
+*   Adding a View More tile under My Property with a modal for additional features (Property Health Score, Paint Estimate).
+*   Implementing Google login.
+*   Creating a mandatory disclaimer page on first login.
+*   Creating an interactive app demo overlay/tutorial.
+*   Adding Replay Tour button to profile.
+*   Fixing dark mode text visibility issues across the app (login page, status bar).
+*   Ensuring Property Health link from View More routes to .
+*   Implementing admin ability to add/modify property logos, defaulting to app logo, and displaying it with property name on the properties tab.
 </product_requirements>
 
 <key_technical_concepts>
-- **Expo Router**: File-based navigation.
-- **React Native**: Core UI components, , , .
-- **FastAPI & MongoDB**: Python backend, NoSQL database.
-- **AI Integration**: Gemini 2.0 Flash () for image/receipt scanning.
-- ** & **: Camera access.
-- **Locale Utilities**: Dynamic currency/measurement formatting, , .
-- ** & **: Image sharing.
-- ** & **: Charting for data visualization.
-- ****: PDF generation.
+-   **Expo Router**: File-based routing for navigation.
+-   **React Native**: Core UI components,  for platform-specific logic.
+-   ****: Web-specific date input component.
+-   **FastAPI**: Python backend API for asset management and authentication.
+-   **Pydantic**: Data validation for API request/response models.
+-   **MongoDB**: Database (implicitly used by FastAPI backend).
+-   **Google OAuth**: Authentication integration via backend session management.
+-   ****: Client-side persistent storage for app tour state.
+-   ****: Keyboard handling.
+-   ****: Handling device safe areas.
+-   ****: Dynamic status bar styling.
 </key_technical_concepts>
 
 <code_architecture>
 **Directory Structure:**
 
--   
-    -   **Summary:** Core FastAPI backend for API requests and DB interactions.
-    -   **Changes:**
-        -   Added  endpoint for asset identification using ' .
-        -   Fixed  instantiation error by using  method.
--   
-    -   **Summary:** User login screen.
-    -   **Changes:** Refactored layout using  and  to prevent the footer from overlapping with the keyboard. Removed  from footer styles.
--   
-    -   **Summary:** Defines the layout and navigation for the main tabs.
-    -   **Changes:** Set  for the  route to prevent the brief flash of the default header before custom header renders.
--   
-    -   **Summary:** Central dashboard displaying asset categories and total value.
-    -   **Changes:**
-        -   Implemented horizontal scrolling for asset tiles.
-        -   Added company logo to the header.
-        -   Adjusted header padding and removed whitespace.
-        -   Redesigned header for Hello, Username on the left and logo on the right.
-        -   Implemented privacy toggle (eye icon) for total portfolio value.
-        -   Integrated a pie chart preview for portfolio breakdown, with a custom legend.
-        -   Made asset tiles rectangular and adjusted their size/spacing.
-        -   Updated  font size (12 -> 24 -> 18),  font size (11 -> 13).
-        -   Increased header  (initially removed, then set to 5, then 15).
-        -   Fixed pie chart cutoff by adjusting  and .
-        -   Formatted numbers to local currency format with symbols.
--   
-    -   **Summary:** This file acts as  due to 's file-based routing.
-    -   **Changes:**
-        -   Removed .
-        -   Moved the Add Property button from the header to a Floating Action Button (FAB).
-        -   Added company logo to the header.
-        -   Made the header title bold and applied consistent .
-        -   Removed top padding from the main list.
--   
-    -   **Summary:** Lists user's appliances.
-    -   **Changes:** Removed , made header title bold, added logo to header, applied , removed top padding from list, fixed headerTitle style properties which were incorrectly in  style.
--    (New file created by previous engineer)
-    -   **Summary:** Lists user's art.
-    -   **Changes:** Removed , made header title bold, added logo to header, applied , removed top padding from list, fixed headerTitle style properties which were incorrectly in  style.
--    (New file created by previous engineer)
-    -   **Summary:** Lists user's furniture.
-    -   **Changes:** Removed , made header title bold, added logo to header, applied , removed top padding from list, fixed headerTitle style properties which were incorrectly in  style.
--   
-    -   **Summary:** Lists user's jewelry.
-    -   **Changes:** Removed , made header title bold, added logo to header, applied , removed top padding from list, fixed headerTitle style properties which were incorrectly in  style.
--   
-    -   **Summary:** Detail view for a single jewelry item.
-    -   **Changes:** Removed  and replaced with . Added  to container for safe area spacing.
--   
-    -   **Summary:** Displays the user's asset portfolio summary.
-    -   **Changes:**
-        -   Installed , , .
-        -   Added pie chart to display asset breakdown.
-        -   Implemented  function for PDF export.
-        -   Wrapped asset breakdown cards in  for navigation to specific asset pages.
--   
-    -   **Summary:** Form for adding new property details.
-    -   **Changes:** Added a custom header with Back and Cancel buttons. Hid the default  header.
--   
-    -   **Summary:** Detail view for a property with internal tabs.
-    -   **Changes:**
-        -   Restored the custom header showing property name and address (after a temporary removal).
-        -   Hid the default  header (Property Details with back button) at the layout level ().
-        -   Wrapped the custom header in  and later implemented  for synchronous padding to prevent layout shifts.
--    (New file created by previous engineer)
-    -   **Summary:** A quick scan page for general asset identification via camera.
-    -   **Changes:** Updated API call to the newly created  endpoint in the backend and handled navigation based on identified asset type.
--   
-    -   **Summary:** Lists user's vehicles.
-    -   **Changes:** Removed , made header title bold, added logo to header, applied , removed top padding from list.
--   
-    -   **Summary:** Displays the health score breakdown for a property.
-    -   **Changes:** Removed navigation logic from breakdown cards as they lead to unmatched routes.  wrapper was removed/made non-functional. Fixed a syntax error in  function definition.
--   
-    -   **Summary:** Utility functions for locale-based formatting.
-    -   **Changes:** Enhanced  to use  with specific locales mapped for currency codes (e.g.,  for INR) to ensure correct numbering systems (e.g., lakhs for INR).
+
+-   : FastAPI backend.
+    -   **Summary**: Handles API endpoints, authentication, and data models.
+    -   **Changes**: Added  field to  model; added session management models/endpoints for Google OAuth; created  endpoint; fixed timezone comparison issues in session expiration; updated  endpoint to set  to  for new users; updated  model to include a  field.
+-   : Main properties tab screen.
+    -   **Summary**: Displays property selection, main action cards, and the My Property section.
+    -   **Changes**: Revamped UI with My Property section and tiles (Documents, Fixtures, Measurements, Vastu, My Builder, Near Me); created new route wrappers for previously component-only screens; added a View More modal for additional property features (Property Health, Paint Estimate, Fengshui); updated property selector to display logo with name; fixed iPhone modal display issues.
+-   : Add Appliance form.
+    -   **Summary**: Form for adding new appliance assets.
+    -   **Changes**: Integrated  for 4 date fields with web compatibility, CSS injection, and custom input styles.
+-   : Add Jewelry form.
+    -   **Summary**: Form for adding new jewelry assets.
+    -   **Changes**: Integrated  for 3 date fields with web compatibility, CSS injection, and custom input styles.
+-   : Add Furniture form.
+    -   **Summary**: Form for adding new furniture assets.
+    -   **Changes**: Integrated  for Purchase Date and Warranty Expiry with web compatibility and styling.
+-   : Add Art form.
+    -   **Summary**: Form for adding new art assets.
+    -   **Changes**: Implemented native HTML5  for Purchase Date and Appraisal Date for web compatibility.
+-    (NEW FILE): Maintenance add screen.
+    -   **Summary**: New screen for adding maintenance records, resolving an unmatched route error.
+    -   **Changes**: Created from scratch with fields for asset type, asset selection, maintenance type, description, due date (using ), cost, recurring option, and notes.
+-    (NEW FILE): Dedicated builder page.
+    -   **Summary**: Placeholder for builder details and upcoming projects.
+    -   **Changes**: Created as a static page.
+-    (NEW FILE): Near Me screen route wrapper.
+    -   **Summary**: Route wrapper for the existing  component.
+    -   **Changes**: Created to allow direct navigation to Near Me features.
+-    (NEW FILE): Property Documents route wrapper.
+    -   **Summary**: Route wrapper for .
+    -   **Changes**: Created with header and back button.
+-    (NEW FILE): Property Fixtures route wrapper.
+    -   **Summary**: Route wrapper for .
+    -   **Changes**: Created with header and back button.
+-    (NEW FILE): Property Health Score route wrapper.
+    -   **Summary**: Route wrapper for .
+    -   **Changes**: Created with header and back button.
+-    (NEW FILE): Property Measurements route wrapper.
+    -   **Summary**: Route wrapper for .
+    -   **Changes**: Created with header and back button.
+-    (NEW FILE): Property Paint Estimate route wrapper.
+    -   **Summary**: Route wrapper for .
+    -   **Changes**: Created with header and back button.
+-    (NEW FILE): Property Vastu route wrapper.
+    -   **Summary**: Route wrapper for .
+    -   **Changes**: Created with header and back button.
+-   : User login screen.
+    -   **Summary**: Handles user authentication.
+    -   **Changes**: Integrated Sign in with Google button and Google OAuth flow; updated to check for disclaimer acceptance; fixed hardcoded colors for dark mode.
+-    (NEW FILE): Disclaimer page.
+    -   **Summary**: Mandatory page for users to accept terms on first login.
+    -   **Changes**: Created from scratch with Accept and Decline buttons; implemented  to prevent back navigation.
+-   : Authentication context.
+    -   **Summary**: Manages global authentication state.
+    -   **Changes**: Added  function and updated  function to return token; updated  call to get disclaimer status.
+-    (NEW FILE): App demo overlay component.
+    -   **Summary**: Interactive onboarding tour for the main app features.
+    -   **Changes**: Created from scratch with step-by-step guidance; fixed iOS display issues (ScrollView, modal content visibility, layout constraints).
+-   : Tabs layout.
+    -   **Summary**: Defines the main tab navigation.
+    -   **Changes**: Integrated  component to show after disclaimer acceptance; added  with dynamic styling for dark mode.
+-   : User profile screen.
+    -   **Summary**: Displays user profile and settings.
+    -   **Changes**: Added Replay App Tour button and associated logic using .
+-    (NEW FILE): Page-specific demo overlay component.
+    -   **Summary**: Reusable component for interactive guides on specific pages.
+    -   **Changes**: Created from scratch; fixed iOS display issues (modal content visibility, layout constraints) mirroring  fixes.
+-    (NEW FILE): Documentation for auth testing.
+    -   **Summary**: Playbook for testing authentication flows.
+    -   **Changes**: Created to document testing steps.
 </code_architecture>
 
 <pending_tasks>
--   Integrate AI scanning functionality (camera, identification, auto-population) for the  form.
--   Build the portfolio dashboard's charting and full PDF export functionality (charting partially done on portfolio.tsx, PDF export still pending).
--   Implement periodic maintenance tracking for applicable asset categories.
--   Implement search functionality within categories and an uber search bar across all categories.
--   Display purchase/current cost values in the property detail view.
+-   Implement search functionality (categories and uber search).
+-   Display purchase/current cost values in property detail view.
+-   Address Package delivery and Emergency contacts features/screens.
+-   Set up push notifications.
+-   Add UI for logo upload in the property edit screen.
 </pending_tasks>
 
 <current_work>
-Immediately prior to this summary, the AI engineer was addressing a UI flicker issue on the property detail page (). When navigating to this page, the header, which includes the property name and address, was briefly shown out of the safe area before snapping into place. This was caused by the asynchronous nature of  insets. The engineer's current approach is to use the  hook to obtain the safe area values synchronously and apply them directly as padding to the header. The last action recorded was modifying  to import . The next step is to apply these insets to the header's style.
+Immediately before this summary request, the AI engineer was working on integrating and displaying property logos across the application. The backend  model was updated to include a  field. On the frontend, the properties tab () was modified to display the property's logo alongside its name in a unified container. This aimed to visually enhance the property selection and details. The user then reported a display issue (pls fix this with an image), indicating that the logo display for the property name unit is not rendering correctly, possibly due to styling or layout problems that cut off or misalign the elements. The AI has just acknowledged this issue and is about to inspect the error.
 </current_work>
 
 <optional_next_step>
-Complete the integration of  in  to apply top padding to the header.
+Analyze the user-provided screenshot and debug the property logo display issue on the properties tab.
 </optional_next_step>
