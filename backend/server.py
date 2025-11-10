@@ -1462,7 +1462,7 @@ async def update_property(
         update_data["purchase_cost"] = property_data.purchase_cost
     if property_data.current_value is not None:
         update_data["current_value"] = property_data.current_value
-    if property_data.logo is not None:
+    if hasattr(property_data, 'logo') and property_data.__dict__.get('logo') is not ...:
         update_data["logo"] = property_data.logo
     
     if update_data:
