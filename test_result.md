@@ -859,7 +859,6 @@ test_plan:
     - "NearMeScreen Module Resolution Fix"
     - "Property Logo Display on Properties Tab"
     - "Super Admin Logo Upload UI"
-    - "Property Logo Upload - PUT /api/properties/{id}"
   stuck_tasks: []
   test_all: false
   test_priority: "high_first"
