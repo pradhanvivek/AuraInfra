@@ -22,10 +22,11 @@ const API_URL = Constants.expoConfig?.extra?.EXPO_PUBLIC_BACKEND_URL || process.
 
 export default function Login() {
   const router = useRouter();
-  const { login } = useAuth();
+  const { login, setToken } = useAuth();
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
+  const [googleLoading, setGoogleLoading] = useState(false);
   const colorScheme = useColorScheme();
   
   // Dynamic colors based on theme
@@ -36,6 +37,56 @@ export default function Login() {
   const inputBgColor = isDark ? '#1C1C1E' : '#f5f5f5';
   const inputBorderColor = isDark ? '#38383A' : '#e0e0e0';
   const placeholderColor = isDark ? '#999' : '#666';
+
+  // Check for session_id in URL fragment on mount
+  useEffect(() => {
+    const processSessionId = async () => {
+      if (Platform.OS === 'web' && typeof window !== 'undefined') {
+        const hash = window.location.hash;
+        const params = new URLSearchParams(hash.substring(1));
+        const sessionId = params.get('session_id');
+        
+        if (sessionId) {
+          setGoogleLoading(true);
+          try {
+            // Call backend to exchange session_id for session_token
+            const response = await fetch(`${API_URL}/api/auth/session`, {
+              method: 'POST',
+              headers: {
+                'X-Session-ID': sessionId,
+              },
+            });
+
+            if (!response.ok) {
+              throw new Error('Failed to authenticate with Google');
+            }
+
+            const data = await response.json();
+            
+            // Store session token
+            if (setToken) {
+              await setToken(data.session_token);
+            }
+            
+            // Clean URL fragment
+            window.history.replaceState(null, '', window.location.pathname);
+            
+            // Navigate to main app
+            router.replace('/(tabs)');
+          } catch (error: any) {
+            console.error('Google auth error:', error);
+            Alert.alert('Authentication Failed', error.message || 'Failed to sign in with Google');
+            // Clean URL fragment on error too
+            window.history.replaceState(null, '', window.location.pathname);
+          } finally {
+            setGoogleLoading(false);
+          }
+        }
+      }
+    };
+
+    processSessionId();
+  }, []);
 
   const handleLogin = async () => {
     if (!username || !password) {
@@ -51,6 +102,28 @@ export default function Login() {
       Alert.alert('Login Failed', error.message);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleGoogleSignIn = async () => {
+    if (Platform.OS === 'web' && typeof window !== 'undefined') {
+      // Get current URL as redirect target
+      const redirectUrl = encodeURIComponent(window.location.origin + window.location.pathname);
+      const authUrl = `https://auth.emergentagent.com/?redirect=${redirectUrl}`;
+      
+      // Redirect to Emergent Auth
+      window.location.href = authUrl;
+    } else {
+      // For mobile, use Linking API
+      const redirectUrl = 'aurainfraa://auth/login'; // Deep link back to app
+      const authUrl = `https://auth.emergentagent.com/?redirect=${encodeURIComponent(redirectUrl)}`;
+      
+      const supported = await Linking.canOpenURL(authUrl);
+      if (supported) {
+        await Linking.openURL(authUrl);
+      } else {
+        Alert.alert('Error', 'Cannot open authentication page');
+      }
     }
   };
 
