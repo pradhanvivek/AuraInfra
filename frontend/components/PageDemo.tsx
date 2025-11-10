@@ -71,43 +71,44 @@ export default function PageDemo({ visible, onClose, title, steps }: PageDemoPro
             </TouchableOpacity>
           </View>
 
+          {/* Icon */}
+          <View style={[styles.iconContainer, { backgroundColor: step.color + '20' }]}>
+            <Ionicons name={step.icon as any} size={56} color={step.color} />
+          </View>
+
+          {/* Step counter */}
+          <View style={styles.stepCounter}>
+            <Text style={styles.stepText}>
+              Tip {currentStep + 1} of {steps.length}
+            </Text>
+          </View>
+
+          {/* Title */}
+          <Text style={styles.title}>{step.title}</Text>
+
+          {/* Description - Scrollable */}
           <ScrollView
-            style={styles.scrollView}
-            contentContainerStyle={styles.scrollContent}
-            showsVerticalScrollIndicator={false}
+            style={styles.descriptionScroll}
+            contentContainerStyle={styles.descriptionContent}
+            showsVerticalScrollIndicator={true}
+            bounces={false}
           >
-            {/* Icon */}
-            <View style={[styles.iconContainer, { backgroundColor: step.color + '20' }]}>
-              <Ionicons name={step.icon as any} size={56} color={step.color} />
-            </View>
-
-            {/* Step counter */}
-            <View style={styles.stepCounter}>
-              <Text style={styles.stepText}>
-                Tip {currentStep + 1} of {steps.length}
-              </Text>
-            </View>
-
-            {/* Title */}
-            <Text style={styles.title}>{step.title}</Text>
-
-            {/* Description */}
             <Text style={styles.description}>{step.description}</Text>
-
-            {/* Progress dots */}
-            <View style={styles.dotsContainer}>
-              {steps.map((_, index) => (
-                <TouchableOpacity
-                  key={index}
-                  onPress={() => setCurrentStep(index)}
-                  style={[
-                    styles.dot,
-                    index === currentStep && [styles.activeDot, { backgroundColor: step.color }],
-                  ]}
-                />
-              ))}
-            </View>
           </ScrollView>
+
+          {/* Progress dots */}
+          <View style={styles.dotsContainer}>
+            {steps.map((_, index) => (
+              <TouchableOpacity
+                key={index}
+                onPress={() => setCurrentStep(index)}
+                style={[
+                  styles.dot,
+                  index === currentStep && [styles.activeDot, { backgroundColor: step.color }],
+                ]}
+              />
+            ))}
+          </View>
 
           {/* Navigation buttons */}
           <View style={styles.buttonContainer}>
