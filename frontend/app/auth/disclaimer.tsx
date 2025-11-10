@@ -24,9 +24,13 @@ export default function DisclaimerScreen() {
   const [declining, setDeclining] = useState(false);
 
   const handleAccept = async () => {
+    console.log('Accept button clicked');
+    console.log('API_URL:', API_URL);
+    console.log('Token:', token);
+    
     setAccepting(true);
     try {
-      await axios.post(
+      const response = await axios.post(
         `${API_URL}/api/auth/accept-disclaimer`,
         {},
         {
@@ -36,11 +40,14 @@ export default function DisclaimerScreen() {
         }
       );
       
+      console.log('Disclaimer accepted successfully:', response.data);
+      
       // Navigate to main app
       router.replace('/(tabs)');
     } catch (error: any) {
       console.error('Failed to accept disclaimer:', error);
-      Alert.alert('Error', 'Failed to accept disclaimer. Please try again.');
+      console.error('Error response:', error.response?.data);
+      Alert.alert('Error', error.response?.data?.detail || 'Failed to accept disclaimer. Please try again.');
     } finally {
       setAccepting(false);
     }
