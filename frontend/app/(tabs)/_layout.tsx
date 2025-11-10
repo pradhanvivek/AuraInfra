@@ -18,9 +18,22 @@ export default function TabsLayout() {
 
   useEffect(() => {
     fetchUnreadCount();
+    checkAdminStatus();
     // Check for warranties on mount
     notificationApi.checkWarranties(token!).catch(console.error);
   }, []);
+
+  const checkAdminStatus = async () => {
+    try {
+      const response = await axios.get(`${API_URL}/api/auth/profile`, {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      // Check if user has managed_properties (is an admin)
+      setIsAdmin(response.data.managed_properties && response.data.managed_properties.length > 0);
+    } catch (error) {
+      console.error('Error checking admin status:', error);
+    }
+  };
 
   const fetchUnreadCount = async () => {
     try {
