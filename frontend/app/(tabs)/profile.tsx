@@ -338,8 +338,8 @@ export default function Profile() {
               <Ionicons name="camera" size={16} color="#fff" />
             </View>
           </TouchableOpacity>
-          <Text style={styles.username}>{profile?.username}</Text>
-          <Text style={styles.memberSince}>
+          <Text style={[styles.username, { color: isDark ? '#FFFFFF' : '#000' }]}>{profile?.username}</Text>
+          <Text style={[styles.memberSince, { color: isDark ? '#A0A0A0' : '#8E8E93' }]}>
             Member since {new Date(profile?.created_at || '').toLocaleDateString()}
           </Text>
         </View>
