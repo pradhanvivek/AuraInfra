@@ -9,6 +9,7 @@ import Constants from 'expo-constants';
 import { formatCurrency } from '../../utils/localeUtils';
 import { getCurrencyInfo } from '../../utils/localeUtils';
 import { PieChart } from 'react-native-chart-kit';
+import PageDemo, { assetsPageSteps } from '../../components/PageDemo';
 
 const API_URL = Constants.expoConfig?.extra?.EXPO_PUBLIC_BACKEND_URL || process.env.EXPO_PUBLIC_BACKEND_URL;
 
