@@ -12,6 +12,7 @@ import {
   Platform,
   ScrollView,
   Image,
+  useColorScheme,
 } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useRouter } from 'expo-router';
