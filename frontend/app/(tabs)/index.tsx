@@ -194,7 +194,7 @@ export default function PropertiesScreen() {
       title: 'Property Health',
       icon: 'fitness-outline',
       color: '#00C7BE',
-      route: '/property/[id]',
+      route: '/property-health/[id]',
     },
     {
       id: 'builder',
