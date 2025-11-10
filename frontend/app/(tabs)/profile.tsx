@@ -348,7 +348,7 @@ export default function Profile() {
           <Text style={[styles.sectionTitle, { color: isDark ? '#A0A0A0' : '#8E8E93' }]}>Preferences</Text>
 
           <TouchableOpacity
-            style={styles.infoCard}
+            style={[styles.infoCard, { backgroundColor: isDark ? '#1C1C1E' : '#fff', borderBottomColor: isDark ? '#2C2C2E' : '#F2F2F7' }]}
             onPress={() => setWarrantyModalVisible(true)}
           >
             <View style={styles.infoIcon}>
