@@ -495,6 +495,14 @@ export default function Profile() {
             </View>
           </View>
 
+          <TouchableOpacity style={styles.replayTourCard} onPress={resetTour}>
+            <View style={styles.infoIcon}>
+              <Ionicons name="school-outline" size={24} color="#007AFF" />
+            </View>
+            <Text style={styles.replayTourText}>Replay App Tour</Text>
+            <Ionicons name="chevron-forward" size={20} color="#C7C7CC" />
+          </TouchableOpacity>
+
           <TouchableOpacity style={styles.logoutCard} onPress={handleLogout}>
             <View style={styles.infoIcon}>
               <Ionicons name="log-out-outline" size={24} color="#FF3B30" />
