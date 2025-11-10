@@ -232,6 +232,55 @@ export default function PropertiesScreen() {
           />
         </TouchableOpacity>
 
+        {/* My Property - Quick Access */}
+        <Text style={styles.sectionTitle}>My Property</Text>
+        <View style={styles.compactGrid}>
+          {myPropertyCards.map((card) => (
+            <TouchableOpacity
+              key={card.id}
+              style={[
+                styles.compactCard,
+                card.isAd && styles.adCard
+              ]}
+              onPress={() => {
+                if (card.isAd) {
+                  console.log('Ad tile tapped');
+                } else {
+                  router.push({
+                    pathname: card.route,
+                    params: { id: selectedProperty?.id }
+                  } as any);
+                }
+              }}
+              activeOpacity={0.7}
+            >
+              <View style={[
+                styles.compactIcon,
+                { backgroundColor: card.color + '20' },
+                card.isAd && styles.adIcon
+              ]}>
+                <Ionicons name={card.icon as any} size={24} color={card.color} />
+              </View>
+              <Text style={[
+                styles.compactLabel,
+                card.isAd && styles.adLabel
+              ]} numberOfLines={2}>
+                {card.title}
+              </Text>
+            </TouchableOpacity>
+          ))}
+        </View>
+
+        {/* Add New Property Action */}
+        <TouchableOpacity
+          style={styles.actionCard}
+          onPress={() => router.push('/property/add' as any)}
+        >
+          <Ionicons name="add-circle-outline" size={24} color="#007AFF" />
+          <Text style={styles.actionText}>Add New Property</Text>
+          <Ionicons name="chevron-forward" size={20} color="#C7C7CC" />
+        </TouchableOpacity>
+
         {/* Property Management - Compact Cards */}
         <Text style={styles.sectionTitle}>Property Management</Text>
         <View style={styles.compactGrid}>
