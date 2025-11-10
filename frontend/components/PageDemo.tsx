@@ -338,8 +338,10 @@ const styles = StyleSheet.create({
   },
   buttonContainer: {
     padding: 20,
+    paddingTop: 16,
     borderTopWidth: 1,
     borderTopColor: '#E5E5EA',
+    width: '100%',
   },
   navButtons: {
     flexDirection: 'row',
