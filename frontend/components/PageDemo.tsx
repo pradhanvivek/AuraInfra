@@ -249,10 +249,12 @@ const styles = StyleSheet.create({
   },
   contentContainer: {
     width: Platform.OS === 'web' ? Math.min(SCREEN_WIDTH * 0.9, 500) : SCREEN_WIDTH * 0.92,
-    maxHeight: SCREEN_HEIGHT * 0.85,
+    maxHeight: Platform.OS === 'web' ? SCREEN_HEIGHT * 0.85 : SCREEN_HEIGHT * 0.75,
     backgroundColor: '#fff',
     borderRadius: 24,
     overflow: 'hidden',
+    paddingBottom: 20,
+    alignItems: 'center',
   },
   header: {
     flexDirection: 'row',
