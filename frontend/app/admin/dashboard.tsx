@@ -269,6 +269,12 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     color: '#fff',
   },
+  propertyName: {
+    fontSize: 20,
+    fontWeight: '600',
+    color: '#fff',
+    marginTop: 8,
+  },
   headerSubtitle: {
     fontSize: 14,
     color: 'rgba(255,255,255,0.8)',
