@@ -395,8 +395,9 @@ const styles = StyleSheet.create({
     width: 24,
   },
   buttonContainer: {
-    marginTop: 16,
+    marginTop: 20,
     gap: 12,
+    width: '100%',
   },
   navButtons: {
     flexDirection: 'row',
