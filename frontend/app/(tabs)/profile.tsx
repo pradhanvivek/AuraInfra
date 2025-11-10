@@ -1039,6 +1039,19 @@ const styles = StyleSheet.create({
     fontSize: 17,
     color: '#000',
   },
+  replayTourCard: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#fff',
+    paddingVertical: 16,
+    paddingHorizontal: 16,
+  },
+  replayTourText: {
+    flex: 1,
+    fontSize: 17,
+    color: '#007AFF',
+    fontWeight: '500',
+  },
   logoutCard: {
     flexDirection: 'row',
     alignItems: 'center',
