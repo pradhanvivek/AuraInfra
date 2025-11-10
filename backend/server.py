@@ -1461,6 +1461,8 @@ async def update_property(
         update_data["purchase_cost"] = property_data.purchase_cost
     if property_data.current_value is not None:
         update_data["current_value"] = property_data.current_value
+    if property_data.logo is not None:
+        update_data["logo"] = property_data.logo
     
     if update_data:
         await db.properties.update_one(
