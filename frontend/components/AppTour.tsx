@@ -226,6 +226,22 @@ export function useAppTour() {
 
   useEffect(() => {
     checkTourStatus();
+    
+    // Poll for tour_show_now signal every 500ms
+    const interval = setInterval(async () => {
+      try {
+        const showNow = await AsyncStorage.getItem('tour_show_now');
+        if (showNow === 'true') {
+          await AsyncStorage.removeItem('tour_show_now');
+          setTourVisible(true);
+          setTourCompleted(false);
+        }
+      } catch (error) {
+        console.error('Error checking tour signal:', error);
+      }
+    }, 500);
+    
+    return () => clearInterval(interval);
   }, []);
 
   const checkTourStatus = async () => {
@@ -271,6 +287,7 @@ export function useAppTour() {
   const resetTour = async () => {
     try {
       await AsyncStorage.removeItem('tour_completed');
+      await AsyncStorage.setItem('tour_show_now', 'true');
       setTourCompleted(false);
       setTourVisible(true);
     } catch (error) {
