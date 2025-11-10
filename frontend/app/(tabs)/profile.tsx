@@ -318,7 +318,7 @@ export default function Profile() {
   return (
     <View style={[styles.container, { backgroundColor: isDark ? '#000' : '#F2F2F7' }]}>
       <ScrollView style={[styles.content, { backgroundColor: isDark ? '#000' : '#F2F2F7' }]}>
-        <View style={styles.profileSection}>
+        <View style={[styles.profileSection, { backgroundColor: isDark ? '#1C1C1E' : '#fff' }]}>
           <TouchableOpacity 
             style={styles.avatarContainer}
             onPress={handleChangeAvatar}
