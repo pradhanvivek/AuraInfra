@@ -42,6 +42,9 @@ export default function Profile() {
   const router = useRouter();
   const { username, logout, token, loading: authLoading } = useAuth();
   const { resetTour } = useAppTour();
+  const colorScheme = useColorScheme();
+  const isDark = colorScheme === 'dark';
+  
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState(true);
   const [fetchComplete, setFetchComplete] = useState(false);
