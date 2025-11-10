@@ -140,8 +140,18 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
 
+  const setTokenFunc = async (newToken: string) => {
+    try {
+      await storage.setItem('token', newToken);
+      setToken(newToken);
+    } catch (error) {
+      console.error('SetToken error:', error);
+      throw error;
+    }
+  };
+
   return (
-    <AuthContext.Provider value={{ token, userId, username, loading, login, register, logout }}>
+    <AuthContext.Provider value={{ token, userId, username, loading, login, register, logout, setToken: setTokenFunc }}>
       {children}
     </AuthContext.Provider>
   );
