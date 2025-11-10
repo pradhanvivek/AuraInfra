@@ -321,22 +321,15 @@ const styles = StyleSheet.create({
     maxHeight: SCREEN_HEIGHT * 0.8,
     backgroundColor: '#fff',
     borderRadius: 24,
-    overflow: 'hidden',
+    padding: 24,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 8 },
     shadowOpacity: 0.3,
     shadowRadius: 16,
     elevation: 16,
   },
-  scrollView: {
-    flex: 1,
-    maxHeight: SCREEN_HEIGHT * 0.55,
-  },
-  scrollContent: {
-    padding: 24,
-    alignItems: 'center',
-  },
   iconContainer: {
+    alignItems: 'center',
     marginBottom: 16,
   },
   iconCircle: {
