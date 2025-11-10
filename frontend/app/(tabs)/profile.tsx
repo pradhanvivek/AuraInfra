@@ -477,8 +477,8 @@ export default function Profile() {
               <Ionicons name="call-outline" size={24} color="#007AFF" />
             </View>
             <View style={styles.infoContent}>
-              <Text style={styles.infoLabel}>Phone Number</Text>
-              <Text style={styles.infoValue}>
+              <Text style={[styles.infoLabel, { color: isDark ? '#A0A0A0' : '#8E8E93' }]}>Phone Number</Text>
+              <Text style={[styles.infoValue, { color: isDark ? '#FFFFFF' : '#000' }]}>
                 {profile?.phone || 'Not provided'}
               </Text>
             </View>
