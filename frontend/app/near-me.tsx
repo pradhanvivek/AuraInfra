@@ -4,7 +4,7 @@ import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { useState, useEffect } from 'react';
 import { useAuth } from '../contexts/AuthContext';
-import NearMeScreen from '../screens/NearMeScreen';
+import NearMeScreen from '../screens/property/NearMeScreen';
 import axios from 'axios';
 import Constants from 'expo-constants';
 
