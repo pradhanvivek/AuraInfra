@@ -119,6 +119,13 @@ export default function TabsLayout() {
         }}
       />
     </Tabs>
+    {/* App Tour Overlay */}
+    <AppTour
+      visible={tourVisible}
+      onComplete={completeTour}
+      onSkip={skipTour}
+    />
+    </>
   );
 }
 
