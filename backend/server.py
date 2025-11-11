@@ -67,6 +67,7 @@ class UserProfile(BaseModel):
     avatar: Optional[str] = None  # base64 encoded image
     warranty_reminder_days: int = 30
     geomancy_preference: str = "vastu"  # "vastu" or "feng_shui"
+    country: Optional[str] = None  # "India", "US", "UK", "Canada", "Australia", "UAE"
     currency_preference: Optional[str] = None  # "USD", "INR", "EUR", etc.
     measurement_system: Optional[str] = None  # "imperial" or "metric"
     is_super_admin: bool = False
