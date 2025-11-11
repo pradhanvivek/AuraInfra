@@ -854,11 +854,25 @@ frontend:
         agent: "main"
         comment: "Implemented Property Logo Management section in Super Admin Dashboard: 1) Added logo state management (logoPropertyId, logoFile, logoPreview, logoUploading), 2) Created file upload handler with validation (image types only, 2MB max size), 3) Implemented base64 encoding and PUT /api/properties/{property_id} API call with logo field, 4) Added logo preview with remove functionality, 5) Updated properties table to display logos with 48x48 size and 'No Logo' placeholder for properties without logos, 6) Updated Property interface to include logo?: string field. Super admins can now select property, upload logo, preview, and submit to backend."
 
+backend:
+  - task: "Document Deletion - Duplicate Function Name Fix"
+    implemented: true
+    working: "NA"
+    file: "backend/server.py"
+    stuck_count: 1
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: false
+        agent: "user"
+        comment: "User reported 'Failed to delete document' error with 404 response when trying to delete documents from property documents screen. Frontend DELETE request to /api/properties/{property_id}/documents/{document_id} returns 404 Not Found."
+      - working: "NA"
+        agent: "main"
+        comment: "ROOT CAUSE IDENTIFIED: Two functions named 'delete_document' in server.py. Line 1524 has correct route /properties/{property_id}/documents/{document_id}, but duplicate at line 5011 (now renamed to delete_document_simple) was overriding it. FIX APPLIED: Verified that the duplicate function has already been renamed to delete_document_simple. Backend service restarted. Need to test that document deletion now works correctly via the correct route /api/properties/{property_id}/documents/{document_id}."
+
 test_plan:
   current_focus:
-    - "NearMeScreen Module Resolution Fix"
-    - "Property Logo Display on Properties Tab"
-    - "Super Admin Logo Upload UI"
+    - "Document Deletion - Duplicate Function Name Fix"
   stuck_tasks: []
   test_all: false
   test_priority: "high_first"
