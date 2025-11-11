@@ -9,7 +9,7 @@ import base64
 import os
 
 # Configuration
-BACKEND_URL = "https://hoa-dash.preview.emergentagent.com"
+BACKEND_URL = "https://smartinfra.preview.emergentagent.com"
 API_BASE = f"{BACKEND_URL}/api"
 
 # Test user credentials

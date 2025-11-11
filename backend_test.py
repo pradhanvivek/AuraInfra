@@ -10,7 +10,7 @@ import sys
 from datetime import datetime
 
 # Backend URL from frontend environment
-BACKEND_URL = "https://hoa-dash.preview.emergentagent.com/api"
+BACKEND_URL = "https://smartinfra.preview.emergentagent.com/api"
 
 class BackendTester:
     def __init__(self):
