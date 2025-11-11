@@ -178,67 +178,10 @@ export default function DocumentsScreen({ propertyId }: DocumentsScreenProps) {
   };
 
   const handleViewDocument = async (doc: Document) => {
-    // For PDFs
+    // For PDFs - Show in-app viewer
     if (doc.file_type === 'application/pdf') {
-      try {
-        if (Platform.OS === 'web') {
-          // Web: Convert base64 to blob and open (Safari compatible)
-          try {
-            // Decode base64 to binary
-            const binaryString = atob(doc.file_data);
-            const bytes = new Uint8Array(binaryString.length);
-            for (let i = 0; i < binaryString.length; i++) {
-              bytes[i] = binaryString.charCodeAt(i);
-            }
-            
-            // Create blob from binary data
-            const blob = new Blob([bytes], { type: 'application/pdf' });
-            
-            // Create blob URL
-            const blobUrl = URL.createObjectURL(blob);
-            
-            // Open in new tab
-            const newWindow = window.open(blobUrl, '_blank');
-            
-            // Clean up blob URL after a delay
-            setTimeout(() => {
-              URL.revokeObjectURL(blobUrl);
-            }, 100);
-            
-            if (!newWindow) {
-              alert('Please allow pop-ups for this site to view PDFs');
-            }
-          } catch (error: any) {
-            console.error('PDF conversion error:', error);
-            alert('Failed to open PDF. The file may be corrupted.');
-          }
-        } else {
-          // Native: Save to file system and open with native viewer
-          setLoading(true);
-          
-          // Create a temporary file path
-          const fileUri = `${FileSystem.documentDirectory}${doc.name.replace(/[^a-zA-Z0-9.-]/g, '_')}.pdf`;
-          
-          // Write the base64 data to file
-          await FileSystem.writeAsStringAsync(fileUri, doc.file_data, {
-            encoding: FileSystem.EncodingType.Base64,
-          });
-          
-          // Check if sharing is available
-          const canShare = await Sharing.isAvailableAsync();
-          
-          if (canShare) {
-            // Share/Open the file with system PDF viewer
-            await Sharing.shareAsync(fileUri, {
-              UTI: 'com.adobe.pdf',
-              mimeType: 'application/pdf',
-            });
-          } else {
-            Alert.alert('Error', 'PDF viewing is not available on this device');
-          }
-          
-          setLoading(false);
-        }
+      setSelectedDocument(doc);
+      setViewModalVisible(true);
       } catch (error: any) {
         setLoading(false);
         console.error('PDF viewing error:', error);
