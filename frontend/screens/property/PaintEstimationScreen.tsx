@@ -428,7 +428,9 @@ export default function PaintEstimationScreen({ propertyId }: PaintEstimationScr
             <View style={styles.conversionNote}>
               <Ionicons name="information-circle-outline" size={20} color="#8E8E93" />
               <Text style={styles.conversionNoteText}>
-                Conversion rates: $1 ≈ ₹83, 1 gallon ≈ 3.79 liters
+                Volume: 1 gallon ≈ 3.79 liters{'\n'}
+                INR pricing: ₹300-700/liter (Asian Paints){'\n'}
+                USD pricing: $35-70/gallon (US market)
               </Text>
             </View>
           </View>
