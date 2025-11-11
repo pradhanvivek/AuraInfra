@@ -1,113 +1,61 @@
 <analysis>
-The AI engineer's trajectory shows a systematic approach to enhancing the AuraInfra.ai application, focusing heavily on web/Safari compatibility, UI/UX improvements, and new feature implementation. Key efforts included exhaustive  integration across various asset forms and addressing iOS modal display issues for app tours and property features. The engineer also implemented Google OAuth, a mandatory disclaimer page, and a new My Property section with dynamic navigation. Debugging involved meticulous log analysis and iterative code adjustments for issues like date-time comparisons and hardcoded styling for dark mode. The process demonstrated a strong emphasis on user experience and cross-platform consistency. The trajectory concluded with resolving display issues for the property logo.
+The AI engineer's work primarily focused on enhancing the AuraInfra.ai Expo mobile application. The trajectory covered critical UI/UX improvements, platform compatibility fixes (especially for web/Safari), and the implementation of new features. Key accomplishments include integrating date pickers across various asset forms, revamping the My Property section with dynamic navigation, implementing Google OAuth and a mandatory disclaimer page, and adding an interactive app tour. Significant effort was dedicated to debugging display issues, particularly for property logos, dark mode visibility across multiple screens (profile, login), and correcting module import paths. The AI also introduced an admin dashboard as a separate tab with property switching capabilities. An attempt at a native PDF viewer was reverted to WebView due to cross-platform challenges. The current task involves resolving a document deletion API error caused by duplicate backend route definitions.
 </analysis>
 
 <product_requirements>
-The AuraInfra.ai app is a personal asset management system for properties, offering detailed views, CRUD, and PDF exports. Initial focus was on UI redesign, HOA management features, and various usability fixes.
-
-Explicit requests addressed in this trajectory include:
-*   Date picker fixes for web/Safari across , , , , and .
-*   Fixing maintenance add unmatched route by creating .
-*   Revamping the properties tab: My Property section, tiles for My Documents, My Fixtures, House Measurements, Vastu, Fengshui, Paint Estimate, My Builder, and an ad tile.
-*   Ensuring property tiles navigate to correct individual screens (e.g., ).
-*   Adding headers and back buttons to new property-related pages.
-*   Adding a View More tile under My Property with a modal for additional features (Property Health Score, Paint Estimate).
-*   Implementing Google login.
-*   Creating a mandatory disclaimer page on first login.
-*   Creating an interactive app demo overlay/tutorial.
-*   Adding Replay Tour button to profile.
-*   Fixing dark mode text visibility issues across the app (login page, status bar).
-*   Ensuring Property Health link from View More routes to .
-*   Implementing admin ability to add/modify property logos, defaulting to app logo, and displaying it with property name on the properties tab.
+The AuraInfra.ai application is a personal asset management system for properties, enabling detailed views, CRUD operations, and PDF exports. The user requested:
+*   Date picker integration and web/Safari compatibility fixes for various asset forms (appliance, jewelry, furniture, art, maintenance).
+*   Creation of the  route.
+*   A complete revamp of the properties tab, including a My Property section with navigable tiles for documents, fixtures, measurements, Vastu, Fengshui, paint estimate, My Builder, and a View More modal for additional property features (health score, paint estimate).
+*   Consistent headers and back buttons for new property-related pages.
+*   Implementation of Google login and a mandatory disclaimer page on first login.
+*   Creation of an interactive app demo overlay and a Replay Tour option in the profile.
+*   Fixes for dark mode text and background visibility issues across the application (login, status bar, profile screen).
+*   Admin capability to upload and manage property logos, displayed with the property name on the properties tab, and later to increase its size.
+*   Admin dashboard as a separate bottom navigation tab, only visible to admins, displaying the community name.
+*   A property selector on the admin dashboard for switching between managed properties.
+*   Correction of the notifications page back button to navigate to the profile page.
+*   Adjustment of the 's X button positioning.
+*   Addition of  to the add vehicles page.
+*   Implementation of an in-app PDF viewer similar to WhatsApp's preview (later reverted to ).
+*   Fix for a 404 error during document deletion.
 </product_requirements>
 
 <key_technical_concepts>
 -   **Expo Router**: File-based routing for navigation.
--   **React Native**: Core UI components,  for platform-specific logic.
--   ****: Web-specific date input component.
--   **FastAPI**: Python backend API for asset management and authentication.
--   **Pydantic**: Data validation for API request/response models.
--   **MongoDB**: Database (implicitly used by FastAPI backend).
--   **Google OAuth**: Authentication integration via backend session management.
--   ****: Client-side persistent storage for app tour state.
--   ****: Keyboard handling.
--   ****: Handling device safe areas.
--   ****: Dynamic status bar styling.
+-   **React Native**: Core UI components,  for conditional logic,  for theme management, , .
+-   ****: Web-compatible date input.
+-   **FastAPI**: Python backend API for data, authentication, and models.
+-   **Pydantic**: Data validation.
+-   **Google OAuth**: Authentication.
+-   ****: Client-side data storage.
+-   ****: Cross-platform web content rendering, used for PDF viewing.
 </key_technical_concepts>
 
 <code_architecture>
 **Directory Structure:**
 
 
--   : FastAPI backend.
-    -   **Summary**: Handles API endpoints, authentication, and data models.
-    -   **Changes**: Added  field to  model; added session management models/endpoints for Google OAuth; created  endpoint; fixed timezone comparison issues in session expiration; updated  endpoint to set  to  for new users; updated  model to include a  field.
--   : Main properties tab screen.
-    -   **Summary**: Displays property selection, main action cards, and the My Property section.
-    -   **Changes**: Revamped UI with My Property section and tiles (Documents, Fixtures, Measurements, Vastu, My Builder, Near Me); created new route wrappers for previously component-only screens; added a View More modal for additional property features (Property Health, Paint Estimate, Fengshui); updated property selector to display logo with name; fixed iPhone modal display issues.
--   : Add Appliance form.
-    -   **Summary**: Form for adding new appliance assets.
-    -   **Changes**: Integrated  for 4 date fields with web compatibility, CSS injection, and custom input styles.
--   : Add Jewelry form.
-    -   **Summary**: Form for adding new jewelry assets.
-    -   **Changes**: Integrated  for 3 date fields with web compatibility, CSS injection, and custom input styles.
--   : Add Furniture form.
-    -   **Summary**: Form for adding new furniture assets.
-    -   **Changes**: Integrated  for Purchase Date and Warranty Expiry with web compatibility and styling.
--   : Add Art form.
-    -   **Summary**: Form for adding new art assets.
-    -   **Changes**: Implemented native HTML5  for Purchase Date and Appraisal Date for web compatibility.
--    (NEW FILE): Maintenance add screen.
-    -   **Summary**: New screen for adding maintenance records, resolving an unmatched route error.
-    -   **Changes**: Created from scratch with fields for asset type, asset selection, maintenance type, description, due date (using ), cost, recurring option, and notes.
--    (NEW FILE): Dedicated builder page.
-    -   **Summary**: Placeholder for builder details and upcoming projects.
-    -   **Changes**: Created as a static page.
--    (NEW FILE): Near Me screen route wrapper.
-    -   **Summary**: Route wrapper for the existing  component.
-    -   **Changes**: Created to allow direct navigation to Near Me features.
--    (NEW FILE): Property Documents route wrapper.
-    -   **Summary**: Route wrapper for .
-    -   **Changes**: Created with header and back button.
--    (NEW FILE): Property Fixtures route wrapper.
-    -   **Summary**: Route wrapper for .
-    -   **Changes**: Created with header and back button.
--    (NEW FILE): Property Health Score route wrapper.
-    -   **Summary**: Route wrapper for .
-    -   **Changes**: Created with header and back button.
--    (NEW FILE): Property Measurements route wrapper.
-    -   **Summary**: Route wrapper for .
-    -   **Changes**: Created with header and back button.
--    (NEW FILE): Property Paint Estimate route wrapper.
-    -   **Summary**: Route wrapper for .
-    -   **Changes**: Created with header and back button.
--    (NEW FILE): Property Vastu route wrapper.
-    -   **Summary**: Route wrapper for .
-    -   **Changes**: Created with header and back button.
--   : User login screen.
-    -   **Summary**: Handles user authentication.
-    -   **Changes**: Integrated Sign in with Google button and Google OAuth flow; updated to check for disclaimer acceptance; fixed hardcoded colors for dark mode.
--    (NEW FILE): Disclaimer page.
-    -   **Summary**: Mandatory page for users to accept terms on first login.
-    -   **Changes**: Created from scratch with Accept and Decline buttons; implemented  to prevent back navigation.
--   : Authentication context.
-    -   **Summary**: Manages global authentication state.
-    -   **Changes**: Added  function and updated  function to return token; updated  call to get disclaimer status.
--    (NEW FILE): App demo overlay component.
-    -   **Summary**: Interactive onboarding tour for the main app features.
-    -   **Changes**: Created from scratch with step-by-step guidance; fixed iOS display issues (ScrollView, modal content visibility, layout constraints).
--   : Tabs layout.
-    -   **Summary**: Defines the main tab navigation.
-    -   **Changes**: Integrated  component to show after disclaimer acceptance; added  with dynamic styling for dark mode.
--   : User profile screen.
-    -   **Summary**: Displays user profile and settings.
-    -   **Changes**: Added Replay App Tour button and associated logic using .
--    (NEW FILE): Page-specific demo overlay component.
-    -   **Summary**: Reusable component for interactive guides on specific pages.
-    -   **Changes**: Created from scratch; fixed iOS display issues (modal content visibility, layout constraints) mirroring  fixes.
--    (NEW FILE): Documentation for auth testing.
-    -   **Summary**: Playbook for testing authentication flows.
-    -   **Changes**: Created to document testing steps.
+-   : FastAPI backend. Updates include adding  field to  model, Google OAuth session logic,  endpoint,  field to  model. Currently being fixed for a document deletion 404, by renaming a duplicate  function.
+-   : Main properties tab. Revamped My Property UI with tiles for features and View More modal. Displays property logo with name. Styling adjustments made for logo visibility and size. App logo removed to avoid duplication.
+-   , , , : Asset addition forms. Integrated  or native date inputs for date fields.
+-    (NEW): Created as a new screen for adding maintenance records.
+-   , , , , , , ,  (NEW/MODIFIED): Created as route wrappers for respective screens. All were updated to consistently fetch and display the property name in their headers. Corrected import paths for  and  which were in the wrong subdirectories.
+-   : Login screen. Integrated Google login and disclaimer check. Hardcoded dark mode colors fixed.
+-    (NEW): Mandatory page for user terms acceptance.
+-   : Authentication context. ,  functions updated;  call updated for disclaimer status.
+-    (NEW): Component for app onboarding tour.
+-   : Tabs layout. Integrates . Added conditional rendering for an admin tab based on user's admin status.
+-   : Profile screen. Replay App Tour added. Extensive dark mode fixes applied to text colors (, , , , ) and background colors for various containers (, , , , , , modal elements) using .
+-    (NEW): Page-specific demo component. Close button padding adjusted.
+-   : Notifications page. Back navigation now correctly routes to the profile page.
+-    (NEW): New Expo Router screen to host the admin dashboard as a separate tab.
+-   : Admin dashboard. Displays property/community name in the header. Added a property selector modal to switch between managed properties, including fetching property details. New styles were added.
+-   : Add Vehicle form. Wrapped with  and .
+-   : Document viewing screen. PDF viewing logic was reverted to  due to cross-platform compatibility issues with . Removed  and  dependencies.
+-   : Frontend API service. Contains  which calls the backend.
+-   : Website admin dashboard. A new section with logo upload functionality was added here.
+
 </code_architecture>
 
 <pending_tasks>
@@ -115,13 +63,13 @@ Explicit requests addressed in this trajectory include:
 -   Display purchase/current cost values in property detail view.
 -   Address Package delivery and Emergency contacts features/screens.
 -   Set up push notifications.
--   Add UI for logo upload in the property edit screen.
+-   Complete the fix for the Failed to delete document 404 error by renaming the duplicate  function in .
 </pending_tasks>
 
 <current_work>
-Immediately before this summary request, the AI engineer was working on integrating and displaying property logos across the application. The backend  model was updated to include a  field. On the frontend, the properties tab () was modified to display the property's logo alongside its name in a unified container. This aimed to visually enhance the property selection and details. The user then reported a display issue (pls fix this with an image), indicating that the logo display for the property name unit is not rendering correctly, possibly due to styling or layout problems that cut off or misalign the elements. The AI has just acknowledged this issue and is about to inspect the error.
+Immediately before this summary request, the AI engineer was tackling a Failed to delete document error, where frontend DELETE requests to  were returning a 404 (Not Found) from the backend. The investigation centered on . The AI engineer discovered two FastAPI endpoint functions named . One is correctly defined at line 1524 with the expected route . The other, found at line 5011, uses a different route pattern () but has the identical function signature (). This naming conflict means the second definition is overriding the first, causing the intended route to not be recognized by the API server. The current task is to resolve this by renaming the duplicate function at line 5011.
 </current_work>
 
 <optional_next_step>
-Analyze the user-provided screenshot and debug the property logo display issue on the properties tab.
+Rename the duplicate  function in .
 </optional_next_step>
