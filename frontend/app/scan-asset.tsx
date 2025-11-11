@@ -28,6 +28,7 @@ export default function ScanAssetScreen() {
   const [scanning, setScanning] = useState(false);
   const [capturedImage, setCapturedImage] = useState<string | null>(null);
   const [scanResults, setScanResults] = useState<any>(null);
+  const [navigating, setNavigating] = useState(false);
 
   const handleOpenCamera = async () => {
     if (!permission?.granted) {
