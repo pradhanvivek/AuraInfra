@@ -609,13 +609,20 @@ export default function PaintEstimationScreen({ propertyId }: PaintEstimationScr
         visible={settingsVisible}
         animationType="slide"
         transparent={false}
-        onRequestClose={() => setSettingsVisible(false)}
+        onRequestClose={() => {
+          console.log('Modal onRequestClose called');
+          setSettingsVisible(false);
+        }}
       >
         <SafeAreaView style={styles.modalContainer} edges={['top']}>
+          {console.log('Modal is rendering! settingsVisible:', settingsVisible)}
           <View style={styles.modalHeader}>
             <View style={{ width: 60 }} />
             <Text style={styles.modalTitle}>Display Settings</Text>
-            <TouchableOpacity onPress={() => setSettingsVisible(false)}>
+            <TouchableOpacity onPress={() => {
+              console.log('Done button pressed');
+              setSettingsVisible(false);
+            }}>
               <Text style={styles.saveButton}>Done</Text>
             </TouchableOpacity>
           </View>
