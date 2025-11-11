@@ -333,6 +333,10 @@ export default function AdminDashboard() {
 }
 
 const styles = StyleSheet.create({
+  safeArea: {
+    flex: 1,
+    backgroundColor: '#007AFF',
+  },
   container: {
     flex: 1,
     backgroundColor: '#F2F2F7',
@@ -345,7 +349,7 @@ const styles = StyleSheet.create({
   header: {
     backgroundColor: '#007AFF',
     padding: 20,
-    paddingTop: 60,
+    paddingTop: 20,
   },
   headerTitle: {
     fontSize: 28,
