@@ -238,10 +238,18 @@ export default function AddApplianceScreen() {
   const handlePrescanImage = async (imageData: string) => {
     // Process the pre-scanned image without opening camera
     try {
-      // Remove data:image/jpeg;base64, prefix if present
-      const base64Data = imageData.includes('base64,') 
-        ? imageData.split('base64,')[1] 
-        : imageData;
+      // Extract clean base64 data
+      let base64Data = imageData;
+      if (imageData.includes('base64,')) {
+        base64Data = imageData.split('base64,')[1];
+      } else if (imageData.startsWith('data:')) {
+        // Handle edge case where prefix exists but no comma
+        base64Data = imageData.replace(/^data:image\/[^;]+;base64,?/, '');
+      }
+      
+      // Store the full image with prefix for display
+      const imageWithPrefix = `data:image/jpeg;base64,${base64Data}`;
+      setPhotos([imageWithPrefix]);
       
       await processApplianceScan(base64Data);
     } catch (error) {
