@@ -82,6 +82,11 @@ export default function PaintEstimationScreen({ propertyId }: PaintEstimationScr
   // Device orientation helper
   const [isLevelHorizontal, setIsLevelHorizontal] = useState(false);
 
+  // Unit preferences
+  const [currency, setCurrency] = useState<'USD' | 'INR'>('USD');
+  const [volumeUnit, setVolumeUnit] = useState<'gallons' | 'liters'>('gallons');
+  const [settingsVisible, setSettingsVisible] = useState(false);
+
   useEffect(() => {
     fetchEstimations();
   }, []);
