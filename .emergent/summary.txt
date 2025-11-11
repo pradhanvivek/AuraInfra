@@ -1,74 +1,54 @@
 <analysis>
-The trajectory outlines the transition of the AuraInfra.ai mobile application from an AI-led development phase to human oversight. It commenced with a comprehensive handover detailing previous AI engineer accomplishments, including UI/UX enhancements, new features like date pickers, Google OAuth, interactive app tours, and an admin dashboard. Key fixes for dark mode, module imports, and a switch to WebView for PDF viewing were noted. The immediate critical task identified was to resolve a 404 error during document deletion, traced to duplicate function definitions in . The current AI engineer confirmed a plan, then verified the backend code, discovering that the duplicate  function at line 5011 had already been renamed to . After confirming the fix and restarting the backend, the engineer updated  to prepare for testing the resolution.
+The trajectory details the transition of the AuraInfra.ai mobile application to human oversight, starting with a handover summarizing prior AI engineer accomplishments. The initial critical task for this AI was to resolve a 404 error during document deletion, traced to a duplicate function in . The AI confirmed a plan, then read and updated  before invoking a backend testing agent. This agent identified and fixed an underlying database collection issue for document deletion. After a successful fix and backend restart, the user reported a new issue: the PDF viewer was not working, requesting a reversion to the previous state. The AI began investigating this, examining  and inferring  as the prior method for external PDF viewing.
 </analysis>
 
 <product_requirements>
-The AuraInfra.ai application is a personal asset management system for properties, enabling detailed views, CRUD operations, and PDF exports. The user requested:
-*   Date picker integration and web/Safari compatibility fixes for various asset forms (appliance, jewelry, furniture, art, maintenance).
-*   Creation of the  route.
-*   A complete revamp of the properties tab, including a My Property section with navigable tiles for documents, fixtures, measurements, Vastu, Fengshui, paint estimate, My Builder, and a View More modal for additional property features (health score, paint estimate).
-*   Consistent headers and back buttons for new property-related pages.
-*   Implementation of Google login and a mandatory disclaimer page on first login.
-*   Creation of an interactive app demo overlay and a Replay Tour option in the profile.
-*   Fixes for dark mode text and background visibility issues across the application (login, status bar, profile screen).
-*   Admin capability to upload and manage property logos, displayed with the property name on the properties tab, and later to increase its size.
-*   Admin dashboard as a separate bottom navigation tab, only visible to admins, displaying the community name.
-*   A property selector on the admin dashboard for switching between managed properties.
-*   Correction of the notifications page back button to navigate to the profile page.
-*   Adjustment of the 's X button positioning.
-*   Addition of  to the add vehicles page.
-*   Implementation of an in-app PDF viewer similar to WhatsApp's preview (later reverted to ).
-*   Fix for a 404 error during document deletion.
+The AuraInfra.ai application is a personal asset management system enabling detailed views, CRUD operations, and PDF exports for properties. The user requested: date picker integration for asset forms, creation of , a revamp of the properties tab with interactive tiles for documents, fixtures, measurements, etc., and a View More modal. Other requirements included consistent headers and back buttons, Google login with a mandatory disclaimer, an interactive app tour, dark mode fixes, admin property logo upload, an admin dashboard tab, a property selector, corrected notifications page navigation,  X button adjustment,  for add vehicles page, an in-app PDF viewer (later reverted to ), and a fix for a 404 error during document deletion.
 </product_requirements>
 
 <key_technical_concepts>
--   **Expo Router**: File-based routing for navigation.
--   **React Native**: Core UI components,  for conditional logic,  for theme management, , .
--   ****: Web-compatible date input.
--   **FastAPI**: Python backend API for data, authentication, and models.
--   **Pydantic**: Data validation.
--   **Google OAuth**: Authentication.
--   ****: Client-side data storage.
--   ****: Cross-platform web content rendering, used for PDF viewing.
+- **Expo Router**: File-based routing for navigation.
+- **React Native**: Core UI components, platform-specific logic, theme management, safe areas, keyboard handling.
+- **FastAPI**: Python backend API for data, authentication, models.
+- **Google OAuth**: Authentication.
+- ****: Client-side data storage.
+- ****: Cross-platform web content rendering, used for PDF viewing.
 </key_technical_concepts>
 
 <code_architecture>
 **Directory Structure:**
 
-The application features a monorepo structure comprising a FastAPI , an Expo , and a .
--   : Houses the FastAPI backend, managing API routes and database interactions. Noteworthy changes include enhancements to the  and  models, Google OAuth integration, and a  endpoint. The duplicate  function (at line 5011) causing a 404 error was previously renamed to .
--   : The primary properties tab, revamped with interactive tiles for various features and a View More modal. It displays the property logo and name.
--   , , , : Forms for adding different asset types, now incorporating date picker functionalities.
--   : A newly created screen dedicated to adding maintenance records.
--   , , , etc.: These are route wrappers for various property-specific screens. They have been updated to consistently fetch and display the property name in their headers, with corrected import paths for some components.
--   : The login screen, now featuring integrated Google login and a mandatory disclaimer check, alongside fixes for dark mode display issues.
--   : A new, mandatory page requiring user acceptance of terms.
--   : The authentication context, updated to manage user tokens, login processes, and the disclaimer acceptance status.
--   : A new component designed to provide an interactive app onboarding tour.
--   : Defines the layout for the main tabs, integrating the  and conditionally rendering an admin tab based on user roles.
--   : The user profile screen, which includes a Replay App Tour option and has undergone extensive dark mode visibility fixes.
--   : A new page-specific demo component, with adjusted padding for its close button.
--   : The notifications page, with corrected back navigation to route to the profile page.
--   : A new Expo Router screen serving as a dedicated tab for the admin dashboard.
--   : The admin dashboard, displaying property/community names and featuring a property selector modal for switching between managed properties.
--   : The form for adding vehicle records, now properly wrapped with  and .
--   : The screen for viewing documents, where PDF viewing logic was reverted to  due to cross-platform compatibility issues, with related dependencies removed.
--   : The frontend API service, containing the  function.
--   : The website's admin dashboard, with a new section for logo upload functionality.
+- : FastAPI backend, managing API routes and database interactions. The duplicate  function (at line 5011) causing a 404 error was previously renamed to . The recent fix by the testing agent corrected an issue where document deletion was querying the wrong database collection.
+- : Primary properties tab, revamped with interactive tiles and a View More modal.
+- , , , : Asset addition forms with date pickers.
+- : Newly created screen for adding maintenance records.
+- : Login screen with Google login and disclaimer.
+- : New mandatory disclaimer acceptance page.
+- : Authentication context, manages tokens and disclaimer.
+- : New component for interactive app onboarding.
+- : Defines tab layout, integrates , and conditionally renders admin tab.
+- : User profile, includes Replay App Tour option.
+- : Notifications page, back navigation corrected to profile.
+-  & : New admin tab and dashboard with property selector.
+- : Vehicle addition form with  and .
+- : Screen for viewing documents. PDF viewing was previously reverted to  and now faces a PDF not opening issue.
+- : Used for tracking testing protocol and results. Updated to reflect document deletion fix.
 </code_architecture>
 
 <pending_tasks>
--   Implement search functionality (categories and uber search).
--   Display purchase/current cost values in property detail view.
--   Address Package delivery and Emergency contacts features/screens.
--   Set up push notifications.
--   Test the fix for the Failed to delete document 404 error in .
+- Implement search functionality (categories and uber search).
+- Display purchase/current cost values in property detail view.
+- Address Package delivery and Emergency contacts features/screens.
+- Set up push notifications.
+- Revert the PDF viewing functionality in  to its previous working state (likely external viewer using ).
 </pending_tasks>
 
 <current_work>
-Immediately before this summary request, the AI engineer was tackling a Failed to delete document error, where frontend DELETE requests to  were returning a 404 from the backend. The investigation centered on . The AI engineer discovered that the conflicting  function (originally at line 5011, identified as causing the override) had *already* been renamed to . This pre-existing change resolves the duplicate function definition that was causing the 404. Following this discovery, the backend service was restarted to ensure the changes were active. The current activity involves preparing for testing this fix by updating the  file to include the document deletion task.
+Immediately prior to this summary, the AI engineer successfully addressed a Failed to delete document error, which was initially thought to be a duplicate function definition in  but was resolved by the backend testing agent identifying and fixing a bug related to querying the wrong database collection for document deletion. The backend service was restarted to apply this fix.
+
+Following the successful resolution of the document deletion error, the user reported a new critical issue: The PDF is not opening on the app. Lets revert back to the old state for the pdf viewing on the documents tab. The AI engineer has initiated an investigation into this problem. This involves examining the current implementation in  to understand how PDFs are currently handled and identifying the old state for PDF viewing. Initial analysis suggests the old state likely involved using  to open PDFs externally in the device's default viewer. The engineer is preparing to implement this reversion to restore functionality.
 </current_work>
 
 <optional_next_step>
-Invoke the  agent to thoroughly test the document deletion functionality.
+Revert the PDF viewing logic in  to use  for external PDF viewing.
 </optional_next_step>
