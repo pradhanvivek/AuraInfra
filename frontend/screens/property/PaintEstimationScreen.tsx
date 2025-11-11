@@ -328,8 +328,12 @@ export default function PaintEstimationScreen({ propertyId }: PaintEstimationScr
               <TouchableOpacity
                 style={styles.settingsButton}
                 onPress={() => {
-                  console.log('Settings button pressed');
+                  console.log('Settings button pressed - Current state:', settingsVisible);
                   setSettingsVisible(true);
+                  console.log('State set to true');
+                  setTimeout(() => {
+                    console.log('After timeout - settingsVisible should be:', settingsVisible);
+                  }, 100);
                 }}
                 activeOpacity={0.7}
                 hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
