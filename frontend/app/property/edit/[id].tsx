@@ -97,30 +97,49 @@ export default function EditPropertyScreen() {
   };
 
   const handleDelete = async () => {
-    Alert.alert(
-      'Delete Property',
-      'Are you sure you want to delete this property? This will also delete all documents, fixtures, and measurements.',
-      [
-        {
-          text: 'Cancel',
-          style: 'cancel',
-        },
-        {
-          text: 'Delete',
-          style: 'destructive',
-          onPress: async () => {
-            try {
-              await propertyApi.delete(token!, id!);
-              Alert.alert('Success', 'Property deleted successfully', [
-                { text: 'OK', onPress: () => router.replace('/properties') }
-              ]);
-            } catch (error: any) {
-              Alert.alert('Error', error.message || 'Failed to delete property');
-            }
+    // Platform-specific confirmation handling
+    if (Platform.OS === 'web') {
+      // Use window.confirm for web
+      const confirmed = window.confirm(
+        'Are you sure you want to delete this property? This will also delete all documents, fixtures, and measurements.'
+      );
+      
+      if (confirmed) {
+        try {
+          await propertyApi.delete(token!, id!);
+          alert('Property deleted successfully');
+          router.replace('/(tabs)');
+        } catch (error: any) {
+          alert(error.message || 'Failed to delete property');
+        }
+      }
+    } else {
+      // Use Alert.alert for mobile
+      Alert.alert(
+        'Delete Property',
+        'Are you sure you want to delete this property? This will also delete all documents, fixtures, and measurements.',
+        [
+          {
+            text: 'Cancel',
+            style: 'cancel',
           },
-        },
-      ]
-    );
+          {
+            text: 'Delete',
+            style: 'destructive',
+            onPress: async () => {
+              try {
+                await propertyApi.delete(token!, id!);
+                Alert.alert('Success', 'Property deleted successfully', [
+                  { text: 'OK', onPress: () => router.replace('/(tabs)') }
+                ]);
+              } catch (error: any) {
+                Alert.alert('Error', error.message || 'Failed to delete property');
+              }
+            },
+          },
+        ]
+      );
+    }
   };
 
   if (loading) {
