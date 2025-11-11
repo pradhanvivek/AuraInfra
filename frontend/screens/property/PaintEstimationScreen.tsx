@@ -90,6 +90,25 @@ export default function PaintEstimationScreen({ propertyId }: PaintEstimationScr
   const [volumeUnit, setVolumeUnit] = useState<'gallons' | 'liters'>('gallons');
   const [settingsVisible, setSettingsVisible] = useState(false);
 
+  // Handle country change and auto-set defaults
+  const handleCountryChange = (selectedCountry: typeof country) => {
+    setCountry(selectedCountry);
+    
+    // Auto-set currency and volume unit based on country
+    const countryDefaults: Record<typeof country, { currency: typeof currency, volumeUnit: typeof volumeUnit }> = {
+      'India': { currency: 'INR', volumeUnit: 'liters' },
+      'US': { currency: 'USD', volumeUnit: 'gallons' },
+      'UK': { currency: 'GBP', volumeUnit: 'liters' },
+      'Canada': { currency: 'CAD', volumeUnit: 'liters' },
+      'Australia': { currency: 'AUD', volumeUnit: 'liters' },
+      'UAE': { currency: 'AED', volumeUnit: 'liters' },
+    };
+    
+    const defaults = countryDefaults[selectedCountry];
+    setCurrency(defaults.currency);
+    setVolumeUnit(defaults.volumeUnit);
+  };
+
   // Helper functions for unit conversion
   const convertVolume = (gallons: number): number => {
     if (volumeUnit === 'liters') {
@@ -98,32 +117,42 @@ export default function PaintEstimationScreen({ propertyId }: PaintEstimationScr
     return gallons;
   };
 
-  // Calculate cost based on currency and actual market prices
+  // Calculate cost based on country/currency and actual market prices
   const calculateCost = (gallons: number, isLowEstimate: boolean): number => {
-    const volume = convertVolume(gallons);
+    const liters = gallons * 3.78541;
     
-    if (currency === 'INR') {
-      // Indian paint pricing (Asian Paints, Berger, etc.)
-      // Low estimate: Economy paint ₹250-350/liter
-      // High estimate: Premium paint ₹600-800/liter
-      const pricePerLiter = isLowEstimate ? 300 : 700;
-      const liters = volumeUnit === 'liters' ? volume : gallons * 3.78541;
-      return liters * pricePerLiter;
+    // Country-specific pricing (per liter or per gallon)
+    const pricing: Record<typeof country, { low: number, high: number, unit: 'liter' | 'gallon' }> = {
+      'India': { low: 300, high: 700, unit: 'liter' }, // ₹/liter (Asian Paints)
+      'US': { low: 35, high: 70, unit: 'gallon' }, // $/gallon
+      'UK': { low: 30, high: 60, unit: 'liter' }, // £/liter (Dulux, Crown)
+      'Canada': { low: 45, high: 90, unit: 'liter' }, // CAD/liter (Benjamin Moore Canada)
+      'Australia': { low: 50, high: 100, unit: 'liter' }, // AUD/liter (Dulux Australia)
+      'UAE': { low: 40, high: 80, unit: 'liter' }, // AED/liter (Jotun, Berger)
+    };
+    
+    const countryPrice = pricing[country];
+    const price = isLowEstimate ? countryPrice.low : countryPrice.high;
+    
+    if (countryPrice.unit === 'liter') {
+      return liters * price;
     } else {
-      // US paint pricing
-      // Low estimate: Economy paint $30-40/gallon
-      // High estimate: Premium paint $60-80/gallon
-      const pricePerGallon = isLowEstimate ? 35 : 70;
-      const gallonsUsed = volumeUnit === 'gallons' ? volume : volume / 3.78541;
-      return gallonsUsed * pricePerGallon;
+      return gallons * price;
     }
   };
 
   const formatCurrency = (amount: number): string => {
-    if (currency === 'INR') {
-      return `₹${Math.round(amount).toLocaleString('en-IN')}`;
-    }
-    return `$${Math.round(amount).toLocaleString('en-US')}`;
+    const currencySymbols: Record<typeof currency, string> = {
+      'INR': '₹',
+      'USD': '$',
+      'GBP': '£',
+      'CAD': 'CA$',
+      'AUD': 'A$',
+      'AED': 'AED ',
+    };
+    
+    const symbol = currencySymbols[currency];
+    return `${symbol}${Math.round(amount).toLocaleString()}`;
   };
 
   const formatVolume = (gallons: number): string => {
