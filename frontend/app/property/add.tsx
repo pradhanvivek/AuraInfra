@@ -153,10 +153,22 @@ export default function AddProperty() {
         current_value: currentValue ? parseFloat(currentValue) : undefined,
         ownership_type: ownershipType,
       });
-      Alert.alert('Success', 'Property added successfully');
-      router.back();
+      
+      // Platform-specific success message
+      if (Platform.OS === 'web') {
+        alert('✓ Property added successfully!');
+        router.back();
+      } else {
+        Alert.alert('Success', 'Property added successfully!', [
+          { text: 'OK', onPress: () => router.back() }
+        ]);
+      }
     } catch (error: any) {
-      Alert.alert('Error', error.message || 'Failed to add property');
+      if (Platform.OS === 'web') {
+        alert(error.message || 'Failed to add property');
+      } else {
+        Alert.alert('Error', error.message || 'Failed to add property');
+      }
     } finally {
       setLoading(false);
     }
