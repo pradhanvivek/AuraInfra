@@ -438,8 +438,7 @@ export default function PaintEstimationScreen({ propertyId }: PaintEstimationScr
   if (!setupComplete) {
     return (
       <>
-      <View style={styles.container}>
-      <View style={styles.container}>
+        <View style={styles.container}>
         <ScrollView contentContainerStyle={styles.content}>
           <View style={styles.header}>
             <View style={styles.headerTop}>
