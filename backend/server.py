@@ -3849,6 +3849,7 @@ async def scan_asset(request: ImageScanRequest, credentials: HTTPAuthorizationCr
     Identify what type of asset is in an image using Gemini AI
     """
     import json
+    import base64
     
     try:
         user_id = await get_current_user(credentials)
@@ -3858,55 +3859,65 @@ async def scan_asset(request: ImageScanRequest, credentials: HTTPAuthorizationCr
         if not api_key:
             raise HTTPException(status_code=500, detail="LLM API key not configured")
         
+        # Clean base64 string - remove any data URL prefix if present
+        image_data = request.image
+        if image_data.startswith('data:'):
+            # Remove data:image/...;base64, prefix
+            image_data = image_data.split(',', 1)[1] if ',' in image_data else image_data
+        
+        # Validate base64
+        try:
+            base64.b64decode(image_data)
+        except Exception as e:
+            logger.error(f"Invalid base64 image: {str(e)}")
+            raise HTTPException(status_code=400, detail="Invalid image data")
+        
+        logger.info(f"Processing asset scan with image data length: {len(image_data)}")
+        
         # Use Gemini to identify the asset type
         from emergentintegrations.llm.chat import LlmChat, UserMessage, ImageContent
         
         # Create the chat instance
-        llm_chat = LlmChat(
+        chat = LlmChat(
             api_key=api_key,
             session_id=f"asset_scan_{user_id}_{uuid.uuid4()}",
             system_message="You are an expert at identifying physical assets and objects."
-        ).with_model("gemini", "gemini-2.0-flash-exp")
+        ).with_model("gemini", "gemini-2.0-flash")
         
-        # Create the prompt
-        prompt = """Look at this image and identify what type of asset it is.
-        
-        Respond with ONLY a JSON object in this exact format:
-        {
-            "asset_type": "<one of: vehicle, appliance, jewelry, furniture, art>",
-            "confidence": <number between 0 and 1>,
-            "description": "<brief description of what you see>"
-        }
-        
-        Rules:
-        - vehicle: cars, motorcycles, boats, RVs, etc.
-        - appliance: TV, refrigerator, washing machine, microwave, AC, etc.
-        - jewelry: rings, necklaces, watches, bracelets, etc.
-        - furniture: sofas, chairs, tables, beds, cabinets, etc.
-        - art: paintings, sculptures, drawings, antiques, collectibles, etc.
-        
-        Choose the MOST appropriate category. Return ONLY the JSON, no other text."""
-        
-        # Create the message with image
-        image_content = ImageContent(
-            image_base64=request.image
+        # Create the user message with prompt and image
+        user_message = UserMessage(
+            text="""Look at this image and identify what type of asset it is.
+
+Respond with ONLY a JSON object in this exact format:
+{
+    "asset_type": "<one of: vehicle, appliance, jewelry, furniture, art>",
+    "confidence": <number between 0 and 1>,
+    "description": "<brief description of what you see>"
+}
+
+Rules:
+- vehicle: cars, motorcycles, boats, RVs, etc.
+- appliance: TV, refrigerator, washing machine, microwave, AC, etc.
+- jewelry: rings, necklaces, watches, bracelets, etc.
+- furniture: sofas, chairs, tables, beds, cabinets, etc.
+- art: paintings, sculptures, drawings, antiques, collectibles, etc.
+
+Choose the MOST appropriate category. Return ONLY the JSON, no other text.""",
+            file_contents=[ImageContent(image_base64=image_data)]
         )
         
-        message = UserMessage([prompt, image_content])
-        
         # Get AI response
-        response = llm_chat.ask(message)
-        response_text = response.content.strip()
+        response = await chat.send_message(user_message)
         
         # Parse the JSON response
-        # Remove markdown code blocks if present
-        if response_text.startswith('```'):
-            response_text = response_text.split('```')[1]
-            if response_text.startswith('json'):
-                response_text = response_text[4:]
-            response_text = response_text.strip()
-        
-        result = json.loads(response_text)
+        # Try to extract JSON from response
+        json_start = response.find('{')
+        json_end = response.rfind('}') + 1
+        if json_start != -1 and json_end > json_start:
+            json_str = response[json_start:json_end]
+            result = json.loads(json_str)
+        else:
+            result = json.loads(response)
         
         # Validate and return
         return {
