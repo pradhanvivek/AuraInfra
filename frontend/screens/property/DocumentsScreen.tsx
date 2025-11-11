@@ -648,7 +648,13 @@ const styles = StyleSheet.create({
   },
   webview: {
     flex: 1,
-    backgroundColor: '#000',
+    backgroundColor: '#525659',
+  },
+  pdf: {
+    flex: 1,
+    width: Dimensions.get('window').width,
+    height: 500,
+    backgroundColor: '#525659',
   },
   loadingContainer: {
     position: 'absolute',
