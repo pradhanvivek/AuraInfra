@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
-Backend Testing Script for Email OR Username Login Feature
-Tests all scenarios for the new login functionality that accepts both email and username.
+Backend API Testing Script for Country Selection Feature
+Tests the country selection functionality in user profile management.
 """
 
 import requests
@@ -9,18 +9,16 @@ import json
 import sys
 from datetime import datetime
 
-# Backend URL from frontend environment
-BACKEND_URL = "https://smartinfra.preview.emergentagent.com/api"
+# Configuration
+BASE_URL = "https://smartinfra.preview.emergentagent.com/api"
+VALID_COUNTRIES = ["India", "US", "UK", "Canada", "Australia", "UAE"]
 
-class BackendTester:
+class CountrySelectionTester:
     def __init__(self):
+        self.base_url = BASE_URL
+        self.access_token = None
+        self.user_id = None
         self.test_results = []
-        self.test_user_data = {
-            "username": "johndoe2025",
-            "email": "john.doe.2025@example.com", 
-            "password": "SecurePass123!"
-        }
-        self.auth_token = None
         
     def log_test(self, test_name, success, details=""):
         """Log test result"""
