@@ -3892,7 +3892,7 @@ async def scan_asset(request: ImageScanRequest, credentials: HTTPAuthorizationCr
             image_base64=request.image
         )
         
-        message = UserMessage(content=[prompt, image_content])
+        message = UserMessage([prompt, image_content])
         
         # Get AI response
         response = await llm_chat.ask_async(message)
