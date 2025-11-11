@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
-Backend API Testing for Property Logo Management
-Tests property logo upload, retrieval, and management functionality
+Comprehensive Backend Testing for Document Deletion Fix
+Testing the critical document deletion functionality after duplicate function rename fix.
 """
 
 import requests
@@ -11,12 +11,10 @@ import os
 from datetime import datetime
 
 # Configuration
-BACKEND_URL = "https://propmanage-doc.preview.emergentagent.com/api"
+BACKEND_URL = os.getenv('EXPO_PUBLIC_BACKEND_URL', 'https://propmanage-doc.preview.emergentagent.com')
+API_BASE = f"{BACKEND_URL}/api"
 
-# Test data - small base64 encoded PNG image (1x1 pixel red dot)
-SAMPLE_LOGO_BASE64 = "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8/5+hHgAHggJ/PchI7wAAAABJRU5ErkJggg=="
-
-class PropertyLogoTester:
+class DocumentDeletionTester:
     def __init__(self):
         self.session = requests.Session()
         self.access_token = None
