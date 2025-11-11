@@ -983,7 +983,8 @@ export default function Profile() {
             <View style={{ width: 60 }} />
           </View>
 
-          <ScrollView style={styles.modalContent}>
+          <View style={{ flex: 1 }}>
+            <ScrollView style={styles.modalContent}>
             <Text style={styles.modalDescription}>
               Choose your country for localized currency, units, and pricing
             </Text>
