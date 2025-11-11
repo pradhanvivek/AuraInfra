@@ -327,7 +327,8 @@ export default function AdminDashboard() {
           </View>
         </View>
       </Modal>
-    </ScrollView>
+      </ScrollView>
+    </SafeAreaView>
   );
 }
 
