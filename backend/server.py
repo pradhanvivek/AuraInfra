@@ -1126,6 +1126,7 @@ async def get_profile(user_id: str = Depends(get_current_user)):
         avatar=user_doc.get("avatar"),
         warranty_reminder_days=user_doc.get("warranty_reminder_days", 30),
         geomancy_preference=user_doc.get("geomancy_preference", "vastu"),
+        country=user_doc.get("country"),
         currency_preference=user_doc.get("currency_preference"),
         measurement_system=user_doc.get("measurement_system"),
         is_super_admin=user_doc.get("is_super_admin", False),
