@@ -371,7 +371,33 @@ export default function PaintEstimationScreen({ propertyId }: PaintEstimationScr
 
         <ScrollView style={styles.modalContent}>
           <View style={styles.settingsCard}>
-            <Text style={styles.settingsSection}>Currency</Text>
+            <Text style={styles.settingsSection}>Country</Text>
+            <Text style={styles.settingHint}>Automatically sets currency, units, and pricing</Text>
+            
+            {(['India', 'US', 'UK', 'Canada', 'Australia', 'UAE'] as const).map((countryOption) => (
+              <TouchableOpacity
+                key={countryOption}
+                style={[
+                  styles.optionButton,
+                  country === countryOption && styles.optionButtonActive
+                ]}
+                onPress={() => handleCountryChange(countryOption)}
+              >
+                <View style={styles.optionContent}>
+                  <Text style={[
+                    styles.optionText,
+                    country === countryOption && styles.optionTextActive
+                  ]}>
+                    {countryOption === 'US' ? 'United States' : countryOption === 'UK' ? 'United Kingdom' : countryOption === 'UAE' ? 'United Arab Emirates' : countryOption}
+                  </Text>
+                  {country === countryOption && (
+                    <Ionicons name="checkmark-circle" size={24} color="#007AFF" />
+                  )}
+                </View>
+              </TouchableOpacity>
+            ))}
+
+            <Text style={[styles.settingsSection, { marginTop: 24 }]}>Currency</Text>
             
             <TouchableOpacity
               style={[
