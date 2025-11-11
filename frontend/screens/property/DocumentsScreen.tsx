@@ -177,7 +177,7 @@ export default function DocumentsScreen({ propertyId }: DocumentsScreenProps) {
   };
 
   const handleViewDocument = async (doc: Document) => {
-    // For PDFs - Save and open in external viewer
+    // For PDFs - Save and open in external viewer using Linking
     if (doc.file_type === 'application/pdf') {
       try {
         const fileUri = `${FileSystem.documentDirectory}${doc.name.replace(/\s+/g, '_')}.pdf`;
@@ -187,15 +187,21 @@ export default function DocumentsScreen({ propertyId }: DocumentsScreenProps) {
           encoding: FileSystem.EncodingType.Base64,
         });
         
-        // Share/Open the PDF
-        if (await Sharing.isAvailableAsync()) {
-          await Sharing.shareAsync(fileUri);
+        // Open the PDF in external viewer
+        const canOpen = await Linking.canOpenURL(fileUri);
+        if (canOpen) {
+          await Linking.openURL(fileUri);
         } else {
-          Alert.alert('Success', 'PDF saved to documents folder');
+          // Fallback to sharing if direct open doesn't work
+          if (await Sharing.isAvailableAsync()) {
+            await Sharing.shareAsync(fileUri);
+          } else {
+            Alert.alert('Success', 'PDF saved to documents folder: ' + fileUri);
+          }
         }
       } catch (error: any) {
         console.error('Error opening PDF:', error);
-        Alert.alert('Error', 'Failed to open PDF');
+        Alert.alert('Error', 'Failed to open PDF: ' + (error.message || 'Unknown error'));
       }
     } else {
       // For images and other files - Show in-app viewer
