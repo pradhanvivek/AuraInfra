@@ -3889,8 +3889,7 @@ async def scan_asset(request: ImageScanRequest, credentials: HTTPAuthorizationCr
         
         # Create the message with image
         image_content = ImageContent(
-            image_base64=request.image,
-            mime_type="image/jpeg"
+            image_base64=request.image
         )
         
         message = UserMessage(content=[prompt, image_content])
