@@ -491,9 +491,9 @@ export default function FixturesScreen({ propertyId }: FixturesScreenProps) {
 
       const data = await response.json();
       
-      // Auto-populate fields
-      if (data.name) setName(data.name);
-      if (data.make) setMake(data.make);
+      // Auto-populate fields from receipt data
+      if (data.item_name) setName(data.item_name);
+      if (data.brand) setMake(data.brand);
       if (data.model) setModel(data.model);
       if (data.serial_number) setSerialNumber(data.serial_number);
       if (data.vendor_name) setVendorName(data.vendor_name);
@@ -505,9 +505,19 @@ export default function FixturesScreen({ propertyId }: FixturesScreenProps) {
       // Also set the invoice photo
       setInvoice(base64Image);
       
-      Alert.alert('Success', 'Receipt analyzed! Please review and edit the details if needed.');
+      // Platform-specific success message
+      if (Platform.OS === 'web') {
+        alert('Receipt analyzed! Please review and edit the details if needed.');
+      } else {
+        Alert.alert('Success', 'Receipt analyzed! Please review and edit the details if needed.');
+      }
     } catch (error: any) {
-      Alert.alert('Error', error.message || 'Failed to analyze receipt. Please enter details manually.');
+      const errorMessage = error.message || 'Failed to analyze receipt. Please enter details manually.';
+      if (Platform.OS === 'web') {
+        alert(errorMessage);
+      } else {
+        Alert.alert('Error', errorMessage);
+      }
     } finally {
       setScanningReceipt(false);
     }
