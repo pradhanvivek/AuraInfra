@@ -710,7 +710,6 @@ export default function PaintEstimationScreen({ propertyId }: PaintEstimationScr
               </View>
             </View>
           </ScrollView>
-          </View>
         </SafeAreaView>
       </Modal>
 
