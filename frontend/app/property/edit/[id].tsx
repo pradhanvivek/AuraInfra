@@ -86,11 +86,22 @@ export default function EditPropertyScreen() {
         purchase_cost: purchaseCost ? parseFloat(purchaseCost) : undefined,
         current_value: currentValue ? parseFloat(currentValue) : undefined,
       });
-      Alert.alert('Success', 'Property updated successfully', [
-        { text: 'OK', onPress: () => router.back() }
-      ]);
+      
+      // Platform-specific success message
+      if (Platform.OS === 'web') {
+        alert('✓ Property details saved successfully!');
+        router.back();
+      } else {
+        Alert.alert('Success', 'Property details saved successfully!', [
+          { text: 'OK', onPress: () => router.back() }
+        ]);
+      }
     } catch (error: any) {
-      Alert.alert('Error', error.message || 'Failed to update property');
+      if (Platform.OS === 'web') {
+        alert(error.message || 'Failed to update property');
+      } else {
+        Alert.alert('Error', error.message || 'Failed to update property');
+      }
     } finally {
       setSaving(false);
     }
