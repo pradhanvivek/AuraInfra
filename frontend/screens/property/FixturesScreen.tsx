@@ -476,7 +476,7 @@ export default function FixturesScreen({ propertyId }: FixturesScreenProps) {
   const analyzeReceipt = async (base64Image: string) => {
     setScanningReceipt(true);
     try {
-      const response = await fetch(`${API_URL}/analyze-receipt`, {
+      const response = await fetch(`${API_URL}/api/scan-receipt`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
