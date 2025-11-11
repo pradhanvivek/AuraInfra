@@ -1365,6 +1365,12 @@ const styles = StyleSheet.create({
     marginBottom: 24,
     lineHeight: 20,
   },
+  modalDescription: {
+    fontSize: 14,
+    color: '#8E8E93',
+    marginBottom: 24,
+    lineHeight: 20,
+  },
   optionCard: {
     flexDirection: 'row',
     alignItems: 'center',
