@@ -25,12 +25,6 @@ import * as Sharing from 'expo-sharing';
 import { useAuth } from '../../contexts/AuthContext';
 import { documentApi } from '../../services/api';
 
-// Conditionally import react-native-pdf only on native platforms
-let Pdf: any = null;
-if (Platform.OS !== 'web') {
-  Pdf = require('react-native-pdf').default;
-}
-
 interface Document {
   id: string;
   name: string;
