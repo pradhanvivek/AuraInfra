@@ -147,11 +147,14 @@ backend:
     file: "backend/server.py"
     stuck_count: 0
     priority: "high"
-    needs_retesting: false
+    needs_retesting: true
     status_history:
       - working: true
         agent: "testing"
         comment: "POST /api/auth/login endpoint tested successfully. User login with registered credentials works correctly. Returns JWT access token for authenticated requests."
+      - working: "NA"
+        agent: "main"
+        comment: "FEATURE ENHANCEMENT - Email OR Username Login: Modified POST /api/auth/login endpoint to accept both email and username as login identifiers. Backend now checks if input contains '@' character to determine if it's an email or username, then queries MongoDB accordingly. This allows users to login with either their email address or username. Updated frontend login screen placeholder from 'Username' to 'Email or Username' to reflect this capability. Backend service restarted successfully. Needs testing to verify login works with both email and username."
 
   - task: "Property Management - Create Property"
     implemented: true
