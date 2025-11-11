@@ -102,7 +102,7 @@
 # Testing Data - Main Agent and testing sub agent both should log testing data below this section
 #====================================================================================================
 
-user_problem_statement: "Fix property logo display issue on mobile app and add admin UI for logo management. User reported display issue with property name and logo in the properties tab. Additionally, implement property logo upload functionality in the super admin dashboard accessible only to admins."
+user_problem_statement: "Move country selection from Paint Estimation screen to global user profile settings. Country should be saved to user profile and drive default currency, units, and pricing app-wide."
 
 backend:
   - task: "Vehicle AI Scanning - POST /api/vehicles/scan"
