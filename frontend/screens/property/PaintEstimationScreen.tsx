@@ -308,11 +308,23 @@ export default function PaintEstimationScreen({ propertyId }: PaintEstimationScr
       <View style={styles.container}>
         <ScrollView contentContainerStyle={styles.content}>
           <View style={styles.header}>
-            <Ionicons name="color-palette" size={32} color="#34C759" />
-            <Text style={styles.headerTitle}>Room Paint Estimation</Text>
-            <Text style={styles.headerSubtitle}>
-              Capture all walls for accurate room painting cost
-            </Text>
+            <View style={styles.headerTop}>
+              <View style={styles.headerTitleContainer}>
+                <Ionicons name="color-palette" size={32} color="#34C759" />
+                <View style={styles.headerTexts}>
+                  <Text style={styles.headerTitle}>Room Paint Estimation</Text>
+                  <Text style={styles.headerSubtitle}>
+                    Capture all walls for accurate room painting cost
+                  </Text>
+                </View>
+              </View>
+              <TouchableOpacity
+                style={styles.settingsButton}
+                onPress={() => setSettingsVisible(true)}
+              >
+                <Ionicons name="settings-outline" size={24} color="#007AFF" />
+              </TouchableOpacity>
+            </View>
           </View>
 
           <View style={styles.setupCard}>
