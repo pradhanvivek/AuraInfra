@@ -84,7 +84,10 @@ export default function ScanAssetScreen() {
       );
     } catch (error: any) {
       console.error('Identification error:', error);
-      Alert.alert('Error', 'Failed to identify asset. Please try again.');
+      const errorMessage = error.response?.data?.detail || 
+                          error.message || 
+                          'Failed to identify asset. Please try again.';
+      Alert.alert('Error', errorMessage);
     } finally {
       setScanning(false);
     }
