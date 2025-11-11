@@ -186,7 +186,7 @@ export default function Login() {
                   borderColor: inputBorderColor,
                   color: textColor 
                 }]}
-                placeholder="Username"
+                placeholder="Email or Username"
                 placeholderTextColor={placeholderColor}
                 value={username}
                 onChangeText={setUsername}
