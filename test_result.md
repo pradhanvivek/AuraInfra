@@ -393,8 +393,7 @@ metadata:
 
 test_plan:
   current_focus:
-    - "Profile - Warranty Reminder Settings"
-    - "Near Me Feature - Location-based Services"
+    - "Document Deletion Fix - Duplicate Function Rename"
   stuck_tasks: []
   test_all: false
   test_priority: "high_first"
@@ -700,8 +699,7 @@ frontend:
 
 test_plan:
   current_focus:
-    - "Profile - Warranty Reminder Settings"
-    - "Near Me Feature - Location-based Services"
+    - "Document Deletion Fix - Duplicate Function Rename"
   stuck_tasks: []
   test_all: false
   test_priority: "high_first"
