@@ -96,26 +96,46 @@ export default function VastuScreen({ propertyId, geomancyType = 'vastu' }: Vast
     }
   };
 
-  const handleDeleteAnalysis = (analysis: VastuAnalysis) => {
-    Alert.alert(
-      'Delete Analysis',
-      'Are you sure you want to delete this Vastu analysis?',
-      [
-        { text: 'Cancel', style: 'cancel' },
-        {
-          text: 'Delete',
-          style: 'destructive',
-          onPress: async () => {
-            try {
-              await vastuApi.delete(token!, propertyId, analysis.id);
-              fetchAnalyses();
-            } catch (error: any) {
-              Alert.alert('Error', 'Failed to delete analysis');
-            }
+  const handleDeleteAnalysis = async (analysis: VastuAnalysis) => {
+    // Platform-specific confirmation handling
+    if (Platform.OS === 'web') {
+      // Use window.confirm for web
+      const confirmed = window.confirm(
+        `Are you sure you want to delete this ${geomancyTitle} analysis?`
+      );
+      
+      if (confirmed) {
+        try {
+          await vastuApi.delete(token!, propertyId, analysis.id);
+          alert(`${geomancyTitle} analysis deleted successfully`);
+          fetchAnalyses();
+        } catch (error: any) {
+          alert('Failed to delete analysis');
+        }
+      }
+    } else {
+      // Use Alert.alert for mobile
+      Alert.alert(
+        'Delete Analysis',
+        `Are you sure you want to delete this ${geomancyTitle} analysis?`,
+        [
+          { text: 'Cancel', style: 'cancel' },
+          {
+            text: 'Delete',
+            style: 'destructive',
+            onPress: async () => {
+              try {
+                await vastuApi.delete(token!, propertyId, analysis.id);
+                Alert.alert('Success', `${geomancyTitle} analysis deleted successfully`);
+                fetchAnalyses();
+              } catch (error: any) {
+                Alert.alert('Error', 'Failed to delete analysis');
+              }
+            },
           },
-        },
-      ]
-    );
+        ]
+      );
+    }
   };
 
   const getScoreColor = (score?: number) => {
