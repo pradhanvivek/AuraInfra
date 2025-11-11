@@ -739,6 +739,21 @@ backend:
         comment: "COMPREHENSIVE HOA ADMIN AUTHORIZATION TESTING COMPLETED SUCCESSFULLY: Tested POST /api/properties/{property_id}/meetings endpoint with all user types. RESULTS: 1) Regular users correctly denied with 403 Forbidden (PASS), 2) Property owners can successfully create meetings (PASS), 3) HOA admins without managed_properties correctly denied with 403 Forbidden (PASS), 4) HOA admins WITH managed_properties can successfully create meetings (PASS - verified by configuring test admin with managed_properties and confirming 200 OK response). Authorization logic is working perfectly - checks both property ownership (user_id matches property.user_id) and HOA admin permissions (property_id in user.managed_properties). Backend logs confirm proper 403/200 responses for all scenarios."
 
 frontend:
+  - task: "PDF Viewer Reversion - External Viewer"
+    implemented: true
+    working: "NA"
+    file: "frontend/screens/property/DocumentsScreen.tsx"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: false
+        agent: "user"
+        comment: "User reported 'The PDF is not opening on the app' after document deletion fix. Requested revert to previous working state for PDF viewing on documents tab."
+      - working: "NA"
+        agent: "main"
+        comment: "Reverted PDF viewing to external viewer approach. Updated handleViewDocument to use Linking.openURL() as primary method with Sharing.shareAsync() fallback. Removed all WebView-based in-app PDF rendering code. PDFs now save to device storage and open in default external PDF viewer app. Simplified modal to only display images in-app. Frontend restarted. Ready for testing."
+
   - task: "Mobile Admin Create Post - useEffect Import Bug"
     implemented: true
     working: "NA"
