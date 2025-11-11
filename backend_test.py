@@ -20,19 +20,20 @@ class CountrySelectionTester:
         self.user_id = None
         self.test_results = []
         
-    def log_test(self, test_name, success, details=""):
+    def log_result(self, test_name, success, message, details=None):
         """Log test result"""
-        status = "✅ PASS" if success else "❌ FAIL"
-        print(f"{status} - {test_name}")
-        if details:
-            print(f"    Details: {details}")
-        
-        self.test_results.append({
+        result = {
             "test": test_name,
             "success": success,
+            "message": message,
             "details": details,
             "timestamp": datetime.now().isoformat()
-        })
+        }
+        self.test_results.append(result)
+        status = "✅ PASS" if success else "❌ FAIL"
+        print(f"{status}: {test_name} - {message}")
+        if details:
+            print(f"   Details: {details}")
     
     def test_user_registration(self):
         """Test user registration to create test user"""
