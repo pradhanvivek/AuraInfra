@@ -234,6 +234,21 @@ export default function AddApplianceScreen() {
       setLoading(false);
     }
   };
+
+  const handlePrescanImage = async (imageData: string) => {
+    // Process the pre-scanned image without opening camera
+    try {
+      // Remove data:image/jpeg;base64, prefix if present
+      const base64Data = imageData.includes('base64,') 
+        ? imageData.split('base64,')[1] 
+        : imageData;
+      
+      await processApplianceScan(base64Data);
+    } catch (error) {
+      console.error('Failed to process prescan image:', error);
+    }
+  };
+
   const handleScan = async () => {
     if (Platform.OS === 'web') {
       // Use ImagePicker for web (works with React Native Web)
