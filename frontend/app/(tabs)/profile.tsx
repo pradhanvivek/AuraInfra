@@ -431,7 +431,7 @@ export default function Profile() {
           </TouchableOpacity>
 
           <TouchableOpacity
-            style={styles.infoCard}
+            style={[styles.infoCard, { backgroundColor: isDark ? '#1C1C1E' : '#fff', borderBottomColor: isDark ? '#2C2C2E' : '#F2F2F7' }]}
             onPress={() => setMeasurementModalVisible(true)}
           >
             <View style={styles.infoIcon}>
