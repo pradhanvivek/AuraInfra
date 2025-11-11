@@ -892,7 +892,7 @@ export default function AddApplianceScreen() {
           {photos.map((photo, index) => (
             <View key={index} style={styles.photoContainer}>
               <Image
-                source={{ uri: `data:image/jpeg;base64,${photo}` }}
+                source={{ uri: photo.startsWith('data:') ? photo : `data:image/jpeg;base64,${photo}` }}
                 style={styles.photo}
               />
               <TouchableOpacity
