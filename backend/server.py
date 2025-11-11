@@ -5009,8 +5009,8 @@ async def get_hoa_documents(
     return documents
 
 @api_router.delete("/documents/{document_id}")
-async def delete_document(document_id: str, user_id: str = Depends(get_current_user)):
-    """Delete a document (uploader or admin only)"""
+async def delete_document_simple(document_id: str, user_id: str = Depends(get_current_user)):
+    """Delete a document (uploader or admin only) - Legacy endpoint"""
     document = await db.documents.find_one({"id": document_id})
     if not document:
         raise HTTPException(status_code=404, detail="Document not found")
