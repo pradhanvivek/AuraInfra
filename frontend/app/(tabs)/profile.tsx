@@ -985,11 +985,12 @@ export default function Profile() {
 
           <View style={styles.modalContent}>
             <TouchableOpacity
-              style={styles.optionCard}
-              onPress={() => {
-                setSelectedCountry('India');
-                setCountryModalVisible(false);
-              }}
+              style={[
+                styles.optionCard,
+                selectedCountry === 'India' && styles.optionCardSelected,
+              ]}
+              onPress={() => handleCountryChange('India')}
+              disabled={saving}
             >
               <View style={styles.optionContent}>
                 <Ionicons
@@ -1013,11 +1014,12 @@ export default function Profile() {
             </TouchableOpacity>
 
             <TouchableOpacity
-              style={styles.optionCard}
-              onPress={() => {
-                setSelectedCountry('US');
-                setCountryModalVisible(false);
-              }}
+              style={[
+                styles.optionCard,
+                selectedCountry === 'US' && styles.optionCardSelected,
+              ]}
+              onPress={() => handleCountryChange('US')}
+              disabled={saving}
             >
               <View style={styles.optionContent}>
                 <Ionicons
@@ -1041,11 +1043,12 @@ export default function Profile() {
             </TouchableOpacity>
 
             <TouchableOpacity
-              style={styles.optionCard}
-              onPress={() => {
-                setSelectedCountry('UK');
-                setCountryModalVisible(false);
-              }}
+              style={[
+                styles.optionCard,
+                selectedCountry === 'UK' && styles.optionCardSelected,
+              ]}
+              onPress={() => handleCountryChange('UK')}
+              disabled={saving}
             >
               <View style={styles.optionContent}>
                 <Ionicons
@@ -1069,11 +1072,12 @@ export default function Profile() {
             </TouchableOpacity>
 
             <TouchableOpacity
-              style={styles.optionCard}
-              onPress={() => {
-                setSelectedCountry('Canada');
-                setCountryModalVisible(false);
-              }}
+              style={[
+                styles.optionCard,
+                selectedCountry === 'Canada' && styles.optionCardSelected,
+              ]}
+              onPress={() => handleCountryChange('Canada')}
+              disabled={saving}
             >
               <View style={styles.optionContent}>
                 <Ionicons
@@ -1097,11 +1101,12 @@ export default function Profile() {
             </TouchableOpacity>
 
             <TouchableOpacity
-              style={styles.optionCard}
-              onPress={() => {
-                setSelectedCountry('Australia');
-                setCountryModalVisible(false);
-              }}
+              style={[
+                styles.optionCard,
+                selectedCountry === 'Australia' && styles.optionCardSelected,
+              ]}
+              onPress={() => handleCountryChange('Australia')}
+              disabled={saving}
             >
               <View style={styles.optionContent}>
                 <Ionicons
@@ -1125,11 +1130,12 @@ export default function Profile() {
             </TouchableOpacity>
 
             <TouchableOpacity
-              style={styles.optionCard}
-              onPress={() => {
-                setSelectedCountry('UAE');
-                setCountryModalVisible(false);
-              }}
+              style={[
+                styles.optionCard,
+                selectedCountry === 'UAE' && styles.optionCardSelected,
+              ]}
+              onPress={() => handleCountryChange('UAE')}
+              disabled={saving}
             >
               <View style={styles.optionContent}>
                 <Ionicons
