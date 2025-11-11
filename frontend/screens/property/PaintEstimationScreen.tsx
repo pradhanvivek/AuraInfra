@@ -87,6 +87,35 @@ export default function PaintEstimationScreen({ propertyId }: PaintEstimationScr
   const [volumeUnit, setVolumeUnit] = useState<'gallons' | 'liters'>('gallons');
   const [settingsVisible, setSettingsVisible] = useState(false);
 
+  // Helper functions for unit conversion
+  const convertVolume = (gallons: number): number => {
+    if (volumeUnit === 'liters') {
+      return gallons * 3.78541; // 1 gallon = 3.78541 liters
+    }
+    return gallons;
+  };
+
+  const convertCurrency = (usd: number): number => {
+    if (currency === 'INR') {
+      return usd * 83; // Approximate conversion rate
+    }
+    return usd;
+  };
+
+  const formatCurrency = (amount: number): string => {
+    const converted = convertCurrency(amount);
+    if (currency === 'INR') {
+      return `₹${Math.round(converted).toLocaleString('en-IN')}`;
+    }
+    return `$${Math.round(converted).toLocaleString('en-US')}`;
+  };
+
+  const formatVolume = (gallons: number): string => {
+    const converted = convertVolume(gallons);
+    const unit = volumeUnit === 'liters' ? 'liters' : 'gallons';
+    return `${converted.toFixed(1)} ${unit}`;
+  };
+
   useEffect(() => {
     fetchEstimations();
   }, []);
