@@ -3851,8 +3851,7 @@ async def scan_asset(request: ImageScanRequest, credentials: HTTPAuthorizationCr
     import json
     
     try:
-        user = await get_current_user(credentials)
-        user_id = user["username"]
+        user_id = await get_current_user(credentials)
         
         # Get API key
         api_key = os.environ.get('EMERGENT_LLM_KEY')
