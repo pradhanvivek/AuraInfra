@@ -199,7 +199,7 @@ export default function ScanAssetScreen() {
               </TouchableOpacity>
               <TouchableOpacity
                 style={[styles.actionButton, styles.primaryButton]}
-                onPress={() => navigateToAdd(scanResults.asset_type)}
+                onPress={handleAddToPortfolio}
               >
                 <Text style={styles.primaryButtonText}>Add to Portfolio</Text>
               </TouchableOpacity>
