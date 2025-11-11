@@ -35,342 +35,291 @@ class CountrySelectionTester:
         if details:
             print(f"   Details: {details}")
     
-    def test_user_registration(self):
-        """Test user registration to create test user"""
-        print("\n=== Testing User Registration (Setup) ===")
+    def setup_test_user(self):
+        """Create a test user for authentication"""
+        print("\n=== Setting up test user ===")
+        
+        # Generate unique test user credentials
+        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+        test_username = f"country_test_user_{timestamp}"
+        test_email = f"country_test_{timestamp}@example.com"
+        test_password = "TestPassword123!"
+        
+        # Register test user
+        register_data = {
+            "username": test_username,
+            "email": test_email,
+            "password": test_password
+        }
         
         try:
-            response = requests.post(f"{BACKEND_URL}/auth/register", json=self.test_user_data)
-            
-            if response.status_code == 201 or response.status_code == 200:
+            response = requests.post(f"{self.base_url}/auth/register", json=register_data)
+            if response.status_code == 200:
                 data = response.json()
-                if "access_token" in data and "user_id" in data:
-                    self.auth_token = data["access_token"]
-                    self.log_test("User Registration", True, f"User created with ID: {data['user_id']}")
-                    return True
-                else:
-                    self.log_test("User Registration", False, "Missing access_token or user_id in response")
-                    return False
-            elif response.status_code == 400 and "already exists" in response.text:
-                # User already exists, try to login to get token
-                self.log_test("User Registration", True, "User already exists, will use existing user")
+                self.access_token = data["access_token"]
+                self.user_id = data["user_id"]
+                self.log_result("User Registration", True, f"Created test user: {test_username}")
                 return True
             else:
-                self.log_test("User Registration", False, f"Status: {response.status_code}, Response: {response.text}")
+                self.log_result("User Registration", False, f"Failed to register user: {response.status_code} - {response.text}")
                 return False
-                
         except Exception as e:
-            self.log_test("User Registration", False, f"Exception: {str(e)}")
+            self.log_result("User Registration", False, f"Registration error: {str(e)}")
             return False
     
-    def test_scenario_1_username_login(self):
-        """Test Scenario 1: Login with Username (Existing Functionality)"""
-        print("\n=== Test Scenario 1: Login with Username ===")
+    def get_auth_headers(self):
+        """Get authorization headers"""
+        return {"Authorization": f"Bearer {self.access_token}"}
+    
+    def test_get_profile_country_field(self):
+        """Test 1: GET /api/auth/profile - Country Field Return"""
+        print("\n=== Test 1: GET Profile Country Field ===")
         
         try:
-            login_data = {
-                "username": self.test_user_data["username"],
-                "password": self.test_user_data["password"]
-            }
-            
-            response = requests.post(f"{BACKEND_URL}/auth/login", json=login_data)
+            response = requests.get(f"{self.base_url}/auth/profile", headers=self.get_auth_headers())
             
             if response.status_code == 200:
-                data = response.json()
-                if all(key in data for key in ["access_token", "token_type", "user_id", "username"]):
-                    if data["token_type"] == "bearer" and data["username"] == self.test_user_data["username"]:
-                        self.log_test("Login with Username", True, f"JWT token received, user_id: {data['user_id']}")
-                        return True
+                profile_data = response.json()
+                
+                # Check if country field exists in response
+                if "country" in profile_data:
+                    # For new user, country should be null
+                    if profile_data["country"] is None:
+                        self.log_result("GET Profile - Country Field", True, "Country field returned as null for new user", profile_data.get("country"))
                     else:
-                        self.log_test("Login with Username", False, "Invalid token type or username mismatch")
-                        return False
+                        self.log_result("GET Profile - Country Field", True, f"Country field returned: {profile_data['country']}", profile_data.get("country"))
                 else:
-                    self.log_test("Login with Username", False, "Missing required fields in response")
-                    return False
+                    self.log_result("GET Profile - Country Field", False, "Country field missing from profile response")
+                
+                return profile_data
             else:
-                self.log_test("Login with Username", False, f"Status: {response.status_code}, Response: {response.text}")
-                return False
+                self.log_result("GET Profile - Country Field", False, f"Failed to get profile: {response.status_code} - {response.text}")
+                return None
                 
         except Exception as e:
-            self.log_test("Login with Username", False, f"Exception: {str(e)}")
-            return False
+            self.log_result("GET Profile - Country Field", False, f"Error getting profile: {str(e)}")
+            return None
     
-    def test_scenario_2_email_login(self):
-        """Test Scenario 2: Login with Email (NEW Functionality)"""
-        print("\n=== Test Scenario 2: Login with Email (NEW) ===")
+    def test_save_valid_countries(self):
+        """Test 2: PUT /api/auth/profile - Save Valid Countries"""
+        print("\n=== Test 2: Save Valid Countries ===")
         
+        for country in VALID_COUNTRIES:
+            try:
+                update_data = {"country": country}
+                response = requests.put(f"{self.base_url}/auth/profile", json=update_data, headers=self.get_auth_headers())
+                
+                if response.status_code == 200:
+                    profile_data = response.json()
+                    if profile_data.get("country") == country:
+                        self.log_result(f"Save Country - {country}", True, f"Successfully saved country: {country}")
+                    else:
+                        self.log_result(f"Save Country - {country}", False, f"Country not saved correctly. Expected: {country}, Got: {profile_data.get('country')}")
+                else:
+                    self.log_result(f"Save Country - {country}", False, f"Failed to save country {country}: {response.status_code} - {response.text}")
+                    
+            except Exception as e:
+                self.log_result(f"Save Country - {country}", False, f"Error saving country {country}: {str(e)}")
+    
+    def test_country_validation(self):
+        """Test 3: PUT /api/auth/profile - Country Validation"""
+        print("\n=== Test 3: Country Validation ===")
+        
+        # Test invalid country
         try:
-            login_data = {
-                "username": self.test_user_data["email"],  # Using email in username field
-                "password": self.test_user_data["password"]
-            }
+            invalid_country = "Germany"
+            update_data = {"country": invalid_country}
+            response = requests.put(f"{self.base_url}/auth/profile", json=update_data, headers=self.get_auth_headers())
             
-            response = requests.post(f"{BACKEND_URL}/auth/login", json=login_data)
+            if response.status_code == 400:
+                self.log_result("Invalid Country Validation", True, f"Correctly rejected invalid country: {invalid_country}")
+            else:
+                self.log_result("Invalid Country Validation", False, f"Should have rejected invalid country {invalid_country}. Got: {response.status_code}")
+                
+        except Exception as e:
+            self.log_result("Invalid Country Validation", False, f"Error testing invalid country: {str(e)}")
+        
+        # Test empty string (should be accepted)
+        try:
+            update_data = {"country": ""}
+            response = requests.put(f"{self.base_url}/auth/profile", json=update_data, headers=self.get_auth_headers())
             
             if response.status_code == 200:
-                data = response.json()
-                if all(key in data for key in ["access_token", "token_type", "user_id", "username"]):
-                    if data["token_type"] == "bearer" and data["username"] == self.test_user_data["username"]:
-                        self.log_test("Login with Email", True, f"JWT token received, user_id: {data['user_id']}")
-                        return True
+                self.log_result("Empty String Country", True, "Empty string country accepted")
+            else:
+                self.log_result("Empty String Country", False, f"Empty string should be accepted. Got: {response.status_code} - {response.text}")
+                
+        except Exception as e:
+            self.log_result("Empty String Country", False, f"Error testing empty string: {str(e)}")
+        
+        # Test null value (should be accepted)
+        try:
+            update_data = {"country": None}
+            response = requests.put(f"{self.base_url}/auth/profile", json=update_data, headers=self.get_auth_headers())
+            
+            if response.status_code == 200:
+                self.log_result("Null Country", True, "Null country value accepted")
+            else:
+                self.log_result("Null Country", False, f"Null country should be accepted. Got: {response.status_code} - {response.text}")
+                
+        except Exception as e:
+            self.log_result("Null Country", False, f"Error testing null country: {str(e)}")
+    
+    def test_data_persistence(self):
+        """Test 4: Data Persistence"""
+        print("\n=== Test 4: Data Persistence ===")
+        
+        # Save a country
+        test_country = "India"
+        try:
+            update_data = {"country": test_country}
+            response = requests.put(f"{self.base_url}/auth/profile", json=update_data, headers=self.get_auth_headers())
+            
+            if response.status_code == 200:
+                # Get profile to verify persistence
+                get_response = requests.get(f"{self.base_url}/auth/profile", headers=self.get_auth_headers())
+                
+                if get_response.status_code == 200:
+                    profile_data = get_response.json()
+                    if profile_data.get("country") == test_country:
+                        self.log_result("Data Persistence - Save & Retrieve", True, f"Country {test_country} persisted correctly")
                     else:
-                        self.log_test("Login with Email", False, "Invalid token type or username mismatch")
-                        return False
+                        self.log_result("Data Persistence - Save & Retrieve", False, f"Country not persisted. Expected: {test_country}, Got: {profile_data.get('country')}")
                 else:
-                    self.log_test("Login with Email", False, "Missing required fields in response")
-                    return False
+                    self.log_result("Data Persistence - Save & Retrieve", False, f"Failed to retrieve profile after save: {get_response.status_code}")
             else:
-                self.log_test("Login with Email", False, f"Status: {response.status_code}, Response: {response.text}")
-                return False
+                self.log_result("Data Persistence - Save & Retrieve", False, f"Failed to save country for persistence test: {response.status_code}")
                 
         except Exception as e:
-            self.log_test("Login with Email", False, f"Exception: {str(e)}")
-            return False
-    
-    def test_scenario_3_invalid_email_password(self):
-        """Test Scenario 3: Invalid Credentials with Email"""
-        print("\n=== Test Scenario 3: Invalid Credentials with Email ===")
+            self.log_result("Data Persistence - Save & Retrieve", False, f"Error in persistence test: {str(e)}")
         
+        # Update to different country and verify
+        new_country = "Canada"
         try:
-            login_data = {
-                "username": self.test_user_data["email"],
-                "password": "WrongPassword123!"
-            }
+            update_data = {"country": new_country}
+            response = requests.put(f"{self.base_url}/auth/profile", json=update_data, headers=self.get_auth_headers())
             
-            response = requests.post(f"{BACKEND_URL}/auth/login", json=login_data)
-            
-            if response.status_code == 401:
-                data = response.json()
-                if "detail" in data and "Invalid credentials" in data["detail"]:
-                    self.log_test("Invalid Email Credentials", True, "Correctly returned 401 with 'Invalid credentials'")
-                    return True
-                else:
-                    self.log_test("Invalid Email Credentials", False, f"Wrong error message: {data}")
-                    return False
-            else:
-                self.log_test("Invalid Email Credentials", False, f"Expected 401, got {response.status_code}")
-                return False
+            if response.status_code == 200:
+                # Get profile to verify update
+                get_response = requests.get(f"{self.base_url}/auth/profile", headers=self.get_auth_headers())
                 
-        except Exception as e:
-            self.log_test("Invalid Email Credentials", False, f"Exception: {str(e)}")
-            return False
-    
-    def test_scenario_4_invalid_username_password(self):
-        """Test Scenario 4: Invalid Credentials with Username"""
-        print("\n=== Test Scenario 4: Invalid Credentials with Username ===")
-        
-        try:
-            login_data = {
-                "username": self.test_user_data["username"],
-                "password": "WrongPassword123!"
-            }
-            
-            response = requests.post(f"{BACKEND_URL}/auth/login", json=login_data)
-            
-            if response.status_code == 401:
-                data = response.json()
-                if "detail" in data and "Invalid credentials" in data["detail"]:
-                    self.log_test("Invalid Username Credentials", True, "Correctly returned 401 with 'Invalid credentials'")
-                    return True
-                else:
-                    self.log_test("Invalid Username Credentials", False, f"Wrong error message: {data}")
-                    return False
-            else:
-                self.log_test("Invalid Username Credentials", False, f"Expected 401, got {response.status_code}")
-                return False
-                
-        except Exception as e:
-            self.log_test("Invalid Username Credentials", False, f"Exception: {str(e)}")
-            return False
-    
-    def test_scenario_5_nonexistent_email(self):
-        """Test Scenario 5: Non-existent Email"""
-        print("\n=== Test Scenario 5: Non-existent Email ===")
-        
-        try:
-            login_data = {
-                "username": "nonexistent.user@example.com",
-                "password": "AnyPassword123!"
-            }
-            
-            response = requests.post(f"{BACKEND_URL}/auth/login", json=login_data)
-            
-            if response.status_code == 401:
-                data = response.json()
-                if "detail" in data and "Invalid credentials" in data["detail"]:
-                    self.log_test("Non-existent Email", True, "Correctly returned 401 with 'Invalid credentials'")
-                    return True
-                else:
-                    self.log_test("Non-existent Email", False, f"Wrong error message: {data}")
-                    return False
-            else:
-                self.log_test("Non-existent Email", False, f"Expected 401, got {response.status_code}")
-                return False
-                
-        except Exception as e:
-            self.log_test("Non-existent Email", False, f"Exception: {str(e)}")
-            return False
-    
-    def test_scenario_6_nonexistent_username(self):
-        """Test Scenario 6: Non-existent Username"""
-        print("\n=== Test Scenario 6: Non-existent Username ===")
-        
-        try:
-            login_data = {
-                "username": "nonexistentuser2025",
-                "password": "AnyPassword123!"
-            }
-            
-            response = requests.post(f"{BACKEND_URL}/auth/login", json=login_data)
-            
-            if response.status_code == 401:
-                data = response.json()
-                if "detail" in data and "Invalid credentials" in data["detail"]:
-                    self.log_test("Non-existent Username", True, "Correctly returned 401 with 'Invalid credentials'")
-                    return True
-                else:
-                    self.log_test("Non-existent Username", False, f"Wrong error message: {data}")
-                    return False
-            else:
-                self.log_test("Non-existent Username", False, f"Expected 401, got {response.status_code}")
-                return False
-                
-        except Exception as e:
-            self.log_test("Non-existent Username", False, f"Exception: {str(e)}")
-            return False
-    
-    def test_token_consistency(self):
-        """Verify that both email and username login return identical JWT token structure"""
-        print("\n=== Testing Token Consistency ===")
-        
-        try:
-            # Login with username
-            username_login = {
-                "username": self.test_user_data["username"],
-                "password": self.test_user_data["password"]
-            }
-            username_response = requests.post(f"{BACKEND_URL}/auth/login", json=username_login)
-            
-            # Login with email
-            email_login = {
-                "username": self.test_user_data["email"],
-                "password": self.test_user_data["password"]
-            }
-            email_response = requests.post(f"{BACKEND_URL}/auth/login", json=email_login)
-            
-            if username_response.status_code == 200 and email_response.status_code == 200:
-                username_data = username_response.json()
-                email_data = email_response.json()
-                
-                # Check if both have same structure and user_id
-                if (username_data["user_id"] == email_data["user_id"] and
-                    username_data["username"] == email_data["username"] and
-                    username_data["token_type"] == email_data["token_type"]):
-                    self.log_test("Token Consistency", True, "Both login methods return identical user data")
-                    return True
-                else:
-                    self.log_test("Token Consistency", False, "Token data mismatch between email and username login")
-                    return False
-            else:
-                self.log_test("Token Consistency", False, "One or both login methods failed")
-                return False
-                
-        except Exception as e:
-            self.log_test("Token Consistency", False, f"Exception: {str(e)}")
-            return False
-    
-    def test_authenticated_request(self):
-        """Test that JWT token works for subsequent authenticated requests"""
-        print("\n=== Testing Authenticated Request ===")
-        
-        try:
-            # First get a token
-            login_data = {
-                "username": self.test_user_data["username"],
-                "password": self.test_user_data["password"]
-            }
-            
-            login_response = requests.post(f"{BACKEND_URL}/auth/login", json=login_data)
-            
-            if login_response.status_code == 200:
-                token = login_response.json()["access_token"]
-                
-                # Use token to access protected endpoint
-                headers = {"Authorization": f"Bearer {token}"}
-                profile_response = requests.get(f"{BACKEND_URL}/auth/profile", headers=headers)
-                
-                if profile_response.status_code == 200:
-                    profile_data = profile_response.json()
-                    if profile_data["username"] == self.test_user_data["username"]:
-                        self.log_test("Authenticated Request", True, "JWT token valid for protected endpoints")
-                        return True
+                if get_response.status_code == 200:
+                    profile_data = get_response.json()
+                    if profile_data.get("country") == new_country:
+                        self.log_result("Data Persistence - Update", True, f"Country updated to {new_country} and persisted correctly")
                     else:
-                        self.log_test("Authenticated Request", False, "Profile data mismatch")
-                        return False
+                        self.log_result("Data Persistence - Update", False, f"Country update not persisted. Expected: {new_country}, Got: {profile_data.get('country')}")
                 else:
-                    self.log_test("Authenticated Request", False, f"Profile request failed: {profile_response.status_code}")
-                    return False
+                    self.log_result("Data Persistence - Update", False, f"Failed to retrieve profile after update: {get_response.status_code}")
             else:
-                self.log_test("Authenticated Request", False, "Failed to get login token")
-                return False
+                self.log_result("Data Persistence - Update", False, f"Failed to update country: {response.status_code}")
                 
         except Exception as e:
-            self.log_test("Authenticated Request", False, f"Exception: {str(e)}")
-            return False
+            self.log_result("Data Persistence - Update", False, f"Error in update persistence test: {str(e)}")
+    
+    def test_integration_with_other_fields(self):
+        """Test 5: Integration with Other Profile Fields"""
+        print("\n=== Test 5: Integration with Other Profile Fields ===")
+        
+        try:
+            # Update multiple fields including country
+            update_data = {
+                "email": "updated_country_test@example.com",
+                "phone": "+1234567890",
+                "country": "Australia",
+                "currency_preference": "AUD",
+                "measurement_system": "metric",
+                "warranty_reminder_days": 14
+            }
+            
+            response = requests.put(f"{self.base_url}/auth/profile", json=update_data, headers=self.get_auth_headers())
+            
+            if response.status_code == 200:
+                profile_data = response.json()
+                
+                # Verify all fields were updated correctly
+                all_correct = True
+                field_results = {}
+                
+                for field, expected_value in update_data.items():
+                    actual_value = profile_data.get(field)
+                    field_results[field] = {"expected": expected_value, "actual": actual_value}
+                    if actual_value != expected_value:
+                        all_correct = False
+                
+                if all_correct:
+                    self.log_result("Integration - Multiple Fields", True, "All profile fields updated correctly together", field_results)
+                else:
+                    self.log_result("Integration - Multiple Fields", False, "Some profile fields not updated correctly", field_results)
+            else:
+                self.log_result("Integration - Multiple Fields", False, f"Failed to update multiple fields: {response.status_code} - {response.text}")
+                
+        except Exception as e:
+            self.log_result("Integration - Multiple Fields", False, f"Error in integration test: {str(e)}")
     
     def run_all_tests(self):
-        """Run all test scenarios"""
-        print("🚀 Starting Email OR Username Login Feature Testing")
-        print(f"Backend URL: {BACKEND_URL}")
-        print(f"Test User: {self.test_user_data['username']} / {self.test_user_data['email']}")
+        """Run all country selection tests"""
+        print("🚀 Starting Country Selection Feature Backend Testing")
+        print(f"Base URL: {self.base_url}")
+        print(f"Valid Countries: {', '.join(VALID_COUNTRIES)}")
         
         # Setup
-        if not self.test_user_registration():
-            print("❌ Failed to setup test user, aborting tests")
+        if not self.setup_test_user():
+            print("❌ Failed to setup test user. Aborting tests.")
             return False
         
-        # Run all test scenarios
-        tests = [
-            self.test_scenario_1_username_login,
-            self.test_scenario_2_email_login,
-            self.test_scenario_3_invalid_email_password,
-            self.test_scenario_4_invalid_username_password,
-            self.test_scenario_5_nonexistent_email,
-            self.test_scenario_6_nonexistent_username,
-            self.test_token_consistency,
-            self.test_authenticated_request
-        ]
-        
-        passed = 0
-        total = len(tests)
-        
-        for test in tests:
-            if test():
-                passed += 1
+        # Run tests
+        self.test_get_profile_country_field()
+        self.test_save_valid_countries()
+        self.test_country_validation()
+        self.test_data_persistence()
+        self.test_integration_with_other_fields()
         
         # Summary
-        print(f"\n{'='*60}")
-        print(f"📊 TEST SUMMARY")
-        print(f"{'='*60}")
-        print(f"Total Tests: {total}")
-        print(f"Passed: {passed}")
-        print(f"Failed: {total - passed}")
-        print(f"Success Rate: {(passed/total)*100:.1f}%")
+        self.print_summary()
+        return self.get_overall_success()
+    
+    def print_summary(self):
+        """Print test summary"""
+        print("\n" + "="*60)
+        print("🏁 COUNTRY SELECTION TESTING SUMMARY")
+        print("="*60)
         
-        if passed == total:
-            print("🎉 ALL TESTS PASSED - Email OR Username Login Feature is working correctly!")
-            return True
-        else:
-            print("⚠️  SOME TESTS FAILED - Review the failures above")
-            return False
+        total_tests = len(self.test_results)
+        passed_tests = len([r for r in self.test_results if r["success"]])
+        failed_tests = total_tests - passed_tests
+        
+        print(f"Total Tests: {total_tests}")
+        print(f"Passed: {passed_tests} ✅")
+        print(f"Failed: {failed_tests} ❌")
+        print(f"Success Rate: {(passed_tests/total_tests)*100:.1f}%")
+        
+        if failed_tests > 0:
+            print("\n❌ FAILED TESTS:")
+            for result in self.test_results:
+                if not result["success"]:
+                    print(f"  • {result['test']}: {result['message']}")
+        
+        print("\n✅ PASSED TESTS:")
+        for result in self.test_results:
+            if result["success"]:
+                print(f"  • {result['test']}: {result['message']}")
+    
+    def get_overall_success(self):
+        """Check if all tests passed"""
+        return all(result["success"] for result in self.test_results)
 
 def main():
-    """Main function to run tests"""
-    tester = BackendTester()
+    """Main function"""
+    tester = CountrySelectionTester()
     success = tester.run_all_tests()
     
-    # Exit with appropriate code
-    sys.exit(0 if success else 1)
+    if success:
+        print("\n🎉 ALL TESTS PASSED! Country selection feature is working correctly.")
+        sys.exit(0)
+    else:
+        print("\n💥 SOME TESTS FAILED! Please check the issues above.")
+        sys.exit(1)
 
 if __name__ == "__main__":
     main()
