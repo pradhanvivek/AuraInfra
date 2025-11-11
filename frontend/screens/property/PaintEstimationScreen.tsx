@@ -320,7 +320,12 @@ export default function PaintEstimationScreen({ propertyId }: PaintEstimationScr
               </View>
               <TouchableOpacity
                 style={styles.settingsButton}
-                onPress={() => setSettingsVisible(true)}
+                onPress={() => {
+                  console.log('Settings button pressed');
+                  setSettingsVisible(true);
+                }}
+                activeOpacity={0.7}
+                hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
               >
                 <Ionicons name="settings-outline" size={24} color="#007AFF" />
               </TouchableOpacity>
