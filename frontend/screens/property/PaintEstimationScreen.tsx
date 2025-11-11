@@ -356,7 +356,7 @@ export default function PaintEstimationScreen({ propertyId }: PaintEstimationScr
         setSettingsVisible(false);
       }}
     >
-      <SafeAreaView style={styles.modalContainer} edges={['top']}>
+      <SafeAreaView style={[styles.modalContainer, { backgroundColor: '#F2F2F7' }]} edges={['top', 'bottom']}>
         {console.log('Modal is rendering! settingsVisible:', settingsVisible)}
         <View style={styles.modalHeader}>
           <View style={{ width: 60 }} />
