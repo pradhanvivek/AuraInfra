@@ -786,9 +786,14 @@ export default function PaintEstimationScreen({ propertyId }: PaintEstimationScr
                     <Text style={styles.costValue}>
                       {formatCurrency(calculateCost(currentAnalysis.paint_gallons_needed, true))} - {formatCurrency(calculateCost(currentAnalysis.paint_gallons_needed, false))}
                     </Text>
-                    <Text style={styles.costNote}>
-                      *Includes paint + labor
-                    </Text>
+                    <View style={styles.disclaimerContainer}>
+                      <Text style={styles.disclaimerText}>
+                        * The quantity may vary depending on substrate condition.
+                      </Text>
+                      <Text style={styles.disclaimerText}>
+                        * Total price is estimated cost of products and labour costs. Prices may vary based on shades and volume.
+                      </Text>
+                    </View>
                   </View>
                 </View>
 
