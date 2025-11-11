@@ -105,6 +105,50 @@
 user_problem_statement: "Move country selection from Paint Estimation screen to global user profile settings. Country should be saved to user profile and drive default currency, units, and pricing app-wide."
 
 backend:
+  - task: "Country Selection - Profile Update Endpoint"
+    implemented: true
+    working: "NA"
+    file: "backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "COUNTRY SELECTION BACKEND IMPLEMENTATION COMPLETED: Modified PUT /api/auth/profile endpoint to accept and save country field. Added validation to ensure country is one of: India, US, UK, Canada, Australia, UAE. Updated UserProfile and UserProfileUpdate Pydantic models to include country field. Updated both GET and PUT profile endpoints to return country field from database. Backend service auto-reloaded successfully. Ready for testing to verify: 1) Country can be saved via PUT /api/auth/profile with country parameter, 2) Country is returned in GET /api/auth/profile response, 3) Validation rejects invalid country values with 400 error."
+
+frontend:
+  - task: "Country Selection - Profile Page UI"
+    implemented: true
+    working: "NA"
+    file: "frontend/app/(tabs)/profile.tsx"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "COUNTRY SELECTION FRONTEND IMPLEMENTATION COMPLETED: Updated profile page with full country selection functionality. Added country field to UserProfile interface. Implemented handleCountryChange function that calls PUT /api/auth/profile to save selected country. Updated fetchProfile to load country from profile data and set selectedCountry state. Modified all country option buttons in modal to call handleCountryChange with proper saving states and visual feedback. Added selected state styling to country options. Frontend service restarted successfully. Ready for testing to verify: 1) Country dropdown displays current country from profile, 2) Selecting country saves to backend and updates UI, 3) Success/error alerts display appropriately, 4) Country persists after app reload."
+
+metadata:
+  created_by: "main_agent"
+  version: "1.0"
+  test_sequence: 1
+  run_ui: false
+
+test_plan:
+  current_focus:
+    - "Country Selection - Profile Update Endpoint"
+    - "Country Selection - Profile Page UI"
+  stuck_tasks: []
+  test_all: false
+  test_priority: "high_first"
+
+agent_communication:
+  - agent: "main"
+    message: "COUNTRY SELECTION FEATURE IMPLEMENTATION COMPLETED: Successfully moved country selection from Paint Estimation screen to global user profile settings. Backend changes: 1) Added country field validation in PUT /api/auth/profile endpoint (validates against India, US, UK, Canada, Australia, UAE), 2) Updated both GET and PUT profile endpoints to handle country field, 3) Models already had country field from previous work. Frontend changes: 1) Added country to UserProfile interface, 2) Implemented handleCountryChange function with API call to save country, 3) Updated fetchProfile to load country from backend, 4) Modified all 6 country option buttons to properly save selection with visual feedback and loading states. Both backend and frontend services restarted successfully. Ready for backend testing to verify complete CRUD flow for country field in user profile."
+
+backend:
   - task: "Vehicle AI Scanning - POST /api/vehicles/scan"
     implemented: true
     working: true
