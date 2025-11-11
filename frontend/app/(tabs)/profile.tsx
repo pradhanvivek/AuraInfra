@@ -1168,7 +1168,7 @@ export default function Profile() {
                 <Text style={styles.savingText}>Updating...</Text>
               </View>
             )}
-          </View>
+          </ScrollView>
         </View>
       </Modal>
     </View>
