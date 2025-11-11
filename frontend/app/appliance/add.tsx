@@ -47,6 +47,9 @@ export default function AddApplianceScreen() {
   // Dynamic placeholder color based on theme
   const placeholderColor = colorScheme === 'dark' ? '#999999' : '#666666';
   const scanMode = params.mode === 'scan';
+  const prescanMode = params.mode === 'prescan';
+  const prescanImage = params.image ? decodeURIComponent(params.image as string) : null;
+  const prescanDescription = params.description ? decodeURIComponent(params.description as string) : null;
   const editId = params.id as string | undefined;
   const isEditing = !!editId;
 
