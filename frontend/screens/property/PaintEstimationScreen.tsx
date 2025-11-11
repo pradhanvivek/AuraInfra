@@ -607,17 +607,16 @@ export default function PaintEstimationScreen({ propertyId }: PaintEstimationScr
         transparent={false}
         onRequestClose={() => setSettingsVisible(false)}
       >
-        <SafeAreaView style={{ flex: 1, backgroundColor: '#F2F2F7' }}>
-          <View style={styles.modalContainer}>
-            <View style={styles.modalHeader}>
-              <View style={{ width: 60 }} />
-              <Text style={styles.modalTitle}>Display Settings</Text>
-              <TouchableOpacity onPress={() => setSettingsVisible(false)}>
-                <Text style={styles.saveButton}>Done</Text>
-              </TouchableOpacity>
-            </View>
+        <SafeAreaView style={styles.modalContainer} edges={['top']}>
+          <View style={styles.modalHeader}>
+            <View style={{ width: 60 }} />
+            <Text style={styles.modalTitle}>Display Settings</Text>
+            <TouchableOpacity onPress={() => setSettingsVisible(false)}>
+              <Text style={styles.saveButton}>Done</Text>
+            </TouchableOpacity>
+          </View>
 
-            <ScrollView style={styles.modalContent}>
+          <ScrollView style={styles.modalContent}>
             <View style={styles.settingsCard}>
               <Text style={styles.settingsSection}>Currency</Text>
               
