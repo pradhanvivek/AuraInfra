@@ -983,7 +983,11 @@ export default function Profile() {
             <View style={{ width: 60 }} />
           </View>
 
-          <View style={styles.modalContent}>
+          <ScrollView style={styles.modalContent}>
+            <Text style={styles.modalDescription}>
+              Choose your country for localized currency, units, and pricing
+            </Text>
+
             <TouchableOpacity
               style={[
                 styles.optionCard,
