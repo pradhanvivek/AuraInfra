@@ -365,56 +365,46 @@ export default function DocumentsScreen({ propertyId }: DocumentsScreenProps) {
                   />
                 ) : selectedDocument.file_type === 'application/pdf' ? (
                   <View style={styles.pdfContainer}>
-                    {Platform.OS === 'web' ? (
-                      <WebView
-                        source={{ 
-                          html: `
-                            <!DOCTYPE html>
-                            <html>
-                              <head>
-                                <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
-                                <style>
-                                  body { margin: 0; padding: 0; background: #525659; }
-                                  iframe { border: none; width: 100%; height: 100vh; }
-                                </style>
-                              </head>
-                              <body>
-                                <iframe src="data:application/pdf;base64,${selectedDocument.file_data}"></iframe>
-                              </body>
-                            </html>
-                          `
-                        }}
-                        style={styles.webview}
-                        javaScriptEnabled={true}
-                        domStorageEnabled={true}
-                        startInLoadingState={true}
-                        renderLoading={() => (
-                          <View style={styles.loadingContainer}>
-                            <ActivityIndicator size="large" color="#007AFF" />
-                            <Text style={styles.loadingText}>Loading PDF...</Text>
-                          </View>
-                        )}
-                      />
-                    ) : (
-                      <Pdf
-                        source={{ uri: `data:application/pdf;base64,${selectedDocument.file_data}` }}
-                        style={styles.pdf}
-                        trustAllCerts={false}
-                        enablePaging={true}
-                        onLoadComplete={(numberOfPages) => {
-                          console.log(`PDF loaded: ${numberOfPages} pages`);
-                        }}
-                        onPageChanged={(page, numberOfPages) => {
-                          console.log(`Page ${page}/${numberOfPages}`);
-                        }}
-                        onError={(error) => {
-                          console.log('PDF Error:', error);
-                        }}
-                        onPressLink={(uri) => {
-                          console.log('Link pressed:', uri);
-                        }}
-                      />
-                    )}
+                    <WebView
+                      source={{ 
+                        html: `
+                          <!DOCTYPE html>
+                          <html>
+                            <head>
+                              <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes">
+                              <style>
+                                body { 
+                                  margin: 0; 
+                                  padding: 0; 
+                                  background: #525659; 
+                                  overflow: hidden;
+                                }
+                                iframe { 
+                                  border: none; 
+                                  width: 100%; 
+                                  height: 100vh; 
+                                  display: block;
+                                }
+                              </style>
+                            </head>
+                            <body>
+                              <iframe src="data:application/pdf;base64,${selectedDocument.file_data}"></iframe>
+                            </body>
+                          </html>
+                        `
+                      }}
+                      style={styles.webview}
+                      javaScriptEnabled={true}
+                      domStorageEnabled={true}
+                      startInLoadingState={true}
+                      scalesPageToFit={true}
+                      renderLoading={() => (
+                        <View style={styles.loadingContainer}>
+                          <ActivityIndicator size="large" color="#007AFF" />
+                          <Text style={styles.loadingText}>Loading PDF...</Text>
+                        </View>
+                      )}
+                    />
                   </View>
                 ) : (
                   <View style={styles.pdfPlaceholder}>
