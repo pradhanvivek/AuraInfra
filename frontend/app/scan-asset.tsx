@@ -202,14 +202,27 @@ export default function ScanAssetScreen() {
               <TouchableOpacity
                 style={[styles.actionButton, styles.secondaryButton]}
                 onPress={resetScan}
+                disabled={navigating}
               >
                 <Text style={styles.secondaryButtonText}>Scan Again</Text>
               </TouchableOpacity>
               <TouchableOpacity
-                style={[styles.actionButton, styles.primaryButton]}
+                style={[
+                  styles.actionButton, 
+                  styles.primaryButton,
+                  navigating && styles.buttonDisabled
+                ]}
                 onPress={handleAddToPortfolio}
+                disabled={navigating}
               >
-                <Text style={styles.primaryButtonText}>Add to Portfolio</Text>
+                {navigating ? (
+                  <>
+                    <ActivityIndicator color="#fff" size="small" style={{ marginRight: 8 }} />
+                    <Text style={styles.primaryButtonText}>Processing...</Text>
+                  </>
+                ) : (
+                  <Text style={styles.primaryButtonText}>Add to Portfolio</Text>
+                )}
               </TouchableOpacity>
             </View>
           </View>
