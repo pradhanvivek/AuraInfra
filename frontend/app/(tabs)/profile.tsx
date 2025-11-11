@@ -89,6 +89,7 @@ export default function Profile() {
       setProfile(data);
       setSelectedReminderDays(data.warranty_reminder_days || 30);
       setSelectedGeomancy(data.geomancy_preference || 'vastu');
+      setSelectedCountry(data.country || 'India');
       setSelectedCurrency(data.currency_preference || 'INR');
       setSelectedMeasurement(data.measurement_system || 'metric');
       
