@@ -11,6 +11,7 @@ import {
   TextInput,
   Dimensions,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { CameraView, useCameraPermissions } from 'expo-camera';
 import { Ionicons } from '@expo/vector-icons';
 import { Accelerometer } from 'expo-sensors';
