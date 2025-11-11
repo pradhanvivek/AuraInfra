@@ -1158,4 +1158,74 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: '#8E8E93',
   },
+  headerTop: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'flex-start',
+  },
+  headerTitleContainer: {
+    flexDirection: 'row',
+    flex: 1,
+    alignItems: 'flex-start',
+  },
+  headerTexts: {
+    marginLeft: 12,
+    flex: 1,
+  },
+  settingsButton: {
+    padding: 8,
+    marginLeft: 8,
+  },
+  settingsCard: {
+    backgroundColor: '#fff',
+    borderRadius: 12,
+    padding: 16,
+    marginBottom: 16,
+  },
+  settingsSection: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#000',
+    marginBottom: 12,
+  },
+  optionButton: {
+    backgroundColor: '#F2F2F7',
+    borderRadius: 12,
+    padding: 16,
+    marginBottom: 12,
+    borderWidth: 2,
+    borderColor: 'transparent',
+  },
+  optionButtonActive: {
+    backgroundColor: '#E3F2FD',
+    borderColor: '#007AFF',
+  },
+  optionContent: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  optionText: {
+    fontSize: 16,
+    color: '#000',
+  },
+  optionTextActive: {
+    fontWeight: '600',
+    color: '#007AFF',
+  },
+  conversionNote: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    backgroundColor: '#F2F2F7',
+    borderRadius: 8,
+    padding: 12,
+    marginTop: 16,
+  },
+  conversionNoteText: {
+    flex: 1,
+    marginLeft: 8,
+    fontSize: 13,
+    color: '#8E8E93',
+    lineHeight: 18,
+  },
 });
