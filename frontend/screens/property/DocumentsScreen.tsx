@@ -178,24 +178,9 @@ export default function DocumentsScreen({ propertyId }: DocumentsScreenProps) {
   };
 
   const handleViewDocument = async (doc: Document) => {
-    // For PDFs - Show in-app viewer
-    if (doc.file_type === 'application/pdf') {
-      setSelectedDocument(doc);
-      setViewModalVisible(true);
-      } catch (error: any) {
-        setLoading(false);
-        console.error('PDF viewing error:', error);
-        if (Platform.OS === 'web') {
-          alert('Failed to open PDF: ' + error.message);
-        } else {
-          Alert.alert('Error', 'Failed to open PDF: ' + error.message);
-        }
-      }
-    } else {
-      // For images and other files, show in modal
-      setSelectedDocument(doc);
-      setViewModalVisible(true);
-    }
+    // For PDFs and images - Show in-app viewer
+    setSelectedDocument(doc);
+    setViewModalVisible(true);
   };
 
   const handleDeleteDocument = (doc: Document) => {
