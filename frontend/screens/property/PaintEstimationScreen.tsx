@@ -704,7 +704,8 @@ export default function PaintEstimationScreen({ propertyId }: PaintEstimationScr
               </View>
             </View>
           </ScrollView>
-        </View>
+          </View>
+        </SafeAreaView>
       </Modal>
 
       {/* Analyzing Overlay */}
