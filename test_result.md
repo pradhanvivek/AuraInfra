@@ -915,7 +915,11 @@ backend:
 
 test_plan:
   current_focus:
-    - "Document Deletion - Duplicate Function Name Fix"
+    - "User Authentication - Login"
   stuck_tasks: []
   test_all: false
   test_priority: "high_first"
+
+agent_communication:
+  - agent: "main"
+    message: "IMPLEMENTED EMAIL OR USERNAME LOGIN FEATURE: Modified POST /api/auth/login endpoint to accept both email addresses and usernames as login identifiers. Backend now intelligently detects if input contains '@' to determine if it's an email or username, then queries the appropriate field in MongoDB. Frontend login screen updated with 'Email or Username' placeholder. Backend service restarted. Ready for comprehensive testing with both authentication methods."
