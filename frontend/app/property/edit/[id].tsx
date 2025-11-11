@@ -71,6 +71,66 @@ export default function EditPropertyScreen() {
     }
   };
 
+  // Web-specific autocomplete functions using backend proxy
+  const fetchPlaceSuggestions = async (input: string) => {
+    if (!input || input.length < 2) {
+      setSuggestions([]);
+      return;
+    }
+
+    try {
+      const response = await fetch(
+        `${API_URL}/api/places/autocomplete?input=${encodeURIComponent(input)}`,
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      const data = await response.json();
+      if (data.predictions) {
+        setSuggestions(data.predictions);
+        setShowSuggestions(true);
+      }
+    } catch (error) {
+      console.error('Error fetching suggestions:', error);
+    }
+  };
+
+  const fetchPlaceDetails = async (placeId: string) => {
+    try {
+      const response = await fetch(
+        `${API_URL}/api/places/details?place_id=${placeId}`,
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      const data = await response.json();
+      if (data.result) {
+        const location = data.result.geometry.location;
+        setLatitude(location.lat);
+        setLongitude(location.lng);
+      }
+    } catch (error) {
+      console.error('Error fetching place details:', error);
+    }
+  };
+
+  const handleAddressChange = (text: string) => {
+    setAddress(text);
+    if (Platform.OS === 'web') {
+      if (debounceTimer.current) {
+        clearTimeout(debounceTimer.current);
+      }
+      debounceTimer.current = setTimeout(() => {
+        fetchPlaceSuggestions(text);
+      }, 300);
+    }
+  };
+
+  const selectSuggestion = (suggestion: any) => {
+    setAddress(suggestion.description);
+    setShowSuggestions(false);
+    setSuggestions([]);
+    if (suggestion.place_id) {
+      fetchPlaceDetails(suggestion.place_id);
+    }
+  };
+
   const handleSave = async () => {
     if (!name.trim()) {
       Alert.alert('Error', 'Please enter a property name');
