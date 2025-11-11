@@ -564,10 +564,13 @@ export default function PaintEstimationScreen({ propertyId }: PaintEstimationScr
           )}
         </ScrollView>
       </View>
+      {renderSettingsModal()}
+      </>
     );
   }
 
   return (
+    <>
     <View style={styles.container}>
       <View style={styles.captureProgress}>
         <Text style={styles.progressText}>
