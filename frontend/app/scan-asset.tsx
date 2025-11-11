@@ -93,19 +93,25 @@ export default function ScanAssetScreen() {
     }
   };
 
-  const navigateToAdd = (assetType: string) => {
-    // Navigate to the appropriate add screen based on asset type
-    const typeMap: { [key: string]: string } = {
-      'vehicle': '/vehicle/add?mode=scan',
-      'car': '/vehicle/add?mode=scan',
-      'appliance': '/appliance/add?mode=scan',
-      'jewelry': '/jewelry/add?mode=scan',
-      'furniture': '/furniture/add?mode=scan',
-      'art': '/art/add?mode=scan',
-      'painting': '/art/add?mode=scan',
+  const handleAddToPortfolio = () => {
+    if (!scanResults || !capturedImage) return;
+
+    const assetType = scanResults.asset_type || 'appliance';
+    
+    // Encode the parameters to pass image and scan results
+    const imageData = encodeURIComponent(capturedImage);
+    const description = encodeURIComponent(scanResults.description || '');
+    
+    const typeMap: Record<string, string> = {
+      'vehicle': `/vehicle/add?mode=prescan&image=${imageData}&description=${description}`,
+      'appliance': `/appliance/add?mode=prescan&image=${imageData}&description=${description}`,
+      'jewelry': `/jewelry/add?mode=prescan&image=${imageData}&description=${description}`,
+      'furniture': `/furniture/add?mode=prescan&image=${imageData}&description=${description}`,
+      'art': `/art/add?mode=prescan&image=${imageData}&description=${description}`,
+      'painting': `/art/add?mode=prescan&image=${imageData}&description=${description}`,
     };
 
-    const route = typeMap[assetType.toLowerCase()] || '/appliance/add?mode=scan';
+    const route = typeMap[assetType.toLowerCase()] || `/appliance/add?mode=prescan&image=${imageData}&description=${description}`;
     router.push(route as any);
   };
 
