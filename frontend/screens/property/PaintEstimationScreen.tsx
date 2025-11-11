@@ -1234,6 +1234,18 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: '#8E8E93',
   },
+  disclaimerContainer: {
+    marginTop: 12,
+    paddingTop: 12,
+    borderTopWidth: 1,
+    borderTopColor: '#E5E5EA',
+  },
+  disclaimerText: {
+    fontSize: 12,
+    color: '#8E8E93',
+    lineHeight: 18,
+    marginBottom: 4,
+  },
   input: {
     backgroundColor: '#fff',
     borderRadius: 12,
