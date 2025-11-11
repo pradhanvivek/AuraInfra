@@ -177,9 +177,31 @@ export default function DocumentsScreen({ propertyId }: DocumentsScreenProps) {
   };
 
   const handleViewDocument = async (doc: Document) => {
-    // For PDFs and images - Show in-app viewer
-    setSelectedDocument(doc);
-    setViewModalVisible(true);
+    // For PDFs - Save and open in external viewer
+    if (doc.file_type === 'application/pdf') {
+      try {
+        const fileUri = `${FileSystem.documentDirectory}${doc.name.replace(/\s+/g, '_')}.pdf`;
+        
+        // Save the PDF file
+        await FileSystem.writeAsStringAsync(fileUri, doc.file_data, {
+          encoding: FileSystem.EncodingType.Base64,
+        });
+        
+        // Share/Open the PDF
+        if (await Sharing.isAvailableAsync()) {
+          await Sharing.shareAsync(fileUri);
+        } else {
+          Alert.alert('Success', 'PDF saved to documents folder');
+        }
+      } catch (error: any) {
+        console.error('Error opening PDF:', error);
+        Alert.alert('Error', 'Failed to open PDF');
+      }
+    } else {
+      // For images and other files - Show in-app viewer
+      setSelectedDocument(doc);
+      setViewModalVisible(true);
+    }
   };
 
   const handleDeleteDocument = (doc: Document) => {
