@@ -11,7 +11,7 @@ import os
 from datetime import datetime
 
 # Configuration
-BACKEND_URL = "https://propmanager-app.preview.emergentagent.com/api"
+BACKEND_URL = "https://property-vault-7.preview.emergentagent.com/api"
 
 # Test data - small base64 encoded PNG image (1x1 pixel red dot)
 SAMPLE_LOGO_BASE64 = "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8/5+hHgAHggJ/PchI7wAAAABJRU5ErkJggg=="

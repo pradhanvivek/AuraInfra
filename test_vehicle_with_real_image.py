@@ -9,7 +9,7 @@ import base64
 import os
 
 # Configuration
-BACKEND_URL = "https://propmanager-app.preview.emergentagent.com"
+BACKEND_URL = "https://property-vault-7.preview.emergentagent.com"
 API_BASE = f"{BACKEND_URL}/api"
 
 # Test user credentials
