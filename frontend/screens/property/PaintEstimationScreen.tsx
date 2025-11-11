@@ -97,19 +97,32 @@ export default function PaintEstimationScreen({ propertyId }: PaintEstimationScr
     return gallons;
   };
 
-  const convertCurrency = (usd: number): number => {
+  // Calculate cost based on currency and actual market prices
+  const calculateCost = (gallons: number, isLowEstimate: boolean): number => {
+    const volume = convertVolume(gallons);
+    
     if (currency === 'INR') {
-      return usd * 83; // Approximate conversion rate
+      // Indian paint pricing (Asian Paints, Berger, etc.)
+      // Low estimate: Economy paint ₹250-350/liter
+      // High estimate: Premium paint ₹600-800/liter
+      const pricePerLiter = isLowEstimate ? 300 : 700;
+      const liters = volumeUnit === 'liters' ? volume : gallons * 3.78541;
+      return liters * pricePerLiter;
+    } else {
+      // US paint pricing
+      // Low estimate: Economy paint $30-40/gallon
+      // High estimate: Premium paint $60-80/gallon
+      const pricePerGallon = isLowEstimate ? 35 : 70;
+      const gallonsUsed = volumeUnit === 'gallons' ? volume : volume / 3.78541;
+      return gallonsUsed * pricePerGallon;
     }
-    return usd;
   };
 
   const formatCurrency = (amount: number): string => {
-    const converted = convertCurrency(amount);
     if (currency === 'INR') {
-      return `₹${Math.round(converted).toLocaleString('en-IN')}`;
+      return `₹${Math.round(amount).toLocaleString('en-IN')}`;
     }
-    return `$${Math.round(converted).toLocaleString('en-US')}`;
+    return `$${Math.round(amount).toLocaleString('en-US')}`;
   };
 
   const formatVolume = (gallons: number): string => {
