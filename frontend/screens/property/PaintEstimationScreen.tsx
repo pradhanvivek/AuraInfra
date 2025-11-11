@@ -484,9 +484,13 @@ export default function PaintEstimationScreen({ propertyId }: PaintEstimationScr
             <View style={styles.conversionNote}>
               <Ionicons name="information-circle-outline" size={20} color="#8E8E93" />
               <Text style={styles.conversionNoteText}>
-                Volume: 1 gallon ≈ 3.79 liters{'\n'}
-                INR pricing: ₹300-700/liter (Asian Paints){'\n'}
-                USD pricing: $35-70/gallon (US market)
+                {country === 'India' && '₹300-700/liter • Asian Paints, Berger'}
+                {country === 'US' && '$35-70/gallon • Economy to Premium brands'}
+                {country === 'UK' && '£30-60/liter • Dulux, Crown Paints'}
+                {country === 'Canada' && 'CA$45-90/liter • Benjamin Moore Canada'}
+                {country === 'Australia' && 'A$50-100/liter • Dulux Australia'}
+                {country === 'UAE' && 'AED 40-80/liter • Jotun, Berger Gulf'}
+                {'\n'}Volume: 1 gallon ≈ 3.79 liters
               </Text>
             </View>
           </View>
