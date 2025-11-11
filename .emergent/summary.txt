@@ -1,38 +1,41 @@
 <analysis>
-The trajectory details the transition of the AuraInfra.ai mobile application to human oversight, starting with a handover summarizing prior AI engineer accomplishments. The initial critical task for this AI was to resolve a 404 error during document deletion, traced to a duplicate function in . The AI confirmed a plan, then read and updated  before invoking a backend testing agent. This agent identified and fixed an underlying database collection issue for document deletion. After a successful fix and backend restart, the user reported a new issue: the PDF viewer was not working, requesting a reversion to the previous state. The AI began investigating this, examining  and inferring  as the prior method for external PDF viewing.
+The AI engineer's work began by resolving a critical 404 error in the document deletion functionality, which was traced to a database collection issue and fixed by a backend testing agent. Following this, the primary task shifted to addressing a new user-reported issue where the in-app PDF viewer was not working. The AI successfully reverted the PDF viewing mechanism in  from an inline  implementation to an external viewer using , as requested by the user to restore the old state. After implementing and restarting the frontend, the focus shifted to a new user request: accessing the deployed web application (admin dashboard) as it was previously. This led to an extensive troubleshooting phase, where the AI investigated deployment URLs, routing configurations, and consulted deployment and support agents. It was determined that the previous  URL was serving the backend API, not the website frontend. The AI then prepared the  for production and provided detailed instructions for the user to redeploy the application, selecting the website as the primary frontend to correctly expose the admin dashboard.
 </analysis>
 
 <product_requirements>
-The AuraInfra.ai application is a personal asset management system enabling detailed views, CRUD operations, and PDF exports for properties. The user requested: date picker integration for asset forms, creation of , a revamp of the properties tab with interactive tiles for documents, fixtures, measurements, etc., and a View More modal. Other requirements included consistent headers and back buttons, Google login with a mandatory disclaimer, an interactive app tour, dark mode fixes, admin property logo upload, an admin dashboard tab, a property selector, corrected notifications page navigation,  X button adjustment,  for add vehicles page, an in-app PDF viewer (later reverted to ), and a fix for a 404 error during document deletion.
+The AuraInfra.ai application is a personal asset management system supporting detailed views, CRUD operations, and PDF exports for properties. Key user requests included: date picker integration for asset forms, creation of , a revamped properties tab with interactive tiles and a View More modal. Other requirements encompassed consistent navigation, Google login with mandatory disclaimer, an interactive app tour, dark mode fixes, admin property logo upload, an admin dashboard, a property selector, corrected notifications navigation,  X button adjustment,  for add vehicles, an in-app PDF viewer (later reverted to ), and fixing a document deletion 404 error. The most recent explicit request was to revert the PDF viewer to its previous working state and then to provide access to the *deployed* web application.
 </product_requirements>
 
 <key_technical_concepts>
 - **Expo Router**: File-based routing for navigation.
 - **React Native**: Core UI components, platform-specific logic, theme management, safe areas, keyboard handling.
 - **FastAPI**: Python backend API for data, authentication, models.
+- **MongoDB**: Database.
 - **Google OAuth**: Authentication.
 - ****: Client-side data storage.
-- ****: Cross-platform web content rendering, used for PDF viewing.
+- ****: Cross-platform web content rendering (previously used for PDF, now removed).
+- ****: React Native API for opening URLs externally.
 </key_technical_concepts>
 
 <code_architecture>
 **Directory Structure:**
 
-- : FastAPI backend, managing API routes and database interactions. The duplicate  function (at line 5011) causing a 404 error was previously renamed to . The recent fix by the testing agent corrected an issue where document deletion was querying the wrong database collection.
-- : Primary properties tab, revamped with interactive tiles and a View More modal.
-- , , , : Asset addition forms with date pickers.
-- : Newly created screen for adding maintenance records.
-- : Login screen with Google login and disclaimer.
-- : New mandatory disclaimer acceptance page.
-- : Authentication context, manages tokens and disclaimer.
-- : New component for interactive app onboarding.
-- : Defines tab layout, integrates , and conditionally renders admin tab.
-- : User profile, includes Replay App Tour option.
-- : Notifications page, back navigation corrected to profile.
--  & : New admin tab and dashboard with property selector.
-- : Vehicle addition form with  and .
-- : Screen for viewing documents. PDF viewing was previously reverted to  and now faces a PDF not opening issue.
-- : Used for tracking testing protocol and results. Updated to reflect document deletion fix.
+- : FastAPI backend, managing API routes and database interactions. Previously had a duplicate  function (renamed ). A backend testing agent fixed an issue where document deletion was querying the wrong database collection.
+- : This screen displays documents. It was modified to revert PDF viewing functionality.
+    - **Summary of why this file is important**: Central to displaying property-related documents, including PDFs.
+    - **Summary of the changes made to this file**:
+        - Modified  (lines 181-205) to use  for external PDF viewing, instead of .
+        - Removed the  import and associated  rendering logic (lines 388-430) from the document view modal, simplifying it to handle only image content.
+        - Removed unused styles related to  rendering.
+- : Environment variables for the React+Vite admin dashboard.
+    - **Summary of why this file is important**: Configures the API endpoint for the website frontend.
+    - **Summary of the changes made to this file**: Updated  from  to  for production deployment compatibility.
+- : Defines the routing for the React+Vite web admin dashboard.
+    - **Summary of why this file is important**: Crucial for understanding available web routes and their components.
+    - **Summary of the changes made to this file**: Examined to identify correct routes like , , etc., confirming that  was incorrect. No direct code changes were made.
+- : Tracks testing protocols and results.
+    - **Summary of why this file is important**: Used to communicate with testing agents and log development progress.
+    - **Summary of the changes made to this file**: Updated to reflect the document deletion fix and then the PDF viewer reversion.
 </code_architecture>
 
 <pending_tasks>
@@ -40,15 +43,15 @@ The AuraInfra.ai application is a personal asset management system enabling deta
 - Display purchase/current cost values in property detail view.
 - Address Package delivery and Emergency contacts features/screens.
 - Set up push notifications.
-- Revert the PDF viewing functionality in  to its previous working state (likely external viewer using ).
+- The user needs to redeploy the website frontend with correct configuration to make it accessible.
 </pending_tasks>
 
 <current_work>
-Immediately prior to this summary, the AI engineer successfully addressed a Failed to delete document error, which was initially thought to be a duplicate function definition in  but was resolved by the backend testing agent identifying and fixing a bug related to querying the wrong database collection for document deletion. The backend service was restarted to apply this fix.
+Immediately prior to this summary, the AI engineer successfully resolved a Failed to delete document error, which was traced to an incorrect database collection query by the backend testing agent. Following this, the user reported that the in-app PDF viewer was not working. The AI engineer reverted the PDF viewing logic in  to use  for external viewing, removing the inline  implementation. The frontend service was restarted, and  was updated to reflect these changes.
 
-Following the successful resolution of the document deletion error, the user reported a new critical issue: The PDF is not opening on the app. Lets revert back to the old state for the pdf viewing on the documents tab. The AI engineer has initiated an investigation into this problem. This involves examining the current implementation in  to understand how PDFs are currently handled and identifying the old state for PDF viewing. Initial analysis suggests the old state likely involved using  to open PDFs externally in the device's default viewer. The engineer is preparing to implement this reversion to restore functionality.
+Subsequently, the user requested access to the *deployed* web application, specifically noting that a previous URL () was returning a 404. Extensive investigation revealed that the deployed URL was serving the FastAPI backend (port 8001) rather than the React website frontend (port 5173). The AI confirmed that the correct login route for the web app is , not . After consulting deployment and support agents, and verifying internal configurations (, ), the AI determined that the web application needed to be redeployed with the  specified as the primary frontend. The  was updated to ensure  correctly points to  for production. The current work halted at providing the user with detailed, step-by-step instructions for performing this redeployment through the Emergent interface.
 </current_work>
 
 <optional_next_step>
-Revert the PDF viewing logic in  to use  for external PDF viewing.
+The next step is to wait for the user to redeploy the application as per the provided instructions and share the new URL for verification.
 </optional_next_step>

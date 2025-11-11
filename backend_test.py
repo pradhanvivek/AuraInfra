@@ -11,7 +11,7 @@ import os
 from datetime import datetime
 
 # Configuration
-BACKEND_URL = os.getenv('EXPO_PUBLIC_BACKEND_URL', 'https://property-doc-hub.preview.emergentagent.com')
+BACKEND_URL = os.getenv('EXPO_PUBLIC_BACKEND_URL', 'https://hoa-dash.preview.emergentagent.com')
 API_BASE = f"{BACKEND_URL}/api"
 
 class DocumentDeletionTester:
