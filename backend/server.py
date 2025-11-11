@@ -3895,7 +3895,7 @@ async def scan_asset(request: ImageScanRequest, credentials: HTTPAuthorizationCr
         message = UserMessage([prompt, image_content])
         
         # Get AI response
-        response = await llm_chat.ask_async(message)
+        response = llm_chat.ask(message)
         response_text = response.content.strip()
         
         # Parse the JSON response
