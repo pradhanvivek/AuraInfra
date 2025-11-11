@@ -397,58 +397,80 @@ export default function FixturesScreen({ propertyId }: FixturesScreenProps) {
   };
 
   const handleScanReceipt = async () => {
-    Alert.alert(
-      'Scan Receipt',
-      'Choose an option',
-      [
-        {
-          text: 'Take Photo',
-          onPress: async () => {
-            const { status } = await ImagePicker.requestCameraPermissionsAsync();
-            if (status !== 'granted') {
-              Alert.alert('Permission Required', 'Please grant camera permissions');
-              return;
-            }
+    // Platform-specific handling
+    if (Platform.OS === 'web') {
+      // For web, directly open image picker
+      const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+      if (status !== 'granted') {
+        alert('Please grant permission to access images');
+        return;
+      }
 
-            const result = await ImagePicker.launchCameraAsync({
-              mediaTypes: ['images'],
-              allowsEditing: true,
-              quality: 0.8,
-              base64: true,
-            });
+      const result = await ImagePicker.launchImageLibraryAsync({
+        mediaTypes: ['images'],
+        allowsEditing: true,
+        quality: 0.8,
+        base64: true,
+      });
 
-            if (!result.canceled && result.assets[0].base64) {
-              await analyzeReceipt(result.assets[0].base64);
-            }
+      if (!result.canceled && result.assets[0].base64) {
+        await analyzeReceipt(result.assets[0].base64);
+      }
+    } else {
+      // For mobile, show alert with options
+      Alert.alert(
+        'Scan Receipt',
+        'Choose an option',
+        [
+          {
+            text: 'Take Photo',
+            onPress: async () => {
+              const { status } = await ImagePicker.requestCameraPermissionsAsync();
+              if (status !== 'granted') {
+                Alert.alert('Permission Required', 'Please grant camera permissions');
+                return;
+              }
+
+              const result = await ImagePicker.launchCameraAsync({
+                mediaTypes: ['images'],
+                allowsEditing: true,
+                quality: 0.8,
+                base64: true,
+              });
+
+              if (!result.canceled && result.assets[0].base64) {
+                await analyzeReceipt(result.assets[0].base64);
+              }
+            },
           },
-        },
-        {
-          text: 'Choose from Gallery',
-          onPress: async () => {
-            const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
-            if (status !== 'granted') {
-              Alert.alert('Permission Required', 'Please grant gallery permissions');
-              return;
-            }
+          {
+            text: 'Choose from Gallery',
+            onPress: async () => {
+              const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+              if (status !== 'granted') {
+                Alert.alert('Permission Required', 'Please grant gallery permissions');
+                return;
+              }
 
-            const result = await ImagePicker.launchImageLibraryAsync({
-              mediaTypes: ['images'],
-              allowsEditing: true,
-              quality: 0.8,
-              base64: true,
-            });
+              const result = await ImagePicker.launchImageLibraryAsync({
+                mediaTypes: ['images'],
+                allowsEditing: true,
+                quality: 0.8,
+                base64: true,
+              });
 
-            if (!result.canceled && result.assets[0].base64) {
-              await analyzeReceipt(result.assets[0].base64);
-            }
+              if (!result.canceled && result.assets[0].base64) {
+                await analyzeReceipt(result.assets[0].base64);
+              }
+            },
           },
-        },
-        {
-          text: 'Cancel',
-          style: 'cancel',
-        },
-      ]
-    );
+          {
+            text: 'Cancel',
+            style: 'cancel',
+          },
+        ]
+      );
+    }
   };
 
   const analyzeReceipt = async (base64Image: string) => {
