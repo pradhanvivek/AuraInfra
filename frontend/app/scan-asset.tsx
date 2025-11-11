@@ -78,7 +78,7 @@ export default function ScanAssetScreen() {
           { text: 'Scan Again', onPress: () => resetScan() },
           { 
             text: 'Add to Portfolio', 
-            onPress: () => navigateToAdd(data.asset_type)
+            onPress: () => handleAddToPortfolio()
           }
         ]
       );
