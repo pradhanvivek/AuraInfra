@@ -60,6 +60,8 @@ export default function Profile() {
   const [selectedCurrency, setSelectedCurrency] = useState('INR');
   const [measurementModalVisible, setMeasurementModalVisible] = useState(false);
   const [selectedMeasurement, setSelectedMeasurement] = useState<'metric' | 'imperial'>('metric');
+  const [countryModalVisible, setCountryModalVisible] = useState(false);
+  const [selectedCountry, setSelectedCountry] = useState<'India' | 'US' | 'UK' | 'Canada' | 'Australia' | 'UAE'>('India');
   const [uploadingAvatar, setUploadingAvatar] = useState(false);
 
   useEffect(() => {
