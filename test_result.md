@@ -147,7 +147,7 @@ backend:
     file: "backend/server.py"
     stuck_count: 0
     priority: "high"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
       - working: true
         agent: "testing"
@@ -155,6 +155,9 @@ backend:
       - working: "NA"
         agent: "main"
         comment: "FEATURE ENHANCEMENT - Email OR Username Login: Modified POST /api/auth/login endpoint to accept both email and username as login identifiers. Backend now checks if input contains '@' character to determine if it's an email or username, then queries MongoDB accordingly. This allows users to login with either their email address or username. Updated frontend login screen placeholder from 'Username' to 'Email or Username' to reflect this capability. Backend service restarted successfully. Needs testing to verify login works with both email and username."
+      - working: true
+        agent: "testing"
+        comment: "COMPREHENSIVE EMAIL OR USERNAME LOGIN TESTING COMPLETED SUCCESSFULLY: All 8 test scenarios passed with 100% success rate. CRITICAL VERIFICATION: 1) Login with Username (existing functionality) - WORKING: Returns JWT token with correct user data, 2) Login with Email (NEW functionality) - WORKING: Successfully accepts email in username field and returns identical JWT token, 3) Invalid credentials with email - WORKING: Returns 401 'Invalid credentials', 4) Invalid credentials with username - WORKING: Returns 401 'Invalid credentials', 5) Non-existent email - WORKING: Returns 401 'Invalid credentials' (secure), 6) Non-existent username - WORKING: Returns 401 'Invalid credentials' (secure), 7) Token Consistency - VERIFIED: Both email and username login return identical JWT structure and user data, 8) Authenticated Requests - VERIFIED: JWT tokens work correctly for subsequent API calls. The '@' character detection logic is functioning perfectly. Both login methods provide seamless authentication with proper error handling and security. Email OR Username Login feature is production-ready and fully functional."
 
   - task: "Property Management - Create Property"
     implemented: true
