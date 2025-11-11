@@ -124,13 +124,18 @@ export default function PaintEstimationScreen({ propertyId }: PaintEstimationScr
 
   useEffect(() => {
     let subscription: any;
-    if (cameraVisible) {
-      subscription = Accelerometer.addListener(({ x, y, z }) => {
-        // Check if device is roughly level (for better wall photos)
-        const isLevel = Math.abs(x) < 0.2 && Math.abs(y) < 0.2;
-        setIsLevelHorizontal(isLevel);
-      });
-      Accelerometer.setUpdateInterval(100);
+    // Only use Accelerometer on native platforms (iOS/Android), not on web
+    if (cameraVisible && Platform.OS !== 'web') {
+      try {
+        subscription = Accelerometer.addListener(({ x, y, z }) => {
+          // Check if device is roughly level (for better wall photos)
+          const isLevel = Math.abs(x) < 0.2 && Math.abs(y) < 0.2;
+          setIsLevelHorizontal(isLevel);
+        });
+        Accelerometer.setUpdateInterval(100);
+      } catch (error) {
+        console.log('Accelerometer not available:', error);
+      }
     }
     return () => subscription && subscription.remove();
   }, [cameraVisible]);
