@@ -75,13 +75,21 @@ export default function AddApplianceScreen() {
   const [saving, setSaving] = useState(false);
   const [scanning, setScanning] = useState(false);
   const [scanningReceipt, setScanningReceipt] = useState(false);
-  const [cameraVisible, setCameraVisible] = useState(scanMode);
+  const [cameraVisible, setCameraVisible] = useState(scanMode && !prescanMode);
   const [receiptCameraVisible, setReceiptCameraVisible] = useState(false);
   const [permission, requestPermission] = useCameraPermissions();
   const [cameraRef, setCameraRef] = useState<any>(null);
   const [receiptCameraRef, setReceiptCameraRef] = useState<any>(null);
   const [datePickerVisible, setDatePickerVisible] = useState(false);
   const [datePickerMode, setDatePickerMode] = useState<'purchase' | 'warranty' | 'lastMaint' | 'nextMaint'>('purchase');
+
+  // Handle prescan mode - automatically scan the provided image
+  useEffect(() => {
+    if (prescanMode && prescanImage) {
+      // Use the pre-scanned image directly
+      handlePrescanImage(prescanImage);
+    }
+  }, [prescanMode, prescanImage]);
 
   useEffect(() => {
     if (isEditing) {
