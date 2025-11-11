@@ -558,7 +558,7 @@ export default function PaintEstimationScreen({ propertyId }: PaintEstimationScr
                     <View style={styles.resultRow}>
                       <Text style={styles.resultLabel}>Paint Needed:</Text>
                       <Text style={styles.resultValue}>
-                        {currentAnalysis.paint_gallons_needed} gallons (2 coats)
+                        {formatVolume(currentAnalysis.paint_gallons_needed)} (2 coats)
                       </Text>
                     </View>
                   </View>
@@ -566,8 +566,7 @@ export default function PaintEstimationScreen({ propertyId }: PaintEstimationScr
                   <View style={styles.costContainer}>
                     <Text style={styles.costLabel}>Estimated Total Cost:</Text>
                     <Text style={styles.costValue}>
-                      ${currentAnalysis.estimated_cost_low} - $
-                      {currentAnalysis.estimated_cost_high}
+                      {formatCurrency(currentAnalysis.estimated_cost_low)} - {formatCurrency(currentAnalysis.estimated_cost_high)}
                     </Text>
                     <Text style={styles.costNote}>
                       *Includes paint + labor
