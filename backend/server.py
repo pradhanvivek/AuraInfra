@@ -1158,6 +1158,10 @@ async def update_profile(profile: UserProfileUpdate, user_id: str = Depends(get_
         if profile.measurement_system not in ["metric", "imperial"]:
             raise HTTPException(status_code=400, detail="measurement_system must be 'metric' or 'imperial'")
         update_data["measurement_system"] = profile.measurement_system
+    if profile.country is not None:
+        if profile.country not in ["India", "US", "UK", "Canada", "Australia", "UAE"]:
+            raise HTTPException(status_code=400, detail="country must be one of: India, US, UK, Canada, Australia, UAE")
+        update_data["country"] = profile.country
     
     if update_data:
         await db.users.update_one(
