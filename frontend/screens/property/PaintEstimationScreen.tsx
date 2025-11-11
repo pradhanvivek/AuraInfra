@@ -1291,6 +1291,12 @@ const styles = StyleSheet.create({
     color: '#000',
     marginBottom: 12,
   },
+  settingHint: {
+    fontSize: 14,
+    color: '#8E8E93',
+    marginBottom: 16,
+    lineHeight: 20,
+  },
   optionButton: {
     backgroundColor: '#F2F2F7',
     borderRadius: 12,
