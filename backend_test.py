@@ -1,20 +1,18 @@
 #!/usr/bin/env python3
 """
-Comprehensive Backend Testing for Document Deletion Fix
-Testing the critical document deletion functionality after duplicate function rename fix.
+Backend Testing Script for Email OR Username Login Feature
+Tests all scenarios for the new login functionality that accepts both email and username.
 """
 
 import requests
 import json
-import base64
-import os
+import sys
 from datetime import datetime
 
-# Configuration
-BACKEND_URL = os.getenv('EXPO_PUBLIC_BACKEND_URL', 'https://hoa-dash.preview.emergentagent.com')
-API_BASE = f"{BACKEND_URL}/api"
+# Backend URL from frontend environment
+BACKEND_URL = "https://hoa-dash.preview.emergentagent.com/api"
 
-class DocumentDeletionTester:
+class BackendTester:
     def __init__(self):
         self.session = requests.Session()
         self.auth_token = None
