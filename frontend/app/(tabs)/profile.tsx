@@ -947,6 +947,201 @@ export default function Profile() {
           </View>
         </View>
       </Modal>
+
+      {/* Country Modal */}
+      <Modal
+        visible={countryModalVisible}
+        animationType="slide"
+        presentationStyle="pageSheet"
+        onRequestClose={() => setCountryModalVisible(false)}
+      >
+        <View style={styles.modalContainer}>
+          <View style={styles.modalHeader}>
+            <TouchableOpacity onPress={() => setCountryModalVisible(false)}>
+              <Text style={styles.cancelButton}>Cancel</Text>
+            </TouchableOpacity>
+            <Text style={styles.modalTitle}>Select Country</Text>
+            <View style={{ width: 60 }} />
+          </View>
+
+          <View style={styles.modalContent}>
+            <TouchableOpacity
+              style={styles.optionCard}
+              onPress={() => {
+                setSelectedCountry('India');
+                setCountryModalVisible(false);
+              }}
+            >
+              <View style={styles.optionContent}>
+                <Ionicons
+                  name="flag-outline"
+                  size={24}
+                  color={selectedCountry === 'India' ? '#007AFF' : '#8E8E93'}
+                />
+                <View style={styles.optionText}>
+                  <Text style={[
+                    styles.optionTitle,
+                    selectedCountry === 'India' && styles.optionTitleSelected,
+                  ]}>
+                    India
+                  </Text>
+                  <Text style={styles.optionSubtitle}>₹ INR, Liters, Asian Paints pricing</Text>
+                </View>
+              </View>
+              {selectedCountry === 'India' && (
+                <Ionicons name="checkmark-circle" size={24} color="#007AFF" />
+              )}
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              style={styles.optionCard}
+              onPress={() => {
+                setSelectedCountry('US');
+                setCountryModalVisible(false);
+              }}
+            >
+              <View style={styles.optionContent}>
+                <Ionicons
+                  name="flag-outline"
+                  size={24}
+                  color={selectedCountry === 'US' ? '#007AFF' : '#8E8E93'}
+                />
+                <View style={styles.optionText}>
+                  <Text style={[
+                    styles.optionTitle,
+                    selectedCountry === 'US' && styles.optionTitleSelected,
+                  ]}>
+                    United States
+                  </Text>
+                  <Text style={styles.optionSubtitle}>$ USD, Gallons, US market pricing</Text>
+                </View>
+              </View>
+              {selectedCountry === 'US' && (
+                <Ionicons name="checkmark-circle" size={24} color="#007AFF" />
+              )}
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              style={styles.optionCard}
+              onPress={() => {
+                setSelectedCountry('UK');
+                setCountryModalVisible(false);
+              }}
+            >
+              <View style={styles.optionContent}>
+                <Ionicons
+                  name="flag-outline"
+                  size={24}
+                  color={selectedCountry === 'UK' ? '#007AFF' : '#8E8E93'}
+                />
+                <View style={styles.optionText}>
+                  <Text style={[
+                    styles.optionTitle,
+                    selectedCountry === 'UK' && styles.optionTitleSelected,
+                  ]}>
+                    United Kingdom
+                  </Text>
+                  <Text style={styles.optionSubtitle}>£ GBP, Liters, Dulux pricing</Text>
+                </View>
+              </View>
+              {selectedCountry === 'UK' && (
+                <Ionicons name="checkmark-circle" size={24} color="#007AFF" />
+              )}
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              style={styles.optionCard}
+              onPress={() => {
+                setSelectedCountry('Canada');
+                setCountryModalVisible(false);
+              }}
+            >
+              <View style={styles.optionContent}>
+                <Ionicons
+                  name="flag-outline"
+                  size={24}
+                  color={selectedCountry === 'Canada' ? '#007AFF' : '#8E8E93'}
+                />
+                <View style={styles.optionText}>
+                  <Text style={[
+                    styles.optionTitle,
+                    selectedCountry === 'Canada' && styles.optionTitleSelected,
+                  ]}>
+                    Canada
+                  </Text>
+                  <Text style={styles.optionSubtitle}>CA$ CAD, Liters, Canadian pricing</Text>
+                </View>
+              </View>
+              {selectedCountry === 'Canada' && (
+                <Ionicons name="checkmark-circle" size={24} color="#007AFF" />
+              )}
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              style={styles.optionCard}
+              onPress={() => {
+                setSelectedCountry('Australia');
+                setCountryModalVisible(false);
+              }}
+            >
+              <View style={styles.optionContent}>
+                <Ionicons
+                  name="flag-outline"
+                  size={24}
+                  color={selectedCountry === 'Australia' ? '#007AFF' : '#8E8E93'}
+                />
+                <View style={styles.optionText}>
+                  <Text style={[
+                    styles.optionTitle,
+                    selectedCountry === 'Australia' && styles.optionTitleSelected,
+                  ]}>
+                    Australia
+                  </Text>
+                  <Text style={styles.optionSubtitle}>A$ AUD, Liters, Dulux Australia</Text>
+                </View>
+              </View>
+              {selectedCountry === 'Australia' && (
+                <Ionicons name="checkmark-circle" size={24} color="#007AFF" />
+              )}
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              style={styles.optionCard}
+              onPress={() => {
+                setSelectedCountry('UAE');
+                setCountryModalVisible(false);
+              }}
+            >
+              <View style={styles.optionContent}>
+                <Ionicons
+                  name="flag-outline"
+                  size={24}
+                  color={selectedCountry === 'UAE' ? '#007AFF' : '#8E8E93'}
+                />
+                <View style={styles.optionText}>
+                  <Text style={[
+                    styles.optionTitle,
+                    selectedCountry === 'UAE' && styles.optionTitleSelected,
+                  ]}>
+                    United Arab Emirates
+                  </Text>
+                  <Text style={styles.optionSubtitle}>AED, Liters, Jotun pricing</Text>
+                </View>
+              </View>
+              {selectedCountry === 'UAE' && (
+                <Ionicons name="checkmark-circle" size={24} color="#007AFF" />
+              )}
+            </TouchableOpacity>
+
+            {saving && (
+              <View style={styles.savingIndicator}>
+                <ActivityIndicator size="small" color="#007AFF" />
+                <Text style={styles.savingText}>Updating...</Text>
+              </View>
+            )}
+          </View>
+        </View>
+      </Modal>
     </View>
   );
 }
