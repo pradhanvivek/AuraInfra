@@ -561,9 +561,8 @@ export default function PaintEstimationScreen({ propertyId }: PaintEstimationScr
             </>
           )}
         </ScrollView>
-        </View>
         {renderSettingsModal()}
-      </>
+      </View>
     );
   }
 
