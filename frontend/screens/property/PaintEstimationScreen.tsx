@@ -722,7 +722,7 @@ export default function PaintEstimationScreen({ propertyId }: PaintEstimationScr
                   <View style={styles.costContainer}>
                     <Text style={styles.costLabel}>Estimated Total Cost:</Text>
                     <Text style={styles.costValue}>
-                      {formatCurrency(currentAnalysis.estimated_cost_low)} - {formatCurrency(currentAnalysis.estimated_cost_high)}
+                      {formatCurrency(calculateCost(currentAnalysis.paint_gallons_needed, true))} - {formatCurrency(calculateCost(currentAnalysis.paint_gallons_needed, false))}
                     </Text>
                     <Text style={styles.costNote}>
                       *Includes paint + labor
