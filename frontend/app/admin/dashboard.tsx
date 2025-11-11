@@ -119,17 +119,18 @@ export default function AdminDashboard() {
   }
 
   return (
-    <ScrollView style={styles.container}>
-      {/* Header */}
-      <View style={styles.header}>
-        <Text style={styles.headerTitle}>Admin Dashboard</Text>
-        {propertyName && (
-          <Text style={styles.propertyName}>{propertyName}</Text>
-        )}
-        <Text style={styles.headerSubtitle}>
-          {profile.is_super_admin ? 'Super Admin' : 'HOA Admin'}
-        </Text>
-      </View>
+    <SafeAreaView style={styles.safeArea} edges={['top']}>
+      <ScrollView style={styles.container}>
+        {/* Header */}
+        <View style={styles.header}>
+          <Text style={styles.headerTitle}>Admin Dashboard</Text>
+          {propertyName && (
+            <Text style={styles.propertyName}>{propertyName}</Text>
+          )}
+          <Text style={styles.headerSubtitle}>
+            {profile.is_super_admin ? 'Super Admin' : 'HOA Admin'}
+          </Text>
+        </View>
 
       {/* Property Selector - only show if admin manages multiple properties */}
       {managedProperties.length > 1 && (
