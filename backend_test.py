@@ -14,448 +14,364 @@ BACKEND_URL = "https://hoa-dash.preview.emergentagent.com/api"
 
 class BackendTester:
     def __init__(self):
-        self.session = requests.Session()
-        self.auth_token = None
-        self.user_id = None
-        self.test_property_id = None
-        self.test_document_id = None
         self.test_results = []
+        self.test_user_data = {
+            "username": "johndoe2025",
+            "email": "john.doe.2025@example.com", 
+            "password": "SecurePass123!"
+        }
+        self.auth_token = None
         
-    def log_result(self, test_name, success, details=""):
+    def log_test(self, test_name, success, details=""):
         """Log test result"""
         status = "✅ PASS" if success else "❌ FAIL"
-        self.test_results.append({
-            'test': test_name,
-            'success': success,
-            'details': details
-        })
         print(f"{status} - {test_name}")
         if details:
             print(f"    Details: {details}")
+        
+        self.test_results.append({
+            "test": test_name,
+            "success": success,
+            "details": details,
+            "timestamp": datetime.now().isoformat()
+        })
     
-    def register_test_user(self):
-        """Register a test user for authentication"""
+    def test_user_registration(self):
+        """Test user registration to create test user"""
+        print("\n=== Testing User Registration (Setup) ===")
+        
         try:
-            timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-            test_user = {
-                "username": f"doctest_{timestamp}",
-                "email": f"doctest_{timestamp}@test.com",
-                "password": "TestPass123!"
-            }
+            response = requests.post(f"{BACKEND_URL}/auth/register", json=self.test_user_data)
             
-            response = self.session.post(f"{API_BASE}/auth/register", json=test_user)
-            
-            if response.status_code == 200:
+            if response.status_code == 201 or response.status_code == 200:
                 data = response.json()
-                self.auth_token = data['access_token']
-                self.user_id = data['user_id']
-                self.session.headers.update({'Authorization': f'Bearer {self.auth_token}'})
-                self.log_result("User Registration", True, f"User ID: {self.user_id}")
-                return True
-            else:
-                self.log_result("User Registration", False, f"Status: {response.status_code}, Response: {response.text}")
-                return False
-                
-        except Exception as e:
-            self.log_result("User Registration", False, f"Exception: {str(e)}")
-            return False
-    
-    def create_test_property(self):
-        """Create a test property for document testing"""
-        try:
-            property_data = {
-                "name": "Document Test Property",
-                "address": "123 Test Street, Test City, TC 12345",
-                "purchase_cost": 500000.0,
-                "current_value": 550000.0
-            }
-            
-            response = self.session.post(f"{API_BASE}/properties", json=property_data)
-            
-            if response.status_code == 200:
-                data = response.json()
-                self.test_property_id = data['id']
-                self.log_result("Property Creation", True, f"Property ID: {self.test_property_id}")
-                return True
-            else:
-                self.log_result("Property Creation", False, f"Status: {response.status_code}, Response: {response.text}")
-                return False
-                
-        except Exception as e:
-            self.log_result("Property Creation", False, f"Exception: {str(e)}")
-            return False
-    
-    def create_test_document(self):
-        """Create a test document for deletion testing"""
-        try:
-            # Create a simple base64 encoded test document
-            test_content = "This is a test document for deletion testing."
-            encoded_content = base64.b64encode(test_content.encode()).decode()
-            
-            document_data = {
-                "name": "Test Document for Deletion.txt",
-                "file_data": encoded_content,
-                "file_type": "text/plain"
-            }
-            
-            response = self.session.post(
-                f"{API_BASE}/properties/{self.test_property_id}/documents", 
-                json=document_data
-            )
-            
-            if response.status_code == 200:
-                data = response.json()
-                self.test_document_id = data['id']
-                self.log_result("Document Creation", True, f"Document ID: {self.test_document_id}")
-                return True
-            else:
-                self.log_result("Document Creation", False, f"Status: {response.status_code}, Response: {response.text}")
-                return False
-                
-        except Exception as e:
-            self.log_result("Document Creation", False, f"Exception: {str(e)}")
-            return False
-    
-    def test_document_deletion_endpoint(self):
-        """Test the main document deletion endpoint - CRITICAL TEST"""
-        try:
-            print("\n🔥 CRITICAL TEST: Document Deletion Endpoint")
-            
-            response = self.session.delete(
-                f"{API_BASE}/properties/{self.test_property_id}/documents/{self.test_document_id}"
-            )
-            
-            if response.status_code == 200:
-                data = response.json()
-                expected_message = "Document deleted successfully"
-                if data.get('message') == expected_message:
-                    self.log_result("Document Deletion Endpoint", True, f"Status: 200, Message: {data['message']}")
+                if "access_token" in data and "user_id" in data:
+                    self.auth_token = data["access_token"]
+                    self.log_test("User Registration", True, f"User created with ID: {data['user_id']}")
                     return True
                 else:
-                    self.log_result("Document Deletion Endpoint", False, f"Unexpected message: {data}")
+                    self.log_test("User Registration", False, "Missing access_token or user_id in response")
                     return False
+            elif response.status_code == 400 and "already exists" in response.text:
+                # User already exists, try to login to get token
+                self.log_test("User Registration", True, "User already exists, will use existing user")
+                return True
             else:
-                self.log_result("Document Deletion Endpoint", False, f"Status: {response.status_code}, Response: {response.text}")
+                self.log_test("User Registration", False, f"Status: {response.status_code}, Response: {response.text}")
                 return False
                 
         except Exception as e:
-            self.log_result("Document Deletion Endpoint", False, f"Exception: {str(e)}")
+            self.log_test("User Registration", False, f"Exception: {str(e)}")
             return False
     
-    def verify_document_removed_from_database(self):
-        """Verify document is actually removed from database"""
+    def test_scenario_1_username_login(self):
+        """Test Scenario 1: Login with Username (Existing Functionality)"""
+        print("\n=== Test Scenario 1: Login with Username ===")
+        
         try:
-            # Try to fetch documents list to verify deletion
-            response = self.session.get(f"{API_BASE}/properties/{self.test_property_id}/documents")
+            login_data = {
+                "username": self.test_user_data["username"],
+                "password": self.test_user_data["password"]
+            }
+            
+            response = requests.post(f"{BACKEND_URL}/auth/login", json=login_data)
             
             if response.status_code == 200:
-                documents = response.json()
-                # Check if our test document is still in the list
-                for doc in documents:
-                    if doc['id'] == self.test_document_id:
-                        self.log_result("Document Database Removal", False, "Document still exists in database")
+                data = response.json()
+                if all(key in data for key in ["access_token", "token_type", "user_id", "username"]):
+                    if data["token_type"] == "bearer" and data["username"] == self.test_user_data["username"]:
+                        self.log_test("Login with Username", True, f"JWT token received, user_id: {data['user_id']}")
+                        return True
+                    else:
+                        self.log_test("Login with Username", False, "Invalid token type or username mismatch")
                         return False
-                
-                self.log_result("Document Database Removal", True, "Document successfully removed from database")
-                return True
-            else:
-                self.log_result("Document Database Removal", False, f"Failed to fetch documents: {response.status_code}")
-                return False
-                
-        except Exception as e:
-            self.log_result("Document Database Removal", False, f"Exception: {str(e)}")
-            return False
-    
-    def test_complete_document_crud_flow(self):
-        """Test complete document CRUD flow"""
-        try:
-            print("\n📋 TESTING: Complete Document CRUD Flow")
-            
-            # 1. Create a new document
-            test_content = "CRUD Flow Test Document Content"
-            encoded_content = base64.b64encode(test_content.encode()).decode()
-            
-            document_data = {
-                "name": "CRUD Test Document.txt",
-                "file_data": encoded_content,
-                "file_type": "text/plain"
-            }
-            
-            create_response = self.session.post(
-                f"{API_BASE}/properties/{self.test_property_id}/documents", 
-                json=document_data
-            )
-            
-            if create_response.status_code != 200:
-                self.log_result("CRUD Flow - Create", False, f"Create failed: {create_response.status_code}")
-                return False
-            
-            crud_doc_id = create_response.json()['id']
-            
-            # 2. Retrieve documents list to confirm upload
-            list_response = self.session.get(f"{API_BASE}/properties/{self.test_property_id}/documents")
-            
-            if list_response.status_code != 200:
-                self.log_result("CRUD Flow - List", False, f"List failed: {list_response.status_code}")
-                return False
-            
-            documents = list_response.json()
-            found_document = False
-            for doc in documents:
-                if doc['id'] == crud_doc_id:
-                    found_document = True
-                    break
-            
-            if not found_document:
-                self.log_result("CRUD Flow - Verify Upload", False, "Document not found in list after creation")
-                return False
-            
-            # 3. Delete the document
-            delete_response = self.session.delete(
-                f"{API_BASE}/properties/{self.test_property_id}/documents/{crud_doc_id}"
-            )
-            
-            if delete_response.status_code != 200:
-                self.log_result("CRUD Flow - Delete", False, f"Delete failed: {delete_response.status_code}")
-                return False
-            
-            # 4. Verify document is removed by fetching list again
-            verify_response = self.session.get(f"{API_BASE}/properties/{self.test_property_id}/documents")
-            
-            if verify_response.status_code != 200:
-                self.log_result("CRUD Flow - Verify Deletion", False, f"Verify failed: {verify_response.status_code}")
-                return False
-            
-            final_documents = verify_response.json()
-            for doc in final_documents:
-                if doc['id'] == crud_doc_id:
-                    self.log_result("CRUD Flow - Complete", False, "Document still exists after deletion")
+                else:
+                    self.log_test("Login with Username", False, "Missing required fields in response")
                     return False
-            
-            self.log_result("CRUD Flow - Complete", True, "Full CRUD flow successful")
-            return True
-            
+            else:
+                self.log_test("Login with Username", False, f"Status: {response.status_code}, Response: {response.text}")
+                return False
+                
         except Exception as e:
-            self.log_result("CRUD Flow - Complete", False, f"Exception: {str(e)}")
+            self.log_test("Login with Username", False, f"Exception: {str(e)}")
             return False
     
-    def test_authentication_required(self):
-        """Test that JWT authentication is required for document deletion"""
+    def test_scenario_2_email_login(self):
+        """Test Scenario 2: Login with Email (NEW Functionality)"""
+        print("\n=== Test Scenario 2: Login with Email (NEW) ===")
+        
         try:
-            print("\n🔐 TESTING: Authentication Requirements")
-            
-            # Create a document first
-            test_content = "Auth Test Document"
-            encoded_content = base64.b64encode(test_content.encode()).decode()
-            
-            document_data = {
-                "name": "Auth Test Document.txt",
-                "file_data": encoded_content,
-                "file_type": "text/plain"
+            login_data = {
+                "username": self.test_user_data["email"],  # Using email in username field
+                "password": self.test_user_data["password"]
             }
             
-            create_response = self.session.post(
-                f"{API_BASE}/properties/{self.test_property_id}/documents", 
-                json=document_data
-            )
+            response = requests.post(f"{BACKEND_URL}/auth/login", json=login_data)
             
-            if create_response.status_code != 200:
-                self.log_result("Auth Test - Document Creation", False, "Failed to create test document")
-                return False
-            
-            auth_doc_id = create_response.json()['id']
-            
-            # Remove authentication header
-            original_headers = self.session.headers.copy()
-            if 'Authorization' in self.session.headers:
-                del self.session.headers['Authorization']
-            
-            # Try to delete without authentication
-            response = self.session.delete(
-                f"{API_BASE}/properties/{self.test_property_id}/documents/{auth_doc_id}"
-            )
-            
-            # Restore headers
-            self.session.headers.update(original_headers)
-            
-            if response.status_code == 403 or response.status_code == 401:
-                self.log_result("Authentication Required", True, f"Correctly returned {response.status_code} without auth")
-                
-                # Clean up - delete the test document with auth
-                cleanup_response = self.session.delete(
-                    f"{API_BASE}/properties/{self.test_property_id}/documents/{auth_doc_id}"
-                )
-                return True
+            if response.status_code == 200:
+                data = response.json()
+                if all(key in data for key in ["access_token", "token_type", "user_id", "username"]):
+                    if data["token_type"] == "bearer" and data["username"] == self.test_user_data["username"]:
+                        self.log_test("Login with Email", True, f"JWT token received, user_id: {data['user_id']}")
+                        return True
+                    else:
+                        self.log_test("Login with Email", False, "Invalid token type or username mismatch")
+                        return False
+                else:
+                    self.log_test("Login with Email", False, "Missing required fields in response")
+                    return False
             else:
-                self.log_result("Authentication Required", False, f"Expected 401/403, got {response.status_code}")
+                self.log_test("Login with Email", False, f"Status: {response.status_code}, Response: {response.text}")
                 return False
                 
         except Exception as e:
-            self.log_result("Authentication Required", False, f"Exception: {str(e)}")
+            self.log_test("Login with Email", False, f"Exception: {str(e)}")
             return False
     
-    def test_ownership_validation(self):
-        """Test that users can only delete documents from properties they own"""
+    def test_scenario_3_invalid_email_password(self):
+        """Test Scenario 3: Invalid Credentials with Email"""
+        print("\n=== Test Scenario 3: Invalid Credentials with Email ===")
+        
         try:
-            print("\n👤 TESTING: Ownership Validation")
-            
-            # Create a second user
-            timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-            second_user = {
-                "username": f"doctest2_{timestamp}",
-                "email": f"doctest2_{timestamp}@test.com",
-                "password": "TestPass123!"
+            login_data = {
+                "username": self.test_user_data["email"],
+                "password": "WrongPassword123!"
             }
             
-            register_response = requests.post(f"{API_BASE}/auth/register", json=second_user)
+            response = requests.post(f"{BACKEND_URL}/auth/login", json=login_data)
             
-            if register_response.status_code != 200:
-                self.log_result("Ownership Test - Second User", False, "Failed to create second user")
+            if response.status_code == 401:
+                data = response.json()
+                if "detail" in data and "Invalid credentials" in data["detail"]:
+                    self.log_test("Invalid Email Credentials", True, "Correctly returned 401 with 'Invalid credentials'")
+                    return True
+                else:
+                    self.log_test("Invalid Email Credentials", False, f"Wrong error message: {data}")
+                    return False
+            else:
+                self.log_test("Invalid Email Credentials", False, f"Expected 401, got {response.status_code}")
                 return False
-            
-            second_user_token = register_response.json()['access_token']
-            
-            # Create a document with the first user
-            test_content = "Ownership Test Document"
-            encoded_content = base64.b64encode(test_content.encode()).decode()
-            
-            document_data = {
-                "name": "Ownership Test Document.txt",
-                "file_data": encoded_content,
-                "file_type": "text/plain"
+                
+        except Exception as e:
+            self.log_test("Invalid Email Credentials", False, f"Exception: {str(e)}")
+            return False
+    
+    def test_scenario_4_invalid_username_password(self):
+        """Test Scenario 4: Invalid Credentials with Username"""
+        print("\n=== Test Scenario 4: Invalid Credentials with Username ===")
+        
+        try:
+            login_data = {
+                "username": self.test_user_data["username"],
+                "password": "WrongPassword123!"
             }
             
-            create_response = self.session.post(
-                f"{API_BASE}/properties/{self.test_property_id}/documents", 
-                json=document_data
-            )
+            response = requests.post(f"{BACKEND_URL}/auth/login", json=login_data)
             
-            if create_response.status_code != 200:
-                self.log_result("Ownership Test - Document Creation", False, "Failed to create test document")
-                return False
-            
-            ownership_doc_id = create_response.json()['id']
-            
-            # Try to delete with second user's token
-            second_user_session = requests.Session()
-            second_user_session.headers.update({'Authorization': f'Bearer {second_user_token}'})
-            
-            delete_response = second_user_session.delete(
-                f"{API_BASE}/properties/{self.test_property_id}/documents/{ownership_doc_id}"
-            )
-            
-            if delete_response.status_code == 403 or delete_response.status_code == 404:
-                self.log_result("Ownership Validation", True, f"Correctly denied access with {delete_response.status_code}")
-                
-                # Clean up - delete with original user
-                cleanup_response = self.session.delete(
-                    f"{API_BASE}/properties/{self.test_property_id}/documents/{ownership_doc_id}"
-                )
-                return True
+            if response.status_code == 401:
+                data = response.json()
+                if "detail" in data and "Invalid credentials" in data["detail"]:
+                    self.log_test("Invalid Username Credentials", True, "Correctly returned 401 with 'Invalid credentials'")
+                    return True
+                else:
+                    self.log_test("Invalid Username Credentials", False, f"Wrong error message: {data}")
+                    return False
             else:
-                self.log_result("Ownership Validation", False, f"Expected 403/404, got {delete_response.status_code}")
+                self.log_test("Invalid Username Credentials", False, f"Expected 401, got {response.status_code}")
                 return False
                 
         except Exception as e:
-            self.log_result("Ownership Validation", False, f"Exception: {str(e)}")
+            self.log_test("Invalid Username Credentials", False, f"Exception: {str(e)}")
             return False
     
-    def test_error_handling(self):
-        """Test error handling for various invalid scenarios"""
+    def test_scenario_5_nonexistent_email(self):
+        """Test Scenario 5: Non-existent Email"""
+        print("\n=== Test Scenario 5: Non-existent Email ===")
+        
         try:
-            print("\n⚠️ TESTING: Error Handling")
+            login_data = {
+                "username": "nonexistent.user@example.com",
+                "password": "AnyPassword123!"
+            }
             
-            # Test 1: Non-existent document ID
-            fake_doc_id = "non-existent-document-id"
-            response1 = self.session.delete(
-                f"{API_BASE}/properties/{self.test_property_id}/documents/{fake_doc_id}"
-            )
+            response = requests.post(f"{BACKEND_URL}/auth/login", json=login_data)
             
-            if response1.status_code == 404:
-                self.log_result("Error Handling - Non-existent Document", True, "Correctly returned 404")
+            if response.status_code == 401:
+                data = response.json()
+                if "detail" in data and "Invalid credentials" in data["detail"]:
+                    self.log_test("Non-existent Email", True, "Correctly returned 401 with 'Invalid credentials'")
+                    return True
+                else:
+                    self.log_test("Non-existent Email", False, f"Wrong error message: {data}")
+                    return False
             else:
-                self.log_result("Error Handling - Non-existent Document", False, f"Expected 404, got {response1.status_code}")
+                self.log_test("Non-existent Email", False, f"Expected 401, got {response.status_code}")
                 return False
-            
-            # Test 2: Non-existent property ID
-            fake_property_id = "non-existent-property-id"
-            response2 = self.session.delete(
-                f"{API_BASE}/properties/{fake_property_id}/documents/{fake_doc_id}"
-            )
-            
-            if response2.status_code == 404 or response2.status_code == 403:
-                self.log_result("Error Handling - Non-existent Property", True, f"Correctly returned {response2.status_code}")
-            else:
-                self.log_result("Error Handling - Non-existent Property", False, f"Expected 404/403, got {response2.status_code}")
-                return False
-            
-            self.log_result("Error Handling - Complete", True, "All error scenarios handled correctly")
-            return True
-            
+                
         except Exception as e:
-            self.log_result("Error Handling - Complete", False, f"Exception: {str(e)}")
+            self.log_test("Non-existent Email", False, f"Exception: {str(e)}")
             return False
     
-    def run_comprehensive_tests(self):
-        """Run all document deletion tests"""
-        print("🚀 STARTING COMPREHENSIVE DOCUMENT DELETION TESTING")
-        print("=" * 60)
+    def test_scenario_6_nonexistent_username(self):
+        """Test Scenario 6: Non-existent Username"""
+        print("\n=== Test Scenario 6: Non-existent Username ===")
         
-        # Setup phase
-        if not self.register_test_user():
+        try:
+            login_data = {
+                "username": "nonexistentuser2025",
+                "password": "AnyPassword123!"
+            }
+            
+            response = requests.post(f"{BACKEND_URL}/auth/login", json=login_data)
+            
+            if response.status_code == 401:
+                data = response.json()
+                if "detail" in data and "Invalid credentials" in data["detail"]:
+                    self.log_test("Non-existent Username", True, "Correctly returned 401 with 'Invalid credentials'")
+                    return True
+                else:
+                    self.log_test("Non-existent Username", False, f"Wrong error message: {data}")
+                    return False
+            else:
+                self.log_test("Non-existent Username", False, f"Expected 401, got {response.status_code}")
+                return False
+                
+        except Exception as e:
+            self.log_test("Non-existent Username", False, f"Exception: {str(e)}")
+            return False
+    
+    def test_token_consistency(self):
+        """Verify that both email and username login return identical JWT token structure"""
+        print("\n=== Testing Token Consistency ===")
+        
+        try:
+            # Login with username
+            username_login = {
+                "username": self.test_user_data["username"],
+                "password": self.test_user_data["password"]
+            }
+            username_response = requests.post(f"{BACKEND_URL}/auth/login", json=username_login)
+            
+            # Login with email
+            email_login = {
+                "username": self.test_user_data["email"],
+                "password": self.test_user_data["password"]
+            }
+            email_response = requests.post(f"{BACKEND_URL}/auth/login", json=email_login)
+            
+            if username_response.status_code == 200 and email_response.status_code == 200:
+                username_data = username_response.json()
+                email_data = email_response.json()
+                
+                # Check if both have same structure and user_id
+                if (username_data["user_id"] == email_data["user_id"] and
+                    username_data["username"] == email_data["username"] and
+                    username_data["token_type"] == email_data["token_type"]):
+                    self.log_test("Token Consistency", True, "Both login methods return identical user data")
+                    return True
+                else:
+                    self.log_test("Token Consistency", False, "Token data mismatch between email and username login")
+                    return False
+            else:
+                self.log_test("Token Consistency", False, "One or both login methods failed")
+                return False
+                
+        except Exception as e:
+            self.log_test("Token Consistency", False, f"Exception: {str(e)}")
+            return False
+    
+    def test_authenticated_request(self):
+        """Test that JWT token works for subsequent authenticated requests"""
+        print("\n=== Testing Authenticated Request ===")
+        
+        try:
+            # First get a token
+            login_data = {
+                "username": self.test_user_data["username"],
+                "password": self.test_user_data["password"]
+            }
+            
+            login_response = requests.post(f"{BACKEND_URL}/auth/login", json=login_data)
+            
+            if login_response.status_code == 200:
+                token = login_response.json()["access_token"]
+                
+                # Use token to access protected endpoint
+                headers = {"Authorization": f"Bearer {token}"}
+                profile_response = requests.get(f"{BACKEND_URL}/auth/profile", headers=headers)
+                
+                if profile_response.status_code == 200:
+                    profile_data = profile_response.json()
+                    if profile_data["username"] == self.test_user_data["username"]:
+                        self.log_test("Authenticated Request", True, "JWT token valid for protected endpoints")
+                        return True
+                    else:
+                        self.log_test("Authenticated Request", False, "Profile data mismatch")
+                        return False
+                else:
+                    self.log_test("Authenticated Request", False, f"Profile request failed: {profile_response.status_code}")
+                    return False
+            else:
+                self.log_test("Authenticated Request", False, "Failed to get login token")
+                return False
+                
+        except Exception as e:
+            self.log_test("Authenticated Request", False, f"Exception: {str(e)}")
+            return False
+    
+    def run_all_tests(self):
+        """Run all test scenarios"""
+        print("🚀 Starting Email OR Username Login Feature Testing")
+        print(f"Backend URL: {BACKEND_URL}")
+        print(f"Test User: {self.test_user_data['username']} / {self.test_user_data['email']}")
+        
+        # Setup
+        if not self.test_user_registration():
+            print("❌ Failed to setup test user, aborting tests")
             return False
         
-        if not self.create_test_property():
-            return False
+        # Run all test scenarios
+        tests = [
+            self.test_scenario_1_username_login,
+            self.test_scenario_2_email_login,
+            self.test_scenario_3_invalid_email_password,
+            self.test_scenario_4_invalid_username_password,
+            self.test_scenario_5_nonexistent_email,
+            self.test_scenario_6_nonexistent_username,
+            self.test_token_consistency,
+            self.test_authenticated_request
+        ]
         
-        if not self.create_test_document():
-            return False
+        passed = 0
+        total = len(tests)
         
-        # Core deletion test
-        deletion_success = self.test_document_deletion_endpoint()
-        
-        if deletion_success:
-            # Verify deletion worked
-            self.verify_document_removed_from_database()
-        
-        # Additional comprehensive tests
-        self.test_complete_document_crud_flow()
-        self.test_authentication_required()
-        self.test_ownership_validation()
-        self.test_error_handling()
+        for test in tests:
+            if test():
+                passed += 1
         
         # Summary
-        print("\n" + "=" * 60)
-        print("📊 TEST SUMMARY")
-        print("=" * 60)
-        
-        passed = sum(1 for result in self.test_results if result['success'])
-        total = len(self.test_results)
-        
-        for result in self.test_results:
-            status = "✅ PASS" if result['success'] else "❌ FAIL"
-            print(f"{status} - {result['test']}")
-        
-        print(f"\nOverall: {passed}/{total} tests passed")
+        print(f"\n{'='*60}")
+        print(f"📊 TEST SUMMARY")
+        print(f"{'='*60}")
+        print(f"Total Tests: {total}")
+        print(f"Passed: {passed}")
+        print(f"Failed: {total - passed}")
+        print(f"Success Rate: {(passed/total)*100:.1f}%")
         
         if passed == total:
-            print("🎉 ALL TESTS PASSED - Document deletion fix is working correctly!")
+            print("🎉 ALL TESTS PASSED - Email OR Username Login Feature is working correctly!")
             return True
         else:
-            print("⚠️ SOME TESTS FAILED - Document deletion needs attention")
+            print("⚠️  SOME TESTS FAILED - Review the failures above")
             return False
 
 def main():
-    """Main test execution"""
-    tester = DocumentDeletionTester()
-    success = tester.run_comprehensive_tests()
+    """Main function to run tests"""
+    tester = BackendTester()
+    success = tester.run_all_tests()
     
-    if success:
-        print("\n✅ DOCUMENT DELETION FIX VERIFICATION: SUCCESS")
-        print("The duplicate function rename fix has resolved the 404 error issue.")
-    else:
-        print("\n❌ DOCUMENT DELETION FIX VERIFICATION: ISSUES FOUND")
-        print("Further investigation required.")
+    # Exit with appropriate code
+    sys.exit(0 if success else 1)
 
 if __name__ == "__main__":
     main()
