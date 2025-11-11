@@ -836,7 +836,7 @@ export default function AddVehicleScreen() {
           </View>
         </View>
       )}
-    </View>
+    </SafeAreaView>
   );
 }
 
