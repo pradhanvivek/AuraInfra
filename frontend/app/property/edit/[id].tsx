@@ -26,6 +26,7 @@ if (Platform.OS !== 'web') {
   GooglePlacesAutocomplete = require('react-native-google-places-autocomplete').GooglePlacesAutocomplete;
 }
 
+const API_URL = Constants.expoConfig?.extra?.EXPO_PUBLIC_BACKEND_URL || process.env.EXPO_PUBLIC_BACKEND_URL;
 const GOOGLE_MAPS_API_KEY = process.env.EXPO_PUBLIC_GOOGLE_MAPS_API_KEY || Constants.expoConfig?.extra?.googleMapsApiKey || '';
 
 export default function EditPropertyScreen() {
@@ -43,6 +44,11 @@ export default function EditPropertyScreen() {
   const [currentValue, setCurrentValue] = useState('');
   
   const autocompleteRef = useRef<any>(null);
+  
+  // Web autocomplete state
+  const [suggestions, setSuggestions] = useState<any[]>([]);
+  const [showSuggestions, setShowSuggestions] = useState(false);
+  const debounceTimer = useRef<any>(null);
 
   useEffect(() => {
     fetchProperty();
