@@ -30,6 +30,7 @@ interface UserProfile {
   avatar?: string;
   warranty_reminder_days: number;
   geomancy_preference: string;
+  country?: string;
   currency_preference?: string;
   measurement_system?: string;
   is_super_admin?: boolean;
