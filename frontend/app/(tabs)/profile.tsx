@@ -242,6 +242,23 @@ export default function Profile() {
     }
   };
 
+  const handleCountryChange = async (country: 'India' | 'US' | 'UK' | 'Canada' | 'Australia' | 'UAE') => {
+    setSaving(true);
+    try {
+      const updatedProfile = await authApi.updateProfile(token!, { 
+        country: country 
+      });
+      setProfile(updatedProfile);
+      setSelectedCountry(country);
+      setCountryModalVisible(false);
+      Alert.alert('Success', `Country updated to ${country === 'US' ? 'United States' : country === 'UK' ? 'United Kingdom' : country === 'UAE' ? 'United Arab Emirates' : country}`);
+    } catch (error: any) {
+      Alert.alert('Error', error.message || 'Failed to update country');
+    } finally {
+      setSaving(false);
+    }
+  };
+
   const handleLogout = () => {
     if (Platform.OS === 'web') {
       // On web, confirm and logout directly
