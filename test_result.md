@@ -399,9 +399,27 @@ test_plan:
   test_all: false
   test_priority: "high_first"
 
+backend:
+  - task: "Document Deletion Fix - Duplicate Function Rename"
+    implemented: true
+    working: "NA"
+    file: "backend/server.py"
+    stuck_count: 1
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: false
+        agent: "user"
+        comment: "User reported 'Failed to delete document' error when attempting to delete documents from property documents screen. Frontend DELETE requests to /api/properties/{property_id}/documents/{document_id} returning 404 error from backend."
+      - working: "NA"
+        agent: "main"
+        comment: "CRITICAL FIX DISCOVERED: Investigation revealed duplicate `delete_document` function definitions in /app/backend/server.py. The second function at line 5011 was overriding the correct implementation, causing all DELETE document requests to return 404. Previous AI engineer had ALREADY renamed the duplicate function from `delete_document` to `delete_document_simple`. Backend service has been restarted to ensure the fix is active. Ready for testing to verify document deletion now works correctly without 404 errors."
+
 agent_communication:
   - agent: "testing"
     message: "Comprehensive backend API testing completed successfully. All 18 backend endpoints tested with 100% success rate. Authentication, property management, document management, fixture management, measurement management, and AI floor plan analysis all working correctly. JWT authentication properly implemented with user isolation. Base64 file uploads working for documents, fixture photos, and floor plan images. AI integration with emergentintegrations LLM working correctly for floor plan analysis."
+  - agent: "main"
+    message: "CRITICAL DOCUMENT DELETION BUG FIX READY FOR TESTING: Discovered and confirmed fix for 404 error on document deletion. The duplicate `delete_document` function at line 5011 has been renamed to `delete_document_simple` (fix already applied by previous AI engineer). Backend restarted. Please test: 1) DELETE /api/properties/{property_id}/documents/{document_id} endpoint no longer returns 404, 2) Document deletion works correctly from frontend, 3) Proper ownership validation is maintained, 4) Successful deletion returns appropriate response. This fix should resolve the user-reported 'Failed to delete document' error."
   - agent: "main"
     message: "Implemented two new features: 1) Warranty reminder settings in profile page - Users can now select 7, 14, or 30 days notification preference before warranty expiry. 2) 'Near Me' feature - Added as a new tab in property details that shows nearby places (hospitals, schools, malls, restaurants, etc.) using OpenStreetMap APIs. The feature geocodes the property address and finds places within 2km radius, displays them with distance, and allows navigation via Google Maps. Backend already supports warranty_reminder_days field. Ready for testing."
   - agent: "testing"
