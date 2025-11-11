@@ -1118,9 +1118,9 @@ const styles = StyleSheet.create({
     marginBottom: 4,
   },
   costNote: {
-    fontSize: 12,
+    marginTop: 8,
+    fontSize: 14,
     color: '#8E8E93',
-    fontStyle: 'italic',
   },
   input: {
     backgroundColor: '#fff',
