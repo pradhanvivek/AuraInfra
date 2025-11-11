@@ -436,6 +436,9 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     color: '#007AFF',
   },
+  buttonDisabled: {
+    opacity: 0.6,
+  },
   cameraContainer: {
     flex: 1,
   },
