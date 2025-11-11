@@ -95,7 +95,9 @@ export default function ScanAssetScreen() {
   };
 
   const handleAddToPortfolio = () => {
-    if (!scanResults || !capturedImage) return;
+    if (!scanResults || !capturedImage || navigating) return;
+
+    setNavigating(true);
 
     const assetType = scanResults.asset_type || 'appliance';
     
@@ -113,7 +115,12 @@ export default function ScanAssetScreen() {
     };
 
     const route = typeMap[assetType.toLowerCase()] || `/appliance/add?mode=prescan&image=${imageData}&description=${description}`;
-    router.push(route as any);
+    
+    // Small delay to show the loading state, then navigate
+    setTimeout(() => {
+      router.push(route as any);
+      setNavigating(false);
+    }, 100);
   };
 
   const resetScan = () => {
