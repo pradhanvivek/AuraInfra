@@ -4159,24 +4159,7 @@ async def delete_maintenance(maintenance_id: str, user_id: str = Depends(get_cur
 
 # ============= PROPERTY MANAGEMENT & MEMBERSHIP ENDPOINTS =============
 
-@api_router.post("/properties/{property_id}/members", response_model=PropertyMembership)
-async def add_property_member(
-    property_id: str,
-    membership_data: PropertyMembershipCreate,
-    user_id: str = Depends(get_current_user)
-):
-    """Add a member to a property (owner only)"""
-    # Verify user is owner of the property
-    property_doc = await db.properties.find_one({"id": property_id})
-    if not property_doc or property_doc.get('user_id') != user_id:
-        raise HTTPException(status_code=403, detail="Only property owner can add members")
-    
-    membership = PropertyMembership(
-        property_id=property_id,
-        **membership_data.dict()
-    )
-    await db.property_memberships.insert_one(membership.dict())
-    return membership
+# Removed duplicate add_property_member endpoint - using the admin-only version below
 
 # Removed duplicate endpoint - using the admin-only version below
 
