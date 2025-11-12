@@ -4268,7 +4268,7 @@ async def get_user_properties(user_id: str = Depends(get_current_user)):
 
 @api_router.get("/properties/all")
 async def get_all_properties():
-    """Get all properties (for registration property selection)"""
+    """Get all properties (for registration property selection) - No authentication required"""
     properties = await db.properties.find({}).to_list(length=1000)
     result = []
     for prop in properties:
