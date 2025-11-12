@@ -44,7 +44,7 @@ class PropertyMembershipTester:
             
             if response.status_code == 200:
                 properties = response.json()
-                self.log(f"✅ GET /api/properties/all successful - Found {len(properties)} properties")
+                self.log(f"✅ GET /api/public/properties successful - Found {len(properties)} properties")
                 
                 # Verify response structure
                 if properties:
