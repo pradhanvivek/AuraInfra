@@ -4228,7 +4228,7 @@ async def test_public_endpoint():
     """Test public endpoint - No authentication required"""
     return {"message": "This is a public endpoint", "status": "success"}
 
-@api_router.get("/properties/all")
+@api_router.get("/public/properties")
 async def get_all_properties():
     """Get all properties (for registration property selection) - No authentication required"""
     properties = await db.properties.find({}).to_list(length=1000)
