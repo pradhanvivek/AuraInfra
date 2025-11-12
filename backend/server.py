@@ -4266,6 +4266,11 @@ async def get_user_properties(user_id: str = Depends(get_current_user)):
 
 # ============= PROPERTY MEMBERSHIP ENDPOINTS =============
 
+@api_router.get("/test-public")
+async def test_public_endpoint():
+    """Test public endpoint - No authentication required"""
+    return {"message": "This is a public endpoint", "status": "success"}
+
 @api_router.get("/properties/all")
 async def get_all_properties():
     """Get all properties (for registration property selection) - No authentication required"""
