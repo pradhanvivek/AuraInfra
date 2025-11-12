@@ -44,7 +44,7 @@ interface AuthContextType {
   username: string | null;
   loading: boolean;
   login: (username: string, password: string) => Promise<string>;
-  register: (username: string, email: string, password: string) => Promise<void>;
+  register: (username: string, email: string, password: string, property_ids?: string[]) => Promise<void>;
   logout: () => Promise<void>;
   setToken: (token: string) => Promise<void>;
 }
