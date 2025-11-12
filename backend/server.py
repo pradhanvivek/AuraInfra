@@ -4337,16 +4337,18 @@ async def add_property_member(
     if not user_doc:
         raise HTTPException(status_code=404, detail="User not found")
     
-    is_admin = user_doc.get("is_super_admin", False) or user_doc.get("is_hoa_admin", False)
+    # Check if user is super admin
+    is_super_admin = user_doc.get("is_super_admin", False)
     
-    if not is_admin:
-        # Check if user manages this property
-        admin_assignment = await db.property_admin_assignments.find_one({
-            "admin_user_id": user_id,
-            "property_id": property_id
-        })
-        if not admin_assignment:
-            raise HTTPException(status_code=403, detail="Not authorized to add members")
+    # Check if user manages this specific property
+    admin_assignment = await db.property_admin_assignments.find_one({
+        "admin_user_id": user_id,
+        "property_id": property_id
+    })
+    
+    # Only allow access if user is super admin OR manages this specific property
+    if not is_super_admin and not admin_assignment:
+        raise HTTPException(status_code=403, detail="Not authorized to add members")
     
     # Verify property exists
     property_doc = await db.properties.find_one({"id": property_id})
