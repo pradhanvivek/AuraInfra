@@ -5518,7 +5518,7 @@ async def remove_hoa_admin(
     return {"message": "HOA admin removed successfully"}
 
 @api_router.get("/admin/super/all-properties")
-async def get_all_properties(super_admin_id: str = Depends(verify_super_admin)):
+async def get_all_properties_admin(super_admin_id: str = Depends(verify_super_admin)):
     """Get all properties in the system"""
     properties = await db.properties.find({}).to_list(length=1000)
     for prop in properties:
