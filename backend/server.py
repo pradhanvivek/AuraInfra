@@ -4264,6 +4264,214 @@ async def get_user_properties(user_id: str = Depends(get_current_user)):
     
     return all_properties
 
+# ============= PROPERTY MEMBERSHIP ENDPOINTS =============
+
+@api_router.get("/properties/all")
+async def get_all_properties():
+    """Get all properties (for registration property selection)"""
+    properties = await db.properties.find({}).to_list(length=1000)
+    result = []
+    for prop in properties:
+        if '_id' in prop:
+            prop['_id'] = str(prop['_id'])
+        result.append({
+            "id": prop["id"],
+            "name": prop["name"],
+            "address": prop["address"],
+            "logo": prop.get("logo")
+        })
+    return result
+
+@api_router.get("/properties/{property_id}/members")
+async def get_property_members(property_id: str, user_id: str = Depends(get_current_user)):
+    """Get all members/residents of a property (admin only)"""
+    # Check if user is admin of this property
+    user_doc = await db.users.find_one({"id": user_id})
+    if not user_doc:
+        raise HTTPException(status_code=404, detail="User not found")
+    
+    is_admin = user_doc.get("is_super_admin", False) or user_doc.get("is_hoa_admin", False)
+    
+    if not is_admin:
+        # Check if user manages this property
+        admin_assignment = await db.property_admin_assignments.find_one({
+            "admin_user_id": user_id,
+            "property_id": property_id
+        })
+        if not admin_assignment:
+            raise HTTPException(status_code=403, detail="Not authorized to view members")
+    
+    # Get all memberships for this property
+    memberships = await db.property_memberships.find({"property_id": property_id}).to_list(length=1000)
+    
+    # Get user details for each member
+    result = []
+    for membership in memberships:
+        user = await db.users.find_one({"id": membership["user_id"]})
+        if user:
+            result.append({
+                "membership_id": membership["id"],
+                "user_id": user["id"],
+                "username": user["username"],
+                "email": user.get("email"),
+                "phone": user.get("phone"),
+                "role": membership.get("role", "resident"),
+                "unit_number": membership.get("unit_number"),
+                "status": membership.get("status", "approved"),
+                "joined_at": membership.get("joined_at")
+            })
+    
+    return result
+
+@api_router.post("/properties/{property_id}/members")
+async def add_property_member(
+    property_id: str,
+    membership: PropertyMembershipCreate,
+    user_id: str = Depends(get_current_user)
+):
+    """Add a user to a property (admin only)"""
+    # Check if user is admin of this property
+    user_doc = await db.users.find_one({"id": user_id})
+    if not user_doc:
+        raise HTTPException(status_code=404, detail="User not found")
+    
+    is_admin = user_doc.get("is_super_admin", False) or user_doc.get("is_hoa_admin", False)
+    
+    if not is_admin:
+        # Check if user manages this property
+        admin_assignment = await db.property_admin_assignments.find_one({
+            "admin_user_id": user_id,
+            "property_id": property_id
+        })
+        if not admin_assignment:
+            raise HTTPException(status_code=403, detail="Not authorized to add members")
+    
+    # Verify property exists
+    property_doc = await db.properties.find_one({"id": property_id})
+    if not property_doc:
+        raise HTTPException(status_code=404, detail="Property not found")
+    
+    # Verify target user exists
+    target_user = await db.users.find_one({"id": membership.user_id})
+    if not target_user:
+        raise HTTPException(status_code=404, detail="Target user not found")
+    
+    # Check if membership already exists
+    existing = await db.property_memberships.find_one({
+        "user_id": membership.user_id,
+        "property_id": property_id
+    })
+    if existing:
+        raise HTTPException(status_code=400, detail="User is already a member of this property")
+    
+    # Create membership
+    new_membership = {
+        "id": str(uuid.uuid4()),
+        "user_id": membership.user_id,
+        "property_id": property_id,
+        "status": membership.status,
+        "role": membership.role,
+        "unit_number": membership.unit_number,
+        "joined_at": datetime.utcnow(),
+        "approved_by": user_id,
+        "approved_at": datetime.utcnow(),
+        "documents": []
+    }
+    
+    await db.property_memberships.insert_one(new_membership)
+    
+    # Add to user's member_properties
+    await db.users.update_one(
+        {"id": membership.user_id},
+        {"$addToSet": {"member_properties": property_id}}
+    )
+    
+    return {"message": "Member added successfully", "membership_id": new_membership["id"]}
+
+@api_router.delete("/properties/{property_id}/members/{member_user_id}")
+async def remove_property_member(
+    property_id: str,
+    member_user_id: str,
+    user_id: str = Depends(get_current_user)
+):
+    """Remove a user from a property (admin only)"""
+    # Check if user is admin of this property
+    user_doc = await db.users.find_one({"id": user_id})
+    if not user_doc:
+        raise HTTPException(status_code=404, detail="User not found")
+    
+    is_admin = user_doc.get("is_super_admin", False) or user_doc.get("is_hoa_admin", False)
+    
+    if not is_admin:
+        # Check if user manages this property
+        admin_assignment = await db.property_admin_assignments.find_one({
+            "admin_user_id": user_id,
+            "property_id": property_id
+        })
+        if not admin_assignment:
+            raise HTTPException(status_code=403, detail="Not authorized to remove members")
+    
+    # Delete membership
+    result = await db.property_memberships.delete_one({
+        "user_id": member_user_id,
+        "property_id": property_id
+    })
+    
+    if result.deleted_count == 0:
+        raise HTTPException(status_code=404, detail="Membership not found")
+    
+    # Remove from user's member_properties
+    await db.users.update_one(
+        {"id": member_user_id},
+        {"$pull": {"member_properties": property_id}}
+    )
+    
+    return {"message": "Member removed successfully"}
+
+@api_router.post("/properties/{property_id}/join")
+async def join_property(
+    property_id: str,
+    unit_number: Optional[str] = None,
+    user_id: str = Depends(get_current_user)
+):
+    """User requests to join a property (auto-approved for now)"""
+    # Verify property exists
+    property_doc = await db.properties.find_one({"id": property_id})
+    if not property_doc:
+        raise HTTPException(status_code=404, detail="Property not found")
+    
+    # Check if membership already exists
+    existing = await db.property_memberships.find_one({
+        "user_id": user_id,
+        "property_id": property_id
+    })
+    if existing:
+        raise HTTPException(status_code=400, detail="You are already a member of this property")
+    
+    # Create membership (auto-approved)
+    new_membership = {
+        "id": str(uuid.uuid4()),
+        "user_id": user_id,
+        "property_id": property_id,
+        "status": "approved",  # Auto-approve for now
+        "role": "resident",
+        "unit_number": unit_number,
+        "joined_at": datetime.utcnow(),
+        "approved_by": None,
+        "approved_at": datetime.utcnow(),
+        "documents": []
+    }
+    
+    await db.property_memberships.insert_one(new_membership)
+    
+    # Add to user's member_properties
+    await db.users.update_one(
+        {"id": user_id},
+        {"$addToSet": {"member_properties": property_id}}
+    )
+    
+    return {"message": "Successfully joined property", "membership_id": new_membership["id"]}
+
 # ============= HOA CHARGES & PAYMENT ENDPOINTS =============
 
 @api_router.post("/properties/{property_id}/hoa-charges", response_model=HOACharge)
