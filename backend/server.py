@@ -48,6 +48,7 @@ class UserRegister(BaseModel):
     username: str
     email: str
     password: str
+    property_ids: Optional[List[str]] = []  # Properties to join during registration
 
 class UserLogin(BaseModel):
     username: str
