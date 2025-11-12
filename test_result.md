@@ -256,13 +256,19 @@ frontend:
 metadata:
   created_by: "main_agent"
   version: "1.0"
-  test_sequence: 1
+  test_sequence: 2
   run_ui: false
 
 test_plan:
   current_focus:
-    - "Country Selection - Profile Update Endpoint"
-    - "Country Selection - Profile Page UI"
+    - "Property Membership - Public Properties Endpoint"
+    - "Property Membership - Registration with Properties"
+    - "Property Membership - Profile Member Properties"
+    - "Property Membership - Admin View Members"
+    - "Property Membership - Admin Add Members"
+    - "Property Membership - Admin Remove Members"
+    - "Property Membership - User Join Property"
+    - "Property Membership - Data Persistence"
   stuck_tasks: []
   test_all: false
   test_priority: "high_first"
