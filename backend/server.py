@@ -131,6 +131,30 @@ class PropertyUpdate(BaseModel):
     current_value: Optional[float] = None
     logo: Optional[str] = None  # base64 encoded image
 
+# Property Membership Models
+class PropertyMembership(BaseModel):
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    user_id: str
+    property_id: str
+    status: str = "approved"  # approved, pending, rejected
+    role: str = "resident"  # resident, owner, tenant
+    unit_number: Optional[str] = None
+    joined_at: datetime = Field(default_factory=datetime.utcnow)
+    approved_by: Optional[str] = None
+    approved_at: Optional[datetime] = None
+    documents: Optional[List[str]] = []  # base64 encoded documents for verification
+
+class PropertyMembershipCreate(BaseModel):
+    user_id: str
+    role: str = "resident"
+    unit_number: Optional[str] = None
+    status: str = "approved"
+
+class PropertyMembershipUpdate(BaseModel):
+    status: Optional[str] = None
+    role: Optional[str] = None
+    unit_number: Optional[str] = None
+
 class PropertyDocument(BaseModel):
     id: str = Field(default_factory=lambda: str(uuid.uuid4()))
     property_id: str
