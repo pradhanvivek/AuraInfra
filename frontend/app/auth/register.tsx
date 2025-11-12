@@ -197,6 +197,65 @@ export default function Register() {
           </View>
         </View>
       </KeyboardAvoidingView>
+
+      {/* Property Selection Modal */}
+      <Modal
+        visible={propertyModalVisible}
+        animationType="slide"
+        presentationStyle="pageSheet"
+        onRequestClose={() => setPropertyModalVisible(false)}
+      >
+        <SafeAreaView style={styles.modalContainer}>
+          <View style={styles.modalHeader}>
+            <TouchableOpacity onPress={() => setPropertyModalVisible(false)}>
+              <Text style={styles.cancelButton}>Cancel</Text>
+            </TouchableOpacity>
+            <Text style={styles.modalTitle}>Select Properties</Text>
+            <TouchableOpacity onPress={() => setPropertyModalVisible(false)}>
+              <Text style={styles.doneButton}>Done</Text>
+            </TouchableOpacity>
+          </View>
+
+          {loadingProperties ? (
+            <View style={styles.loadingContainer}>
+              <ActivityIndicator size="large" color="#007AFF" />
+              <Text style={styles.loadingText}>Loading properties...</Text>
+            </View>
+          ) : (
+            <FlatList
+              data={properties}
+              keyExtractor={(item) => item.id}
+              renderItem={({ item }) => (
+                <TouchableOpacity
+                  style={styles.propertyItem}
+                  onPress={() => togglePropertySelection(item.id)}
+                >
+                  <View style={styles.propertyInfo}>
+                    <View style={styles.propertyIcon}>
+                      <Ionicons name="business-outline" size={24} color="#007AFF" />
+                    </View>
+                    <View style={styles.propertyDetails}>
+                      <Text style={styles.propertyName}>{item.name}</Text>
+                      <Text style={styles.propertyAddress}>{item.address}</Text>
+                    </View>
+                  </View>
+                  {selectedProperties.includes(item.id) && (
+                    <Ionicons name="checkmark-circle" size={24} color="#007AFF" />
+                  )}
+                </TouchableOpacity>
+              )}
+              ListEmptyComponent={
+                <View style={styles.emptyContainer}>
+                  <Ionicons name="business-outline" size={48} color="#ccc" />
+                  <Text style={styles.emptyText}>No properties available</Text>
+                  <Text style={styles.emptySubtext}>You can skip this step and join a property later</Text>
+                </View>
+              }
+              contentContainerStyle={properties.length === 0 ? styles.emptyList : undefined}
+            />
+          )}
+        </SafeAreaView>
+      </Modal>
     </SafeAreaView>
   );
 }
