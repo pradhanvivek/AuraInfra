@@ -1087,12 +1087,39 @@ async def register(user: UserRegister):
         "is_super_admin": False,
         "is_hoa_admin": False,
         "managed_properties": [],
+        "member_properties": [],
         "disclaimer_accepted": False,
         "disclaimer_accepted_at": None,
         "created_at": datetime.utcnow()
     }
     
     await db.users.insert_one(user_doc)
+    
+    # Create property memberships if properties were selected
+    if user.property_ids:
+        for property_id in user.property_ids:
+            # Verify property exists
+            property_exists = await db.properties.find_one({"id": property_id})
+            if property_exists:
+                membership = {
+                    "id": str(uuid.uuid4()),
+                    "user_id": user_id,
+                    "property_id": property_id,
+                    "status": "approved",  # Auto-approve for now
+                    "role": "resident",
+                    "unit_number": None,
+                    "joined_at": datetime.utcnow(),
+                    "approved_by": None,
+                    "approved_at": datetime.utcnow(),
+                    "documents": []
+                }
+                await db.property_memberships.insert_one(membership)
+                
+                # Add to user's member_properties
+                await db.users.update_one(
+                    {"id": user_id},
+                    {"$addToSet": {"member_properties": property_id}}
+                )
     
     # Create token
     access_token = create_access_token({"user_id": user_id, "username": user.username})
