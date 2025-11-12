@@ -648,10 +648,7 @@ class PropertyMembership(BaseModel):
     joined_date: datetime = Field(default_factory=datetime.utcnow)
     end_date: Optional[datetime] = None
 
-class PropertyMembershipCreate(BaseModel):
-    property_id: str
-    role: str  # "owner", "tenant", "resident"
-    status: str = "active"
+# Removed duplicate PropertyMembershipCreate model - using the one at line 149
 
 # HOA Maintenance Charges
 class HOACharge(BaseModel):
