@@ -159,6 +159,24 @@ export default function Register() {
             />
 
             <TouchableOpacity
+              style={styles.propertySelector}
+              onPress={() => setPropertyModalVisible(true)}
+              disabled={loading}
+            >
+              <View style={styles.propertySelectorContent}>
+                <View>
+                  <Text style={styles.propertySelectorLabel}>Select Properties (Optional)</Text>
+                  <Text style={styles.propertySelectorValue}>
+                    {selectedProperties.length > 0
+                      ? `${selectedProperties.length} propert${selectedProperties.length === 1 ? 'y' : 'ies'} selected`
+                      : 'Choose your community'}
+                  </Text>
+                </View>
+                <Ionicons name="chevron-forward" size={20} color="#999" />
+              </View>
+            </TouchableOpacity>
+
+            <TouchableOpacity
               style={[styles.button, loading && styles.buttonDisabled]}
               onPress={handleRegister}
               disabled={loading}
