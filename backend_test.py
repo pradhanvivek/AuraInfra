@@ -100,9 +100,14 @@ class PropertyMembershipTester:
     def register_test_user(self, username, email, password, property_ids=None):
         """Helper to register a test user"""
         try:
+            # Add timestamp to make usernames unique
+            timestamp = datetime.now().strftime("%Y%m%d_%H%M%S_%f")
+            unique_username = f"{username}_{timestamp}"
+            unique_email = f"{username}_{timestamp}@test.com"
+            
             user_data = {
-                "username": username,
-                "email": email,
+                "username": unique_username,
+                "email": unique_email,
                 "password": password,
                 "property_ids": property_ids or []
             }
@@ -111,11 +116,11 @@ class PropertyMembershipTester:
             
             if response.status_code == 200:
                 user_info = response.json()
-                self.test_users[username] = user_info
-                self.log(f"✅ Registered test user: {username} (ID: {user_info['user_id']})")
+                self.test_users[username] = user_info  # Store with original name for easy access
+                self.log(f"✅ Registered test user: {unique_username} (ID: {user_info['user_id']})")
                 return user_info
             else:
-                self.log(f"❌ Failed to register user {username}: {response.text}")
+                self.log(f"❌ Failed to register user {unique_username}: {response.text}")
                 return None
                 
         except Exception as e:
