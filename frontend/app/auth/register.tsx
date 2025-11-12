@@ -11,6 +11,8 @@ import {
   ActivityIndicator,
   ScrollView,
   Image,
+  Modal,
+  FlatList,
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useAuth } from '../../contexts/AuthContext';
@@ -22,6 +24,13 @@ import Constants from 'expo-constants';
 
 const API_URL = Constants.expoConfig?.extra?.EXPO_PUBLIC_BACKEND_URL || process.env.EXPO_PUBLIC_BACKEND_URL;
 
+interface Property {
+  id: string;
+  name: string;
+  address: string;
+  logo?: string;
+}
+
 export default function Register() {
   const router = useRouter();
   const { register } = useAuth();
@@ -30,6 +39,10 @@ export default function Register() {
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [loading, setLoading] = useState(false);
+  const [properties, setProperties] = useState<Property[]>([]);
+  const [selectedProperties, setSelectedProperties] = useState<string[]>([]);
+  const [propertyModalVisible, setPropertyModalVisible] = useState(false);
+  const [loadingProperties, setLoadingProperties] = useState(false);
 
   const handleRegister = async () => {
     if (!username || !email || !password || !confirmPassword) {
