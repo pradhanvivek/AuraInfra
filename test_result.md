@@ -102,7 +102,7 @@
 # Testing Data - Main Agent and testing sub agent both should log testing data below this section
 #====================================================================================================
 
-user_problem_statement: "Move country selection from Paint Estimation screen to global user profile settings. Country should be saved to user profile and drive default currency, units, and pricing app-wide."
+user_problem_statement: "PHASE 1: User-Property Association & Residents Management - Implement property membership system where users can select properties during registration (auto-approved), admins can view residents in their managed properties, and admins can manually add/remove users to/from properties."
 
 backend:
   - task: "Country Selection - Profile Update Endpoint"
