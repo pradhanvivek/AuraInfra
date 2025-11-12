@@ -36,11 +36,11 @@ class PropertyMembershipTester:
         print(f"[{datetime.now().strftime('%H:%M:%S')}] {message}")
         
     def test_get_all_properties(self):
-        """Test GET /api/properties/all - No authentication required"""
-        self.log("Testing GET /api/properties/all...")
+        """Test GET /api/public/properties - No authentication required"""
+        self.log("Testing GET /api/public/properties...")
         
         try:
-            response = self.session.get(f"{API_BASE}/properties/all")
+            response = self.session.get(f"{API_BASE}/public/properties")
             
             if response.status_code == 200:
                 properties = response.json()
