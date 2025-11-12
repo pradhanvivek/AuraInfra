@@ -1171,6 +1171,9 @@ async def get_profile(user_id: str = Depends(get_current_user)):
         admin_assignments = await db.property_admin_assignments.find({"admin_user_id": user_id}).to_list(length=100)
         managed_properties = [assignment["property_id"] for assignment in admin_assignments]
     
+    # Get member properties from user document
+    member_properties = user_doc.get("member_properties", [])
+    
     return UserProfile(
         id=user_doc["id"],
         username=user_doc["username"],
@@ -1185,6 +1188,7 @@ async def get_profile(user_id: str = Depends(get_current_user)):
         is_super_admin=user_doc.get("is_super_admin", False),
         is_hoa_admin=user_doc.get("is_hoa_admin", False),
         managed_properties=managed_properties,
+        member_properties=member_properties,
         created_at=user_doc["created_at"]
     )
 
