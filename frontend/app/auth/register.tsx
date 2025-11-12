@@ -44,6 +44,30 @@ export default function Register() {
   const [propertyModalVisible, setPropertyModalVisible] = useState(false);
   const [loadingProperties, setLoadingProperties] = useState(false);
 
+  useEffect(() => {
+    fetchProperties();
+  }, []);
+
+  const fetchProperties = async () => {
+    setLoadingProperties(true);
+    try {
+      const response = await axios.get(`${API_URL}/api/public/properties`);
+      setProperties(response.data);
+    } catch (error) {
+      console.error('Error fetching properties:', error);
+    } finally {
+      setLoadingProperties(false);
+    }
+  };
+
+  const togglePropertySelection = (propertyId: string) => {
+    setSelectedProperties(prev =>
+      prev.includes(propertyId)
+        ? prev.filter(id => id !== propertyId)
+        : [...prev, propertyId]
+    );
+  };
+
   const handleRegister = async () => {
     if (!username || !email || !password || !confirmPassword) {
       Alert.alert('Error', 'Please fill in all fields');
@@ -69,7 +93,7 @@ export default function Register() {
 
     setLoading(true);
     try {
-      await register(username, email, password);
+      await register(username, email, password, selectedProperties);
       router.replace('/(tabs)');
     } catch (error: any) {
       Alert.alert('Registration Failed', error.message);
