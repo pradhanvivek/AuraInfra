@@ -73,7 +73,8 @@ class UserProfile(BaseModel):
     measurement_system: Optional[str] = None  # "imperial" or "metric"
     is_super_admin: bool = False
     is_hoa_admin: bool = False
-    managed_properties: Optional[List[str]] = []  # List of property IDs
+    managed_properties: Optional[List[str]] = []  # List of property IDs (admin)
+    member_properties: Optional[List[str]] = []  # List of property IDs (resident)
     disclaimer_accepted: bool = False
     disclaimer_accepted_at: Optional[datetime] = None
     created_at: datetime
