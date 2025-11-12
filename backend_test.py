@@ -637,7 +637,7 @@ class PropertyMembershipTester:
         self.log("=" * 80)
         
         tests = [
-            ("GET /api/properties/all", self.test_get_all_properties),
+            ("GET /api/public/properties", self.test_get_all_properties),
             ("User Registration with Properties", self.test_registration_with_properties),
             ("Profile Member Properties", self.test_profile_member_properties),
             ("Get Property Members (Admin)", self.test_get_property_members_admin),
