@@ -132,6 +132,45 @@ export default function CommunityPropertiesScreen() {
     setBuilderEmail('');
     setProjectDetails('');
     setIsActive(true);
+    setSuggestions([]);
+    setShowSuggestions(false);
+  };
+
+  // Google Places autocomplete functions
+  const fetchPlaceSuggestions = async (input: string) => {
+    if (!input || input.length < 2) {
+      setSuggestions([]);
+      return;
+    }
+
+    try {
+      const response = await axios.get(
+        `${API_URL}/api/places/autocomplete?input=${encodeURIComponent(input)}`,
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      if (response.data.predictions) {
+        setSuggestions(response.data.predictions);
+        setShowSuggestions(true);
+      }
+    } catch (error) {
+      console.error('Error fetching suggestions:', error);
+    }
+  };
+
+  const handleAddressChange = (text: string) => {
+    setAddress(text);
+    if (debounceTimer.current) {
+      clearTimeout(debounceTimer.current);
+    }
+    debounceTimer.current = setTimeout(() => {
+      fetchPlaceSuggestions(text);
+    }, 300);
+  };
+
+  const selectSuggestion = (suggestion: any) => {
+    setAddress(suggestion.description);
+    setShowSuggestions(false);
+    setSuggestions([]);
   };
 
   const handleSave = async () => {
