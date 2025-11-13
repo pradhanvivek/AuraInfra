@@ -133,6 +133,43 @@ class PropertyUpdate(BaseModel):
     current_value: Optional[float] = None
     logo: Optional[str] = None  # base64 encoded image
 
+# Community Property Models (for registration)
+class CommunityProperty(BaseModel):
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    name: str
+    address: str
+    logo: Optional[str] = None  # base64 encoded image
+    builder_name: Optional[str] = None
+    builder_contact: Optional[str] = None
+    builder_email: Optional[str] = None
+    project_details: Optional[str] = None
+    documents: Optional[List[str]] = []  # base64 encoded documents/brochures
+    is_active: bool = True  # Show on registration page
+    created_at: datetime = Field(default_factory=datetime.utcnow)
+    created_by: str  # Super admin user_id
+
+class CommunityPropertyCreate(BaseModel):
+    name: str
+    address: str
+    logo: Optional[str] = None
+    builder_name: Optional[str] = None
+    builder_contact: Optional[str] = None
+    builder_email: Optional[str] = None
+    project_details: Optional[str] = None
+    documents: Optional[List[str]] = []
+    is_active: bool = True
+
+class CommunityPropertyUpdate(BaseModel):
+    name: Optional[str] = None
+    address: Optional[str] = None
+    logo: Optional[str] = None
+    builder_name: Optional[str] = None
+    builder_contact: Optional[str] = None
+    builder_email: Optional[str] = None
+    project_details: Optional[str] = None
+    documents: Optional[List[str]] = None
+    is_active: Optional[bool] = None
+
 # Property Membership Models
 class PropertyMembership(BaseModel):
     id: str = Field(default_factory=lambda: str(uuid.uuid4()))
