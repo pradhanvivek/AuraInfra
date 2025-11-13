@@ -170,6 +170,39 @@ class CommunityPropertyUpdate(BaseModel):
     documents: Optional[List[str]] = None
     is_active: Optional[bool] = None
 
+# Maintenance Dues Models
+class MaintenanceDue(BaseModel):
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    property_id: str
+    user_id: str  # Resident who needs to pay
+    amount: float
+    due_date: datetime
+    description: str
+    status: str = "unpaid"  # unpaid, paid, overdue
+    created_by: str  # Admin user_id
+    created_at: datetime = Field(default_factory=datetime.utcnow)
+    paid_at: Optional[datetime] = None
+    payment_method: Optional[str] = None
+    payment_reference: Optional[str] = None
+
+class MaintenanceDueCreate(BaseModel):
+    user_id: str  # For individual
+    amount: float
+    due_date: datetime
+    description: str
+
+class BulkMaintenanceDueCreate(BaseModel):
+    amount: float
+    due_date: datetime
+    description: str
+    # Will be sent to all residents of the property
+
+class MaintenanceDueUpdate(BaseModel):
+    status: Optional[str] = None
+    paid_at: Optional[datetime] = None
+    payment_method: Optional[str] = None
+    payment_reference: Optional[str] = None
+
 # Property Membership Models
 class PropertyMembership(BaseModel):
     id: str = Field(default_factory=lambda: str(uuid.uuid4()))
