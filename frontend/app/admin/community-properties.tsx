@@ -712,4 +712,38 @@ const styles = StyleSheet.create({
   toggleThumbActive: {
     transform: [{ translateX: 20 }],
   },
+  suggestionsContainer: {
+    position: 'absolute',
+    top: '100%',
+    left: 0,
+    right: 0,
+    backgroundColor: '#fff',
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: '#E5E5E5',
+    marginTop: 4,
+    maxHeight: 200,
+    zIndex: 1000,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 5,
+  },
+  suggestionsList: {
+    maxHeight: 200,
+  },
+  suggestionItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: 12,
+    borderBottomWidth: 1,
+    borderBottomColor: '#F0F0F0',
+    gap: 8,
+  },
+  suggestionText: {
+    flex: 1,
+    fontSize: 14,
+    color: '#000',
+  },
 });
