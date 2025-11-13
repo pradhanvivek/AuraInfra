@@ -467,6 +467,9 @@ const styles = StyleSheet.create({
     color: '#000',
     marginLeft: 12,
   },
+  actionTextDisabled: {
+    color: '#C7C7CC',
+  },
   selectorContainer: {
     paddingHorizontal: 16,
     paddingVertical: 12,
