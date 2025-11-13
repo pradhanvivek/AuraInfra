@@ -56,6 +56,11 @@ export default function CommunityPropertiesScreen() {
   const [projectDetails, setProjectDetails] = useState('');
   const [isActive, setIsActive] = useState(true);
 
+  // Google Places autocomplete state
+  const [suggestions, setSuggestions] = useState<any[]>([]);
+  const [showSuggestions, setShowSuggestions] = useState(false);
+  const debounceTimer = useRef<any>(null);
+
   useEffect(() => {
     fetchProperties();
   }, []);
