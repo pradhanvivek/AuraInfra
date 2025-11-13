@@ -263,6 +263,31 @@ export default function AdminDashboard() {
           <Text style={styles.actionText}>Amenity Booking Approvals</Text>
           <Ionicons name="chevron-forward" size={20} color="#C7C7CC" />
         </TouchableOpacity>
+
+        {/* New Feature: Maintenance Dues */}
+        <TouchableOpacity
+          style={styles.actionButton}
+          onPress={() => router.push(`/admin/maintenance-dues/${selectedProperty}`)}
+          disabled={!selectedProperty}
+        >
+          <Ionicons name="receipt-outline" size={24} color={selectedProperty ? "#007AFF" : "#C7C7CC"} />
+          <Text style={[styles.actionText, !selectedProperty && styles.actionTextDisabled]}>
+            Maintenance Dues
+          </Text>
+          <Ionicons name="chevron-forward" size={20} color="#C7C7CC" />
+        </TouchableOpacity>
+
+        {/* Super Admin Only: Community Properties */}
+        {profile?.is_super_admin && (
+          <TouchableOpacity
+            style={styles.actionButton}
+            onPress={() => router.push('/admin/community-properties')}
+          >
+            <Ionicons name="business" size={24} color="#007AFF" />
+            <Text style={styles.actionText}>Community Properties</Text>
+            <Ionicons name="chevron-forward" size={20} color="#C7C7CC" />
+          </TouchableOpacity>
+        )}
       </View>
 
       {/* Super Admin Section */}
