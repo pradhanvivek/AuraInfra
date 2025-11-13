@@ -6243,13 +6243,26 @@ class ErrorMonitoringMiddleware(BaseHTTPMiddleware):
 # Add error monitoring middleware
 app.add_middleware(ErrorMonitoringMiddleware, alert_threshold=5)
 
-app.add_middleware(
-    CORSMiddleware,
-    allow_credentials=True,
-    allow_origins=["*"],
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
+# CORS configuration - restrict in production
+if IS_PRODUCTION:
+    # In production, specify exact origins
+    allowed_origins = os.getenv('ALLOWED_ORIGINS', '').split(',')
+    app.add_middleware(
+        CORSMiddleware,
+        allow_credentials=True,
+        allow_origins=allowed_origins if allowed_origins else ["https://yourdomain.com"],
+        allow_methods=["GET", "POST", "PUT", "DELETE"],
+        allow_headers=["Content-Type", "Authorization"],
+    )
+else:
+    # Development - allow all
+    app.add_middleware(
+        CORSMiddleware,
+        allow_credentials=True,
+        allow_origins=["*"],
+        allow_methods=["*"],
+        allow_headers=["*"],
+    )
 
 @app.on_event("shutdown")
 async def shutdown_db_client():
