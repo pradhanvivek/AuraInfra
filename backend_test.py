@@ -1,26 +1,22 @@
 #!/usr/bin/env python3
 """
-Backend Testing Script for PHASE 1: User-Property Association & Residents Management
-Tests all new endpoints and functionality for property membership system.
+Comprehensive Backend Testing for THREE MAJOR FEATURES:
+1. Super Admin Community Property Management
+2. Maintenance Dues System  
+3. Production Readiness
+
+This script tests all endpoints mentioned in the review request.
 """
 
 import requests
 import json
-import uuid
-from datetime import datetime
+import base64
 import os
-from dotenv import load_dotenv
+from datetime import datetime, timedelta
+from typing import Dict, Any, Optional
 
-# Load environment variables
-load_dotenv('/app/backend/.env')
-
-# Get backend URL from frontend .env
-with open('/app/frontend/.env', 'r') as f:
-    for line in f:
-        if line.startswith('EXPO_PUBLIC_BACKEND_URL='):
-            BACKEND_URL = line.split('=')[1].strip()
-            break
-
+# Configuration
+BACKEND_URL = os.getenv('REACT_APP_BACKEND_URL', 'https://smartinfra.preview.emergentagent.com')
 API_BASE = f"{BACKEND_URL}/api"
 
 class PropertyMembershipTester:
