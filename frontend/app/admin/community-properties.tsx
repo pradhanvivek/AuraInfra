@@ -346,7 +346,7 @@ export default function CommunityPropertiesScreen() {
             />
 
             <Text style={styles.label}>Address *</Text>
-            <View>
+            <View style={{ zIndex: 1000 }}>
               <TextInput
                 style={styles.input}
                 value={address}
