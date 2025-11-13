@@ -4280,31 +4280,16 @@ async def test_public_endpoint():
 
 @api_router.get("/public/properties")
 async def get_all_properties():
-    """Get all properties (for registration property selection) - No authentication required"""
-    properties = await db.properties.find({}).to_list(length=1000)
+    """Get all community properties (for registration property selection) - No authentication required"""
+    # Get only active community properties added by super admins
+    properties = await db.community_properties.find({"is_active": True}).to_list(length=1000)
     result = []
     for prop in properties:
         if '_id' in prop:
             prop['_id'] = str(prop['_id'])
-        
-        name = prop["name"]
-        
-        # Skip test properties
-        if name.lower().startswith("test") or "test" in name.lower():
-            continue
-        
-        # Skip properties that look like unit numbers (e.g., "F4", "A-101", "B12")
-        # These are likely individual units, not community properties
-        import re
-        if re.match(r'^[A-Z]\d+$|^[A-Z]-\d+$|^[A-Z]\d+,', name):
-            continue
-        
-        # Remove unit number prefix if present (e.g., "F4, Property Name" -> "Property Name")
-        cleaned_name = re.sub(r'^[A-Z]\d+,\s*|^[A-Z]-\d+,\s*', '', name)
-        
         result.append({
             "id": prop["id"],
-            "name": cleaned_name,
+            "name": prop["name"],
             "address": prop["address"],
             "logo": prop.get("logo")
         })
