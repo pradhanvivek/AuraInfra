@@ -102,7 +102,7 @@
 # Testing Data - Main Agent and testing sub agent both should log testing data below this section
 #====================================================================================================
 
-user_problem_statement: "PHASE 1: User-Property Association & Residents Management - Implement property membership system where users can select properties during registration (auto-approved), admins can view residents in their managed properties, and admins can manually add/remove users to/from properties."
+user_problem_statement: "THREE MAJOR FEATURES: 1) Super Admin Community Property Management - Super admins can add/manage community properties shown on registration page (not using regular DB properties). 2) Maintenance Dues System - Admins can send dues to individual or all residents with payment tracking. 3) Production Readiness - Remove sensitive logging, add environment configuration, secure CORS."
 
 backend:
   - task: "Country Selection - Profile Update Endpoint"
