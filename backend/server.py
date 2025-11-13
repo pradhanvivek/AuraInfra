@@ -5570,6 +5570,80 @@ async def get_all_users(super_admin_id: str = Depends(verify_super_admin)):
     
     return result
 
+# ============= SUPER ADMIN - COMMUNITY PROPERTY MANAGEMENT =============
+
+@api_router.post("/admin/super/community-properties")
+async def create_community_property(
+    property_data: CommunityPropertyCreate,
+    super_admin_id: str = Depends(verify_super_admin)
+):
+    """Create a new community property for registration"""
+    new_property = CommunityProperty(
+        **property_data.dict(),
+        created_by=super_admin_id
+    )
+    
+    await db.community_properties.insert_one(new_property.dict())
+    return {"message": "Community property created successfully", "id": new_property.id}
+
+@api_router.get("/admin/super/community-properties")
+async def get_all_community_properties(super_admin_id: str = Depends(verify_super_admin)):
+    """Get all community properties"""
+    properties = await db.community_properties.find({}).to_list(length=1000)
+    for prop in properties:
+        if '_id' in prop:
+            prop['_id'] = str(prop['_id'])
+    return properties
+
+@api_router.get("/admin/super/community-properties/{property_id}")
+async def get_community_property(
+    property_id: str,
+    super_admin_id: str = Depends(verify_super_admin)
+):
+    """Get single community property with builder page details"""
+    property_doc = await db.community_properties.find_one({"id": property_id})
+    if not property_doc:
+        raise HTTPException(status_code=404, detail="Community property not found")
+    
+    if '_id' in property_doc:
+        property_doc['_id'] = str(property_doc['_id'])
+    
+    return property_doc
+
+@api_router.put("/admin/super/community-properties/{property_id}")
+async def update_community_property(
+    property_id: str,
+    property_update: CommunityPropertyUpdate,
+    super_admin_id: str = Depends(verify_super_admin)
+):
+    """Update community property including logo and builder page"""
+    property_doc = await db.community_properties.find_one({"id": property_id})
+    if not property_doc:
+        raise HTTPException(status_code=404, detail="Community property not found")
+    
+    update_data = {k: v for k, v in property_update.dict().items() if v is not None}
+    
+    if update_data:
+        await db.community_properties.update_one(
+            {"id": property_id},
+            {"$set": update_data}
+        )
+    
+    return {"message": "Community property updated successfully"}
+
+@api_router.delete("/admin/super/community-properties/{property_id}")
+async def delete_community_property(
+    property_id: str,
+    super_admin_id: str = Depends(verify_super_admin)
+):
+    """Delete community property"""
+    result = await db.community_properties.delete_one({"id": property_id})
+    
+    if result.deleted_count == 0:
+        raise HTTPException(status_code=404, detail="Community property not found")
+    
+    return {"message": "Community property deleted successfully"}
+
 # -------- HOA ADMIN ENDPOINTS --------
 
 @api_router.get("/admin/properties/{property_id}/dashboard", response_model=AdminDashboardStats)
