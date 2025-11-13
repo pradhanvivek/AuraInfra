@@ -1135,7 +1135,9 @@ backend:
 
 test_plan:
   current_focus:
-    - "User Authentication - Login"
+    - "Super Admin Community Property Management"
+    - "Maintenance Dues System"
+    - "Production Readiness"
   stuck_tasks: []
   test_all: false
   test_priority: "high_first"
