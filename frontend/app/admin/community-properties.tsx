@@ -346,13 +346,34 @@ export default function CommunityPropertiesScreen() {
             />
 
             <Text style={styles.label}>Address *</Text>
-            <TextInput
-              style={styles.input}
-              value={address}
-              onChangeText={setAddress}
-              placeholder="Enter address"
-              multiline
-            />
+            <View>
+              <TextInput
+                style={styles.input}
+                value={address}
+                onChangeText={handleAddressChange}
+                placeholder="Start typing address..."
+                multiline
+              />
+              {showSuggestions && suggestions.length > 0 && (
+                <View style={styles.suggestionsContainer}>
+                  <FlatList
+                    data={suggestions}
+                    keyExtractor={(item) => item.place_id}
+                    renderItem={({ item }) => (
+                      <TouchableOpacity
+                        style={styles.suggestionItem}
+                        onPress={() => selectSuggestion(item)}
+                      >
+                        <Ionicons name="location-outline" size={20} color="#007AFF" />
+                        <Text style={styles.suggestionText}>{item.description}</Text>
+                      </TouchableOpacity>
+                    )}
+                    style={styles.suggestionsList}
+                    nestedScrollEnabled
+                  />
+                </View>
+              )}
+            </View>
 
             <Text style={styles.label}>Logo</Text>
             <TouchableOpacity style={styles.imagePickerButton} onPress={pickImage}>
