@@ -5424,7 +5424,205 @@ async def get_meeting_rsvps(meeting_id: str, user_id: str = Depends(get_current_
             r['_id'] = str(r['_id'])
     return rsvps
 
+# ============= MAINTENANCE DUES ENDPOINTS =============
 
+@api_router.post("/properties/{property_id}/dues")
+async def create_maintenance_due(
+    property_id: str,
+    due_data: MaintenanceDueCreate,
+    user_id: str = Depends(get_current_user)
+):
+    """Send maintenance due to individual resident (admin only)"""
+    # Check if user is admin of this property
+    user_doc = await db.users.find_one({"id": user_id})
+    if not user_doc:
+        raise HTTPException(status_code=404, detail="User not found")
+    
+    is_super_admin = user_doc.get("is_super_admin", False)
+    admin_assignment = await db.property_admin_assignments.find_one({
+        "admin_user_id": user_id,
+        "property_id": property_id
+    })
+    
+    if not is_super_admin and not admin_assignment:
+        raise HTTPException(status_code=403, detail="Not authorized to send dues")
+    
+    # Verify target user is member of this property
+    membership = await db.property_memberships.find_one({
+        "user_id": due_data.user_id,
+        "property_id": property_id
+    })
+    if not membership:
+        raise HTTPException(status_code=400, detail="User is not a member of this property")
+    
+    # Create due
+    new_due = MaintenanceDue(
+        property_id=property_id,
+        user_id=due_data.user_id,
+        amount=due_data.amount,
+        due_date=due_data.due_date,
+        description=due_data.description,
+        created_by=user_id
+    )
+    
+    await db.maintenance_dues.insert_one(new_due.dict())
+    return {"message": "Maintenance due created successfully", "id": new_due.id}
+
+@api_router.post("/properties/{property_id}/dues/bulk")
+async def create_bulk_maintenance_dues(
+    property_id: str,
+    due_data: BulkMaintenanceDueCreate,
+    user_id: str = Depends(get_current_user)
+):
+    """Send maintenance dues to all residents of property (admin only)"""
+    # Check if user is admin of this property
+    user_doc = await db.users.find_one({"id": user_id})
+    if not user_doc:
+        raise HTTPException(status_code=404, detail="User not found")
+    
+    is_super_admin = user_doc.get("is_super_admin", False)
+    admin_assignment = await db.property_admin_assignments.find_one({
+        "admin_user_id": user_id,
+        "property_id": property_id
+    })
+    
+    if not is_super_admin and not admin_assignment:
+        raise HTTPException(status_code=403, detail="Not authorized to send dues")
+    
+    # Get all residents of this property
+    memberships = await db.property_memberships.find({"property_id": property_id}).to_list(length=1000)
+    
+    if not memberships:
+        raise HTTPException(status_code=400, detail="No residents found for this property")
+    
+    # Create dues for all residents
+    created_count = 0
+    for membership in memberships:
+        new_due = MaintenanceDue(
+            property_id=property_id,
+            user_id=membership["user_id"],
+            amount=due_data.amount,
+            due_date=due_data.due_date,
+            description=due_data.description,
+            created_by=user_id
+        )
+        await db.maintenance_dues.insert_one(new_due.dict())
+        created_count += 1
+    
+    return {"message": f"Maintenance dues created for {created_count} residents", "count": created_count}
+
+@api_router.get("/properties/{property_id}/dues")
+async def get_property_dues(
+    property_id: str,
+    status: Optional[str] = None,
+    user_id: str = Depends(get_current_user)
+):
+    """Get all maintenance dues for a property (admin only)"""
+    # Check if user is admin of this property
+    user_doc = await db.users.find_one({"id": user_id})
+    if not user_doc:
+        raise HTTPException(status_code=404, detail="User not found")
+    
+    is_super_admin = user_doc.get("is_super_admin", False)
+    admin_assignment = await db.property_admin_assignments.find_one({
+        "admin_user_id": user_id,
+        "property_id": property_id
+    })
+    
+    if not is_super_admin and not admin_assignment:
+        raise HTTPException(status_code=403, detail="Not authorized to view dues")
+    
+    # Build query
+    query = {"property_id": property_id}
+    if status:
+        query["status"] = status
+    
+    dues = await db.maintenance_dues.find(query).sort("due_date", -1).to_list(length=1000)
+    
+    # Enrich with user details
+    result = []
+    for due in dues:
+        if '_id' in due:
+            due['_id'] = str(due['_id'])
+        
+        # Get user details
+        user = await db.users.find_one({"id": due["user_id"]})
+        if user:
+            due["username"] = user.get("username")
+            due["email"] = user.get("email")
+        
+        result.append(due)
+    
+    return result
+
+@api_router.get("/users/dues")
+async def get_user_dues(user_id: str = Depends(get_current_user)):
+    """Get current user's maintenance dues"""
+    dues = await db.maintenance_dues.find({"user_id": user_id}).sort("due_date", -1).to_list(length=1000)
+    
+    for due in dues:
+        if '_id' in due:
+            due['_id'] = str(due['_id'])
+        
+        # Get property details
+        property_doc = await db.community_properties.find_one({"id": due["property_id"]})
+        if property_doc:
+            due["property_name"] = property_doc.get("name")
+            due["property_address"] = property_doc.get("address")
+    
+    return dues
+
+@api_router.put("/dues/{due_id}")
+async def update_maintenance_due(
+    due_id: str,
+    due_update: MaintenanceDueUpdate,
+    user_id: str = Depends(get_current_user)
+):
+    """Update maintenance due status (user marks as paid)"""
+    due_doc = await db.maintenance_dues.find_one({"id": due_id})
+    if not due_doc:
+        raise HTTPException(status_code=404, detail="Maintenance due not found")
+    
+    # Only allow user to update their own dues
+    if due_doc["user_id"] != user_id:
+        raise HTTPException(status_code=403, detail="Not authorized to update this due")
+    
+    update_data = {k: v for k, v in due_update.dict().items() if v is not None}
+    
+    if update_data:
+        await db.maintenance_dues.update_one(
+            {"id": due_id},
+            {"$set": update_data}
+        )
+    
+    return {"message": "Maintenance due updated successfully"}
+
+@api_router.delete("/dues/{due_id}")
+async def delete_maintenance_due(
+    due_id: str,
+    user_id: str = Depends(get_current_user)
+):
+    """Delete maintenance due (admin only)"""
+    due_doc = await db.maintenance_dues.find_one({"id": due_id})
+    if not due_doc:
+        raise HTTPException(status_code=404, detail="Maintenance due not found")
+    
+    # Check if user is admin of the property
+    user_doc = await db.users.find_one({"id": user_id})
+    if not user_doc:
+        raise HTTPException(status_code=404, detail="User not found")
+    
+    is_super_admin = user_doc.get("is_super_admin", False)
+    admin_assignment = await db.property_admin_assignments.find_one({
+        "admin_user_id": user_id,
+        "property_id": due_doc["property_id"]
+    })
+    
+    if not is_super_admin and not admin_assignment:
+        raise HTTPException(status_code=403, detail="Not authorized to delete this due")
+    
+    await db.maintenance_dues.delete_one({"id": due_id})
+    return {"message": "Maintenance due deleted successfully"}
 
 # ============= ADMIN ENDPOINTS =============
 
