@@ -66,10 +66,6 @@ export default function DisclaimerScreen() {
   }, []);
 
   const handleAccept = async () => {
-    console.log('Accept button clicked');
-    console.log('API_URL:', API_URL);
-    console.log('Token:', token);
-    
     setAccepting(true);
     try {
       const response = await axios.post(
