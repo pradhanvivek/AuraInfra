@@ -182,7 +182,8 @@ export default function DocumentsScreen({ propertyId }: DocumentsScreenProps) {
       return;
     }
 
-    // For PDFs and other documents, open externally
+    // For PDFs and other documents, open externally using Sharing API
+    // This handles Android FileProvider automatically
     try {
       const base64Data = doc.file_data;
       const fileUri = `${FileSystem.cacheDirectory}${doc.name}`;
@@ -192,21 +193,19 @@ export default function DocumentsScreen({ propertyId }: DocumentsScreenProps) {
         encoding: FileSystem.EncodingType.Base64,
       });
 
-      // Try to open with default app first
-      const canOpen = await Linking.canOpenURL(fileUri);
-      if (canOpen) {
-        await Linking.openURL(fileUri);
+      // Use Sharing API which handles Android FileProvider automatically
+      const isAvailable = await Sharing.isAvailableAsync();
+      if (isAvailable) {
+        await Sharing.shareAsync(fileUri, {
+          mimeType: doc.file_type,
+          dialogTitle: `Open ${doc.name}`,
+          UTI: doc.file_type,
+        });
       } else {
-        // Fallback to sharing
-        const isAvailable = await Sharing.isAvailableAsync();
-        if (isAvailable) {
-          await Sharing.shareAsync(fileUri);
+        if (Platform.OS === 'web') {
+          alert('Sharing not available on web. Please download the file.');
         } else {
-          if (Platform.OS === 'web') {
-            alert('Cannot open this file type on web. Please download it.');
-          } else {
-            Alert.alert('Error', 'Cannot open this file type on your device');
-          }
+          Alert.alert('Error', 'Cannot open this file type on your device');
         }
       }
     } catch (error) {
