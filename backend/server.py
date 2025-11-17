@@ -33,12 +33,14 @@ JWT_SECRET = os.environ['JWT_SECRET']
 JWT_ALGORITHM = os.environ.get('JWT_ALGORITHM', 'HS256')
 security = HTTPBearer()
 
-# Create the main app
+# Create the main app with security settings
 app = FastAPI(
     title="AuraInfra.ai API",
     version="1.0.0",
     docs_url="/docs" if not IS_PRODUCTION else None,  # Disable docs in production
-    redoc_url="/redoc" if not IS_PRODUCTION else None
+    redoc_url="/redoc" if not IS_PRODUCTION else None,
+    # Don't include request/response bodies in error messages
+    include_in_schema=not IS_PRODUCTION
 )
 
 # Create a router with the /api prefix
