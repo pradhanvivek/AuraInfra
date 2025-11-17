@@ -178,37 +178,9 @@ export default function DocumentsScreen({ propertyId }: DocumentsScreenProps) {
   };
 
   const handleViewDocument = async (doc: Document) => {
-    // For PDFs - Save and open in external viewer using Linking
-    if (doc.file_type === 'application/pdf') {
-      try {
-        const fileUri = `${FileSystem.documentDirectory}${doc.name.replace(/\s+/g, '_')}.pdf`;
-        
-        // Save the PDF file
-        await FileSystem.writeAsStringAsync(fileUri, doc.file_data, {
-          encoding: FileSystem.EncodingType.Base64,
-        });
-        
-        // Open the PDF in external viewer
-        const canOpen = await Linking.canOpenURL(fileUri);
-        if (canOpen) {
-          await Linking.openURL(fileUri);
-        } else {
-          // Fallback to sharing if direct open doesn't work
-          if (await Sharing.isAvailableAsync()) {
-            await Sharing.shareAsync(fileUri);
-          } else {
-            Alert.alert('Success', 'PDF saved to documents folder: ' + fileUri);
-          }
-        }
-      } catch (error: any) {
-        console.error('Error opening PDF:', error);
-        Alert.alert('Error', 'Failed to open PDF: ' + (error.message || 'Unknown error'));
-      }
-    } else {
-      // For images and other files - Show in-app viewer
-      setSelectedDocument(doc);
-      setViewModalVisible(true);
-    }
+    // Show all documents in modal viewer (including PDFs)
+    setSelectedDocument(doc);
+    setViewModalVisible(true);
   };
 
   const handleDeleteDocument = (doc: Document) => {
