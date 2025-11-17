@@ -209,7 +209,7 @@ export default function PropertiesScreen() {
       title: 'My Dues',
       icon: 'receipt-outline',
       color: '#FF9500',
-      route: '/dues/index',
+      route: '/dues',
     },
   ];
 
