@@ -942,4 +942,32 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     paddingHorizontal: 40,
   },
+  viewerModalContainer: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.9)',
+  },
+  viewerModalContent: {
+    flex: 1,
+    backgroundColor: '#fff',
+  },
+  viewerModalHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    padding: 16,
+    paddingTop: 50,
+    backgroundColor: '#fff',
+    borderBottomWidth: 1,
+    borderBottomColor: '#E5E5EA',
+  },
+  viewerModalTitle: {
+    fontSize: 18,
+    fontWeight: '600',
+    color: '#000',
+    flex: 1,
+    marginRight: 16,
+  },
+  webView: {
+    flex: 1,
+  },
 });
