@@ -1169,3 +1169,26 @@ test_plan:
 agent_communication:
   - agent: "main"
     message: "IMPLEMENTED EMAIL OR USERNAME LOGIN FEATURE: Modified POST /api/auth/login endpoint to accept both email addresses and usernames as login identifiers. Backend now intelligently detects if input contains '@' to determine if it's an email or username, then queries the appropriate field in MongoDB. Frontend login screen updated with 'Email or Username' placeholder. Backend service restarted. Ready for comprehensive testing with both authentication methods."
+
+frontend:
+  - task: "HOA Documents View Button - Blank Screen Fix"
+    implemented: true
+    working: "NA"
+    file: "frontend/app/hoa-documents.tsx"
+    stuck_count: 1
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: false
+        agent: "user"
+        comment: "User reported that after an attempted fix, the 'View' button now opens a blank modal for all file types (PDFs and images) on iOS. Previously it could at least display images. The WebView-based implementation was failing to render any content."
+      - working: "NA"
+        agent: "troubleshoot"
+        comment: "ROOT CAUSE IDENTIFIED: The previous implementation attempted to use WebView with base64 data URIs embedded in an iframe within HTML, which is inherently fragile and incorrect. WebView has security restrictions and inconsistent behavior when rendering base64 data URIs in iframes, especially for PDFs. This complex solution was causing blank screens for all file types."
+      - working: "NA"
+        agent: "main"
+        comment: "CRITICAL FIX APPLIED: Abandoned the failed WebView iframe approach and implemented the proven stable pattern from DocumentsScreen.tsx. Changes: 1) For images: Use native React Native <Image> component to display directly in modal with base64 data URI, 2) For PDFs: Use WebView with direct data URI source (not embedded in iframe), 3) Added proper loading states and error handling, 4) Android continues to use IntentLauncher for external viewing (already working), 5) Added conditional rendering based on mimeType.startsWith('image/') to determine display method. Frontend service restarted. Ready for testing to verify images display in modal and PDFs load in WebView on iOS."
+
+agent_communication:
+  - agent: "main"
+    message: "HOA DOCUMENTS VIEW BUTTON FIX COMPLETED: Fixed critical blank screen issue on iOS by abandoning the failed WebView iframe implementation. Implemented the proven stable pattern: Images now display using React Native's <Image> component with base64 data URIs in a ScrollView modal, PDFs display using WebView with direct data URI source (no iframe). Added proper loading indicators and error states. Android continues to use IntentLauncher for external viewing. This matches the successful pattern used in DocumentsScreen.tsx. Frontend service restarted and ready for testing."
