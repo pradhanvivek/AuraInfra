@@ -38,75 +38,125 @@ class BackendTester:
         print(f"{status}: {test_name} - {message}")
         if details:
             print(f"   Details: {details}")
-        
-    def create_test_users(self):
-        """Create test users for different roles"""
-        print("\n=== CREATING TEST USERS ===")
-        
-        # Create super admin user
-        super_admin_data = {
-            "username": "superadmin_test",
-            "email": "superadmin@test.com", 
-            "password": "SuperAdmin123!",
-            "property_ids": []
-        }
-        
+    
+    def register_test_user(self):
+        """Register a test user for authentication"""
         try:
-            response = requests.post(f"{API_BASE}/auth/register", json=super_admin_data)
-            if response.status_code == 200:
-                result = response.json()
-                self.super_admin_token = result["access_token"]
-                super_admin_id = result["user_id"]
-                
-                # Make user super admin by updating database directly via API
-                # We'll use a workaround - check if user exists and manually set super admin
-                print(f"Super admin created with ID: {super_admin_id}")
-                self.log_result("Create Super Admin User", True, f"User ID: {super_admin_id}")
-            else:
-                # User might already exist, try login
-                login_response = requests.post(f"{API_BASE}/auth/login", json={
-                    "username": "superadmin_test",
-                    "password": "SuperAdmin123!"
-                })
-                if login_response.status_code == 200:
-                    result = login_response.json()
-                    self.super_admin_token = result["access_token"]
-                    self.log_result("Login Super Admin User", True, "Existing user logged in")
-                else:
-                    self.log_result("Create/Login Super Admin User", False, f"Status: {response.status_code}")
-                    
-        except Exception as e:
-            self.log_result("Create Super Admin User", False, str(e))
+            test_username = f"testuser_{uuid.uuid4().hex[:8]}"
+            test_email = f"test_{uuid.uuid4().hex[:8]}@example.com"
             
-        # Create regular user
-        regular_user_data = {
-            "username": "regular_test",
-            "email": "regular@test.com",
-            "password": "Regular123!",
-            "property_ids": []
-        }
-        
-        try:
-            response = requests.post(f"{API_BASE}/auth/register", json=regular_user_data)
+            payload = {
+                "username": test_username,
+                "email": test_email,
+                "password": "TestPassword123!",
+                "property_ids": []
+            }
+            
+            response = requests.post(f"{API_BASE}/auth/register", json=payload)
+            
             if response.status_code == 200:
-                result = response.json()
-                self.regular_user_token = result["access_token"]
-                self.log_result("Create Regular User", True, f"User ID: {result['user_id']}")
+                data = response.json()
+                self.auth_token = data["access_token"]
+                self.user_id = data["user_id"]
+                self.log_result("User Registration", True, f"Registered user: {test_username}")
+                return True
             else:
-                # Try login if user exists
-                login_response = requests.post(f"{API_BASE}/auth/login", json={
-                    "username": "regular_test", 
-                    "password": "Regular123!"
-                })
-                if login_response.status_code == 200:
-                    result = login_response.json()
-                    self.regular_user_token = result["access_token"]
-                    self.log_result("Login Regular User", True, "Existing user logged in")
-                else:
-                    self.log_result("Create/Login Regular User", False, f"Status: {response.status_code}")
-                    
+                self.log_result("User Registration", False, f"Status: {response.status_code}, Response: {response.text}")
+                return False
+                
         except Exception as e:
-            self.log_result("Create Regular User", False, str(e))
+            self.log_result("User Registration", False, f"Exception: {str(e)}")
+            return False
+    
+    def create_test_property(self):
+        """Create a test property for document testing"""
+        try:
+            headers = {"Authorization": f"Bearer {self.auth_token}"}
+            payload = {
+                "name": "Test Property for PDF Documents",
+                "address": "123 Test Street, Test City, TC 12345",
+                "purchase_cost": 500000.0,
+                "current_value": 550000.0
+            }
+            
+            response = requests.post(f"{API_BASE}/properties", json=payload, headers=headers)
+            
+            if response.status_code == 200:
+                data = response.json()
+                self.property_id = data["id"]
+                self.log_result("Property Creation", True, f"Created property: {data['name']}")
+                return True
+            else:
+                self.log_result("Property Creation", False, f"Status: {response.status_code}, Response: {response.text}")
+                return False
+                
+        except Exception as e:
+            self.log_result("Property Creation", False, f"Exception: {str(e)}")
+            return False
+    
+    def create_test_pdf_base64(self):
+        """Create a simple test PDF in base64 format"""
+        # Simple PDF content (minimal PDF structure)
+        pdf_content = """%PDF-1.4
+1 0 obj
+<<
+/Type /Catalog
+/Pages 2 0 R
+>>
+endobj
+
+2 0 obj
+<<
+/Type /Pages
+/Kids [3 0 R]
+/Count 1
+>>
+endobj
+
+3 0 obj
+<<
+/Type /Page
+/Parent 2 0 R
+/MediaBox [0 0 612 792]
+/Contents 4 0 R
+>>
+endobj
+
+4 0 obj
+<<
+/Length 44
+>>
+stream
+BT
+/F1 12 Tf
+100 700 Td
+(Test PDF Document) Tj
+ET
+endstream
+endobj
+
+xref
+0 5
+0000000000 65535 f 
+0000000009 00000 n 
+0000000058 00000 n 
+0000000115 00000 n 
+0000000206 00000 n 
+trailer
+<<
+/Size 5
+/Root 1 0 R
+>>
+startxref
+299
+%%EOF"""
+        return base64.b64encode(pdf_content.encode()).decode()
+    
+    def create_test_image_base64(self):
+        """Create a simple test image in base64 format (1x1 PNG)"""
+        # Minimal 1x1 transparent PNG
+        png_data = b'\x89PNG\r\n\x1a\n\x00\x00\x00\rIHDR\x00\x00\x00\x01\x00\x00\x00\x01\x08\x06\x00\x00\x00\x1f\x15\xc4\x89\x00\x00\x00\nIDATx\x9cc\x00\x01\x00\x00\x05\x00\x01\r\n-\xdb\x00\x00\x00\x00IEND\xaeB`\x82'
+        return base64.b64encode(png_data).decode()
             
     def test_super_admin_community_properties(self):
         """Test Super Admin Community Property Management endpoints"""
