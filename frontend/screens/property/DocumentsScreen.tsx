@@ -183,8 +183,7 @@ export default function DocumentsScreen({ propertyId }: DocumentsScreenProps) {
       return;
     }
 
-    // For PDFs and other documents, open externally using Sharing API
-    // This handles Android FileProvider automatically
+    // For PDFs and other documents, open externally
     try {
       const base64Data = doc.file_data;
       const fileUri = `${FileSystem.cacheDirectory}${doc.name}`;
@@ -194,20 +193,26 @@ export default function DocumentsScreen({ propertyId }: DocumentsScreenProps) {
         encoding: FileSystem.EncodingType.Base64,
       });
 
-      // Use Sharing API which handles Android FileProvider automatically
-      const isAvailable = await Sharing.isAvailableAsync();
-      if (isAvailable) {
+      if (Platform.OS === 'android') {
+        // Android: Use IntentLauncher to open file directly in viewer app
+        const contentUri = await FileSystem.getContentUriAsync(fileUri);
+        await IntentLauncher.startActivityAsync('android.intent.action.VIEW', {
+          data: contentUri,
+          flags: 1,
+          type: doc.file_type,
+        });
+      } else if (Platform.OS === 'ios') {
+        // iOS: Use Sharing API which opens in preview/viewer
         await Sharing.shareAsync(fileUri, {
           mimeType: doc.file_type,
-          dialogTitle: `Open ${doc.name}`,
           UTI: doc.file_type,
         });
       } else {
-        if (Platform.OS === 'web') {
-          alert('Sharing not available on web. Please download the file.');
-        } else {
-          Alert.alert('Error', 'Cannot open this file type on your device');
-        }
+        // Web: Download the file
+        const link = document.createElement('a');
+        link.href = `data:${doc.file_type};base64,${base64Data}`;
+        link.download = doc.name;
+        link.click();
       }
     } catch (error) {
       console.error('Error opening document:', error);
