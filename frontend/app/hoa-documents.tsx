@@ -642,14 +642,9 @@ export default function HOADocumentsScreen() {
                     source={{ uri: `data:${viewerDocument.mimeType};base64,${viewerDocument.fileData}` }}
                     style={styles.webView}
                     originWhitelist={['*']}
-                    allowFileAccess={true}
-                    allowFileAccessFromFileURLs={true}
-                    allowUniversalAccessFromFileURLs={true}
                     javaScriptEnabled={true}
                     domStorageEnabled={true}
                     startInLoadingState={true}
-                    scalesPageToFit={true}
-                    scrollEnabled={true}
                     renderLoading={() => (
                       <View style={styles.loadingContainer}>
                         <ActivityIndicator size="large" color="#007AFF" />
