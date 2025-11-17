@@ -233,11 +233,15 @@ export default function HOADocumentsScreen() {
 
   const handleViewDocument = async (doc: Document) => {
     try {
+      console.log('handleViewDocument called for:', doc.title);
+      
       // Fetch the document with file data
       const response = await axios.get(
         `${API_URL}/api/properties/${propertyId}/hoa-documents/${doc.id}`,
         { headers: { Authorization: `Bearer ${token}` } }
       );
+      
+      console.log('Document fetched, file_type:', response.data.file_type);
       
       // Support both file_data (new) and file_url (old/legacy)
       let fileData = response.data.file_data || response.data.file_url;
@@ -255,8 +259,7 @@ export default function HOADocumentsScreen() {
       const fileName = doc.file_name || `${doc.title}.pdf`;
       const mimeType = response.data.file_type || 'application/pdf';
 
-      // Check if it's an image
-      const isImage = mimeType.startsWith('image/');
+      console.log('Processing document - mimeType:', mimeType, 'Platform:', Platform.OS);
 
       if (Platform.OS === 'android') {
         // Android: Use IntentLauncher to open file directly in viewer app
@@ -272,14 +275,29 @@ export default function HOADocumentsScreen() {
           type: mimeType,
         });
       } else if (Platform.OS === 'ios') {
-        // iOS: Show in modal viewer (Image for images, WebView for PDFs)
-        setViewerDocument({
-          title: doc.title,
-          fileData: fileData,
-          mimeType: mimeType,
-          fileName: fileName,
-        });
-        setViewerModalVisible(true);
+        // iOS: For PDFs, use Sharing API instead of WebView (more reliable)
+        if (mimeType.includes('pdf')) {
+          console.log('Opening PDF with Sharing API');
+          const fileUri = `${FileSystem.cacheDirectory}${fileName}`;
+          await FileSystem.writeAsStringAsync(fileUri, fileData, {
+            encoding: FileSystem.EncodingType.Base64,
+          });
+          
+          await Sharing.shareAsync(fileUri, {
+            mimeType: mimeType,
+            UTI: mimeType,
+          });
+        } else {
+          // For images, show in modal
+          console.log('Opening image in modal');
+          setViewerDocument({
+            title: doc.title,
+            fileData: fileData,
+            mimeType: mimeType,
+            fileName: fileName,
+          });
+          setViewerModalVisible(true);
+        }
       } else {
         // Web: Download the file
         const link = document.createElement('a');
@@ -287,12 +305,13 @@ export default function HOADocumentsScreen() {
         link.download = fileName;
         link.click();
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error viewing document:', error);
+      console.error('Error stack:', error.stack);
       if (Platform.OS === 'web') {
-        alert('Failed to open document');
+        alert('Failed to open document: ' + error.message);
       } else {
-        Alert.alert('Error', 'Failed to open document');
+        Alert.alert('Error', 'Failed to open document: ' + error.message);
       }
     }
   };
