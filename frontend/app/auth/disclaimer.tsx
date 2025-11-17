@@ -148,15 +148,9 @@ export default function DisclaimerScreen() {
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>AI-Powered Features</Text>
           <Text style={styles.text}>
-            • AuraInfra.ai uses artificial intelligence to scan receipts, estimate values, and analyze property data.{'
-
-'}
-            • AI-generated information is provided for convenience and may not always be 100% accurate.{'
-
-'}
-            • You should verify important information independently.{'
-
-'}
+            • AuraInfra.ai uses artificial intelligence to scan receipts, estimate values, and analyze property data.{'\n\n'}
+            • AI-generated information is provided for convenience and may not always be 100% accurate.{'\n\n'}
+            • You should verify important information independently.{'\n\n'}
             • We are not responsible for decisions made based solely on AI-generated data.
           </Text>
         </View>
