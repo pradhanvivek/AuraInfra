@@ -615,7 +615,7 @@ export default function HOADocumentsScreen() {
         </KeyboardAvoidingView>
       </Modal>
 
-      {/* Image Viewer Modal (iOS Images Only) */}
+      {/* Document Viewer Modal (iOS) */}
       <Modal visible={viewerModalVisible} animationType="slide" transparent>
         <View style={styles.viewerModalContainer}>
           <View style={styles.viewerModalContent}>
@@ -626,13 +626,47 @@ export default function HOADocumentsScreen() {
               </TouchableOpacity>
             </View>
             {viewerDocument && (
-              <ScrollView style={styles.imageViewerContainer} contentContainerStyle={styles.imageViewerContent}>
-                <Image
-                  source={{ uri: `data:${viewerDocument.mimeType};base64,${viewerDocument.fileData}` }}
-                  style={styles.documentImage}
-                  resizeMode="contain"
-                />
-              </ScrollView>
+              <>
+                {viewerDocument.mimeType.startsWith('image/') ? (
+                  // Display images using Image component
+                  <ScrollView style={styles.imageViewerContainer} contentContainerStyle={styles.imageViewerContent}>
+                    <Image
+                      source={{ uri: `data:${viewerDocument.mimeType};base64,${viewerDocument.fileData}` }}
+                      style={styles.documentImage}
+                      resizeMode="contain"
+                    />
+                  </ScrollView>
+                ) : (
+                  // Display PDFs using WebView with direct data URI
+                  <WebView
+                    source={{ uri: `data:${viewerDocument.mimeType};base64,${viewerDocument.fileData}` }}
+                    style={styles.webView}
+                    originWhitelist={['*']}
+                    allowFileAccess={true}
+                    allowFileAccessFromFileURLs={true}
+                    allowUniversalAccessFromFileURLs={true}
+                    javaScriptEnabled={true}
+                    domStorageEnabled={true}
+                    startInLoadingState={true}
+                    scalesPageToFit={true}
+                    scrollEnabled={true}
+                    renderLoading={() => (
+                      <View style={styles.loadingContainer}>
+                        <ActivityIndicator size="large" color="#007AFF" />
+                        <Text style={styles.loadingText}>Loading PDF...</Text>
+                      </View>
+                    )}
+                    onError={(syntheticEvent) => {
+                      const { nativeEvent } = syntheticEvent;
+                      console.error('WebView error: ', nativeEvent);
+                    }}
+                    onLoadEnd={(syntheticEvent) => {
+                      const { nativeEvent } = syntheticEvent;
+                      console.log('WebView loaded: ', nativeEvent.title);
+                    }}
+                  />
+                )}
+              </>
             )}
           </View>
         </View>
