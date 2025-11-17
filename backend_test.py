@@ -1,22 +1,20 @@
 #!/usr/bin/env python3
 """
-Comprehensive Backend Testing for THREE MAJOR FEATURES:
-1. Super Admin Community Property Management
-2. Maintenance Dues System  
-3. Production Readiness
+PHASE 1 - PDF VIEWER CRITICAL FIX TESTING
 
-This script tests all endpoints mentioned in the review request.
+Testing document management endpoints after fixing the missing react-native-blob-util dependency.
+Focus on verifying that PDF and image documents can be uploaded, retrieved, and managed without server errors.
 """
 
 import requests
 import json
 import base64
+import uuid
+from datetime import datetime
 import os
-from datetime import datetime, timedelta
-from typing import Dict, Any, Optional
 
-# Configuration
-BACKEND_URL = os.getenv('REACT_APP_BACKEND_URL', 'https://property-pulse-91.preview.emergentagent.com')
+# Get backend URL from frontend .env
+BACKEND_URL = "https://property-pulse-91.preview.emergentagent.com"
 API_BASE = f"{BACKEND_URL}/api"
 
 class BackendTester:
