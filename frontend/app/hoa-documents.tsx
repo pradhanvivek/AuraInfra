@@ -255,6 +255,9 @@ export default function HOADocumentsScreen() {
       const fileName = doc.file_name || `${doc.title}.pdf`;
       const mimeType = response.data.file_type || 'application/pdf';
 
+      // Check if it's an image
+      const isImage = mimeType.startsWith('image/');
+
       if (Platform.OS === 'android') {
         // Android: Use IntentLauncher to open file directly in viewer app
         const fileUri = `${FileSystem.cacheDirectory}${fileName}`;
@@ -269,11 +272,12 @@ export default function HOADocumentsScreen() {
           type: mimeType,
         });
       } else if (Platform.OS === 'ios') {
-        // iOS: Show document in WebView modal
+        // iOS: Show document in modal (Image for images, WebView for PDFs)
         setViewerDocument({
           title: doc.title,
           fileData: fileData,
           mimeType: mimeType,
+          fileName: fileName,
         });
         setViewerModalVisible(true);
       } else {
