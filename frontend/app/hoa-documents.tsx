@@ -970,9 +970,6 @@ const styles = StyleSheet.create({
     flex: 1,
     marginRight: 16,
   },
-  webView: {
-    flex: 1,
-  },
   imageViewerContainer: {
     flex: 1,
     backgroundColor: '#000',
@@ -987,20 +984,5 @@ const styles = StyleSheet.create({
     width: '100%',
     height: 500,
     minHeight: 300,
-  },
-  loadingContainer: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: '#fff',
-  },
-  loadingText: {
-    marginTop: 12,
-    fontSize: 16,
-    color: '#8E8E93',
   },
 });
