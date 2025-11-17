@@ -19,25 +19,25 @@ API_BASE = f"{BACKEND_URL}/api"
 
 class BackendTester:
     def __init__(self):
-        self.super_admin_token = None
-        self.regular_user_token = None
-        self.admin_user_token = None
-        self.test_results = []
-        self.community_property_id = None
+        self.auth_token = None
+        self.user_id = None
         self.property_id = None
-        self.due_id = None
+        self.test_results = []
         
-    def log_result(self, test_name: str, success: bool, details: str = ""):
+    def log_result(self, test_name, success, message, details=None):
         """Log test result"""
-        status = "✅ PASS" if success else "❌ FAIL"
-        print(f"{status}: {test_name}")
-        if details:
-            print(f"   Details: {details}")
-        self.test_results.append({
+        result = {
             "test": test_name,
             "success": success,
-            "details": details
-        })
+            "message": message,
+            "details": details,
+            "timestamp": datetime.now().isoformat()
+        }
+        self.test_results.append(result)
+        status = "✅ PASS" if success else "❌ FAIL"
+        print(f"{status}: {test_name} - {message}")
+        if details:
+            print(f"   Details: {details}")
         
     def create_test_users(self):
         """Create test users for different roles"""
