@@ -607,6 +607,11 @@ const styles = StyleSheet.create({
     maxHeight: 400,
     backgroundColor: '#000',
   },
+  pdf: {
+    flex: 1,
+    width: Dimensions.get('window').width,
+    height: Dimensions.get('window').height,
+  },
   pdfPlaceholder: {
     width: '100%',
     height: 300,
