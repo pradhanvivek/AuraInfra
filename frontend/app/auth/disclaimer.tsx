@@ -158,15 +158,9 @@ export default function DisclaimerScreen() {
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Disclaimer of Liability</Text>
           <Text style={styles.text}>
-            • AuraInfra.ai is provided "as is" without warranties of any kind.{'
-
-'}
-            • We are not responsible for any loss, damage, or legal issues arising from the use of this application.{'
-
-'}
-            • Property valuations, Vastu/Feng Shui analysis, and paint estimates are for informational purposes only.{'
-
-'}
+            • AuraInfra.ai is provided "as is" without warranties of any kind.{'\n\n'}
+            • We are not responsible for any loss, damage, or legal issues arising from the use of this application.{'\n\n'}
+            • Property valuations, Vastu/Feng Shui analysis, and paint estimates are for informational purposes only.{'\n\n'}
             • Always consult with professional advisors for legal, financial, or property-related decisions.
           </Text>
         </View>
@@ -174,15 +168,9 @@ export default function DisclaimerScreen() {
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>User Responsibilities</Text>
           <Text style={styles.text}>
-            • You are responsible for maintaining the accuracy of your property and asset information.{'
-
-'}
-            • You must keep your login credentials secure and not share them with others.{'
-
-'}
-            • You agree to use the application in compliance with all applicable laws.{'
-
-'}
+            • You are responsible for maintaining the accuracy of your property and asset information.{'\n\n'}
+            • You must keep your login credentials secure and not share them with others.{'\n\n'}
+            • You agree to use the application in compliance with all applicable laws.{'\n\n'}
             • Misuse of the platform may result in account suspension or termination.
           </Text>
         </View>
@@ -190,12 +178,8 @@ export default function DisclaimerScreen() {
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Document Storage</Text>
           <Text style={styles.text}>
-            • You may upload documents, photos, and receipts related to your properties and assets.{'
-
-'}
-            • You are responsible for ensuring you have the right to upload and store these documents.{'
-
-'}
+            • You may upload documents, photos, and receipts related to your properties and assets.{'\n\n'}
+            • You are responsible for ensuring you have the right to upload and store these documents.{'\n\n'}
             • We recommend keeping original copies of important documents in secure physical or cloud storage.
           </Text>
         </View>
