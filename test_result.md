@@ -253,21 +253,21 @@ frontend:
         agent: "main"
         comment: "COUNTRY SELECTION FRONTEND IMPLEMENTATION COMPLETED: Updated profile page with full country selection functionality. Added country field to UserProfile interface. Implemented handleCountryChange function that calls PUT /api/auth/profile to save selected country. Updated fetchProfile to load country from profile data and set selectedCountry state. Modified all country option buttons in modal to call handleCountryChange with proper saving states and visual feedback. Added selected state styling to country options. Frontend service restarted successfully. Ready for testing to verify: 1) Country dropdown displays current country from profile, 2) Selecting country saves to backend and updates UI, 3) Success/error alerts display appropriately, 4) Country persists after app reload."
 
-backend:
-  - task: "PDF Viewer - Missing Dependency Fix"
+frontend:
+  - task: "PDF Viewer - Expo Go Compatibility Fix"
     implemented: true
-    working: true
+    working: "NA"
     file: "frontend/screens/property/DocumentsScreen.tsx"
-    stuck_count: 0
+    stuck_count: 1
     priority: "high"
-    needs_retesting: false
+    needs_retesting: true
     status_history:
+      - working: false
+        agent: "user"
+        comment: "User reported 'Uncaught Error: Your JavaScript code tried to access a native module that doesn't exist' when trying to access documents tab in iOS Expo Go app. Error shows react-native-pdf import causing the issue."
       - working: "NA"
         agent: "main"
-        comment: "CRITICAL FIX APPLIED: Installed missing peer dependency react-native-blob-util@0.23.2 required by react-native-pdf. The DocumentsScreen.tsx uses react-native-pdf component (lines 25, 402-411) for native PDF viewing and WebView for web. Without react-native-blob-util, the app crashes with a server error. Both backend and frontend services restarted successfully. Ready for testing to verify: 1) Documents screen loads without errors, 2) PDF documents can be viewed in-app on native platforms, 3) Image documents display correctly, 4) No server crashes when accessing documents tab."
-      - working: true
-        agent: "testing"
-        comment: "COMPREHENSIVE PDF VIEWER CRITICAL FIX TESTING COMPLETED SUCCESSFULLY: All 10 test objectives achieved with 100% success rate. CRITICAL VERIFICATION: 1) Backend Health - API responding correctly without server errors, 2) Document Endpoints Working - GET /api/properties/{property_id}/documents returns proper document lists (tested empty and populated states), 3) PDF Upload Test - POST endpoint successfully accepts application/pdf file_type with base64 encoding, stores and returns complete document structure (id, name, file_type, file_data, uploaded_at), 4) Image Upload Test - POST endpoint successfully accepts image/png file_type, proper storage and retrieval verified, 5) Complete CRUD Flow - End-to-end document management working: Create property → Upload PDF → Upload Image → Retrieve documents list → Verify both files present → Delete documents. Authentication properly enforced (403 Forbidden without JWT token). All document API endpoints respond with 200 OK, no 500 server errors encountered. The react-native-blob-util dependency fix has completely resolved the original server crash issue. PDF and image document management backend functionality is now production-ready and fully operational."
+        comment: "CRITICAL FIX APPLIED: react-native-pdf is a native module that requires custom development build and is NOT compatible with Expo Go. Reverted to external PDF viewer approach: 1) Removed react-native-pdf and react-native-blob-util imports and dependencies, 2) Updated handleViewDocument to open PDFs externally using FileSystem + Linking.openURL with Sharing.shareAsync fallback, 3) Images still display in modal viewer, 4) Removed WebView-based PDF rendering code, 5) Cleared Metro cache and restarted frontend. PDFs now open in device's default external PDF viewer (Adobe Reader, Files app, etc.). Both backend and frontend services restarted successfully. Ready for testing."
 
 metadata:
   created_by: "main_agent"
