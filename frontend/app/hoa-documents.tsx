@@ -221,6 +221,120 @@ export default function HOADocumentsScreen() {
     return cat?.icon || 'document';
   };
 
+  const handleViewDocument = async (doc: Document) => {
+    try {
+      // Fetch the document with file data
+      const response = await axios.get(
+        `${API_URL}/api/properties/${propertyId}/hoa-documents/${doc.id}`,
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      
+      const fileData = response.data.file_data;
+      const fileName = doc.file_name || `${doc.title}.pdf`;
+      const mimeType = response.data.file_type || 'application/pdf';
+      
+      // Write file to cache
+      const fileUri = `${FileSystem.cacheDirectory}${fileName}`;
+      await FileSystem.writeAsStringAsync(fileUri, fileData, {
+        encoding: FileSystem.EncodingType.Base64,
+      });
+
+      if (Platform.OS === 'android') {
+        // Android: Use IntentLauncher to open file directly
+        const contentUri = await FileSystem.getContentUriAsync(fileUri);
+        await IntentLauncher.startActivityAsync('android.intent.action.VIEW', {
+          data: contentUri,
+          flags: 1,
+          type: mimeType,
+        });
+      } else if (Platform.OS === 'ios') {
+        // iOS: Use Sharing API which opens in preview
+        await Sharing.shareAsync(fileUri, {
+          mimeType: mimeType,
+          UTI: mimeType,
+        });
+      } else {
+        // Web: Download the file
+        const link = document.createElement('a');
+        link.href = `data:${mimeType};base64,${fileData}`;
+        link.download = fileName;
+        link.click();
+      }
+    } catch (error) {
+      console.error('Error viewing document:', error);
+      Alert.alert('Error', 'Failed to view document');
+    }
+  };
+
+  const handleDownloadDocument = async (doc: Document) => {
+    try {
+      // Fetch the document with file data
+      const response = await axios.get(
+        `${API_URL}/api/properties/${propertyId}/hoa-documents/${doc.id}`,
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      
+      const fileData = response.data.file_data;
+      const fileName = doc.file_name || `${doc.title}.pdf`;
+      
+      if (Platform.OS === 'web') {
+        // Web: Direct download
+        const link = document.createElement('a');
+        link.href = `data:${response.data.file_type || 'application/pdf'};base64,${fileData}`;
+        link.download = fileName;
+        link.click();
+        Alert.alert('Success', 'Document downloaded');
+      } else {
+        // Mobile: Save to cache and share
+        const fileUri = `${FileSystem.cacheDirectory}${fileName}`;
+        await FileSystem.writeAsStringAsync(fileUri, fileData, {
+          encoding: FileSystem.EncodingType.Base64,
+        });
+        
+        await Sharing.shareAsync(fileUri, {
+          mimeType: response.data.file_type || 'application/pdf',
+          dialogTitle: `Download ${doc.title}`,
+        });
+      }
+    } catch (error) {
+      console.error('Error downloading document:', error);
+      Alert.alert('Error', 'Failed to download document');
+    }
+  };
+
+  const handleShareDocument = async (doc: Document) => {
+    try {
+      // Fetch the document with file data
+      const response = await axios.get(
+        `${API_URL}/api/properties/${propertyId}/hoa-documents/${doc.id}`,
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      
+      const fileData = response.data.file_data;
+      const fileName = doc.file_name || `${doc.title}.pdf`;
+      const fileUri = `${FileSystem.cacheDirectory}${fileName}`;
+      
+      // Write file to cache
+      await FileSystem.writeAsStringAsync(fileUri, fileData, {
+        encoding: FileSystem.EncodingType.Base64,
+      });
+
+      // Check if sharing is available
+      const isAvailable = await Sharing.isAvailableAsync();
+      if (isAvailable) {
+        await Sharing.shareAsync(fileUri, {
+          mimeType: response.data.file_type || 'application/pdf',
+          dialogTitle: `Share ${doc.title}`,
+        });
+      } else {
+        Alert.alert('Error', 'Sharing is not available on this device');
+      }
+    } catch (error) {
+      console.error('Error sharing document:', error);
+      Alert.alert('Error', 'Failed to share document');
+    }
+  };
+
   const renderDocumentCard = (doc: Document) => {
     return (
       <TouchableOpacity key={doc.id} style={styles.card} activeOpacity={0.7}>
