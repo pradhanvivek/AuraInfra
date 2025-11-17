@@ -5357,6 +5357,22 @@ async def get_hoa_documents(
             d['_id'] = str(d['_id'])
     return documents
 
+@api_router.get("/properties/{property_id}/hoa-documents/{document_id}")
+async def get_hoa_document_by_id(
+    property_id: str,
+    document_id: str,
+    user_id: str = Depends(get_current_user)
+):
+    """Get a single HOA document with file data"""
+    document = await db.documents.find_one({"id": document_id, "property_id": property_id})
+    if not document:
+        raise HTTPException(status_code=404, detail="Document not found")
+    
+    if '_id' in document:
+        document['_id'] = str(document['_id'])
+    
+    return document
+
 @api_router.delete("/documents/{document_id}")
 async def delete_document_simple(document_id: str, user_id: str = Depends(get_current_user)):
     """Delete a document (uploader or admin only) - Legacy endpoint"""
