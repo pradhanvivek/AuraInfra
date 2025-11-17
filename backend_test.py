@@ -327,12 +327,11 @@ startxref
     def test_backend_health(self):
         """Test that backend is responding"""
         try:
-            # Try a simple endpoint that should exist
-            response = requests.get(f"{BACKEND_URL}/docs", timeout=10)
+            # Try the public properties endpoint which should work without auth
+            response = requests.get(f"{API_BASE}/public/properties", timeout=10)
             
-            # In production, docs might be disabled, so check for any response
-            if response.status_code in [200, 404, 403]:
-                self.log_result("Backend Health", True, f"Backend responding (status: {response.status_code})")
+            if response.status_code == 200:
+                self.log_result("Backend Health", True, f"Backend responding correctly (status: {response.status_code})")
                 return True
             else:
                 self.log_result("Backend Health", False, f"Unexpected status: {response.status_code}")
