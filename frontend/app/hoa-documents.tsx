@@ -252,15 +252,14 @@ export default function HOADocumentsScreen() {
       
       const fileName = doc.file_name || `${doc.title}.pdf`;
       const mimeType = response.data.file_type || 'application/pdf';
-      
-      // Write file to cache
-      const fileUri = `${FileSystem.cacheDirectory}${fileName}`;
-      await FileSystem.writeAsStringAsync(fileUri, fileData, {
-        encoding: FileSystem.EncodingType.Base64,
-      });
 
       if (Platform.OS === 'android') {
-        // Android: Use IntentLauncher to open file directly
+        // Android: Use IntentLauncher to open file directly in viewer app
+        const fileUri = `${FileSystem.cacheDirectory}${fileName}`;
+        await FileSystem.writeAsStringAsync(fileUri, fileData, {
+          encoding: FileSystem.EncodingType.Base64,
+        });
+        
         const contentUri = await FileSystem.getContentUriAsync(fileUri);
         await IntentLauncher.startActivityAsync('android.intent.action.VIEW', {
           data: contentUri,
@@ -268,11 +267,13 @@ export default function HOADocumentsScreen() {
           type: mimeType,
         });
       } else if (Platform.OS === 'ios') {
-        // iOS: Use Sharing API which opens in preview
-        await Sharing.shareAsync(fileUri, {
+        // iOS: Show document in WebView modal
+        setViewerDocument({
+          title: doc.title,
+          fileData: fileData,
           mimeType: mimeType,
-          UTI: mimeType,
         });
+        setViewerModalVisible(true);
       } else {
         // Web: Download the file
         const link = document.createElement('a');
@@ -282,7 +283,11 @@ export default function HOADocumentsScreen() {
       }
     } catch (error) {
       console.error('Error viewing document:', error);
-      Alert.alert('Error', 'Failed to view document');
+      if (Platform.OS === 'web') {
+        alert('Failed to open document');
+      } else {
+        Alert.alert('Error', 'Failed to open document');
+      }
     }
   };
 
