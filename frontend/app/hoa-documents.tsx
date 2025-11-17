@@ -628,7 +628,7 @@ export default function HOADocumentsScreen() {
         </KeyboardAvoidingView>
       </Modal>
 
-      {/* Document Viewer Modal (iOS) */}
+      {/* Image Viewer Modal (iOS Images Only) */}
       <Modal visible={viewerModalVisible} animationType="slide" transparent>
         <View style={styles.viewerModalContainer}>
           <View style={styles.viewerModalContent}>
@@ -639,35 +639,13 @@ export default function HOADocumentsScreen() {
               </TouchableOpacity>
             </View>
             {viewerDocument && (
-              <>
-                {viewerDocument.mimeType.startsWith('image/') ? (
-                  // Display images using Image component
-                  <ScrollView style={styles.imageViewerContainer} contentContainerStyle={styles.imageViewerContent}>
-                    <Image
-                      source={{ uri: `data:${viewerDocument.mimeType};base64,${viewerDocument.fileData}` }}
-                      style={styles.documentImage}
-                      resizeMode="contain"
-                    />
-                  </ScrollView>
-                ) : (
-                  // Display PDFs using WebView
-                  <WebView
-                    source={{ uri: `data:${viewerDocument.mimeType};base64,${viewerDocument.fileData}` }}
-                    style={styles.webView}
-                    javaScriptEnabled={true}
-                    domStorageEnabled={true}
-                    startInLoadingState={true}
-                    scalesPageToFit={true}
-                    scrollEnabled={true}
-                    renderLoading={() => (
-                      <View style={styles.loadingContainer}>
-                        <ActivityIndicator size="large" color="#007AFF" />
-                        <Text style={styles.loadingText}>Loading document...</Text>
-                      </View>
-                    )}
-                  />
-                )}
-              </>
+              <ScrollView style={styles.imageViewerContainer} contentContainerStyle={styles.imageViewerContent}>
+                <Image
+                  source={{ uri: `data:${viewerDocument.mimeType};base64,${viewerDocument.fileData}` }}
+                  style={styles.documentImage}
+                  resizeMode="contain"
+                />
+              </ScrollView>
             )}
           </View>
         </View>
