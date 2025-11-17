@@ -272,14 +272,27 @@ export default function HOADocumentsScreen() {
           type: mimeType,
         });
       } else if (Platform.OS === 'ios') {
-        // iOS: Show document in modal (Image for images, WebView for PDFs)
-        setViewerDocument({
-          title: doc.title,
-          fileData: fileData,
-          mimeType: mimeType,
-          fileName: fileName,
-        });
-        setViewerModalVisible(true);
+        if (isImage) {
+          // iOS Images: Show in modal with Image component
+          setViewerDocument({
+            title: doc.title,
+            fileData: fileData,
+            mimeType: mimeType,
+            fileName: fileName,
+          });
+          setViewerModalVisible(true);
+        } else {
+          // iOS PDFs: Use Sharing API (WebView doesn't support PDF data URIs reliably)
+          const fileUri = `${FileSystem.cacheDirectory}${fileName}`;
+          await FileSystem.writeAsStringAsync(fileUri, fileData, {
+            encoding: FileSystem.EncodingType.Base64,
+          });
+          
+          await Sharing.shareAsync(fileUri, {
+            mimeType: mimeType,
+            UTI: mimeType,
+          });
+        }
       } else {
         // Web: Download the file
         const link = document.createElement('a');
