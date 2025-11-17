@@ -974,7 +974,9 @@ class Document(BaseModel):
     title: str
     category: str  # "bylaws", "minutes", "financial", "notice", "form", "other"
     description: Optional[str] = None
-    file_url: Optional[str] = None  # URL or base64
+    file_url: Optional[str] = None  # URL or base64 (deprecated, use file_data)
+    file_data: Optional[str] = None  # base64 encoded file content
+    file_type: Optional[str] = None  # MIME type
     file_name: Optional[str] = None
     file_size: Optional[int] = None  # in bytes
     uploaded_by: str  # user_id
@@ -987,6 +989,8 @@ class DocumentCreate(BaseModel):
     category: str
     description: Optional[str] = None
     file_url: Optional[str] = None
+    file_data: Optional[str] = None  # base64 encoded file content
+    file_type: Optional[str] = None  # MIME type
     file_name: Optional[str] = None
     file_size: Optional[int] = None
 
