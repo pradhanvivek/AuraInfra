@@ -80,25 +80,30 @@ export default function CommunityPropertiesScreen() {
   };
 
   const pickImage = async () => {
-    const result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: [ImagePicker.MediaType.Images],
-      allowsEditing: true,
-      aspect: [1, 1],
-      quality: 0.5,
-    });
+    try {
+      const result = await ImagePicker.launchImageLibraryAsync({
+        mediaTypes: Platform.OS === 'web' ? 'Images' as any : ImagePicker.MediaType.Images,
+        allowsEditing: true,
+        aspect: [1, 1],
+        quality: 0.5,
+      });
 
-    if (!result.canceled && result.assets[0]) {
-      const asset = result.assets[0];
-      const base64 = await fetch(asset.uri)
-        .then((res) => res.blob())
-        .then((blob) => {
-          return new Promise<string>((resolve) => {
-            const reader = new FileReader();
-            reader.onloadend = () => resolve(reader.result as string);
-            reader.readAsDataURL(blob);
+      if (!result.canceled && result.assets[0]) {
+        const asset = result.assets[0];
+        const base64 = await fetch(asset.uri)
+          .then((res) => res.blob())
+          .then((blob) => {
+            return new Promise<string>((resolve) => {
+              const reader = new FileReader();
+              reader.onloadend = () => resolve(reader.result as string);
+              reader.readAsDataURL(blob);
+            });
           });
-        });
-      setLogo(base64);
+        setLogo(base64);
+      }
+    } catch (error) {
+      console.error('Error picking image:', error);
+      Alert.alert('Error', 'Failed to pick image. Please try again.');
     }
   };
 
