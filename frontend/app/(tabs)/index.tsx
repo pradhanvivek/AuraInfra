@@ -705,6 +705,8 @@ const styles = StyleSheet.create({
     color: '#1C1C1E',
     textAlign: 'center',
     lineHeight: 13,
+    flexShrink: 1,
+    paddingHorizontal: 2,
   },
   adCard: {
     opacity: 0.95,
