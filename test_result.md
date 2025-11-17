@@ -253,22 +253,28 @@ frontend:
         agent: "main"
         comment: "COUNTRY SELECTION FRONTEND IMPLEMENTATION COMPLETED: Updated profile page with full country selection functionality. Added country field to UserProfile interface. Implemented handleCountryChange function that calls PUT /api/auth/profile to save selected country. Updated fetchProfile to load country from profile data and set selectedCountry state. Modified all country option buttons in modal to call handleCountryChange with proper saving states and visual feedback. Added selected state styling to country options. Frontend service restarted successfully. Ready for testing to verify: 1) Country dropdown displays current country from profile, 2) Selecting country saves to backend and updates UI, 3) Success/error alerts display appropriately, 4) Country persists after app reload."
 
+backend:
+  - task: "PDF Viewer - Missing Dependency Fix"
+    implemented: true
+    working: "NA"
+    file: "frontend/screens/property/DocumentsScreen.tsx"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "CRITICAL FIX APPLIED: Installed missing peer dependency react-native-blob-util@0.23.2 required by react-native-pdf. The DocumentsScreen.tsx uses react-native-pdf component (lines 25, 402-411) for native PDF viewing and WebView for web. Without react-native-blob-util, the app crashes with a server error. Both backend and frontend services restarted successfully. Ready for testing to verify: 1) Documents screen loads without errors, 2) PDF documents can be viewed in-app on native platforms, 3) Image documents display correctly, 4) No server crashes when accessing documents tab."
+
 metadata:
   created_by: "main_agent"
   version: "1.0"
-  test_sequence: 2
+  test_sequence: 3
   run_ui: false
 
 test_plan:
   current_focus:
-    - "Property Membership - Public Properties Endpoint"
-    - "Property Membership - Registration with Properties"
-    - "Property Membership - Profile Member Properties"
-    - "Property Membership - Admin View Members"
-    - "Property Membership - Admin Add Members"
-    - "Property Membership - Admin Remove Members"
-    - "Property Membership - User Join Property"
-    - "Property Membership - Data Persistence"
+    - "PDF Viewer - Missing Dependency Fix"
   stuck_tasks: []
   test_all: false
   test_priority: "high_first"
