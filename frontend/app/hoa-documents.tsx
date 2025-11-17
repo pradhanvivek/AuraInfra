@@ -384,15 +384,15 @@ export default function HOADocumentsScreen() {
         </View>
 
         <View style={styles.actions}>
-          <TouchableOpacity style={styles.actionButton}>
+          <TouchableOpacity style={styles.actionButton} onPress={() => handleViewDocument(doc)}>
             <Ionicons name="eye-outline" size={20} color="#007AFF" />
             <Text style={styles.actionText}>View</Text>
           </TouchableOpacity>
-          <TouchableOpacity style={styles.actionButton}>
+          <TouchableOpacity style={styles.actionButton} onPress={() => handleDownloadDocument(doc)}>
             <Ionicons name="download-outline" size={20} color="#007AFF" />
             <Text style={styles.actionText}>Download</Text>
           </TouchableOpacity>
-          <TouchableOpacity style={styles.actionButton}>
+          <TouchableOpacity style={styles.actionButton} onPress={() => handleShareDocument(doc)}>
             <Ionicons name="share-outline" size={20} color="#007AFF" />
             <Text style={styles.actionText}>Share</Text>
           </TouchableOpacity>
