@@ -9,7 +9,7 @@ import base64
 import os
 
 # Configuration
-BACKEND_URL = "https://property-pulse-91.preview.emergentagent.com"
+BACKEND_URL = "https://aurainfra-docfix.preview.emergentagent.com"
 API_BASE = f"{BACKEND_URL}/api"
 
 # Test user credentials
