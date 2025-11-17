@@ -1192,3 +1192,7 @@ frontend:
 agent_communication:
   - agent: "main"
     message: "HOA DOCUMENTS VIEW BUTTON FIX COMPLETED: Fixed critical blank screen issue on iOS by abandoning the failed WebView iframe implementation. Implemented the proven stable pattern: Images now display using React Native's <Image> component with base64 data URIs in a ScrollView modal, PDFs display using WebView with direct data URI source (no iframe). Added proper loading indicators and error states. Android continues to use IntentLauncher for external viewing. This matches the successful pattern used in DocumentsScreen.tsx. Frontend service restarted and ready for testing."
+
+      - working: "NA"
+        agent: "main"
+        comment: "CRITICAL FIX APPLIED - WebView Limitation Resolved: After research confirmed that WebView on iOS cannot reliably render PDF data URIs (known WKWebView limitation as of 2024-2025), reverted to the proven stable pattern from DocumentsScreen.tsx. Final implementation: 1) iOS Images: Display using React Native <Image> component in modal with ScrollView (works perfectly), 2) iOS PDFs: Use Sharing.shareAsync to open in system PDF viewer (reliable external viewing), 3) Android: Continue using IntentLauncher for external viewing (already working), 4) Removed WebView import and unused WebView/loading styles to clean up code. This matches the exact successful pattern used in DocumentsScreen.tsx. Frontend service restarted. Ready for testing - images should display in-app, PDFs should open in system viewer on iOS."
