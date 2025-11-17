@@ -4301,7 +4301,7 @@ async def get_all_properties():
 
 @api_router.get("/properties/{property_id}/members")
 async def get_property_members(property_id: str, user_id: str = Depends(get_current_user)):
-    """Get all members/residents of a property (admin only)"""
+    """Get all members/residents of a property (admin only) - works for both regular and community properties"""
     # Check if user is admin of this property
     user_doc = await db.users.find_one({"id": user_id})
     if not user_doc:
@@ -4310,17 +4310,20 @@ async def get_property_members(property_id: str, user_id: str = Depends(get_curr
     # Check if user is super admin
     is_super_admin = user_doc.get("is_super_admin", False)
     
+    # Check if user is HOA admin
+    is_hoa_admin = user_doc.get("is_hoa_admin", False)
+    
     # Check if user manages this specific property
     admin_assignment = await db.property_admin_assignments.find_one({
         "admin_user_id": user_id,
         "property_id": property_id
     })
     
-    # Only allow access if user is super admin OR manages this specific property
-    if not is_super_admin and not admin_assignment:
+    # Only allow access if user is super admin, HOA admin, OR manages this specific property
+    if not is_super_admin and not is_hoa_admin and not admin_assignment:
         raise HTTPException(status_code=403, detail="Not authorized to view members")
     
-    # Get all memberships for this property
+    # Get all memberships for this property (works for both regular and community properties)
     memberships = await db.property_memberships.find({"property_id": property_id}).to_list(length=1000)
     
     # Get user details for each member
