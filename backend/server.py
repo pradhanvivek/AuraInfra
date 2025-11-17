@@ -6286,6 +6286,19 @@ class ErrorMonitoringMiddleware(BaseHTTPMiddleware):
 # Add error monitoring middleware
 app.add_middleware(ErrorMonitoringMiddleware, alert_threshold=5)
 
+# Security headers middleware
+@app.middleware("http")
+async def add_security_headers(request, call_next):
+    response = await call_next(request)
+    if IS_PRODUCTION:
+        # Security headers for production
+        response.headers["Strict-Transport-Security"] = "max-age=31536000; includeSubDomains"
+        response.headers["X-Content-Type-Options"] = "nosniff"
+        response.headers["X-Frame-Options"] = "DENY"
+        response.headers["X-XSS-Protection"] = "1; mode=block"
+        response.headers["Referrer-Policy"] = "strict-origin-when-cross-origin"
+    return response
+
 # CORS configuration - restrict in production
 if IS_PRODUCTION:
     # In production, specify exact origins
