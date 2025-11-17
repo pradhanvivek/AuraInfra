@@ -1575,9 +1575,38 @@ async def get_properties(user_id: str = Depends(get_current_user)):
 
 @api_router.get("/properties/{property_id}", response_model=Property)
 async def get_property(property_id: str, user_id: str = Depends(get_current_user)):
+    # Try to find as regular property owned by user
     property_doc = await db.properties.find_one({"id": property_id, "user_id": user_id})
+    
+    if not property_doc:
+        # Check if user is admin managing this property
+        user_doc = await db.users.find_one({"id": user_id})
+        is_super_admin = user_doc.get("is_super_admin", False) if user_doc else False
+        is_hoa_admin = user_doc.get("is_hoa_admin", False) if user_doc else False
+        is_managing = user_doc.get("managed_properties", []) if user_doc else []
+        
+        if is_super_admin or is_hoa_admin or (property_id in is_managing):
+            # Admin can view any property or community property
+            property_doc = await db.properties.find_one({"id": property_id})
+            
+            if not property_doc:
+                # Check if it's a community property
+                community_doc = await db.community_properties.find_one({"id": property_id})
+                if community_doc:
+                    # Convert community property to Property format for response
+                    return Property(
+                        id=community_doc["id"],
+                        name=community_doc["name"],
+                        address=community_doc["address"],
+                        user_id="community",  # Special marker for community properties
+                        latitude=0.0,
+                        longitude=0.0,
+                        created_at=community_doc.get("created_at", datetime.utcnow())
+                    )
+    
     if not property_doc:
         raise HTTPException(status_code=404, detail="Property not found")
+    
     return Property(**property_doc)
 
 @api_router.put("/properties/{property_id}", response_model=Property)
