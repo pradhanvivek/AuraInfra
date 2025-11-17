@@ -59,7 +59,7 @@ export default function HOADocumentsScreen() {
   });
   const [isAdmin, setIsAdmin] = useState(false);
   const [viewerModalVisible, setViewerModalVisible] = useState(false);
-  const [selectedDocument, setSelectedDocument] = useState<{
+  const [viewerDocument, setViewerDocument] = useState<{
     title: string;
     fileData: string;
     mimeType: string;
