@@ -155,6 +155,7 @@ export default function HOADocumentsScreen() {
               category: uploadForm.category,
               description: uploadForm.description,
               file_data: base64data,
+              file_type: uploadForm.fileType,
               file_name: uploadForm.fileName,
             },
             { headers: { Authorization: `Bearer ${token}` } }
