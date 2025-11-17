@@ -608,6 +608,44 @@ export default function HOADocumentsScreen() {
           </View>
         </KeyboardAvoidingView>
       </Modal>
+
+      {/* Document Viewer Modal (iOS) */}
+      <Modal visible={viewerModalVisible} animationType="slide" transparent>
+        <View style={styles.viewerModalContainer}>
+          <View style={styles.viewerModalContent}>
+            <View style={styles.viewerModalHeader}>
+              <Text style={styles.viewerModalTitle}>{viewerDocument?.title}</Text>
+              <TouchableOpacity onPress={() => setViewerModalVisible(false)}>
+                <Ionicons name="close" size={28} color="#000" />
+              </TouchableOpacity>
+            </View>
+            {viewerDocument && (
+              <WebView
+                source={{
+                  html: `
+                    <html>
+                      <head>
+                        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                        <style>
+                          body { margin: 0; padding: 0; }
+                          embed { width: 100%; height: 100vh; }
+                        </style>
+                      </head>
+                      <body>
+                        <embed src="data:${viewerDocument.mimeType};base64,${viewerDocument.fileData}" type="${viewerDocument.mimeType}" />
+                      </body>
+                    </html>
+                  `
+                }}
+                style={styles.webView}
+                javaScriptEnabled={true}
+                domStorageEnabled={true}
+                startInLoadingState={true}
+              />
+            )}
+          </View>
+        </View>
+      </Modal>
       </View>
     </SafeAreaView>
   );
