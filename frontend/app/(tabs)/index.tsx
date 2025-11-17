@@ -204,6 +204,13 @@ export default function PropertiesScreen() {
       color: '#5856D6',
       route: '/my-builder',
     },
+    {
+      id: 'dues',
+      title: 'My Dues',
+      icon: 'receipt-outline',
+      color: '#FF9500',
+      route: '/dues/index',
+    },
   ];
 
   const managementCards = [
