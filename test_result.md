@@ -258,7 +258,7 @@ frontend:
     implemented: true
     working: "NA"
     file: "frontend/screens/property/DocumentsScreen.tsx"
-    stuck_count: 1
+    stuck_count: 2
     priority: "high"
     needs_retesting: true
     status_history:
@@ -268,6 +268,12 @@ frontend:
       - working: "NA"
         agent: "main"
         comment: "CRITICAL FIX APPLIED: react-native-pdf is a native module that requires custom development build and is NOT compatible with Expo Go. Reverted to external PDF viewer approach: 1) Removed react-native-pdf and react-native-blob-util imports and dependencies, 2) Updated handleViewDocument to open PDFs externally using FileSystem + Linking.openURL with Sharing.shareAsync fallback, 3) Images still display in modal viewer, 4) Removed WebView-based PDF rendering code, 5) Cleared Metro cache and restarted frontend. PDFs now open in device's default external PDF viewer (Adobe Reader, Files app, etc.). Both backend and frontend services restarted successfully. Ready for testing."
+      - working: false
+        agent: "user"
+        comment: "User reported Android error: 'com.facebook.react.bridge.JSApplicationIllegalArgumentException: Could not open URL file:// exposed beyond app through Intent.getData()'. This is an Android 7.0+ security restriction where file:// URIs cannot be shared between apps."
+      - working: "NA"
+        agent: "main"
+        comment: "ANDROID FIX APPLIED: Updated handleViewDocument to use Sharing.shareAsync() directly instead of Linking.openURL(). The Sharing API automatically handles Android FileProvider and content URIs, resolving the security restriction. Changes: 1) Removed Linking.openURL approach, 2) Now uses Sharing.shareAsync with mimeType, dialogTitle, and UTI options for better file handling, 3) Works on both iOS and Android without file:// URI issues. Frontend service restarted. Ready for testing on Android devices."
 
 metadata:
   created_by: "main_agent"
