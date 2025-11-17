@@ -335,7 +335,19 @@ export default function HOADocumentsScreen() {
         { headers: { Authorization: `Bearer ${token}` } }
       );
       
-      const fileData = response.data.file_data;
+      // Support both file_data (new) and file_url (old/legacy)
+      let fileData = response.data.file_data || response.data.file_url;
+      
+      if (!fileData) {
+        Alert.alert('Error', 'Document data not available');
+        return;
+      }
+      
+      // Remove data URI prefix if present
+      if (fileData.includes(',')) {
+        fileData = fileData.split(',')[1];
+      }
+      
       const fileName = doc.file_name || `${doc.title}.pdf`;
       const fileUri = `${FileSystem.cacheDirectory}${fileName}`;
       
