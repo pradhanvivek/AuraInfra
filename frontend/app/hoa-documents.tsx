@@ -620,45 +620,41 @@ export default function HOADocumentsScreen() {
         <View style={styles.viewerModalContainer}>
           <View style={styles.viewerModalContent}>
             <View style={styles.viewerModalHeader}>
-              <Text style={styles.viewerModalTitle}>{viewerDocument?.title}</Text>
+              <Text style={styles.viewerModalTitle} numberOfLines={1}>{viewerDocument?.title}</Text>
               <TouchableOpacity onPress={() => setViewerModalVisible(false)}>
                 <Ionicons name="close" size={28} color="#000" />
               </TouchableOpacity>
             </View>
             {viewerDocument && (
-              <WebView
-                source={{
-                  html: `
-                    <!DOCTYPE html>
-                    <html>
-                      <head>
-                        <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
-                        <style>
-                          * { margin: 0; padding: 0; box-sizing: border-box; }
-                          html, body { 
-                            height: 100%; 
-                            overflow: hidden;
-                          }
-                          iframe { 
-                            width: 100%; 
-                            height: 100%; 
-                            border: none;
-                          }
-                        </style>
-                      </head>
-                      <body>
-                        <iframe src="data:${viewerDocument.mimeType};base64,${viewerDocument.fileData}" type="${viewerDocument.mimeType}"></iframe>
-                      </body>
-                    </html>
-                  `
-                }}
-                style={styles.webView}
-                javaScriptEnabled={true}
-                domStorageEnabled={true}
-                startInLoadingState={true}
-                scalesPageToFit={true}
-                scrollEnabled={true}
-              />
+              <>
+                {viewerDocument.mimeType.startsWith('image/') ? (
+                  // Display images using Image component
+                  <ScrollView style={styles.imageViewerContainer} contentContainerStyle={styles.imageViewerContent}>
+                    <Image
+                      source={{ uri: `data:${viewerDocument.mimeType};base64,${viewerDocument.fileData}` }}
+                      style={styles.documentImage}
+                      resizeMode="contain"
+                    />
+                  </ScrollView>
+                ) : (
+                  // Display PDFs using WebView
+                  <WebView
+                    source={{ uri: `data:${viewerDocument.mimeType};base64,${viewerDocument.fileData}` }}
+                    style={styles.webView}
+                    javaScriptEnabled={true}
+                    domStorageEnabled={true}
+                    startInLoadingState={true}
+                    scalesPageToFit={true}
+                    scrollEnabled={true}
+                    renderLoading={() => (
+                      <View style={styles.loadingContainer}>
+                        <ActivityIndicator size="large" color="#007AFF" />
+                        <Text style={styles.loadingText}>Loading document...</Text>
+                      </View>
+                    )}
+                  />
+                )}
+              </>
             )}
           </View>
         </View>
