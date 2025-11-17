@@ -177,9 +177,48 @@ export default function DocumentsScreen({ propertyId }: DocumentsScreenProps) {
   };
 
   const handleViewDocument = async (doc: Document) => {
-    // Show all documents in modal viewer (including PDFs)
-    setSelectedDocument(doc);
-    setViewModalVisible(true);
+    // For images, show in modal viewer
+    if (doc.file_type.startsWith('image')) {
+      setSelectedDocument(doc);
+      setViewModalVisible(true);
+      return;
+    }
+
+    // For PDFs and other documents, open externally
+    try {
+      const base64Data = doc.file_data;
+      const fileUri = `${FileSystem.cacheDirectory}${doc.name}`;
+      
+      // Write file to cache
+      await FileSystem.writeAsStringAsync(fileUri, base64Data, {
+        encoding: FileSystem.EncodingType.Base64,
+      });
+
+      // Try to open with default app first
+      const canOpen = await Linking.canOpenURL(fileUri);
+      if (canOpen) {
+        await Linking.openURL(fileUri);
+      } else {
+        // Fallback to sharing
+        const isAvailable = await Sharing.isAvailableAsync();
+        if (isAvailable) {
+          await Sharing.shareAsync(fileUri);
+        } else {
+          if (Platform.OS === 'web') {
+            alert('Cannot open this file type on web. Please download it.');
+          } else {
+            Alert.alert('Error', 'Cannot open this file type on your device');
+          }
+        }
+      }
+    } catch (error) {
+      console.error('Error opening document:', error);
+      if (Platform.OS === 'web') {
+        alert('Failed to open document');
+      } else {
+        Alert.alert('Error', 'Failed to open document');
+      }
+    }
   };
 
   const handleDeleteDocument = (doc: Document) => {
