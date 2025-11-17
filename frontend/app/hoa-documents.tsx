@@ -623,16 +623,25 @@ export default function HOADocumentsScreen() {
               <WebView
                 source={{
                   html: `
+                    <!DOCTYPE html>
                     <html>
                       <head>
-                        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                        <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
                         <style>
-                          body { margin: 0; padding: 0; }
-                          embed { width: 100%; height: 100vh; }
+                          * { margin: 0; padding: 0; box-sizing: border-box; }
+                          html, body { 
+                            height: 100%; 
+                            overflow: hidden;
+                          }
+                          iframe { 
+                            width: 100%; 
+                            height: 100%; 
+                            border: none;
+                          }
                         </style>
                       </head>
                       <body>
-                        <embed src="data:${viewerDocument.mimeType};base64,${viewerDocument.fileData}" type="${viewerDocument.mimeType}" />
+                        <iframe src="data:${viewerDocument.mimeType};base64,${viewerDocument.fileData}" type="${viewerDocument.mimeType}"></iframe>
                       </body>
                     </html>
                   `
@@ -641,6 +650,8 @@ export default function HOADocumentsScreen() {
                 javaScriptEnabled={true}
                 domStorageEnabled={true}
                 startInLoadingState={true}
+                scalesPageToFit={true}
+                scrollEnabled={true}
               />
             )}
           </View>
