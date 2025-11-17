@@ -4370,10 +4370,13 @@ async def add_property_member(
     if not is_super_admin and not admin_assignment:
         raise HTTPException(status_code=403, detail="Not authorized to add members")
     
-    # Verify property exists
+    # Verify property exists (check both regular properties and community properties)
     property_doc = await db.properties.find_one({"id": property_id})
     if not property_doc:
-        raise HTTPException(status_code=404, detail="Property not found")
+        # Check if it's a community property
+        community_property_doc = await db.community_properties.find_one({"id": property_id})
+        if not community_property_doc:
+            raise HTTPException(status_code=404, detail="Property not found")
     
     # Verify target user exists
     target_user = await db.users.find_one({"id": membership.user_id})
