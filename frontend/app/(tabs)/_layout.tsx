@@ -105,16 +105,6 @@ export default function TabsLayout() {
           ),
         }}
       />
-      <Tabs.Screen
-        name="dues"
-        options={{
-          title: 'Dues',
-          headerShown: false,
-          tabBarIcon: ({ color, size }) => (
-            <Ionicons name="receipt-outline" size={size} color={color} />
-          ),
-        }}
-      />
       {/* Conditionally show Admin tab only for admins */}
       <Tabs.Screen
         name="admin"
