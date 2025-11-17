@@ -389,76 +389,33 @@ export default function DocumentsScreen({ propertyId }: DocumentsScreenProps) {
             <View style={{ width: 44 }} />
           </View>
 
-          <View style={styles.viewModalContent}>
+          <ScrollView 
+            style={styles.viewModalContent}
+            contentContainerStyle={styles.viewModalContentContainer}
+            bounces={false}
+          >
             {selectedDocument && (
               <>
-                {selectedDocument.file_type.startsWith('image') ? (
-                  <ScrollView 
-                    contentContainerStyle={styles.viewModalContentContainer}
-                    bounces={false}
-                  >
-                    <Image
-                      source={{ uri: `data:${selectedDocument.file_type};base64,${selectedDocument.file_data}` }}
-                      style={styles.documentImage}
-                      resizeMode="contain"
-                    />
-                    <View style={styles.documentDetails}>
-                      <Text style={styles.detailsLabel}>Name</Text>
-                      <Text style={styles.detailsValue}>{selectedDocument.name}</Text>
+                <Image
+                  source={{ uri: `data:${selectedDocument.file_type};base64,${selectedDocument.file_data}` }}
+                  style={styles.documentImage}
+                  resizeMode="contain"
+                />
+                <View style={styles.documentDetails}>
+                  <Text style={styles.detailsLabel}>Name</Text>
+                  <Text style={styles.detailsValue}>{selectedDocument.name}</Text>
 
-                      <Text style={styles.detailsLabel}>Type</Text>
-                      <Text style={styles.detailsValue}>{selectedDocument.file_type}</Text>
+                  <Text style={styles.detailsLabel}>Type</Text>
+                  <Text style={styles.detailsValue}>{selectedDocument.file_type}</Text>
 
-                      <Text style={styles.detailsLabel}>Uploaded</Text>
-                      <Text style={styles.detailsValue}>
-                        {new Date(selectedDocument.uploaded_at).toLocaleString()}
-                      </Text>
-                    </View>
-                  </ScrollView>
-                ) : selectedDocument.file_type === 'application/pdf' ? (
-                  <>
-                    {Platform.OS === 'web' ? (
-                      <WebView
-                        source={{ html: `
-                          <!DOCTYPE html>
-                          <html>
-                            <head>
-                              <meta name="viewport" content="width=device-width, initial-scale=1.0">
-                              <style>
-                                body, html { margin: 0; padding: 0; height: 100%; overflow: hidden; }
-                                iframe { border: none; width: 100%; height: 100%; }
-                              </style>
-                            </head>
-                            <body>
-                              <iframe src="data:application/pdf;base64,${selectedDocument.file_data}" />
-                            </body>
-                          </html>
-                        ` }}
-                        style={{ flex: 1 }}
-                      />
-                    ) : (
-                      <Pdf
-                        source={{ uri: `data:application/pdf;base64,${selectedDocument.file_data}` }}
-                        style={styles.pdf}
-                        onLoadComplete={(numberOfPages) => {
-                          console.log(`PDF loaded: ${numberOfPages} pages`);
-                        }}
-                        onError={(error) => {
-                          console.error('PDF error:', error);
-                        }}
-                      />
-                    )}
-                  </>
-                ) : (
-                  <View style={styles.pdfPlaceholder}>
-                    <Ionicons name="document-text" size={64} color="#007AFF" />
-                    <Text style={styles.pdfText}>Document Preview</Text>
-                    <Text style={styles.pdfSubtext}>File type: {selectedDocument.file_type}</Text>
-                  </View>
-                )}
+                  <Text style={styles.detailsLabel}>Uploaded</Text>
+                  <Text style={styles.detailsValue}>
+                    {new Date(selectedDocument.uploaded_at).toLocaleString()}
+                  </Text>
+                </View>
               </>
             )}
-          </View>
+          </ScrollView>
         </KeyboardAvoidingView>
       </Modal>
     </SafeAreaView>
