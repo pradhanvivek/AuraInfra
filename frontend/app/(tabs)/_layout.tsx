@@ -78,11 +78,21 @@ export default function TabsLayout() {
         },
         headerStyle: {
           backgroundColor: '#fff',
+          height: Platform.select({
+            ios: 110,
+            android: 60,
+            web: 60,
+          }),
         },
         headerTitleStyle: {
-          fontSize: 20,
+          fontSize: Platform.select({
+            ios: 20,
+            android: 18,
+            web: 20,
+          }),
           fontWeight: 'bold',
         },
+        headerTitleAlign: 'left',
       }}
     >
       <Tabs.Screen
