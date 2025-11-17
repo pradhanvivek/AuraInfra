@@ -991,24 +991,4 @@ const styles = StyleSheet.create({
     height: 500,
     minHeight: 300,
   },
-  webView: {
-    flex: 1,
-    backgroundColor: '#fff',
-  },
-  loadingContainer: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: '#fff',
-  },
-  loadingText: {
-    marginTop: 12,
-    fontSize: 16,
-    color: '#8E8E93',
-    fontWeight: '500',
-  },
 });
