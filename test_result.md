@@ -274,6 +274,12 @@ frontend:
       - working: "NA"
         agent: "main"
         comment: "ANDROID FIX APPLIED: Updated handleViewDocument to use Sharing.shareAsync() directly instead of Linking.openURL(). The Sharing API automatically handles Android FileProvider and content URIs, resolving the security restriction. Changes: 1) Removed Linking.openURL approach, 2) Now uses Sharing.shareAsync with mimeType, dialogTitle, and UTI options for better file handling, 3) Works on both iOS and Android without file:// URI issues. Frontend service restarted. Ready for testing on Android devices."
+      - working: false
+        agent: "user"
+        comment: "User reported that Android app opens share sheet instead of directly opening/previewing the document. Requested change from share action to direct preview/open action."
+      - working: "NA"
+        agent: "main"
+        comment: "ANDROID DIRECT OPEN FIX APPLIED: Installed expo-intent-launcher@13.0.7 and updated handleViewDocument with platform-specific logic. Android now uses IntentLauncher with ACTION_VIEW to directly open documents in appropriate viewer apps (PDF readers, etc.) without showing share sheet. Implementation: 1) Android: FileSystem.getContentUriAsync() + IntentLauncher.startActivityAsync with ACTION_VIEW intent, 2) iOS: Sharing.shareAsync (unchanged), 3) Web: Direct download using data URI. Frontend service restarted. Documents will now open directly in viewer apps on Android instead of showing share options."
 
 metadata:
   created_by: "main_agent"
