@@ -204,7 +204,7 @@ export default function Properties() {
         <Ionicons name="add" size={28} color="#fff" />
       </TouchableOpacity>
       </View>
-    </SafeAreaView>
+    </View>
   );
 }
 
