@@ -103,7 +103,7 @@ export default function FurnitureScreen() {
           </View>
         )}
         {item.current_value && (
-          <Text style={styles.furnitureValue}>${item.current_value.toLocaleString()}</Text>
+          <Text style={styles.furnitureValue}>{formatCurrency(item.current_value)}</Text>
         )}
       </View>
       <Ionicons name="chevron-forward" size={24} color="#C7C7CC" />
