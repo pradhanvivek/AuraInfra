@@ -139,17 +139,19 @@ export default function Login() {
   };
 
   const handleGoogleSignIn = async () => {
+    const AUTH_URL = Constants.expoConfig?.extra?.EXPO_PUBLIC_AUTH_URL || process.env.EXPO_PUBLIC_AUTH_URL || 'https://auth.emergentagent.com';
+    
     if (Platform.OS === 'web' && typeof window !== 'undefined') {
       // Get current URL as redirect target
       const redirectUrl = encodeURIComponent(window.location.origin + window.location.pathname);
-      const authUrl = `https://auth.emergentagent.com/?redirect=${redirectUrl}`;
+      const authUrl = `${AUTH_URL}/?redirect=${redirectUrl}`;
       
       // Redirect to Emergent Auth
       window.location.href = authUrl;
     } else {
       // For mobile, use Linking API
       const redirectUrl = 'aurainfraa://auth/login'; // Deep link back to app
-      const authUrl = `https://auth.emergentagent.com/?redirect=${encodeURIComponent(redirectUrl)}`;
+      const authUrl = `${AUTH_URL}/?redirect=${encodeURIComponent(redirectUrl)}`;
       
       const supported = await Linking.canOpenURL(authUrl);
       if (supported) {
