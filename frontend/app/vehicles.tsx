@@ -86,7 +86,7 @@ export default function VehiclesScreen() {
           </View>
         )}
         {item.current_value && (
-          <Text style={styles.vehicleValue}>${item.current_value.toLocaleString()}</Text>
+          <Text style={styles.vehicleValue}>{formatCurrency(item.current_value)}</Text>
         )}
         {item.next_maintenance_date && (
           <View style={styles.maintenanceBadge}>
