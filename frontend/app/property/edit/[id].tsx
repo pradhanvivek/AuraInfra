@@ -371,7 +371,7 @@ export default function EditPropertyScreen() {
                   },
                 }}
                 textInputProps={{
-                  defaultValue: address,
+                  value: address,
                   onChangeText: (text: string) => {
                     setAddress(text);
                   },
