@@ -94,7 +94,7 @@ export default function AppliancesScreen() {
             </Text>
           )}
           {item.current_value && (
-            <Text style={styles.applianceValue}>${item.current_value.toLocaleString()}</Text>
+            <Text style={styles.applianceValue}>{formatCurrency(item.current_value)}</Text>
           )}
           {warrantyStatus && (
             <View style={[styles.warrantyBadge, { backgroundColor: warrantyStatus.color + '20' }]}>
