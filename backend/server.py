@@ -5815,9 +5815,26 @@ async def get_all_admins(super_admin_id: str = Depends(verify_super_admin)):
     """Get all HOA admins and their assigned properties"""
     admins = await db.users.find({"is_hoa_admin": True}).to_list(length=1000)
     
+    if not admins:
+        return []
+    
+    # Batch fetch all assignments (single query instead of N queries)
+    admin_ids = [admin["id"] for admin in admins]
+    all_assignments = await db.property_admin_assignments.find(
+        {"admin_user_id": {"$in": admin_ids}}
+    ).to_list(length=None)
+    
+    # Group assignments by admin_user_id
+    assignments_by_admin = {}
+    for assignment in all_assignments:
+        admin_id = assignment["admin_user_id"]
+        if admin_id not in assignments_by_admin:
+            assignments_by_admin[admin_id] = []
+        assignments_by_admin[admin_id].append(assignment)
+    
     result = []
     for admin in admins:
-        assignments = await db.property_admin_assignments.find({"admin_user_id": admin["id"]}).to_list(length=100)
+        assignments = assignments_by_admin.get(admin["id"], [])
         property_ids = [a["property_id"] for a in assignments]
         
         result.append({
