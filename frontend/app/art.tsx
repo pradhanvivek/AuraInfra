@@ -65,17 +65,36 @@ export default function ArtScreen() {
       console.log(`Art item ${item.name}: has ${item.photos.length} photo(s), first photo length: ${item.photos[0]?.length || 0}`);
     }
     
+    // Determine image source - handle both base64 and URLs
+    const getImageSource = () => {
+      if (!item.photos || item.photos.length === 0) return null;
+      
+      const photoData = item.photos[0];
+      // If it already contains data URI prefix, use as is
+      if (photoData.startsWith('data:')) {
+        return { uri: photoData };
+      }
+      // If it's a URL (http/https), use directly
+      if (photoData.startsWith('http://') || photoData.startsWith('https://')) {
+        return { uri: photoData };
+      }
+      // Otherwise treat as base64
+      return { uri: `data:image/jpeg;base64,${photoData}` };
+    };
+    
+    const imageSource = getImageSource();
+    
     return (
       <TouchableOpacity
         style={styles.artCard}
         onPress={() => router.push(`/art/${item.id}` as any)}
       >
-        {item.photos && item.photos.length > 0 ? (
+        {imageSource ? (
           <Image
-            source={{ uri: `data:image/jpeg;base64,${item.photos[0]}` }}
+            source={imageSource}
             style={styles.artImage}
             onError={(error) => {
-              console.error(`Failed to load image for ${item.name}:`, error.nativeEvent.error);
+              console.error(`Failed to load image for ${item.name}:`, error.nativeEvent?.error);
             }}
             onLoad={() => {
               console.log(`Successfully loaded image for ${item.name}`);
