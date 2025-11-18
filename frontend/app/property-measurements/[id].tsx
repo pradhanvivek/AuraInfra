@@ -58,7 +58,7 @@ export default function PropertyMeasurementsRoute() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F2F2F7',
+    backgroundColor: '#fff',
   },
   header: {
     flexDirection: 'row',

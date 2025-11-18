@@ -1069,11 +1069,11 @@ export default function PortfolioScreen() {
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
-    backgroundColor: '#F2F2F7',
+    backgroundColor: '#fff',
   },
   container: {
     flex: 1,
-    backgroundColor: '#F2F2F7',
+    backgroundColor: '#fff',
   },
   centerContainer: {
     flex: 1,
@@ -1179,7 +1179,7 @@ const styles = StyleSheet.create({
   },
   progressBar: {
     height: 6,
-    backgroundColor: '#F2F2F7',
+    backgroundColor: '#fff',
     borderRadius: 3,
     overflow: 'hidden',
   },
@@ -1299,7 +1299,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   selectionButtonSecondary: {
-    backgroundColor: '#F2F2F7',
+    backgroundColor: '#fff',
   },
   selectionButtonText: {
     fontSize: 14,
@@ -1370,7 +1370,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   skipButton: {
-    backgroundColor: '#F2F2F7',
+    backgroundColor: '#fff',
   },
   generateButton: {
     backgroundColor: '#007AFF',

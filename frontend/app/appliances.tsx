@@ -180,11 +180,11 @@ export default function AppliancesScreen() {
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
-    backgroundColor: '#F2F2F7',
+    backgroundColor: '#fff',
   },
   container: {
     flex: 1,
-    backgroundColor: '#F2F2F7',
+    backgroundColor: '#fff',
   },
   centerContainer: {
     flex: 1,
@@ -236,7 +236,7 @@ const styles = StyleSheet.create({
     marginRight: 12,
   },
   placeholderImage: {
-    backgroundColor: '#F2F2F7',
+    backgroundColor: '#fff',
     justifyContent: 'center',
     alignItems: 'center',
   },
