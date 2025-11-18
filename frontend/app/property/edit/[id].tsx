@@ -298,13 +298,12 @@ export default function EditPropertyScreen() {
             ) : GOOGLE_MAPS_API_KEY && GooglePlacesAutocomplete && Platform.OS !== 'web' ? (
               <View>
                 {address && (
-                  <View style={styles.currentAddressNote}>
-                    <Ionicons name="information-circle" size={16} color="#007AFF" />
-                    <Text style={styles.currentAddressText}>
-                      Current: {address}
-                    </Text>
+                  <View style={styles.currentAddressDisplay}>
+                    <Text style={styles.currentAddressLabel}>Current Address:</Text>
+                    <Text style={styles.currentAddressValue}>{address}</Text>
                   </View>
                 )}
+                <Text style={styles.searchLabel}>Search for new address (optional):</Text>
                 <GooglePlacesAutocomplete
                   ref={autocompleteRef}
                   placeholder="Search for address..."
