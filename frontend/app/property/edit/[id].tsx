@@ -470,7 +470,7 @@ export default function EditPropertyScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F2F2F7',
+    backgroundColor: '#fff',
   },
   centerContainer: {
     flex: 1,
