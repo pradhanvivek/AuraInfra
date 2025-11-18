@@ -59,21 +59,36 @@ export default function ArtScreen() {
     }, [token])
   );
 
-  const renderArt = ({ item }: { item: Art }) => (
-    <TouchableOpacity
-      style={styles.artCard}
-      onPress={() => router.push(`/art/${item.id}` as any)}
-    >
-      {item.photos && item.photos.length > 0 ? (
-        <Image
-          source={{ uri: `data:image/jpeg;base64,${item.photos[0]}` }}
-          style={styles.artImage}
-        />
-      ) : (
-        <View style={[styles.artImage, styles.placeholderImage]}>
-          <Ionicons name="color-palette" size={48} color="#C7C7CC" />
-        </View>
-      )}
+  const renderArt = ({ item }: { item: Art }) => {
+    // Debug log to check photo data
+    if (item.photos && item.photos.length > 0) {
+      console.log(`Art item ${item.name}: has ${item.photos.length} photo(s), first photo length: ${item.photos[0]?.length || 0}`);
+    }
+    
+    return (
+      <TouchableOpacity
+        style={styles.artCard}
+        onPress={() => router.push(`/art/${item.id}` as any)}
+      >
+        {item.photos && item.photos.length > 0 ? (
+          <Image
+            source={{ uri: `data:image/jpeg;base64,${item.photos[0]}` }}
+            style={styles.artImage}
+            onError={(error) => {
+              console.error(`Failed to load image for ${item.name}:`, error.nativeEvent.error);
+            }}
+            onLoad={() => {
+              console.log(`Successfully loaded image for ${item.name}`);
+            }}
+          />
+        ) : (
+          <View style={[styles.artImage, styles.placeholderImage]}>
+            <Ionicons name="color-palette" size={48} color="#C7C7CC" />
+          </View>
+        )}
+      </TouchableOpacity>
+    );
+  };
       <View style={styles.artInfo}>
         <Text style={styles.artName}>{item.name}</Text>
         <View style={styles.typeBadge}>
