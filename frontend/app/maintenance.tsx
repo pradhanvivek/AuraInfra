@@ -44,9 +44,11 @@ export default function MaintenanceScreen() {
   const [overdueMaintenance, setOverdueMaintenance] = useState<MaintenanceRecord[]>([]);
   const [completedMaintenance, setCompletedMaintenance] = useState<MaintenanceRecord[]>([]);
 
-  useEffect(() => {
-    fetchMaintenance();
-  }, []);
+  useFocusEffect(
+    useCallback(() => {
+      fetchMaintenance();
+    }, [token])
+  );
 
   const fetchMaintenance = async () => {
     try {
