@@ -126,14 +126,33 @@ export default function ArtDetailScreen() {
         {art.photos && art.photos.length > 0 && (
           <View style={styles.photosSection}>
             <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.photosScroll}>
-              {art.photos.map((photo, index) => (
-                <TouchableOpacity key={index} onPress={() => openImageViewer(index)}>
-                  <Image
-                    source={{ uri: `data:image/jpeg;base64,${photo}` }}
-                    style={styles.photo}
-                  />
-                </TouchableOpacity>
-              ))}
+              {art.photos.map((photo, index) => {
+                // Smart image source detection
+                const getImageSource = (photoData: string) => {
+                  if (photoData.startsWith('data:')) {
+                    return { uri: photoData };
+                  }
+                  if (photoData.startsWith('http://') || photoData.startsWith('https://')) {
+                    return { uri: photoData };
+                  }
+                  return { uri: `data:image/jpeg;base64,${photoData}` };
+                };
+
+                return (
+                  <TouchableOpacity key={index} onPress={() => openImageViewer(index)}>
+                    <Image
+                      source={getImageSource(photo)}
+                      style={styles.photo}
+                      onError={(error) => {
+                        console.error(`Failed to load photo ${index}:`, error.nativeEvent?.error);
+                      }}
+                      onLoad={() => {
+                        console.log(`Successfully loaded photo ${index}`);
+                      }}
+                    />
+                  </TouchableOpacity>
+                );
+              })}
             </ScrollView>
           </View>
         )}
