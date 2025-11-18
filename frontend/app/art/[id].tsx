@@ -251,8 +251,17 @@ export default function ArtDetailScreen() {
             <Text style={styles.sectionTitle}>Authenticity Certificate</Text>
             <TouchableOpacity onPress={() => openImageViewer(art.photos.length)}>
               <Image
-                source={{ uri: `data:image/jpeg;base64,${art.authenticity_certificate}` }}
+                source={{
+                  uri: art.authenticity_certificate.startsWith('data:')
+                    ? art.authenticity_certificate
+                    : art.authenticity_certificate.startsWith('http')
+                    ? art.authenticity_certificate
+                    : `data:image/jpeg;base64,${art.authenticity_certificate}`
+                }}
                 style={styles.certificateImage}
+                onError={(error) => {
+                  console.error('Failed to load certificate:', error.nativeEvent?.error);
+                }}
               />
             </TouchableOpacity>
           </View>
