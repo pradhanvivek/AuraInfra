@@ -15,6 +15,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useAuth } from '../contexts/AuthContext';
 import axios from 'axios';
 import Constants from 'expo-constants';
+import { formatCurrency } from '../utils/localeUtils';
 
 const API_URL = Constants.expoConfig?.extra?.EXPO_PUBLIC_BACKEND_URL || process.env.EXPO_PUBLIC_BACKEND_URL;
 const LOGO_URL = 'https://customer-assets.emergentagent.com/job_f39f8d1e-b9ca-4840-9416-b6502fc8ae5e/artifacts/pyxhwxcq_Screenshot%202025-11-03%20at%201.19.46%E2%80%AFPM.png';
