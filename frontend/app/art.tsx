@@ -102,7 +102,7 @@ export default function ArtScreen() {
           </View>
         )}
         {item.appraisal_value && (
-          <Text style={styles.artValue}>${item.appraisal_value.toLocaleString()}</Text>
+          <Text style={styles.artValue}>{formatCurrency(item.appraisal_value)}</Text>
         )}
       </View>
       <Ionicons name="chevron-forward" size={24} color="#C7C7CC" />
