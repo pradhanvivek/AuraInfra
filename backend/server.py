@@ -1587,7 +1587,23 @@ async def create_property(property_data: PropertyCreate, user_id: str = Depends(
 
 @api_router.get("/properties", response_model=List[Property])
 async def get_properties(user_id: str = Depends(get_current_user)):
-    properties = await db.properties.find({"user_id": user_id}).to_list(1000)
+    # Use projection to fetch only needed fields and create index hint
+    properties = await db.properties.find(
+        {"user_id": user_id},
+        {
+            "_id": 0,
+            "id": 1,
+            "name": 1,
+            "address": 1,
+            "latitude": 1,
+            "longitude": 1,
+            "purchase_cost": 1,
+            "current_value": 1,
+            "purchase_date": 1,
+            "logo": 1,
+            "user_id": 1
+        }
+    ).to_list(1000)
     return [Property(**prop) for prop in properties]
 
 @api_router.get("/properties/{property_id}", response_model=Property)
