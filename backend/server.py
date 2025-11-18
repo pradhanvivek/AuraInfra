@@ -1174,10 +1174,17 @@ async def register(user: UserRegister):
     
     # Create property memberships if properties were selected
     if user.property_ids:
-        for property_id in user.property_ids:
-            # Verify property exists
-            property_exists = await db.properties.find_one({"id": property_id})
-            if property_exists:
+        # Batch verify properties exist (single query instead of N queries)
+        existing_properties = await db.properties.find(
+            {"id": {"$in": user.property_ids}},
+            {"id": 1}
+        ).to_list(length=None)
+        existing_property_ids = [p["id"] for p in existing_properties]
+        
+        if existing_property_ids:
+            # Batch create memberships
+            memberships = []
+            for property_id in existing_property_ids:
                 membership = {
                     "id": str(uuid.uuid4()),
                     "user_id": user_id,
@@ -1190,12 +1197,16 @@ async def register(user: UserRegister):
                     "approved_at": datetime.utcnow(),
                     "documents": []
                 }
-                await db.property_memberships.insert_one(membership)
+                memberships.append(membership)
+            
+            # Batch insert memberships
+            if memberships:
+                await db.property_memberships.insert_many(memberships)
                 
-                # Add to user's member_properties
+                # Update user's member_properties with all IDs at once
                 await db.users.update_one(
                     {"id": user_id},
-                    {"$addToSet": {"member_properties": property_id}}
+                    {"$addToSet": {"member_properties": {"$each": existing_property_ids}}}
                 )
     
     # Create token
