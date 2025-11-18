@@ -105,43 +105,41 @@ export default function ArtScreen() {
             <Ionicons name="color-palette" size={48} color="#C7C7CC" />
           </View>
         )}
+        <View style={styles.artInfo}>
+          <Text style={styles.artName}>{item.name}</Text>
+          <View style={styles.typeBadge}>
+            <Text style={styles.typeText}>{item.type}</Text>
+          </View>
+          {(item.artist || item.medium || item.year_created) && (
+            <View style={styles.detailsRow}>
+              {item.artist && (
+                <View style={styles.detailBadge}>
+                  <Ionicons name="person" size={12} color="#5856D6" />
+                  <Text style={styles.detailText} numberOfLines={1} ellipsizeMode="tail">{item.artist}</Text>
+                </View>
+              )}
+              {item.medium && (
+                <View style={styles.detailBadge}>
+                  <Ionicons name="brush" size={12} color="#FF2D55" />
+                  <Text style={styles.detailText} numberOfLines={1} ellipsizeMode="tail">{item.medium}</Text>
+                </View>
+              )}
+              {item.year_created && (
+                <View style={styles.detailBadge}>
+                  <Ionicons name="calendar" size={12} color="#FF9500" />
+                  <Text style={styles.detailText}>{item.year_created}</Text>
+                </View>
+              )}
+            </View>
+          )}
+          {item.appraisal_value && (
+            <Text style={styles.artValue}>{formatCurrency(item.appraisal_value)}</Text>
+          )}
+        </View>
+        <Ionicons name="chevron-forward" size={24} color="#C7C7CC" />
       </TouchableOpacity>
     );
   };
-      <View style={styles.artInfo}>
-        <Text style={styles.artName}>{item.name}</Text>
-        <View style={styles.typeBadge}>
-          <Text style={styles.typeText}>{item.type}</Text>
-        </View>
-        {(item.artist || item.medium || item.year_created) && (
-          <View style={styles.detailsRow}>
-            {item.artist && (
-              <View style={styles.detailBadge}>
-                <Ionicons name="person" size={12} color="#5856D6" />
-                <Text style={styles.detailText} numberOfLines={1} ellipsizeMode="tail">{item.artist}</Text>
-              </View>
-            )}
-            {item.medium && (
-              <View style={styles.detailBadge}>
-                <Ionicons name="brush" size={12} color="#FF2D55" />
-                <Text style={styles.detailText} numberOfLines={1} ellipsizeMode="tail">{item.medium}</Text>
-              </View>
-            )}
-            {item.year_created && (
-              <View style={styles.detailBadge}>
-                <Ionicons name="calendar" size={12} color="#FF9500" />
-                <Text style={styles.detailText}>{item.year_created}</Text>
-              </View>
-            )}
-          </View>
-        )}
-        {item.appraisal_value && (
-          <Text style={styles.artValue}>{formatCurrency(item.appraisal_value)}</Text>
-        )}
-      </View>
-      <Ionicons name="chevron-forward" size={24} color="#C7C7CC" />
-    </TouchableOpacity>
-  );
 
   if (loading) {
     return (
