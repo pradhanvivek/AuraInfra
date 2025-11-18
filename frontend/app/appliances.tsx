@@ -211,8 +211,9 @@ const styles = StyleSheet.create({
     height: 80,
   },
   list: {
-    padding: 16,
-    paddingTop: 0,
+    paddingHorizontal: 16,
+    paddingTop: 8,
+    paddingBottom: 16,
   },
   applianceCard: {
     flexDirection: 'row',
