@@ -251,6 +251,7 @@ export default function EditPropertyScreen() {
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
         style={styles.content}
       >
+        <ScrollView style={styles.scrollView} contentContainerStyle={styles.scrollContent}>
         <View style={styles.formContainer}>
           <View style={styles.section}>
             <Text style={styles.label}>Property Name</Text>
