@@ -110,15 +110,40 @@ export default function PDFViewer({
 
   const handleShare = async () => {
     try {
-      if (fileUri) {
-        await Sharing.shareAsync(fileUri, {
+      console.log('=== SHARE FUNCTION START ===');
+      console.log('FileUri available:', !!fileUri);
+      
+      if (fileUri && fileUri.startsWith('data:')) {
+        // For data URIs, we need to convert back to file for sharing
+        console.log('Converting data URI to file for sharing');
+        const extension = mimeType.includes('pdf') ? 'pdf' : 'doc';
+        const fileName = `${title.replace(/[^a-z0-9]/gi, '_')}.${extension}`;
+        const localFileUri = `${FileSystem.cacheDirectory}${fileName}`;
+        
+        // Extract base64 from data URI
+        const base64Data = fileUri.split(',')[1];
+        console.log('Base64 data length for sharing:', base64Data?.length || 0);
+        
+        await FileSystem.writeAsStringAsync(localFileUri, base64Data, {
+          encoding: FileSystem.EncodingType.Base64,
+        });
+        
+        console.log('File written for sharing:', localFileUri);
+        
+        await Sharing.shareAsync(localFileUri, {
           mimeType: mimeType,
           dialogTitle: title,
           UTI: mimeType,
         });
+        
+        console.log('Share dialog opened successfully');
       }
+      
+      console.log('=== SHARE FUNCTION END ===');
     } catch (error: any) {
+      console.error('=== SHARE ERROR ===');
       console.error('Error sharing document:', error);
+      console.error('Error message:', error.message);
       Alert.alert('Error', `Failed to share document: ${error.message}`);
     }
   };
