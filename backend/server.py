@@ -2904,6 +2904,48 @@ async def get_place_details(
         logger.error(f"Place details error: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))
 
+
+@api_router.get("/places/reverse-geocode")
+async def reverse_geocode(
+    lat: float,
+    lng: float,
+    user_id: str = Depends(get_current_user)
+):
+    """
+    Reverse geocode coordinates to get address using Google Geocoding API
+    """
+    try:
+        import httpx
+        
+        api_key = os.environ.get('GOOGLE_MAPS_API_KEY', '')
+        if not api_key:
+            raise HTTPException(status_code=500, detail="Google Maps API key not configured")
+        
+        url = "https://maps.googleapis.com/maps/api/geocode/json"
+        params = {
+            "latlng": f"{lat},{lng}",
+            "key": api_key
+        }
+        
+        async with httpx.AsyncClient() as client:
+            response = await client.get(url, params=params, timeout=10.0)
+            response.raise_for_status()
+            data = response.json()
+            
+            # Extract formatted address from first result
+            if data.get('results') and len(data['results']) > 0:
+                address = data['results'][0].get('formatted_address', '')
+                return {"address": address, "results": data['results']}
+            else:
+                return {"address": "", "results": []}
+            
+    except httpx.HTTPError as e:
+        logger.error(f"Google Geocoding API error: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Failed to reverse geocode: {str(e)}")
+    except Exception as e:
+        logger.error(f"Reverse geocode error: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
 # ============= PAINT ESTIMATION ENDPOINTS =============
 
 @api_router.post("/paint-estimation/analyze-wall", response_model=PaintEstimate)
