@@ -230,7 +230,16 @@ export default function VastuScreen({ propertyId, geomancyType = 'vastu' }: Vast
             const isExpanded = expandedId === analysis.id;
             
             return (
-              <View key={analysis.id} style={styles.analysisCard}>
+              <Swipeable
+                key={analysis.id}
+                ref={(ref) => (swipeableRefs.current[analysis.id] = ref)}
+                renderRightActions={(progress, dragX) =>
+                  renderRightActions(progress, dragX, analysis)
+                }
+                overshootRight={false}
+                friction={2}
+              >
+                <View style={styles.analysisCard}>
                 {/* Collapsible Header */}
                 <TouchableOpacity
                   style={styles.cardHeader}
