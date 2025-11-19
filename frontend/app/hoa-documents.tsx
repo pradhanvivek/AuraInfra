@@ -58,12 +58,11 @@ export default function HOADocumentsScreen() {
     fileType: '',
   });
   const [isAdmin, setIsAdmin] = useState(false);
-  const [viewerModalVisible, setViewerModalVisible] = useState(false);
-  const [viewerDocument, setViewerDocument] = useState<{
+  const [pdfViewerVisible, setPdfViewerVisible] = useState(false);
+  const [pdfViewerData, setPdfViewerData] = useState<{
     title: string;
     fileData: string;
     mimeType: string;
-    fileName: string;
   } | null>(null);
 
   const categories = [
