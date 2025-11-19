@@ -228,6 +228,8 @@ export default function EditPropertyScreen() {
     );
   }
 
+  console.log('RENDERING - address state:', address, 'length:', address?.length);
+
   return (
     <SafeAreaView style={styles.container} edges={['top']}>
       <View style={styles.header}>
