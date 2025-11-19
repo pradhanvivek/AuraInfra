@@ -590,8 +590,6 @@ const styles = StyleSheet.create({
     padding: 16,
     borderRadius: 12,
     marginBottom: 16,
-    borderWidth: 1,
-    borderColor: '#E5E5EA',
   },
   currentAddressLabel: {
     fontSize: 13,
@@ -606,6 +604,12 @@ const styles = StyleSheet.create({
     color: '#000',
     fontWeight: '500',
     lineHeight: 22,
+  },
+  noAddressText: {
+    fontSize: 14,
+    color: '#8E8E93',
+    fontStyle: 'italic',
+    lineHeight: 20,
   },
   searchLabel: {
     fontSize: 13,
