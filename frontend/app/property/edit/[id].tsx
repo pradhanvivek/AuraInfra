@@ -304,8 +304,8 @@ export default function EditPropertyScreen() {
               <View>
                 <View style={styles.currentAddressDisplay}>
                   <Text style={styles.currentAddressLabel}>Current Address:</Text>
-                  {address && address.trim() !== '' ? (
-                    <Text style={styles.currentAddressValue}>{address}</Text>
+                  {savedAddress && savedAddress.trim() !== '' ? (
+                    <Text style={styles.currentAddressValue}>{savedAddress}</Text>
                   ) : (
                     <Text style={styles.noAddressText}>No address saved yet. Search below to add one.</Text>
                   )}
