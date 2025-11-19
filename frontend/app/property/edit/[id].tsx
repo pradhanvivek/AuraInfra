@@ -547,7 +547,8 @@ const styles = StyleSheet.create({
     backgroundColor: '#E3F2FD',
     marginHorizontal: 16,
     marginBottom: 16,
-    padding: 16,
+    paddingVertical: 8,
+    paddingHorizontal: 16,
     borderRadius: 12,
   },
   coordinatesText: {
