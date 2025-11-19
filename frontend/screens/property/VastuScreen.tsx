@@ -585,4 +585,23 @@ const styles = StyleSheet.create({
   fabDisabled: {
     opacity: 0.6,
   },
+  swipeAction: {
+    justifyContent: 'center',
+    alignItems: 'flex-end',
+  },
+  deleteAction: {
+    backgroundColor: '#FF3B30',
+    justifyContent: 'center',
+    alignItems: 'center',
+    width: 100,
+    height: '100%',
+    borderTopRightRadius: 12,
+    borderBottomRightRadius: 12,
+  },
+  deleteActionText: {
+    color: '#fff',
+    fontSize: 12,
+    fontWeight: '600',
+    marginTop: 4,
+  },
 });
