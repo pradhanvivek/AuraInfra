@@ -524,7 +524,7 @@ const styles = StyleSheet.create({
     padding: 16,
   },
   section: {
-    padding: 16,
+    padding: 8,
   },
   label: {
     fontSize: 14,
@@ -535,7 +535,8 @@ const styles = StyleSheet.create({
   input: {
     backgroundColor: '#fff',
     borderRadius: 12,
-    padding: 16,
+    paddingVertical: 8,
+    paddingHorizontal: 16,
     fontSize: 16,
     borderWidth: 1,
     borderColor: '#E5E5EA',
