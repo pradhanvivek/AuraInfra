@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AuraInfra.ai - Expo QR Code</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            text-align: center;
+            max-width: 500px;
+            width: 100%;
+        }
+        
+        .logo {
+            width: 80px;
+            height: 80px;
+            background: #007AFF;
+            border-radius: 18px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 20px;
+            font-size: 40px;
+            font-weight: bold;
+            color: white;
+        }
+        
+        h1 {
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 28px;
+        }
+        
+        .subtitle {
+            color: #666;
+            margin-bottom: 30px;
+            font-size: 14px;
+        }
+        
+        .qr-container {
+            background: #f8f9fa;
+            border-radius: 15px;
+            padding: 30px;
+            margin: 30px 0;
+        }
+        
+        .qr-code {
+            max-width: 100%;
+            height: auto;
+            border-radius: 10px;
+        }
+        
+        .instructions {
+            text-align: left;
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 10px;
+            margin-top: 20px;
+        }
+        
+        .instructions h3 {
+            color: #333;
+            margin-bottom: 15px;
+            font-size: 16px;
+        }
+        
+        .instructions ol {
+            padding-left: 20px;
+            color: #666;
+            line-height: 1.8;
+        }
+        
+        .instructions li {
+            margin-bottom: 10px;
+        }
+        
+        .url-box {
+            background: white;
+            border: 2px solid #007AFF;
+            border-radius: 8px;
+            padding: 12px;
+            margin: 15px 0;
+            font-family: 'Courier New', monospace;
+            color: #007AFF;
+            font-size: 14px;
+            word-break: break-all;
+        }
+        
+        .badge {
+            display: inline-block;
+            background: #007AFF;
+            color: white;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="logo">A</div>
+        <h1>AuraInfra.ai</h1>
+        <p class="subtitle">Scan to open in Expo Go</p>
+        
+        <div class="qr-container">
+            <img src="/qr-code.png" alt="Expo QR Code" class="qr-code">
+        </div>
+        
+        <div class="instructions">
+            <h3>📱 How to Connect:</h3>
+            <ol>
+                <li>Install <strong>Expo Go</strong> from the App Store</li>
+                <li>Open Expo Go on your iPhone</li>
+                <li>Tap <strong>"Scan QR Code"</strong></li>
+                <li>Point your camera at the QR code above</li>
+            </ol>
+            
+            <h3 style="margin-top: 20px;">🔗 Manual Connection:</h3>
+            <p style="color: #666; font-size: 14px; margin-bottom: 10px;">
+                If scanning doesn't work, enter this URL manually in Expo Go:
+            </p>
+            <div class="url-box">
+                exp://aurainfra-1.preview.emergentagent.com
+            </div>
+        </div>
+        
+        <div class="badge">✨ Connected to Preview Server</div>
+    </div>
+</body>
+</html>
