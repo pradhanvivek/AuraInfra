@@ -377,10 +377,7 @@ export default function EditPropertyScreen() {
                   },
                 }}
                 textInputProps={{
-                  value: address,
-                  onChangeText: (text: string) => {
-                    setAddress(text);
-                  },
+                  placeholder: "Search for new address...",
                 }}
                 listViewDisplayed="auto"
                 keyboardShouldPersistTaps="handled"
