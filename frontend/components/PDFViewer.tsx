@@ -31,17 +31,15 @@ export default function PDFViewer({
   fileData,
   mimeType = 'application/pdf',
 }: PDFViewerProps) {
-  const [loading, setLoading] = useState(true);
-  const [fileUri, setFileUri] = useState<string>('');
-  const [showWebView, setShowWebView] = useState(false);
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     if (visible && fileData) {
-      prepareDocument();
+      openDocument();
     }
   }, [visible, fileData]);
 
-  const prepareDocument = async () => {
+  const openDocument = async () => {
     try {
       setLoading(true);
       
@@ -49,108 +47,56 @@ export default function PDFViewer({
       console.log('Title:', title);
       console.log('MimeType:', mimeType);
       console.log('FileData length:', fileData?.length || 0);
-      console.log('FileData first 50 chars:', fileData?.substring(0, 50));
       
-      // Validate required data
       if (!fileData) {
         throw new Error('No file data provided');
       }
       
-      // Generate filename with proper extension - handle undefined title
       const safeTitle = title || 'document';
       const extension = mimeType.includes('pdf') ? 'pdf' : 'doc';
       const fileName = `${safeTitle.replace(/[^a-z0-9]/gi, '_')}.${extension}`;
+      const localFileUri = `${FileSystem.cacheDirectory}${fileName}`;
+      
+      // Write base64 data to file
+      await FileSystem.writeAsStringAsync(localFileUri, fileData, {
+        encoding: FileSystem.EncodingType.Base64,
+      });
+      
+      console.log('File written to:', localFileUri);
       
       if (Platform.OS === 'android') {
-        // Android: Use IntentLauncher to open document directly in viewer app
-        console.log('Android: Writing file and opening with IntentLauncher');
-        const localFileUri = `${FileSystem.cacheDirectory}${fileName}`;
-        
-        await FileSystem.writeAsStringAsync(localFileUri, fileData, {
-          encoding: FileSystem.EncodingType.Base64,
-        });
-        
-        console.log('File written to:', localFileUri);
+        // Android: Use IntentLauncher
+        console.log('Android: Opening with IntentLauncher');
         const contentUri = await FileSystem.getContentUriAsync(localFileUri);
-        console.log('Content URI:', contentUri);
         
         await IntentLauncher.startActivityAsync('android.intent.action.VIEW', {
           data: contentUri,
-          flags: 1, // FLAG_GRANT_READ_URI_PERMISSION
+          flags: 1,
           type: mimeType,
         });
-        
-        setLoading(false);
-        setTimeout(() => {
-          onClose();
-        }, 500);
-        
-      } else if (Platform.OS === 'ios') {
-        // iOS: Use base64 data URI with WebView
-        console.log('iOS: Creating data URI for WebView');
-        
-        // Create proper data URI - WebView on iOS can't load file:// URLs
-        // but can load data URIs
-        const dataUri = `data:${mimeType};base64,${fileData}`;
-        console.log('Data URI created, length:', dataUri.length);
-        console.log('Data URI first 100 chars:', dataUri.substring(0, 100));
-        
-        setFileUri(dataUri);
-        setShowWebView(true);
-        setLoading(false);
-        console.log('WebView should now display with data URI');
+      } else {
+        // iOS: Use Sharing API (opens in system PDF viewer)
+        console.log('iOS: Opening with Sharing API');
+        await Sharing.shareAsync(localFileUri, {
+          UTI: 'com.adobe.pdf',
+          mimeType: mimeType,
+        });
       }
       
       console.log('=== PDF VIEWER DEBUG END ===');
+      setLoading(false);
+      
+      // Close modal after a short delay
+      setTimeout(() => {
+        onClose();
+      }, 1000);
       
     } catch (error: any) {
       console.error('=== PDF VIEWER ERROR ===');
-      console.error('Error preparing document:', error);
-      console.error('Error message:', error.message);
-      console.error('Error stack:', error.stack);
+      console.error('Error:', error.message);
       setLoading(false);
       Alert.alert('Error', `Failed to open document: ${error.message}`);
       onClose();
-    }
-  };
-
-  const handleShare = async () => {
-    try {
-      console.log('=== SHARE FUNCTION START ===');
-      console.log('FileUri available:', !!fileUri);
-      
-      if (fileUri && fileUri.startsWith('data:')) {
-        // For data URIs, we need to convert back to file for sharing
-        console.log('Converting data URI to file for sharing');
-        const extension = mimeType.includes('pdf') ? 'pdf' : 'doc';
-        const fileName = `${title.replace(/[^a-z0-9]/gi, '_')}.${extension}`;
-        const localFileUri = `${FileSystem.cacheDirectory}${fileName}`;
-        
-        // Extract base64 from data URI
-        const base64Data = fileUri.split(',')[1];
-        console.log('Base64 data length for sharing:', base64Data?.length || 0);
-        
-        await FileSystem.writeAsStringAsync(localFileUri, base64Data, {
-          encoding: FileSystem.EncodingType.Base64,
-        });
-        
-        console.log('File written for sharing:', localFileUri);
-        
-        await Sharing.shareAsync(localFileUri, {
-          mimeType: mimeType,
-          dialogTitle: title,
-          UTI: mimeType,
-        });
-        
-        console.log('Share dialog opened successfully');
-      }
-      
-      console.log('=== SHARE FUNCTION END ===');
-    } catch (error: any) {
-      console.error('=== SHARE ERROR ===');
-      console.error('Error sharing document:', error);
-      console.error('Error message:', error.message);
-      Alert.alert('Error', `Failed to share document: ${error.message}`);
     }
   };
 
