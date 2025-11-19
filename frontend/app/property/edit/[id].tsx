@@ -319,7 +319,9 @@ export default function EditPropertyScreen() {
                   minLength={2}
                   fetchDetails={true}
                   predefinedPlaces={[]}
-                  listViewDisplayed={false}
+                  listViewDisplayed="auto"
+                  enablePoweredByContainer={false}
+                  disableScroll={true}
                   onPress={(data: any, details: any = null) => {
                     if (details) {
                       setAddress(data.description);
