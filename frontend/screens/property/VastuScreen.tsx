@@ -345,17 +345,10 @@ export default function VastuScreen({ propertyId, geomancyType = 'vastu' }: Vast
                       </View>
                     )}
 
-                    {/* Delete Button */}
-                    <TouchableOpacity
-                      style={styles.deleteButtonExpanded}
-                      onPress={() => handleDeleteAnalysis(analysis)}
-                    >
-                      <Ionicons name="trash-outline" size={20} color="#FF3B30" />
-                      <Text style={styles.deleteButtonText}>Delete Analysis</Text>
-                    </TouchableOpacity>
                   </View>
                 )}
               </View>
+            </Swipeable>
             );
           })}
         </ScrollView>
