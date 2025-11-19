@@ -33,6 +33,7 @@ export default function VastuScreen({ propertyId, geomancyType = 'vastu' }: Vast
   const [analyses, setAnalyses] = useState<VastuAnalysis[]>([]);
   const [loading, setLoading] = useState(true);
   const [analyzing, setAnalyzing] = useState(false);
+  const [expandedId, setExpandedId] = useState<string | null>(null);
 
   const geomancyTitle = geomancyType === 'vastu' ? 'Vastu Shastra' : 'Feng Shui';
   const geomancyDescription = geomancyType === 'vastu' 
