@@ -51,9 +51,15 @@ export default function PDFViewer({
       console.log('FileData length:', fileData?.length || 0);
       console.log('FileData first 50 chars:', fileData?.substring(0, 50));
       
-      // Generate filename with proper extension
+      // Validate required data
+      if (!fileData) {
+        throw new Error('No file data provided');
+      }
+      
+      // Generate filename with proper extension - handle undefined title
+      const safeTitle = title || 'document';
       const extension = mimeType.includes('pdf') ? 'pdf' : 'doc';
-      const fileName = `${title.replace(/[^a-z0-9]/gi, '_')}.${extension}`;
+      const fileName = `${safeTitle.replace(/[^a-z0-9]/gi, '_')}.${extension}`;
       
       if (Platform.OS === 'android') {
         // Android: Use IntentLauncher to open document directly in viewer app
