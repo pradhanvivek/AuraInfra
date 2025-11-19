@@ -92,27 +92,55 @@ export default function DisclaimerScreen() {
   };
 
   const handleDecline = async () => {
-    Alert.alert(
-      'Decline Terms',
-      'You must accept the terms and disclaimer to use AuraInfra.ai. Would you like to log out?',
-      [
-        {
-          text: 'Review Again',
-          style: 'cancel',
-        },
-        {
-          text: 'Log Out',
-          style: 'destructive',
-          onPress: async () => {
-            setDeclining(true);
-            if (logout) {
-              await logout();
-            }
-            router.replace('/auth/login');
+    if (Platform.OS === 'web') {
+      // Web-compatible confirmation dialog
+      const confirmed = window.confirm(
+        'You must accept the terms and disclaimer to use AuraInfra.ai. Would you like to log out?\n\nClick OK to log out, or Cancel to review again.'
+      );
+      
+      if (confirmed) {
+        setDeclining(true);
+        try {
+          if (logout) {
+            await logout();
+          }
+          router.replace('/auth/login');
+        } catch (error) {
+          console.error('Logout error:', error);
+        } finally {
+          setDeclining(false);
+        }
+      }
+    } else {
+      // Mobile: Use native Alert.alert
+      Alert.alert(
+        'Decline Terms',
+        'You must accept the terms and disclaimer to use AuraInfra.ai. Would you like to log out?',
+        [
+          {
+            text: 'Review Again',
+            style: 'cancel',
           },
-        },
-      ]
-    );
+          {
+            text: 'Log Out',
+            style: 'destructive',
+            onPress: async () => {
+              setDeclining(true);
+              try {
+                if (logout) {
+                  await logout();
+                }
+                router.replace('/auth/login');
+              } catch (error) {
+                console.error('Logout error:', error);
+              } finally {
+                setDeclining(false);
+              }
+            },
+          },
+        ]
+      );
+    }
   };
 
   return (
