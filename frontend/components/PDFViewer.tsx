@@ -109,22 +109,55 @@ export default function PDFViewer({
   return (
     <Modal
       visible={visible}
-      animationType="fade"
-      transparent
+      animationType="slide"
       onRequestClose={onClose}
     >
-      <View style={styles.container}>
-        <View style={styles.loadingCard}>
-          <ActivityIndicator size="large" color="#007AFF" />
-          <Text style={styles.loadingText}>Opening {title}...</Text>
-          <TouchableOpacity
-            style={styles.cancelButton}
-            onPress={onClose}
-          >
-            <Text style={styles.cancelButtonText}>Cancel</Text>
-          </TouchableOpacity>
+      {showWebView && fileUri ? (
+        // iOS: Show WebView with PDF
+        <SafeAreaView style={styles.viewerContainer} edges={['top']}>
+          <View style={styles.header}>
+            <TouchableOpacity onPress={onClose} style={styles.headerButton}>
+              <Ionicons name="close" size={28} color="#007AFF" />
+            </TouchableOpacity>
+            <View style={styles.headerTitle}>
+              <Text style={styles.title} numberOfLines={1}>{title}</Text>
+            </View>
+            <TouchableOpacity onPress={handleShare} style={styles.headerButton}>
+              <Ionicons name="share-outline" size={24} color="#007AFF" />
+            </TouchableOpacity>
+          </View>
+          <WebView
+            source={{ uri: fileUri }}
+            style={styles.webview}
+            onLoadStart={() => setLoading(true)}
+            onLoadEnd={() => setLoading(false)}
+            onError={(error) => {
+              console.error('WebView error:', error);
+              Alert.alert('Error', 'Failed to load PDF');
+            }}
+          />
+          {loading && (
+            <View style={styles.loadingOverlay}>
+              <ActivityIndicator size="large" color="#007AFF" />
+              <Text style={styles.loadingOverlayText}>Loading PDF...</Text>
+            </View>
+          )}
+        </SafeAreaView>
+      ) : (
+        // Loading state
+        <View style={styles.loadingModal}>
+          <View style={styles.loadingCard}>
+            <ActivityIndicator size="large" color="#007AFF" />
+            <Text style={styles.loadingText}>Opening {title}...</Text>
+            <TouchableOpacity
+              style={styles.cancelButton}
+              onPress={onClose}
+            >
+              <Text style={styles.cancelButtonText}>Cancel</Text>
+            </TouchableOpacity>
+          </View>
         </View>
-      </View>
+      )}
     </Modal>
   );
 }
