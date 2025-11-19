@@ -188,71 +188,129 @@ export default function VastuScreen({ propertyId, geomancyType = 'vastu' }: Vast
         </View>
       ) : (
         <ScrollView contentContainerStyle={styles.content}>
-          {analyses.map((analysis) => (
-            <View key={analysis.id} style={styles.analysisCard}>
-              <View style={styles.cardHeader}>
-                <View style={styles.headerLeft}>
-                  <Ionicons name="stats-chart" size={24} color="#007AFF" />
-                  <View style={styles.headerInfo}>
-                    <Text style={styles.cardTitle}>{geomancyTitle} Analysis</Text>
-                    <Text style={styles.cardDate}>
-                      {new Date(analysis.created_at).toLocaleDateString()}
-                    </Text>
-                  </View>
-                </View>
+          {analyses.map((analysis) => {
+            const isExpanded = expandedId === analysis.id;
+            
+            return (
+              <View key={analysis.id} style={styles.analysisCard}>
+                {/* Collapsible Header */}
                 <TouchableOpacity
-                  onPress={() => handleDeleteAnalysis(analysis)}
-                  style={styles.deleteButton}
+                  style={styles.cardHeader}
+                  onPress={() => setExpandedId(isExpanded ? null : analysis.id)}
+                  activeOpacity={0.7}
                 >
-                  <Ionicons name="trash-outline" size={20} color="#FF3B30" />
+                  <View style={styles.headerLeft}>
+                    <View style={[
+                      styles.iconCircle,
+                      { backgroundColor: getScoreColor(analysis.compliance_score) + '20' }
+                    ]}>
+                      <Ionicons 
+                        name="stats-chart" 
+                        size={24} 
+                        color={getScoreColor(analysis.compliance_score)} 
+                      />
+                    </View>
+                    <View style={styles.headerInfo}>
+                      <Text style={styles.cardTitle}>{geomancyTitle} Analysis</Text>
+                      <Text style={styles.cardDate}>
+                        {new Date(analysis.created_at).toLocaleDateString()}
+                      </Text>
+                    </View>
+                  </View>
+                  <View style={styles.headerRight}>
+                    {analysis.compliance_score !== undefined && (
+                      <View style={styles.compactScoreBadge}>
+                        <Text style={[
+                          styles.compactScoreText,
+                          { color: getScoreColor(analysis.compliance_score) }
+                        ]}>
+                          {analysis.compliance_score}
+                        </Text>
+                      </View>
+                    )}
+                    <Ionicons 
+                      name={isExpanded ? "chevron-up" : "chevron-down"} 
+                      size={24} 
+                      color="#8E8E93" 
+                    />
+                  </View>
                 </TouchableOpacity>
-              </View>
 
-              {analysis.compliance_score !== undefined && (
-                <View style={styles.scoreContainer}>
-                  <View style={styles.scoreCircle}>
-                    <Text
-                      style={[
-                        styles.scoreText,
-                        { color: getScoreColor(analysis.compliance_score) },
-                      ]}
-                    >
-                      {analysis.compliance_score}
-                    </Text>
-                    <Text style={styles.scoreOutOf}>/100</Text>
+                {/* Score Summary - Always Visible */}
+                {analysis.compliance_score !== undefined && (
+                  <View style={styles.scoreSummary}>
+                    <View style={styles.scoreRow}>
+                      <View style={styles.scoreItem}>
+                        <Text style={styles.scoreItemLabel}>Status</Text>
+                        <Text style={[
+                          styles.scoreItemValue,
+                          { color: getScoreColor(analysis.compliance_score) }
+                        ]}>
+                          {getScoreLabel(analysis.compliance_score)}
+                        </Text>
+                      </View>
+                      <View style={styles.scoreDivider} />
+                      <View style={styles.scoreItem}>
+                        <Text style={styles.scoreItemLabel}>
+                          {geomancyType === 'feng_shui' ? 'Harmony' : 'Compliance'}
+                        </Text>
+                        <Text style={[
+                          styles.scoreItemValue,
+                          { color: getScoreColor(analysis.compliance_score) }
+                        ]}>
+                          {analysis.compliance_score}/100
+                        </Text>
+                      </View>
+                    </View>
                   </View>
-                  <View style={styles.scoreInfo}>
-                    <Text style={styles.scoreLabel}>
-                      {geomancyType === 'feng_shui' ? 'Harmony Score' : 'Compliance Score'}
-                    </Text>
-                    <Text
-                      style={[
-                        styles.scoreStatus,
-                        { color: getScoreColor(analysis.compliance_score) },
-                      ]}
-                    >
-                      {getScoreLabel(analysis.compliance_score)}
-                    </Text>
-                  </View>
+                )}
+
+                {/* Quick Summary - Always Visible */}
+                <View style={styles.quickSummary}>
+                  <Text style={styles.quickSummaryText} numberOfLines={isExpanded ? undefined : 2}>
+                    {analysis.analysis_text.substring(0, 150)}
+                    {!isExpanded && analysis.analysis_text.length > 150 ? '...' : ''}
+                  </Text>
                 </View>
-              )}
 
-              {analysis.floor_plan_image && (
-                <Image
-                  source={{
-                    uri: `data:image/jpeg;base64,${analysis.floor_plan_image}`,
-                  }}
-                  style={styles.floorPlanImage}
-                  resizeMode="cover"
-                />
-              )}
+                {/* Expandable Details */}
+                {isExpanded && (
+                  <View style={styles.expandedContent}>
+                    {/* Full Analysis */}
+                    {analysis.analysis_text.length > 150 && (
+                      <View style={styles.fullAnalysis}>
+                        <Text style={styles.analysisTitle}>Full Analysis & Recommendations</Text>
+                        <Text style={styles.analysisText}>{analysis.analysis_text}</Text>
+                      </View>
+                    )}
 
-              <View style={styles.analysisContent}>
-                <Text style={styles.analysisTitle}>Analysis & Recommendations</Text>
-                <Text style={styles.analysisText}>{analysis.analysis_text}</Text>
+                    {/* Floor Plan Image */}
+                    {analysis.floor_plan_image && (
+                      <View style={styles.floorPlanSection}>
+                        <Text style={styles.sectionTitle}>Floor Plan</Text>
+                        <Image
+                          source={{
+                            uri: `data:image/jpeg;base64,${analysis.floor_plan_image}`,
+                          }}
+                          style={styles.floorPlanImage}
+                          resizeMode="contain"
+                        />
+                      </View>
+                    )}
+
+                    {/* Delete Button */}
+                    <TouchableOpacity
+                      style={styles.deleteButtonExpanded}
+                      onPress={() => handleDeleteAnalysis(analysis)}
+                    >
+                      <Ionicons name="trash-outline" size={20} color="#FF3B30" />
+                      <Text style={styles.deleteButtonText}>Delete Analysis</Text>
+                    </TouchableOpacity>
+                  </View>
+                )}
               </View>
-            </View>
-          ))}
+            );
+          })}
         </ScrollView>
       )}
 
