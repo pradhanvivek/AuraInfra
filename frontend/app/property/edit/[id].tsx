@@ -61,6 +61,7 @@ export default function EditPropertyScreen() {
       console.log('Property fetched:', property.name, 'Address:', property.address);
       setName(property.name);
       setAddress(property.address || '');
+      setSavedAddress(property.address || ''); // Store original address for display
       setLatitude(property.latitude);
       setLongitude(property.longitude);
       setPurchaseCost(property.purchase_cost ? property.purchase_cost.toString() : '');
