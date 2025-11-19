@@ -472,7 +472,6 @@ export default function EditPropertyScreen() {
             <Text style={styles.deleteButtonText}>Delete Property</Text>
           </TouchableOpacity>
         </View>
-        </ScrollView>
       </KeyboardAvoidingView>
     </SafeAreaView>
   );
