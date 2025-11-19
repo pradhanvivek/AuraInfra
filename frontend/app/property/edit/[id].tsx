@@ -598,7 +598,8 @@ const styles = StyleSheet.create({
   },
   currentAddressDisplay: {
     backgroundColor: '#F8F9FA',
-    padding: 16,
+    paddingVertical: 8,
+    paddingHorizontal: 16,
     borderRadius: 12,
     marginBottom: 16,
   },
