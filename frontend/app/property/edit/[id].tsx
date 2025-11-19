@@ -323,11 +323,23 @@ export default function EditPropertyScreen() {
                   enablePoweredByContainer={false}
                   disableScroll={true}
                   onPress={(data: any, details: any = null) => {
-                    if (details) {
+                    console.log('GooglePlaces onPress - data:', data?.description, 'details:', details);
+                    if (details && details.geometry) {
+                      const newAddress = data.description;
+                      const newLat = details.geometry.location.lat;
+                      const newLng = details.geometry.location.lng;
+                      
+                      console.log('Updating address to:', newAddress, 'coords:', newLat, newLng);
+                      
+                      setAddress(newAddress);
+                      setSavedAddress(newAddress);
+                      setLatitude(newLat);
+                      setLongitude(newLng);
+                    } else {
+                      console.log('Details missing - only updating address text');
+                      // Update address even if details are missing
                       setAddress(data.description);
-                      setSavedAddress(data.description); // Update display address
-                      setLatitude(details.geometry.location.lat);
-                      setLongitude(details.geometry.location.lng);
+                      setSavedAddress(data.description);
                     }
                   }}
                   query={{
