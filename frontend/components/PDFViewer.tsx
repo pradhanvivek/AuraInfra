@@ -45,21 +45,26 @@ export default function PDFViewer({
     try {
       setLoading(true);
       
+      console.log('=== PDF VIEWER DEBUG START ===');
+      console.log('Title:', title);
+      console.log('MimeType:', mimeType);
+      console.log('FileData length:', fileData?.length || 0);
+      console.log('FileData first 50 chars:', fileData?.substring(0, 50));
+      
       // Generate filename with proper extension
       const extension = mimeType.includes('pdf') ? 'pdf' : 'doc';
       const fileName = `${title.replace(/[^a-z0-9]/gi, '_')}.${extension}`;
-      const localFileUri = `${FileSystem.cacheDirectory}${fileName}`;
-      
-      // Write base64 data to file
-      await FileSystem.writeAsStringAsync(localFileUri, fileData, {
-        encoding: FileSystem.EncodingType.Base64,
-      });
-      
-      console.log('File written to:', localFileUri);
       
       if (Platform.OS === 'android') {
         // Android: Use IntentLauncher to open document directly in viewer app
-        console.log('Opening document on Android with IntentLauncher');
+        console.log('Android: Writing file and opening with IntentLauncher');
+        const localFileUri = `${FileSystem.cacheDirectory}${fileName}`;
+        
+        await FileSystem.writeAsStringAsync(localFileUri, fileData, {
+          encoding: FileSystem.EncodingType.Base64,
+        });
+        
+        console.log('File written to:', localFileUri);
         const contentUri = await FileSystem.getContentUriAsync(localFileUri);
         console.log('Content URI:', contentUri);
         
@@ -70,21 +75,33 @@ export default function PDFViewer({
         });
         
         setLoading(false);
-        // Close modal after opening
         setTimeout(() => {
           onClose();
         }, 500);
         
       } else if (Platform.OS === 'ios') {
-        // iOS: Display PDF in WebView for direct viewing
-        console.log('Opening document on iOS with WebView');
-        setFileUri(localFileUri);
+        // iOS: Use base64 data URI with WebView
+        console.log('iOS: Creating data URI for WebView');
+        
+        // Create proper data URI - WebView on iOS can't load file:// URLs
+        // but can load data URIs
+        const dataUri = `data:${mimeType};base64,${fileData}`;
+        console.log('Data URI created, length:', dataUri.length);
+        console.log('Data URI first 100 chars:', dataUri.substring(0, 100));
+        
+        setFileUri(dataUri);
         setShowWebView(true);
         setLoading(false);
+        console.log('WebView should now display with data URI');
       }
       
+      console.log('=== PDF VIEWER DEBUG END ===');
+      
     } catch (error: any) {
+      console.error('=== PDF VIEWER ERROR ===');
       console.error('Error preparing document:', error);
+      console.error('Error message:', error.message);
+      console.error('Error stack:', error.stack);
       setLoading(false);
       Alert.alert('Error', `Failed to open document: ${error.message}`);
       onClose();
