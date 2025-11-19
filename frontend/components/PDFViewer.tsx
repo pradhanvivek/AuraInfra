@@ -103,82 +103,22 @@ export default function PDFViewer({
   return (
     <Modal
       visible={visible}
-      animationType="slide"
+      animationType="fade"
+      transparent
       onRequestClose={onClose}
     >
-      {showWebView && fileUri ? (
-        // iOS: Show WebView with PDF
-        <SafeAreaView style={styles.viewerContainer} edges={['top']}>
-          <View style={styles.header}>
-            <TouchableOpacity onPress={onClose} style={styles.headerButton}>
-              <Ionicons name="close" size={28} color="#007AFF" />
-            </TouchableOpacity>
-            <View style={styles.headerTitle}>
-              <Text style={styles.title} numberOfLines={1}>{title}</Text>
-            </View>
-            <TouchableOpacity onPress={handleShare} style={styles.headerButton}>
-              <Ionicons name="share-outline" size={24} color="#007AFF" />
-            </TouchableOpacity>
-          </View>
-          <WebView
-            source={{ uri: fileUri }}
-            style={styles.webview}
-            onLoadStart={() => {
-              console.log('WebView: Load started');
-              setLoading(true);
-            }}
-            onLoadEnd={() => {
-              console.log('WebView: Load ended');
-              setLoading(false);
-            }}
-            onLoad={() => {
-              console.log('WebView: Loaded successfully');
-            }}
-            onError={(syntheticEvent) => {
-              const { nativeEvent } = syntheticEvent;
-              console.error('WebView error (native):', nativeEvent);
-              console.error('WebView error description:', nativeEvent.description);
-              console.error('WebView error code:', nativeEvent.code);
-              Alert.alert('Error', 'Failed to load PDF');
-            }}
-            onHttpError={(syntheticEvent) => {
-              const { nativeEvent } = syntheticEvent;
-              console.error('WebView HTTP error:', nativeEvent);
-              console.error('HTTP status code:', nativeEvent.statusCode);
-            }}
-            onMessage={(event) => {
-              console.log('WebView message:', event.nativeEvent.data);
-            }}
-            originWhitelist={['*']}
-            javaScriptEnabled={true}
-            domStorageEnabled={true}
-            startInLoadingState={true}
-            scalesPageToFit={true}
-            allowFileAccess={true}
-            allowUniversalAccessFromFileURLs={true}
-          />
-          {loading && (
-            <View style={styles.loadingOverlay}>
-              <ActivityIndicator size="large" color="#007AFF" />
-              <Text style={styles.loadingOverlayText}>Loading PDF...</Text>
-            </View>
-          )}
-        </SafeAreaView>
-      ) : (
-        // Loading state
-        <View style={styles.loadingModal}>
-          <View style={styles.loadingCard}>
-            <ActivityIndicator size="large" color="#007AFF" />
-            <Text style={styles.loadingText}>Opening {title}...</Text>
-            <TouchableOpacity
-              style={styles.cancelButton}
-              onPress={onClose}
-            >
-              <Text style={styles.cancelButtonText}>Cancel</Text>
-            </TouchableOpacity>
-          </View>
+      <View style={styles.loadingModal}>
+        <View style={styles.loadingCard}>
+          <ActivityIndicator size="large" color="#007AFF" />
+          <Text style={styles.loadingText}>Opening {title || 'document'}...</Text>
+          <TouchableOpacity
+            style={styles.cancelButton}
+            onPress={onClose}
+          >
+            <Text style={styles.cancelButtonText}>Cancel</Text>
+          </TouchableOpacity>
         </View>
-      )}
+      </View>
     </Modal>
   );
 }
