@@ -507,6 +507,12 @@ const styles = StyleSheet.create({
   content: {
     flex: 1,
   },
+  scrollView: {
+    flex: 1,
+  },
+  scrollContent: {
+    flexGrow: 1,
+  },
   formContainer: {
     flex: 1,
     padding: 16,
