@@ -36,6 +36,7 @@ export default function VastuScreen({ propertyId, geomancyType = 'vastu' }: Vast
   const [loading, setLoading] = useState(true);
   const [analyzing, setAnalyzing] = useState(false);
   const [expandedId, setExpandedId] = useState<string | null>(null);
+  const swipeableRefs = useRef<{ [key: string]: Swipeable | null }>({});
 
   const geomancyTitle = geomancyType === 'vastu' ? 'Vastu Shastra' : 'Feng Shui';
   const geomancyDescription = geomancyType === 'vastu' 
