@@ -1,111 +1,83 @@
 <analysis>
-I have performed a chronological analysis of the entire trajectory, which details an extensive series of feature developments, bug fixes, and refactoring tasks on a full-stack Expo/FastAPI application.
+The trajectory outlines a multi-stage development and debugging process. The work began by addressing a critical infrastructure issue where the Expo Go app on an iPhone was connecting to a stale ngrok URL instead of the correct preview URL. This was debugged by investigating and correcting the supervisor configuration for the Expo server, removing the  flag that forced ngrok tunneling.
 
-The work began with implementing a user-requested feature to allow login with either email or username. This involved modifying the backend authentication endpoint in  to check for an @ symbol in the login identifier and updating the frontend placeholder text in .
+Once the connection was fixed, the focus shifted to application-level bugs and feature enhancements. First, a state propagation issue on the Near Me page was resolved. The page was incorrectly reading data from AsyncStorage and wasn't updating when the user selected a new property. This was fixed by using the correct AsyncStorage key and adding a  hook to refresh the data on navigation.
 
-Subsequently, a series of fixes were implemented. A property deletion issue on the web was resolved by using  to provide a web-compatible confirmation dialog () in , a pattern that was later reused for Vastu analysis deletion in .
+Next, the UI/UX of the Vastu screen was significantly improved. A long, cluttered list of analyses was refactored into a series of collapsible summary cards. A slide-to-delete feature was implemented using , providing a more intuitive and native user experience.
 
-A major feature enhancement involved adding Google Places address lookup functionality to the property edit page, mirroring the implementation from the add property page. This required porting over state management, API call logic, and suggestion rendering UI from  to .
+A minor UI tweak was then performed on the property edit page, reducing padding for a more compact layout.
 
-A significant portion of the work involved debugging and enhancing the Quick Scan feature. This involved an iterative process of fixing multiple backend errors in the  endpoint in , including incorrect data access (), invalid LLM API call parameters (, ), and incorrect method names (, ). The final fix involved referencing a working implementation from another part of the code and rewriting the endpoint to use the correct  pattern. The user experience was then improved by passing the scanned image data as a route parameter from  to  to prevent redundant scanning.
+Finally, work began on implementing an in-app PDF viewer. The initial attempt using a  failed on iOS, resulting in a blank screen. A  identified this as a known limitation. The current work is pivoting to a more reliable hybrid approach.
 
-The most recent and complex task was the development and debugging of the Paint Estimation screen (). This included adding localized settings for currency, units, and country-specific pricing, along with a disclaimer. This task involved extensive debugging of React Native modals, resolving a critical issue where a modal was nested inside another, and fixing another issue where the modal was not rendered in all of the component's conditional return paths. This was resolved by refactoring the component to have a single root return that always renders the modal.
-
-The final request was to move the country selection from the paint screen to the main user profile page (), which is the current ongoing task.
+The user's primary language is English. The next agent must respond in English.
 </analysis>
 
 <product_requirements>
-The application is a comprehensive personal and property asset management system called AuraInfra.ai. It features a cross-platform Expo mobile app and a web-based admin dashboard.
+The AuraInfra.ai application is a personal and property asset management system for tracking assets like properties, vehicles, and valuables, with added HOA management features.
 
-**Core Functionality:**
-- **User Management:** Users can register and log in. A recent update allows users to log in with either their email or username.
-- **Asset Management:** Users can add, view, edit, and delete various assets, including properties, appliances, vehicles, and more.
-- **AI-Powered Features:**
-    - **Quick Scan:** Users can scan an item with their camera, and an AI service identifies the asset type (e.g., 'car', 'appliance') and navigates them to the appropriate add form. The scanned image and preliminary data are passed to the form to avoid redundant user input.
-    - **Receipt Scanning:** Automatically fills in fixture details by scanning a receipt.
-    - **Paint Estimation:** A tool to estimate paint quantity and cost by capturing room dimensions. This feature has been enhanced to support multiple countries (US, India, UK, etc.) with localized currency, measurement units, and region-specific pricing. It also includes a legal disclaimer.
-- **Admin Dashboard:** A section of the app, also accessible via a separate web portal, for administrative tasks. The mobile admin dashboard header was fixed to display correctly on iPhones.
-- **User Profile:** Users can manage their preferences, including a newly added global country setting that dictates default units and currencies throughout the app.
-
-**Recent User Requests & Implementations:**
-1.  **Login:** Implemented login with email or username.
-2.  **Web Compatibility:** Fixed multiple deletion features (Property, Vastu) that were broken on the web due to incorrect usage of .
-3.  **UX Improvements:** Added address lookup to the edit property page, added a loading spinner to the Add to Portfolio button, and improved confirmation messages.
-4.  **Paint Estimation:** Built and extensively debugged the paint estimation screen, adding country-based localization and a disclaimer.
-5.  **Refactoring:** Moved the country selector from a feature-specific setting to a global user profile setting.
+The project is in a stabilization phase, focusing on bug fixes and UX enhancements. Recent development involved a series of distinct tasks:
+1.  **Infrastructure Repair:** Resolved a critical connection failure on the iOS Expo Go app caused by an incorrect server URL.
+2.  **Near Me Feature Fix:** Corrected a bug where the Near Me screen failed to update its content after the user selected a different property on the main dashboard.
+3.  **Vastu Screen Redesign:** Refactored a cluttered UI into a clean, modern interface with collapsible summary cards and an intuitive swipe-to-delete gesture.
+4.  **UI Polish:** Standardized padding on the Property Edit screen for visual consistency.
+5.  **Document Viewer:** Currently implementing an in-app document/PDF viewer. The initial -based implementation failed, and a more robust, file-system-based solution is now underway.
 </product_requirements>
 
 <key_technical_concepts>
-- **Full-Stack:** Expo (React Native) frontend, FastAPI (Python) backend, MongoDB database.
-- **Routing:**  for file-based navigation in the mobile app.
-- **Platform-Specific Code:**  and  for handling differences between native (iOS/Android) and web, particularly for alerts ( vs. ) and hardware APIs ().
-- **State Management:** React hooks (, ).
-- **API Communication:**  for frontend-to-backend API calls.
-- **AI Integration:**  Python library for making calls to LLMs for image and text analysis (e.g., asset identification, receipt parsing).
-- **UI/UX:**  for handling device notches,  for pop-up dialogs, and  for loading states.
+- **Full-Stack:** Expo (React Native), FastAPI (Python).
+- **Environment:** Supervisor for process management,  for environment variables.
+- **State Management:**  for local persistence, React Hooks (, , ).
+- **UI/UX:**  for  components, .
+- **File System:**  for handling files on the device (part of the current solution).
+- **Platform APIs:** ,  for native device interactions.
 </key_technical_concepts>
 
 <code_architecture>
-The application is a monorepo with  (Expo),  (FastAPI), and  (React+Vite) directories.
-
-**Directory Structure:**
+The application is a monorepo with  and  directories.
 
 
-**Key Files & Recent Changes:**
 
 - ****
-    - **Summary:** The core FastAPI application handling all API logic, database interaction, and AI service calls.
-    - **Changes:**
-        - The  endpoint was modified to accept either an email or a username for authentication.
-        - The  endpoint underwent significant debugging. It was completely rewritten to use the correct  pattern ( with  and ), fixing a series of crashes.
-        -  and  Pydantic models were updated to include a  field in preparation for saving the user's country preference.
+  - **Importance:** This server configuration file dictates how the Expo development server is run.
+  - **Summary of Changes:** The  flag was removed from the  to stop Expo from using ngrok and force it to use the correct preview URL specified in the environment variables, fixing a major connection issue.
 
 - ****
-    - **Summary:** The user login screen.
-    - **Changes:** The  placeholder and label were updated from Email to Email or Username to reflect the new backend capability.
+  - **Importance:** Displays points of interest near the selected property.
+  - **Summary of Changes:** The file was edited to read  from AsyncStorage (instead of ) and to use a  hook. This ensures the displayed information is always in sync with the user's current property selection from the dashboard.
 
 - ****
-    - **Summary:** A complex screen for calculating paint estimates. It features a camera for capturing dimensions, settings, and results display.
-    - **Changes:** This file has been heavily modified.
-        - **Feature Addition:** Added state and UI for selecting country, which automatically sets currency (e.g., INR, USD) and measurement units (litres, gallons).
-        - **Bug Fixes:** Resolved a major bug where the settings modal wouldn't open by refactoring the component's multiple  statements into a single render path that includes the modal at the root level. Fixed a web-specific crash by wrapping  usage in a platform check.
-        - **Refactoring:** Removed the local currency and unit selectors, as this logic is now driven by the new global country setting.
+  - **Importance:** Displays Vastu analysis results for a property.
+  - **Summary of Changes:** Underwent a major refactor. The UI was changed from a simple list to expandable cards using . A slide-to-delete functionality was added by wrapping each card in a  component from , and the old delete button was removed.
 
 - ****
-    - **Summary:** The user's profile and settings screen.
-    - **Changes:** Work has begun to add a Country selection option to this page. UI elements and state () have been added. The next step is to implement the modal itself and the handler to save the preference.
+  - **Importance:** The form for editing property details.
+  - **Summary of Changes:** Several style properties (, , , etc.) had their  and  values changed from  to  to create a more compact layout as requested.
 
 - ****
-    - **Summary:** The Quick Scan screen that uses the camera to identify an asset.
-    - **Changes:**
-        - Logic was added to pass the captured image data () as a route parameter when navigating to the corresponding add page (e.g., ).
-        - A loading state () with an  was added to the Add to Portfolio button to provide user feedback and prevent double-clicks.
+  - **Importance:** Lists and provides access to HOA documents.
+  - **Summary of Changes:** The  function was modified to use a new modal with a  component instead of the  API. State management for the new modal (, ) was added.
 
 - ****
-    - **Summary:** The form for adding a new appliance.
-    - **Changes:** Updated to check for the  route parameter. If present, it uses this image data to auto-fill the form, skipping the camera step and improving the user flow. A bug causing a double prefix on the base64 image data was also fixed to ensure the pre-scanned image displays correctly.
-
-- ****
-    - **Summary:** The page for editing an existing property's details.
-    - **Changes:** The Delete functionality was fixed for the web by using . The Google Places address lookup feature was successfully ported from the  page.
+  - **Importance:** A new component created to display PDFs within the app.
+  - **Summary of Changes:** Initially created to render a PDF using . This approach failed and is now being reworked.
 </code_architecture>
 
 <pending_tasks>
-- **Implement Country Modal:** Add the full UI for the country selection modal on the profile page ().
-- **Implement Country Change Handler:** Create the  function in  to save the selected country.
-- **Implement Backend Save:** Update the  PUT endpoint in  to accept and save the  field to the user's document in MongoDB.
+- **Implement Phase 2 Features:** Begin work on pending admin and user features like Community Properties and Dues Management, as originally planned.
+- **Address Selection Verification:** A broader verification might be needed to ensure address selection works correctly across all related app features, not just the Near Me page.
 </pending_tasks>
 
 <current_work>
-The immediate last task was part of a larger refactor to make country selection a global user setting. The user requested to move the country selector from the Paint Estimation screen to the main Profile page and have it drive defaults app-wide.
+The immediate task is to fix the in-app PDF viewer, which currently shows a blank screen on iOS. The initial implementation using  to display a base64-encoded PDF failed. This was identified by the  as a known limitation of iOS's WebView.
 
-The previous engineer had already started this work:
-1.  **Frontend (Profile Page):** In , placeholder UI and state for a country selector have been added. The modal UI itself and the function to handle the selection are still pending.
-2.  **Backend (API Models):** In , the Pydantic models  and  were successfully updated to include a new optional field: .
+The current strategy, based on the agent's diagnosis, is to implement a hybrid solution:
+1.  **Receive PDF Data:** Get the base64 PDF data from the API as before.
+2.  **Write to File:** Use  to write the base64 data into a temporary PDF file on the device's local filesystem.
+3.  **Open with System Viewer:** Use a native API, likely , to open this newly created local file. This leverages the device's reliable, built-in PDF viewing capabilities, providing a seamless experience for the user without the limitations of WebView.
 
-The work concluded just before modifying the backend's profile update endpoint. The plan was to update the  function to handle the new  field from the request body and save it to the user's record in the database. This would complete the backend portion of the task, leaving the frontend modal implementation and API call as the final steps.
+The work was paused just as this new hybrid approach was being formulated. The next step is to implement this logic in  and/or .
 </current_work>
 
 <optional_next_step>
-Continue with the pending task by modifying the backend profile update endpoint in  to handle the new  field.
+Implement the hybrid PDF viewing solution: modify the  function to write the PDF data to a temporary file and open it using the native sharing/viewer API.
 </optional_next_step>

@@ -89,7 +89,7 @@ EXPO_PUBLIC_GOOGLE_MAPS_API_KEY=your_google_maps_key
 
 Your app is **already accessible on web** at:
 ```
-https://aurainfra-1.preview.emergentagent.com
+https://fixandfluid.preview.emergentagent.com
 ```
 
 This is running via `expo start` and is great for development but **not suitable for production**.
@@ -338,7 +338,7 @@ eas submit --platform android
 ## 📊 Deployment URLs Structure
 
 ### Development:
-- Web: `https://aurainfra-1.preview.emergentagent.com` (current)
+- Web: `https://fixandfluid.preview.emergentagent.com` (current)
 - Mobile: Expo Go app
 
 ### Production:
