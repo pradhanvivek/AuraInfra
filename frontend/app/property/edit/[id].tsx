@@ -570,7 +570,8 @@ const styles = StyleSheet.create({
     backgroundColor: '#FFF8E1',
     marginHorizontal: 16,
     marginBottom: 16,
-    padding: 16,
+    paddingVertical: 8,
+    paddingHorizontal: 16,
     borderRadius: 12,
   },
   infoText: {
