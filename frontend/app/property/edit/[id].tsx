@@ -38,6 +38,7 @@ export default function EditPropertyScreen() {
   const [saving, setSaving] = useState(false);
   const [name, setName] = useState('');
   const [address, setAddress] = useState('');
+  const [savedAddress, setSavedAddress] = useState(''); // Original address from DB - display only
   const [latitude, setLatitude] = useState<number | undefined>();
   const [longitude, setLongitude] = useState<number | undefined>();
   const [purchaseCost, setPurchaseCost] = useState('');
