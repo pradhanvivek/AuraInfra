@@ -321,6 +321,7 @@ export default function EditPropertyScreen() {
                   onPress={(data: any, details: any = null) => {
                     if (details) {
                       setAddress(data.description);
+                      setSavedAddress(data.description); // Update display address
                       setLatitude(details.geometry.location.lat);
                       setLongitude(details.geometry.location.lng);
                     }
