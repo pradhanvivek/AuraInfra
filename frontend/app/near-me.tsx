@@ -21,21 +21,28 @@ export default function NearMeRoute() {
 
   const fetchSelectedProperty = async () => {
     try {
-      const response = await axios.get(`${API_URL}/api/users/properties`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      // Get selected property from AsyncStorage (saved from dashboard)
+      const AsyncStorage = await import('@react-native-async-storage/async-storage').then(
+        (module) => module.default
+      );
+      const savedPropertyStr = await AsyncStorage.getItem('selectedProperty');
       
-      if (response.data && response.data.length > 0) {
-        // Get selected property from storage or use first property
-        const selectedId = await import('@react-native-async-storage/async-storage').then(
-          (module) => module.default.getItem('selectedPropertyId')
-        );
-        
-        const property = selectedId
-          ? response.data.find((p: any) => p.id === selectedId) || response.data[0]
-          : response.data[0];
-        
+      if (savedPropertyStr) {
+        // Use the saved property directly
+        const property = JSON.parse(savedPropertyStr);
         setSelectedProperty(property);
+      } else {
+        // Fallback: fetch properties and use the first one
+        const response = await axios.get(`${API_URL}/api/users/properties`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        
+        if (response.data && response.data.length > 0) {
+          const property = response.data[0];
+          setSelectedProperty(property);
+          // Save it for next time
+          await AsyncStorage.setItem('selectedProperty', JSON.stringify(property));
+        }
       }
     } catch (error) {
       console.error('Failed to fetch properties:', error);
