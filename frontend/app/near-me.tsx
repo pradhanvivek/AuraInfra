@@ -1,8 +1,8 @@
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { useRouter } from 'expo-router';
+import { useRouter, useFocusEffect } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
-import { useState, useEffect } from 'react';
+import { useState, useCallback } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import NearMeScreen from '../screens/property/NearMeScreen';
 import axios from 'axios';
@@ -15,9 +15,12 @@ export default function NearMeRoute() {
   const { token } = useAuth();
   const [selectedProperty, setSelectedProperty] = useState<any>(null);
 
-  useEffect(() => {
-    fetchSelectedProperty();
-  }, []);
+  // Refetch selected property whenever the page comes into focus
+  useFocusEffect(
+    useCallback(() => {
+      fetchSelectedProperty();
+    }, [])
+  );
 
   const fetchSelectedProperty = async () => {
     try {
