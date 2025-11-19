@@ -400,8 +400,21 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     flex: 1,
   },
+  headerRight: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+  },
+  iconCircle: {
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
   headerInfo: {
     marginLeft: 12,
+    flex: 1,
   },
   cardTitle: {
     fontSize: 16,
@@ -413,54 +426,58 @@ const styles = StyleSheet.create({
     color: '#8E8E93',
     marginTop: 2,
   },
-  deleteButton: {
-    padding: 8,
+  compactScoreBadge: {
+    backgroundColor: '#F2F2F7',
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 12,
   },
-  scoreContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    padding: 16,
+  compactScoreText: {
+    fontSize: 16,
+    fontWeight: '700',
+  },
+  scoreSummary: {
+    paddingHorizontal: 16,
+    paddingVertical: 12,
     backgroundColor: '#F2F2F7',
   },
-  scoreCircle: {
-    width: 80,
-    height: 80,
-    borderRadius: 40,
-    backgroundColor: '#fff',
-    justifyContent: 'center',
+  scoreRow: {
+    flexDirection: 'row',
     alignItems: 'center',
-    marginRight: 16,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 2,
   },
-  scoreText: {
-    fontSize: 32,
-    fontWeight: 'bold',
-  },
-  scoreOutOf: {
-    fontSize: 12,
-    color: '#8E8E93',
-  },
-  scoreInfo: {
+  scoreItem: {
     flex: 1,
+    alignItems: 'center',
   },
-  scoreLabel: {
-    fontSize: 14,
+  scoreDivider: {
+    width: 1,
+    height: 40,
+    backgroundColor: '#E5E5EA',
+  },
+  scoreItemLabel: {
+    fontSize: 12,
     color: '#8E8E93',
     marginBottom: 4,
   },
-  scoreStatus: {
+  scoreItemValue: {
     fontSize: 18,
-    fontWeight: '600',
+    fontWeight: '700',
   },
-  floorPlanImage: {
-    width: '100%',
-    height: 200,
+  quickSummary: {
+    padding: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: '#F2F2F7',
   },
-  analysisContent: {
+  quickSummaryText: {
+    fontSize: 14,
+    color: '#333',
+    lineHeight: 20,
+  },
+  expandedContent: {
+    borderTopWidth: 1,
+    borderTopColor: '#F2F2F7',
+  },
+  fullAnalysis: {
     padding: 16,
   },
   analysisTitle: {
@@ -473,6 +490,41 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: '#333',
     lineHeight: 22,
+  },
+  floorPlanSection: {
+    padding: 16,
+    borderTopWidth: 1,
+    borderTopColor: '#F2F2F7',
+  },
+  sectionTitle: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#000',
+    marginBottom: 12,
+  },
+  floorPlanImage: {
+    width: '100%',
+    height: 250,
+    borderRadius: 8,
+    backgroundColor: '#F2F2F7',
+  },
+  deleteButtonExpanded: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: 16,
+    marginHorizontal: 16,
+    marginVertical: 16,
+    borderRadius: 8,
+    backgroundColor: '#FFF5F5',
+    borderWidth: 1,
+    borderColor: '#FF3B30',
+  },
+  deleteButtonText: {
+    color: '#FF3B30',
+    fontSize: 16,
+    fontWeight: '600',
+    marginLeft: 8,
   },
   fab: {
     position: 'absolute',
