@@ -297,13 +297,15 @@ export default function EditPropertyScreen() {
               </View>
             ) : GOOGLE_MAPS_API_KEY && GooglePlacesAutocomplete && Platform.OS !== 'web' ? (
               <View>
-                {address && (
-                  <View style={styles.currentAddressDisplay}>
-                    <Text style={styles.currentAddressLabel}>Current Address:</Text>
+                <View style={styles.currentAddressDisplay}>
+                  <Text style={styles.currentAddressLabel}>Current Address:</Text>
+                  {address ? (
                     <Text style={styles.currentAddressValue}>{address}</Text>
-                  </View>
-                )}
-                <Text style={styles.searchLabel}>Search for new address (optional):</Text>
+                  ) : (
+                    <Text style={styles.noAddressText}>No address saved yet. Search below to add one.</Text>
+                  )}
+                </View>
+                <Text style={styles.searchLabel}>Search for address:</Text>
                 <GooglePlacesAutocomplete
                   ref={autocompleteRef}
                   placeholder="Search for address..."
