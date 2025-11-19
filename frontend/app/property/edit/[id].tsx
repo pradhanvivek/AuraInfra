@@ -58,16 +58,38 @@ export default function EditPropertyScreen() {
     try {
       const property = await propertyApi.getById(token!, id!);
       setName(property.name);
-      setAddress(property.address);
+      setAddress(property.address || '');
       setLatitude(property.latitude);
       setLongitude(property.longitude);
       setPurchaseCost(property.purchase_cost ? property.purchase_cost.toString() : '');
       setCurrentValue(property.current_value ? property.current_value.toString() : '');
+      
+      // If no address but coordinates exist, try to reverse geocode
+      if ((!property.address || property.address.trim() === '') && property.latitude && property.longitude) {
+        reverseGeocode(property.latitude, property.longitude);
+      }
     } catch (error: any) {
       Alert.alert('Error', 'Failed to load property details');
       router.back();
     } finally {
       setLoading(false);
+    }
+  };
+  
+  // Reverse geocode coordinates to get address
+  const reverseGeocode = async (lat: number, lng: number) => {
+    try {
+      const response = await axios.get(
+        `${API_URL}/api/places/reverse-geocode?lat=${lat}&lng=${lng}`,
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      
+      if (response.data.address) {
+        setAddress(response.data.address);
+      }
+    } catch (error) {
+      console.log('Could not reverse geocode coordinates:', error);
+      // Silent fail - coordinates will still be shown
     }
   };
 
