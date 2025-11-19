@@ -163,7 +163,55 @@ export default function PDFViewer({
 }
 
 const styles = StyleSheet.create({
-  container: {
+  viewerContainer: {
+    flex: 1,
+    backgroundColor: '#fff',
+  },
+  header: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    borderBottomWidth: 1,
+    borderBottomColor: '#E5E5EA',
+    backgroundColor: '#fff',
+  },
+  headerButton: {
+    padding: 4,
+    minWidth: 40,
+  },
+  headerTitle: {
+    flex: 1,
+    paddingHorizontal: 12,
+  },
+  title: {
+    fontSize: 17,
+    fontWeight: '600',
+    color: '#000',
+    textAlign: 'center',
+  },
+  webview: {
+    flex: 1,
+    backgroundColor: '#525659',
+  },
+  loadingOverlay: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: 'rgba(255, 255, 255, 0.9)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  loadingOverlayText: {
+    marginTop: 16,
+    fontSize: 16,
+    color: '#000',
+    fontWeight: '600',
+  },
+  loadingModal: {
     flex: 1,
     backgroundColor: 'rgba(0, 0, 0, 0.5)',
     justifyContent: 'center',
