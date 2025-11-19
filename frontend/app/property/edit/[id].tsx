@@ -363,6 +363,7 @@ export default function EditPropertyScreen() {
                     shadowOpacity: 0.1,
                     shadowRadius: 4,
                     maxHeight: 200,
+                    nestedScrollEnabled: true,
                   },
                   row: {
                     backgroundColor: '#fff',
