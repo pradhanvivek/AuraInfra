@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AuraInfra.ai - Expo QR Code</title>
+    <title>AuraInfra.ai - Expo Go QR Code</title>
     <style>
         * {
             margin: 0;
@@ -12,49 +12,36 @@
         }
         
         body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
             display: flex;
             justify-content: center;
             align-items: center;
-            min-height: 100vh;
             padding: 20px;
         }
         
         .container {
             background: white;
             border-radius: 20px;
-            padding: 40px;
             box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            padding: 40px;
+            max-width: 600px;
             text-align: center;
-            max-width: 500px;
-            width: 100%;
-        }
-        
-        .logo {
-            width: 80px;
-            height: 80px;
-            background: #007AFF;
-            border-radius: 18px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            margin: 0 auto 20px;
-            font-size: 40px;
-            font-weight: bold;
-            color: white;
         }
         
         h1 {
             color: #333;
+            font-size: 32px;
             margin-bottom: 10px;
-            font-size: 28px;
+            font-weight: 700;
         }
         
         .subtitle {
-            color: #666;
+            color: #667eea;
+            font-size: 18px;
             margin-bottom: 30px;
-            font-size: 14px;
+            font-weight: 500;
         }
         
         .qr-container {
@@ -62,90 +49,169 @@
             border-radius: 15px;
             padding: 30px;
             margin: 30px 0;
+            border: 3px solid #667eea;
         }
         
         .qr-code {
-            max-width: 100%;
+            width: 100%;
+            max-width: 400px;
             height: auto;
             border-radius: 10px;
         }
         
         .instructions {
             text-align: left;
-            background: #f8f9fa;
-            padding: 20px;
-            border-radius: 10px;
-            margin-top: 20px;
+            background: #f0f4ff;
+            border-radius: 12px;
+            padding: 25px;
+            margin-top: 30px;
         }
         
         .instructions h3 {
-            color: #333;
+            color: #667eea;
+            font-size: 20px;
             margin-bottom: 15px;
-            font-size: 16px;
+            font-weight: 600;
         }
         
         .instructions ol {
             padding-left: 20px;
-            color: #666;
-            line-height: 1.8;
+            color: #555;
         }
         
         .instructions li {
-            margin-bottom: 10px;
+            margin-bottom: 12px;
+            font-size: 16px;
+            line-height: 1.6;
         }
         
-        .url-box {
-            background: white;
-            border: 2px solid #007AFF;
+        .url-display {
+            background: #e8eaff;
+            padding: 15px;
             border-radius: 8px;
-            padding: 12px;
-            margin: 15px 0;
+            margin-top: 20px;
             font-family: 'Courier New', monospace;
-            color: #007AFF;
             font-size: 14px;
+            color: #667eea;
             word-break: break-all;
         }
         
-        .badge {
-            display: inline-block;
-            background: #007AFF;
-            color: white;
-            padding: 6px 12px;
+        .status {
+            display: inline-flex;
+            align-items: center;
+            background: #d4edda;
+            color: #155724;
+            padding: 10px 20px;
             border-radius: 20px;
-            font-size: 12px;
+            font-size: 14px;
+            font-weight: 600;
             margin-top: 20px;
+        }
+        
+        .status::before {
+            content: "✓";
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            background: #28a745;
+            color: white;
+            border-radius: 50%;
+            margin-right: 10px;
+            text-align: center;
+            line-height: 20px;
+        }
+        
+        .warning {
+            background: #fff3cd;
+            border-left: 4px solid #ffc107;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 20px;
+            text-align: left;
+        }
+        
+        .warning-title {
+            color: #856404;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+        
+        .warning-text {
+            color: #856404;
+            font-size: 14px;
+            line-height: 1.6;
+        }
+        
+        @media (max-width: 768px) {
+            .container {
+                padding: 20px;
+            }
+            
+            h1 {
+                font-size: 24px;
+            }
+            
+            .subtitle {
+                font-size: 16px;
+            }
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <div class="logo">A</div>
-        <h1>AuraInfra.ai</h1>
-        <p class="subtitle">Scan to open in Expo Go</p>
+        <h1>🏗️ AuraInfra.ai</h1>
+        <p class="subtitle">Preview App - Expo Go</p>
+        
+        <div class="status">
+            Server Running & Ready
+        </div>
         
         <div class="qr-container">
-            <img src="/qr-code.png" alt="Expo QR Code" class="qr-code">
+            <img id="qrImage" src="" alt="QR Code" class="qr-code">
         </div>
         
         <div class="instructions">
-            <h3>📱 How to Connect:</h3>
+            <h3>📱 How to Connect</h3>
             <ol>
-                <li>Install <strong>Expo Go</strong> from the App Store</li>
-                <li>Open Expo Go on your iPhone</li>
-                <li>Tap <strong>"Scan QR Code"</strong></li>
-                <li>Point your camera at the QR code above</li>
+                <li><strong>Install Expo Go</strong> - Download from the App Store on your iPhone</li>
+                <li><strong>Open Expo Go</strong> - Launch the Expo Go app</li>
+                <li><strong>Scan QR Code</strong> - Tap "Scan QR Code" and point your camera at the code above</li>
+                <li><strong>Wait for Build</strong> - The app will download and launch automatically (30-60 seconds)</li>
             </ol>
-            
-            <h3 style="margin-top: 20px;">🔗 Manual Connection:</h3>
-            <p style="color: #666; font-size: 14px; margin-bottom: 10px;">
-                If scanning doesn't work, enter this URL manually in Expo Go:
-            </p>
-            <div class="url-box">
-                exp://aurainfra-1.preview.emergentagent.com
-            </div>
         </div>
         
-        <div class="badge">✨ Connected to Preview Server</div>
+        <div class="url-display">
+            <strong>Connection URL:</strong><br>
+            exp://fixandfluid.preview.emergentagent.com
+        </div>
+        
+        <div class="warning">
+            <div class="warning-title">⚠️ Important Notes</div>
+            <div class="warning-text">
+                • Make sure your iPhone has internet connection<br>
+                • Keep your phone on the same network or use mobile data<br>
+                • The first load may take 30-60 seconds<br>
+                • If connection fails, restart Expo Go and try again
+            </div>
+        </div>
     </div>
+    
+    <script>
+        // Load QR code image
+        fetch('/qr-image.png')
+            .then(response => response.blob())
+            .then(blob => {
+                const url = URL.createObjectURL(blob);
+                document.getElementById('qrImage').src = url;
+            })
+            .catch(error => {
+                console.error('Error loading QR code:', error);
+                // Fallback: show error message
+                document.getElementById('qrImage').alt = 'QR Code loading failed. Please refresh the page.';
+            });
+        
+        console.log('QR Code page loaded at:', new Date().toLocaleString());
+        console.log('Expo URL: exp://fixandfluid.preview.emergentagent.com');
+    </script>
 </body>
 </html>
