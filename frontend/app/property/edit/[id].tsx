@@ -127,6 +127,7 @@ export default function EditPropertyScreen() {
 
   const selectSuggestion = (suggestion: any) => {
     setAddress(suggestion.description);
+    setSavedAddress(suggestion.description); // Update display address
     setShowSuggestions(false);
     setSuggestions([]);
     if (suggestion.place_id) {
