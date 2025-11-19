@@ -171,12 +171,39 @@ export default function PDFViewer({
           <WebView
             source={{ uri: fileUri }}
             style={styles.webview}
-            onLoadStart={() => setLoading(true)}
-            onLoadEnd={() => setLoading(false)}
-            onError={(error) => {
-              console.error('WebView error:', error);
+            onLoadStart={() => {
+              console.log('WebView: Load started');
+              setLoading(true);
+            }}
+            onLoadEnd={() => {
+              console.log('WebView: Load ended');
+              setLoading(false);
+            }}
+            onLoad={() => {
+              console.log('WebView: Loaded successfully');
+            }}
+            onError={(syntheticEvent) => {
+              const { nativeEvent } = syntheticEvent;
+              console.error('WebView error (native):', nativeEvent);
+              console.error('WebView error description:', nativeEvent.description);
+              console.error('WebView error code:', nativeEvent.code);
               Alert.alert('Error', 'Failed to load PDF');
             }}
+            onHttpError={(syntheticEvent) => {
+              const { nativeEvent } = syntheticEvent;
+              console.error('WebView HTTP error:', nativeEvent);
+              console.error('HTTP status code:', nativeEvent.statusCode);
+            }}
+            onMessage={(event) => {
+              console.log('WebView message:', event.nativeEvent.data);
+            }}
+            originWhitelist={['*']}
+            javaScriptEnabled={true}
+            domStorageEnabled={true}
+            startInLoadingState={true}
+            scalesPageToFit={true}
+            allowFileAccess={true}
+            allowUniversalAccessFromFileURLs={true}
           />
           {loading && (
             <View style={styles.loadingOverlay}>
