@@ -255,54 +255,26 @@ export default function HOADocumentsScreen() {
         fileData = fileData.split(',')[1];
       }
       
-      const fileName = doc.file_name || `${doc.title}.pdf`;
       const mimeType = response.data.file_type || 'application/pdf';
 
       console.log('Processing document - mimeType:', mimeType, 'Platform:', Platform.OS);
 
-      if (Platform.OS === 'android') {
-        // Android: Use IntentLauncher to open file directly in viewer app
-        const fileUri = `${FileSystem.cacheDirectory}${fileName}`;
-        await FileSystem.writeAsStringAsync(fileUri, fileData, {
-          encoding: FileSystem.EncodingType.Base64,
-        });
-        
-        const contentUri = await FileSystem.getContentUriAsync(fileUri);
-        await IntentLauncher.startActivityAsync('android.intent.action.VIEW', {
-          data: contentUri,
-          flags: 1,
-          type: mimeType,
-        });
-      } else if (Platform.OS === 'ios') {
-        // iOS: For PDFs, use Sharing API instead of WebView (more reliable)
-        if (mimeType.includes('pdf')) {
-          console.log('Opening PDF with Sharing API');
-          const fileUri = `${FileSystem.cacheDirectory}${fileName}`;
-          await FileSystem.writeAsStringAsync(fileUri, fileData, {
-            encoding: FileSystem.EncodingType.Base64,
-          });
-          
-          await Sharing.shareAsync(fileUri, {
-            mimeType: mimeType,
-            UTI: mimeType,
-          });
-        } else {
-          // For images, show in modal
-          console.log('Opening image in modal');
-          setViewerDocument({
-            title: doc.title,
-            fileData: fileData,
-            mimeType: mimeType,
-            fileName: fileName,
-          });
-          setViewerModalVisible(true);
-        }
-      } else {
+      if (Platform.OS === 'web') {
         // Web: Download the file
+        const fileName = doc.file_name || `${doc.title}.pdf`;
         const link = document.createElement('a');
         link.href = `data:${mimeType};base64,${fileData}`;
         link.download = fileName;
         link.click();
+      } else {
+        // iOS & Android: Use in-app PDF viewer with WebView
+        console.log('Opening document in in-app viewer');
+        setPdfViewerData({
+          title: doc.title,
+          fileData: fileData,
+          mimeType: mimeType,
+        });
+        setPdfViewerVisible(true);
       }
     } catch (error: any) {
       console.error('Error viewing document:', error);
