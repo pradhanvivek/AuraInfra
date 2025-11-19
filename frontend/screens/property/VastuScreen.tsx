@@ -157,6 +157,41 @@ export default function VastuScreen({ propertyId, geomancyType = 'vastu' }: Vast
     return 'Needs Improvement';
   };
 
+  const renderRightActions = (
+    progress: Animated.AnimatedInterpolation<number>,
+    dragX: Animated.AnimatedInterpolation<number>,
+    analysis: VastuAnalysis
+  ) => {
+    const trans = dragX.interpolate({
+      inputRange: [-100, 0],
+      outputRange: [0, 100],
+      extrapolate: 'clamp',
+    });
+
+    return (
+      <Animated.View
+        style={[
+          styles.swipeAction,
+          {
+            transform: [{ translateX: trans }],
+          },
+        ]}
+      >
+        <TouchableOpacity
+          style={styles.deleteAction}
+          onPress={() => {
+            // Close the swipeable before showing alert
+            swipeableRefs.current[analysis.id]?.close();
+            handleDeleteAnalysis(analysis);
+          }}
+        >
+          <Ionicons name="trash" size={24} color="#fff" />
+          <Text style={styles.deleteActionText}>Delete</Text>
+        </TouchableOpacity>
+      </Animated.View>
+    );
+  };
+
   if (loading) {
     return (
       <View style={styles.centerContainer}>
