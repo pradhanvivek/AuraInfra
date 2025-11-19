@@ -416,17 +416,7 @@ export default function EditPropertyScreen() {
             )}
           </View>
 
-          {latitude && longitude && (
-            <View style={styles.coordinatesCard}>
-              <Ionicons name="location" size={20} color="#007AFF" />
-              <View style={styles.coordinatesText}>
-                <Text style={styles.coordinatesLabel}>Coordinates</Text>
-                <Text style={styles.coordinatesValue}>
-                  {latitude.toFixed(6)}, {longitude.toFixed(6)}
-                </Text>
-              </View>
-            </View>
-          )}
+          {/* Coordinates hidden - stored in backend */}
 
           <View style={styles.section}>
             <Text style={styles.label}>Purchase Cost (Optional)</Text>
