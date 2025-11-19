@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import {
   View,
   Text,
@@ -7,10 +7,12 @@ import {
   TouchableOpacity,
   ActivityIndicator,
   Platform,
+  Alert,
 } from 'react-native';
-import { WebView } from 'react-native-webview';
 import { Ionicons } from '@expo/vector-icons';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import * as FileSystem from 'expo-file-system/legacy';
+import * as Sharing from 'expo-sharing';
 
 interface PDFViewerProps {
   visible: boolean;
@@ -27,128 +29,72 @@ export default function PDFViewer({
   fileData,
   mimeType = 'application/pdf',
 }: PDFViewerProps) {
-  const [loading, setLoading] = React.useState(true);
+  const [loading, setLoading] = React.useState(false);
 
-  // Create data URI for WebView
-  const getDataUri = () => {
-    // If fileData already has data URI prefix, return as is
-    if (fileData.startsWith('data:')) {
-      return fileData;
+  useEffect(() => {
+    if (visible && fileData) {
+      openDocument();
     }
-    // Otherwise, add the prefix
-    return `data:${mimeType};base64,${fileData}`;
-  };
+  }, [visible, fileData]);
 
-  // For PDFs on iOS/Android, we need to embed in HTML with iframe or object tag
-  const getHTMLContent = () => {
-    const dataUri = getDataUri();
-    
-    return `
-      <!DOCTYPE html>
-      <html>
-        <head>
-          <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-          <style>
-            * {
-              margin: 0;
-              padding: 0;
-              box-sizing: border-box;
-            }
-            body {
-              margin: 0;
-              padding: 0;
-              overflow: hidden;
-              background-color: #525659;
-            }
-            #pdf-container {
-              width: 100vw;
-              height: 100vh;
-              overflow: hidden;
-            }
-            iframe, object, embed {
-              width: 100%;
-              height: 100%;
-              border: none;
-            }
-            .loading {
-              position: absolute;
-              top: 50%;
-              left: 50%;
-              transform: translate(-50%, -50%);
-              color: white;
-              font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-            }
-          </style>
-        </head>
-        <body>
-          <div id="pdf-container">
-            ${Platform.OS === 'ios' 
-              ? `<iframe src="${dataUri}" type="${mimeType}"></iframe>`
-              : `<embed src="${dataUri}" type="${mimeType}" />`
-            }
-          </div>
-        </body>
-      </html>
-    `;
+  const openDocument = async () => {
+    try {
+      setLoading(true);
+      
+      // Generate filename with proper extension
+      const extension = mimeType.includes('pdf') ? 'pdf' : 'doc';
+      const fileName = `${title.replace(/[^a-z0-9]/gi, '_')}.${extension}`;
+      const fileUri = `${FileSystem.cacheDirectory}${fileName}`;
+      
+      // Write base64 data to file
+      await FileSystem.writeAsStringAsync(fileUri, fileData, {
+        encoding: FileSystem.EncodingType.Base64,
+      });
+      
+      console.log('File written to:', fileUri);
+      
+      // Open the file using system viewer
+      await Sharing.shareAsync(fileUri, {
+        mimeType: mimeType,
+        dialogTitle: title,
+        UTI: mimeType,
+      });
+      
+      setLoading(false);
+      
+      // Close modal after opening
+      // Give a small delay to ensure share sheet opens first
+      setTimeout(() => {
+        onClose();
+      }, 500);
+      
+    } catch (error: any) {
+      console.error('Error opening document:', error);
+      setLoading(false);
+      Alert.alert('Error', `Failed to open document: ${error.message}`);
+      onClose();
+    }
   };
 
   return (
     <Modal
       visible={visible}
-      animationType="slide"
-      presentationStyle="fullScreen"
+      animationType="fade"
+      transparent
       onRequestClose={onClose}
     >
-      <SafeAreaView style={styles.container} edges={['top']}>
-        {/* Header */}
-        <View style={styles.header}>
-          <View style={styles.headerLeft}>
-            <TouchableOpacity
-              style={styles.closeButton}
-              onPress={onClose}
-              hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
-            >
-              <Ionicons name="close" size={28} color="#007AFF" />
-            </TouchableOpacity>
-            <View style={styles.titleContainer}>
-              <Text style={styles.title} numberOfLines={1}>
-                {title}
-              </Text>
-              <Text style={styles.subtitle}>
-                {mimeType.includes('pdf') ? 'PDF Document' : 'Document'}
-              </Text>
-            </View>
-          </View>
+      <View style={styles.container}>
+        <View style={styles.loadingCard}>
+          <ActivityIndicator size="large" color="#007AFF" />
+          <Text style={styles.loadingText}>Opening {title}...</Text>
+          <TouchableOpacity
+            style={styles.cancelButton}
+            onPress={onClose}
+          >
+            <Text style={styles.cancelButtonText}>Cancel</Text>
+          </TouchableOpacity>
         </View>
-
-        {/* WebView Content */}
-        <View style={styles.content}>
-          {loading && (
-            <View style={styles.loadingContainer}>
-              <ActivityIndicator size="large" color="#007AFF" />
-              <Text style={styles.loadingText}>Loading document...</Text>
-            </View>
-          )}
-          
-          <WebView
-            source={{ html: getHTMLContent() }}
-            style={styles.webview}
-            onLoadStart={() => setLoading(true)}
-            onLoadEnd={() => setLoading(false)}
-            onError={(syntheticEvent) => {
-              const { nativeEvent } = syntheticEvent;
-              console.error('WebView error:', nativeEvent);
-              setLoading(false);
-            }}
-            scalesPageToFit={true}
-            bounces={false}
-            scrollEnabled={true}
-            showsVerticalScrollIndicator={true}
-            allowsInlineMediaPlayback={true}
-            mediaPlaybackRequiresUserAction={false}
-          />
-        </View>
-      </SafeAreaView>
+      </View>
     </Modal>
   );
 }
