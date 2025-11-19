@@ -14,7 +14,7 @@ from datetime import datetime
 import os
 
 # Get backend URL from frontend .env
-BACKEND_URL = "https://hoa-manager-5.preview.emergentagent.com"
+BACKEND_URL = "https://aurainfra-1.preview.emergentagent.com"
 API_BASE = f"{BACKEND_URL}/api"
 
 class BackendTester:
