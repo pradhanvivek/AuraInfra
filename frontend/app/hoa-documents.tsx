@@ -605,28 +605,16 @@ export default function HOADocumentsScreen() {
         </KeyboardAvoidingView>
       </Modal>
 
-      {/* Image Viewer Modal (iOS Images Only) */}
-      <Modal visible={viewerModalVisible} animationType="slide" transparent>
-        <View style={styles.viewerModalContainer}>
-          <View style={styles.viewerModalContent}>
-            <View style={styles.viewerModalHeader}>
-              <Text style={styles.viewerModalTitle} numberOfLines={1}>{viewerDocument?.title}</Text>
-              <TouchableOpacity onPress={() => setViewerModalVisible(false)}>
-                <Ionicons name="close" size={28} color="#000" />
-              </TouchableOpacity>
-            </View>
-            {viewerDocument && (
-              <ScrollView style={styles.imageViewerContainer} contentContainerStyle={styles.imageViewerContent}>
-                <Image
-                  source={{ uri: `data:${viewerDocument.mimeType};base64,${viewerDocument.fileData}` }}
-                  style={styles.documentImage}
-                  resizeMode="contain"
-                />
-              </ScrollView>
-            )}
-          </View>
-        </View>
-      </Modal>
+      {/* PDF Viewer Modal */}
+      {pdfViewerData && (
+        <PDFViewer
+          visible={pdfViewerVisible}
+          onClose={() => setPdfViewerVisible(false)}
+          title={pdfViewerData.title}
+          fileData={pdfViewerData.fileData}
+          mimeType={pdfViewerData.mimeType}
+        />
+      )}
       </View>
     </SafeAreaView>
   );
