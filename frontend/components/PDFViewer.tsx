@@ -13,6 +13,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import * as FileSystem from 'expo-file-system/legacy';
 import * as Sharing from 'expo-sharing';
+import * as IntentLauncher from 'expo-intent-launcher';
 
 interface PDFViewerProps {
   visible: boolean;
@@ -53,17 +54,31 @@ export default function PDFViewer({
       
       console.log('File written to:', fileUri);
       
-      // Open the file using system viewer
-      await Sharing.shareAsync(fileUri, {
-        mimeType: mimeType,
-        dialogTitle: title,
-        UTI: mimeType,
-      });
+      if (Platform.OS === 'android') {
+        // Android: Use IntentLauncher to open document directly in viewer app
+        console.log('Opening document on Android with IntentLauncher');
+        const contentUri = await FileSystem.getContentUriAsync(fileUri);
+        console.log('Content URI:', contentUri);
+        
+        await IntentLauncher.startActivityAsync('android.intent.action.VIEW', {
+          data: contentUri,
+          flags: 1, // FLAG_GRANT_READ_URI_PERMISSION
+          type: mimeType,
+        });
+      } else if (Platform.OS === 'ios') {
+        // iOS: Use Sharing API which opens document in QuickLook viewer
+        console.log('Opening document on iOS with Sharing API');
+        await Sharing.shareAsync(fileUri, {
+          mimeType: mimeType,
+          dialogTitle: title,
+          UTI: mimeType,
+        });
+      }
       
       setLoading(false);
       
       // Close modal after opening
-      // Give a small delay to ensure share sheet opens first
+      // Give a small delay to ensure viewer opens first
       setTimeout(() => {
         onClose();
       }, 500);
