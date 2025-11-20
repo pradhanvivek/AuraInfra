@@ -433,24 +433,59 @@ export default function EditPropertyScreen() {
           {/* Coordinates hidden - stored in backend */}
 
           <View style={styles.section}>
-            <Text style={styles.label}>Purchase Cost (Optional)</Text>
+            <Text style={styles.label}>Ownership Type</Text>
+            <View style={styles.ownershipSelector}>
+              <TouchableOpacity
+                style={[
+                  styles.ownershipOption,
+                  ownershipType === 'owner' && styles.ownershipOptionActive
+                ]}
+                onPress={() => setOwnershipType('owner')}
+              >
+                <Ionicons
+                  name={ownershipType === 'owner' ? 'checkmark-circle' : 'ellipse-outline'} 
+                  size={24} 
+                  color={ownershipType === 'owner' ? '#007AFF' : '#8E8E93'} 
+                />
+                <Text style={[
+                  styles.ownershipText,
+                  ownershipType === 'owner' && styles.ownershipTextActive
+                ]}>
+                  Owner
+                </Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                style={[
+                  styles.ownershipOption,
+                  ownershipType === 'tenant' && styles.ownershipOptionActive
+                ]}
+                onPress={() => setOwnershipType('tenant')}
+              >
+                <Ionicons
+                  name={ownershipType === 'tenant' ? 'checkmark-circle' : 'ellipse-outline'} 
+                  size={24} 
+                  color={ownershipType === 'tenant' ? '#007AFF' : '#8E8E93'} 
+                />
+                <Text style={[
+                  styles.ownershipText,
+                  ownershipType === 'tenant' && styles.ownershipTextActive
+                ]}>
+                  Tenant
+                </Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+
+          <View style={styles.section}>
+            <Text style={styles.label}>
+              {ownershipType === 'tenant' ? 'Monthly Rent (Optional)' : 'Purchase Cost (Optional)'}
+            </Text>
             <TextInput
               style={styles.input}
               placeholder={`${getCurrencyInfo().symbol}0`}
               value={purchaseCost}
               onChangeText={setPurchaseCost}
-              keyboardType="decimal-pad"
-              editable={!saving}
-            />
-          </View>
-
-          <View style={styles.section}>
-            <Text style={styles.label}>Current Value (Optional)</Text>
-            <TextInput
-              style={styles.input}
-              placeholder={`${getCurrencyInfo().symbol}0`}
-              value={currentValue}
-              onChangeText={setCurrentValue}
               keyboardType="decimal-pad"
               editable={!saving}
             />
