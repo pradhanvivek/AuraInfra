@@ -719,4 +719,31 @@ const styles = StyleSheet.create({
     fontSize: 13,
     color: '#8E8E93',
   },
+  ownershipSelector: {
+    flexDirection: 'row',
+    gap: 12,
+  },
+  ownershipOption: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    padding: 16,
+    borderRadius: 12,
+    backgroundColor: '#F2F2F7',
+    borderWidth: 2,
+    borderColor: 'transparent',
+  },
+  ownershipOptionActive: {
+    backgroundColor: '#E3F2FD',
+    borderColor: '#007AFF',
+  },
+  ownershipText: {
+    fontSize: 16,
+    color: '#000',
+  },
+  ownershipTextActive: {
+    fontWeight: '600',
+    color: '#007AFF',
+  },
 });
