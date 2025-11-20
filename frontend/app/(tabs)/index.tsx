@@ -138,7 +138,7 @@ export default function PropertiesScreen() {
     },
     {
       id: 'view-more',
-      title: 'View More',
+      title: 'View All',
       icon: 'ellipsis-horizontal-circle-outline',
       color: '#8E8E93',
       route: null,
