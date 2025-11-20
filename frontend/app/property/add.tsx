@@ -71,10 +71,6 @@ export default function AddProperty() {
     console.log('[AddProperty] PurchaseCost changed:', purchaseCost);
   }, [purchaseCost]);
 
-  useEffect(() => {
-    console.log('[AddProperty] CurrentValue changed:', currentValue);
-  }, [currentValue]);
-
   // Web-specific autocomplete functions using backend proxy
   const fetchPlaceSuggestions = async (input: string) => {
     if (!input || input.length < 2) {
