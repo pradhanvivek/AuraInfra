@@ -123,6 +123,7 @@ class Property(BaseModel):
     purchase_cost: Optional[float] = None
     current_value: Optional[float] = None
     logo: Optional[str] = None  # base64 encoded image
+    ownership_type: Optional[str] = 'owner'  # 'owner' or 'tenant'
     user_id: str
     created_at: datetime = Field(default_factory=datetime.utcnow)
 
@@ -134,6 +135,7 @@ class PropertyCreate(BaseModel):
     purchase_cost: Optional[float] = None
     current_value: Optional[float] = None
     logo: Optional[str] = None  # base64 encoded image
+    ownership_type: Optional[str] = 'owner'  # 'owner' or 'tenant'
 
 class PropertyUpdate(BaseModel):
     name: Optional[str] = None
@@ -143,6 +145,7 @@ class PropertyUpdate(BaseModel):
     purchase_cost: Optional[float] = None
     current_value: Optional[float] = None
     logo: Optional[str] = None  # base64 encoded image
+    ownership_type: Optional[str] = None  # 'owner' or 'tenant'
 
 # Community Property Models (for registration)
 class CommunityProperty(BaseModel):
