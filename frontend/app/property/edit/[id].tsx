@@ -154,7 +154,7 @@ export default function EditPropertyScreen() {
         latitude,
         longitude,
         purchase_cost: purchaseCost ? parseFloat(purchaseCost) : undefined,
-        current_value: currentValue ? parseFloat(currentValue) : undefined,
+        ownership_type: ownershipType,
       });
       
       // Platform-specific success message
