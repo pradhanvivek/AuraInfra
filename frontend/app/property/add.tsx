@@ -412,18 +412,6 @@ export default function AddProperty() {
             />
           </View>
 
-          <View style={styles.section}>
-            <Text style={styles.label}>Current Value (Optional)</Text>
-            <TextInput
-              style={styles.input}
-              placeholder={`${getCurrencyInfo().symbol}0`}
-              value={currentValue}
-              onChangeText={setCurrentValue}
-              keyboardType="decimal-pad"
-              editable={!loading}
-            />
-          </View>
-
           <View style={styles.infoBox}>
             <Ionicons name="information-circle-outline" size={20} color="#007AFF" />
             <Text style={styles.infoText}>
