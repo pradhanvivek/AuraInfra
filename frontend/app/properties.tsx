@@ -391,4 +391,26 @@ const styles = StyleSheet.create({
     shadowRadius: 8,
     elevation: 8,
   },
+  propertyNameRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    marginBottom: 4,
+  },
+  ownershipBadge: {
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+    borderRadius: 10,
+  },
+  ownerBadge: {
+    backgroundColor: '#34C759',
+  },
+  tenantBadge: {
+    backgroundColor: '#FF9500',
+  },
+  ownershipBadgeText: {
+    fontSize: 11,
+    fontWeight: '600',
+    color: '#fff',
+  },
 });
