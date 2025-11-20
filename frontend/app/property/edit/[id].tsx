@@ -65,7 +65,7 @@ export default function EditPropertyScreen() {
       setLatitude(property.latitude);
       setLongitude(property.longitude);
       setPurchaseCost(property.purchase_cost ? property.purchase_cost.toString() : '');
-      setCurrentValue(property.current_value ? property.current_value.toString() : '');
+      setOwnershipType(property.ownership_type || 'owner');
     } catch (error: any) {
       Alert.alert('Error', 'Failed to load property details');
       router.back();
