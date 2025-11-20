@@ -464,7 +464,28 @@ export default function PaintEstimationScreen({ propertyId }: PaintEstimationScr
             
             <Text style={styles.label}>Number of Walls</Text>
             <View style={styles.wallCountContainer}>
-              {[3, 4, 5, 6].map((num) => (
+              {[1, 2, 3, 4].map((num) => (
+                <TouchableOpacity
+                  key={num}
+                  style={[
+                    styles.wallCountButton,
+                    numberOfWalls === num && styles.wallCountButtonActive,
+                  ]}
+                  onPress={() => setNumberOfWalls(num)}
+                >
+                  <Text
+                    style={[
+                      styles.wallCountButtonText,
+                      numberOfWalls === num && styles.wallCountButtonTextActive,
+                    ]}
+                  >
+                    {num}
+                  </Text>
+                </TouchableOpacity>
+              ))}
+            </View>
+            <View style={styles.wallCountContainer}>
+              {[5, 6].map((num) => (
                 <TouchableOpacity
                   key={num}
                   style={[
