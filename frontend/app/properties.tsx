@@ -100,7 +100,19 @@ export default function Properties() {
           <Ionicons name="home" size={24} color="#007AFF" />
         </View>
         <View style={styles.propertyInfo}>
-          <Text style={styles.propertyName}>{item.name}</Text>
+          <View style={styles.propertyNameRow}>
+            <Text style={styles.propertyName}>{item.name}</Text>
+            {item.ownership_type && (
+              <View style={[
+                styles.ownershipBadge,
+                item.ownership_type === 'tenant' ? styles.tenantBadge : styles.ownerBadge
+              ]}>
+                <Text style={styles.ownershipBadgeText}>
+                  {item.ownership_type === 'tenant' ? '🏘️ Tenant' : '🏠 Owner'}
+                </Text>
+              </View>
+            )}
+          </View>
           <Text style={styles.propertyAddress}>{item.address}</Text>
         </View>
         <Ionicons name="chevron-forward" size={20} color="#C7C7CC" />
