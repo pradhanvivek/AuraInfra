@@ -24,6 +24,7 @@ interface Property {
   id: string;
   name: string;
   address: string;
+  ownership_type?: string;
   created_at: string;
 }
 
