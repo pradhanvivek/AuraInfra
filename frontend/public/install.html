@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AuraInfra.ai - Install App</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+        
+        .container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            padding: 40px;
+            max-width: 500px;
+            width: 100%;
+            text-align: center;
+        }
+        
+        h1 {
+            color: #333;
+            font-size: 32px;
+            margin-bottom: 10px;
+            font-weight: 700;
+        }
+        
+        .subtitle {
+            color: #667eea;
+            font-size: 18px;
+            margin-bottom: 30px;
+            font-weight: 500;
+        }
+        
+        .icon-container {
+            width: 100px;
+            height: 100px;
+            margin: 0 auto 30px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 25px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 50px;
+        }
+        
+        .main-button {
+            display: block;
+            width: 100%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 18px 32px;
+            border-radius: 12px;
+            font-size: 18px;
+            font-weight: 600;
+            cursor: pointer;
+            text-decoration: none;
+            margin-bottom: 20px;
+            transition: transform 0.2s, box-shadow 0.2s;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+        }
+        
+        .main-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.6);
+        }
+        
+        .main-button:active {
+            transform: translateY(0);
+        }
+        
+        .secondary-button {
+            display: block;
+            width: 100%;
+            background: white;
+            color: #667eea;
+            border: 2px solid #667eea;
+            padding: 16px 32px;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            text-decoration: none;
+            margin-bottom: 15px;
+            transition: all 0.2s;
+        }
+        
+        .secondary-button:hover {
+            background: #f0f4ff;
+        }
+        
+        .info-box {
+            background: #f0f4ff;
+            border-radius: 12px;
+            padding: 20px;
+            margin-top: 30px;
+            text-align: left;
+        }
+        
+        .info-title {
+            color: #667eea;
+            font-weight: 600;
+            margin-bottom: 12px;
+            font-size: 16px;
+        }
+        
+        .info-steps {
+            list-style: none;
+            padding: 0;
+        }
+        
+        .info-steps li {
+            padding: 10px 0;
+            color: #555;
+            font-size: 14px;
+            line-height: 1.6;
+            border-bottom: 1px solid #e8eaff;
+        }
+        
+        .info-steps li:last-child {
+            border-bottom: none;
+        }
+        
+        .info-steps li strong {
+            color: #667eea;
+        }
+        
+        .status-message {
+            background: #d4edda;
+            color: #155724;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            font-size: 14px;
+            display: none;
+        }
+        
+        .status-message.show {
+            display: block;
+        }
+        
+        .warning-message {
+            background: #fff3cd;
+            color: #856404;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 20px;
+            font-size: 14px;
+        }
+        
+        .qr-fallback {
+            margin-top: 30px;
+            padding-top: 30px;
+            border-top: 2px dashed #e8eaff;
+        }
+        
+        .qr-fallback-title {
+            color: #8E8E93;
+            font-size: 14px;
+            margin-bottom: 15px;
+        }
+        
+        .qr-code-small {
+            width: 200px;
+            height: 200px;
+            margin: 0 auto;
+            padding: 10px;
+            background: white;
+            border-radius: 10px;
+            border: 2px solid #e8eaff;
+        }
+        
+        @media (max-width: 768px) {
+            .container {
+                padding: 30px 20px;
+            }
+            
+            h1 {
+                font-size: 26px;
+            }
+            
+            .subtitle {
+                font-size: 16px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="icon-container">🏗️</div>
+        
+        <h1>AuraInfra.ai</h1>
+        <p class="subtitle">One-Click App Installation</p>
+        
+        <div id="statusMessage" class="status-message"></div>
+        
+        <button class="main-button" onclick="openApp()">
+            📱 Open App in Expo Go
+        </button>
+        
+        <a href="https://apps.apple.com/app/expo-go/id982107779" class="secondary-button" target="_blank">
+            📥 Download Expo Go First
+        </a>
+        
+        <div class="info-box">
+            <div class="info-title">🚀 How This Works</div>
+            <ul class="info-steps">
+                <li><strong>Step 1:</strong> If you have Expo Go installed, click "Open App" button above</li>
+                <li><strong>Step 2:</strong> If you don't have Expo Go, click "Download Expo Go First" to install it from App Store</li>
+                <li><strong>Step 3:</strong> After installing Expo Go, return to this page and click "Open App"</li>
+            </ul>
+        </div>
+        
+        <div class="warning-message">
+            💡 <strong>Tip:</strong> Bookmark this page for easy access to the app!
+        </div>
+        
+        <div class="qr-fallback">
+            <p class="qr-fallback-title">Or scan this QR code with your camera:</p>
+            <img src="/qr-image.png" alt="QR Code" class="qr-code-small">
+        </div>
+    </div>
+    
+    <script>
+        const EXPO_URL = 'exp://fixandfluid.preview.emergentagent.com';
+        const APP_STORE_URL = 'https://apps.apple.com/app/expo-go/id982107779';
+        
+        function openApp() {
+            const statusMessage = document.getElementById('statusMessage');
+            
+            // Show status message
+            statusMessage.textContent = '🔄 Opening AuraInfra.ai...';
+            statusMessage.classList.add('show');
+            
+            // Try to open the Expo app
+            window.location.href = EXPO_URL;
+            
+            // After a delay, check if we're still on the page (means Expo Go not installed)
+            setTimeout(function() {
+                statusMessage.textContent = '⚠️ If the app didn\'t open, you need to install Expo Go first.';
+                
+                // Ask user if they want to install Expo Go
+                setTimeout(function() {
+                    const shouldInstall = confirm(
+                        'Expo Go doesn\'t seem to be installed.\n\n' +
+                        'Would you like to download it from the App Store?\n\n' +
+                        'After installing, return to this page and click "Open App" again.'
+                    );
+                    
+                    if (shouldInstall) {
+                        window.location.href = APP_STORE_URL;
+                    } else {
+                        statusMessage.classList.remove('show');
+                    }
+                }, 500);
+            }, 2000);
+        }
+        
+        // Auto-detect platform and show appropriate message
+        function detectPlatform() {
+            const userAgent = navigator.userAgent || navigator.vendor || window.opera;
+            
+            // iOS detection
+            if (/iPad|iPhone|iPod/.test(userAgent) && !window.MSStream) {
+                console.log('iOS device detected');
+                return 'ios';
+            }
+            
+            // Android detection
+            if (/android/i.test(userAgent)) {
+                console.log('Android device detected');
+                return 'android';
+            }
+            
+            return 'desktop';
+        }
+        
+        const platform = detectPlatform();
+        
+        if (platform === 'desktop') {
+            const container = document.querySelector('.container');
+            const warningDiv = document.createElement('div');
+            warningDiv.className = 'warning-message';
+            warningDiv.innerHTML = '<strong>📱 Mobile Device Required</strong><br>Please open this page on your iPhone or Android device to install the app.';
+            container.insertBefore(warningDiv, container.firstChild.nextSibling.nextSibling);
+        }
+        
+        // Check if URL has auto-open parameter
+        const urlParams = new URLSearchParams(window.location.search);
+        if (urlParams.get('auto') === 'true') {
+            // Auto-open the app
+            setTimeout(openApp, 500);
+        }
+        
+        console.log('Platform:', platform);
+        console.log('Expo URL:', EXPO_URL);
+        console.log('To auto-open, add ?auto=true to the URL');
+    </script>
+</body>
+</html>
