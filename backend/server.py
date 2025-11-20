@@ -1849,11 +1849,13 @@ async def get_portfolio_summary(user_id: str = Depends(get_current_user)):
                 return 0.0
         
         # Get properties - use current_value or fall back to purchase_cost
+        # EXCLUDE tenant properties from portfolio value calculation
         properties_cursor = db.properties.find({"user_id": user_id})
         properties = await properties_cursor.to_list(length=1000)
         properties_value = sum(
             safe_float(p.get('current_value')) or safe_float(p.get('purchase_cost', 0)) 
             for p in properties
+            if p.get('ownership_type') != 'tenant'  # Exclude tenant properties
         )
         
         # Get vehicles - use current_value or fall back to purchase_cost
