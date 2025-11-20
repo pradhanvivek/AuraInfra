@@ -405,7 +405,9 @@ export default function AddProperty() {
           )}
 
           <View style={styles.section}>
-            <Text style={styles.label}>Purchase Cost (Optional)</Text>
+            <Text style={styles.label}>
+              {ownershipType === 'tenant' ? 'Monthly Rent (Optional)' : 'Purchase Cost (Optional)'}
+            </Text>
             <TextInput
               style={styles.input}
               placeholder={`${getCurrencyInfo().symbol}0`}
