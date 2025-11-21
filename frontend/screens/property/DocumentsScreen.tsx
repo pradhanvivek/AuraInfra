@@ -139,6 +139,55 @@ export default function DocumentsScreen({ propertyId }: DocumentsScreenProps) {
     }
   };
 
+  const handleAddDocument = () => {
+    if (Platform.OS === 'web') {
+      // Web: directly trigger file upload
+      handleUploadDocument();
+    } else {
+      // Mobile: show action sheet with options
+      setActionSheetVisible(true);
+    }
+  };
+
+  const handleScanDocument = async () => {
+    setActionSheetVisible(false);
+    
+    if (!permission?.granted) {
+      const result = await requestPermission();
+      if (!result.granted) {
+        Alert.alert('Permission Required', 'Camera permission is needed to scan documents');
+        return;
+      }
+    }
+    
+    setCameraVisible(true);
+  };
+
+  const handleTakePicture = async () => {
+    if (!cameraRef) return;
+
+    try {
+      const photo = await cameraRef.takePictureAsync({ 
+        base64: true, 
+        quality: 0.8,
+        skipProcessing: false,
+      });
+      
+      setCameraVisible(false);
+      
+      // Set the scanned document data
+      setTempFileData({ 
+        base64: photo.base64!, 
+        type: 'image/jpeg' 
+      });
+      setDocumentName('Scanned Document');
+      setNameModalVisible(true);
+    } catch (error: any) {
+      console.error('Camera error:', error);
+      Alert.alert('Error', 'Failed to capture image');
+    }
+  };
+
   const handleSaveDocument = async () => {
     if (!documentName.trim()) {
       Alert.alert('Error', 'Please enter a document name');
