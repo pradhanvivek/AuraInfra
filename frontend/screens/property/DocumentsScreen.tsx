@@ -471,7 +471,8 @@ export default function DocumentsScreen({ propertyId }: DocumentsScreenProps) {
               style={styles.actionSheetOption}
               onPress={() => {
                 setActionSheetVisible(false);
-                setTimeout(() => handleUploadDocument(), 300);
+                // Increased delay to ensure action sheet is fully closed before opening document picker
+                setTimeout(() => handleUploadDocument(), 600);
               }}
             >
               <View style={styles.actionSheetIconContainer}>
