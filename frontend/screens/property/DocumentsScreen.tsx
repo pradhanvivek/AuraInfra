@@ -378,7 +378,7 @@ export default function DocumentsScreen({ propertyId }: DocumentsScreenProps) {
 
       <TouchableOpacity
         style={[styles.fab, uploading && styles.fabDisabled]}
-        onPress={handleUploadDocument}
+        onPress={handleAddDocument}
         disabled={uploading}
       >
         {uploading ? (
@@ -387,6 +387,120 @@ export default function DocumentsScreen({ propertyId }: DocumentsScreenProps) {
           <Ionicons name="add" size={28} color="#fff" />
         )}
       </TouchableOpacity>
+
+      {/* Action Sheet Modal - Choose Upload or Scan */}
+      <Modal
+        visible={actionSheetVisible}
+        transparent
+        animationType="slide"
+        onRequestClose={() => setActionSheetVisible(false)}
+      >
+        <TouchableOpacity 
+          style={styles.actionSheetOverlay}
+          activeOpacity={1}
+          onPress={() => setActionSheetVisible(false)}
+        >
+          <View style={styles.actionSheet}>
+            <View style={styles.actionSheetHeader}>
+              <Text style={styles.actionSheetTitle}>Add Document</Text>
+            </View>
+            
+            <TouchableOpacity
+              style={styles.actionSheetOption}
+              onPress={() => {
+                setActionSheetVisible(false);
+                setTimeout(() => handleScanDocument(), 300);
+              }}
+            >
+              <View style={styles.actionSheetIconContainer}>
+                <Ionicons name="scan" size={24} color="#007AFF" />
+              </View>
+              <View style={styles.actionSheetTextContainer}>
+                <Text style={styles.actionSheetOptionText}>Scan Document</Text>
+                <Text style={styles.actionSheetOptionSubtext}>Use camera to scan paper documents</Text>
+              </View>
+              <Ionicons name="chevron-forward" size={20} color="#C7C7CC" />
+            </TouchableOpacity>
+            
+            <TouchableOpacity
+              style={styles.actionSheetOption}
+              onPress={() => {
+                setActionSheetVisible(false);
+                setTimeout(() => handleUploadDocument(), 300);
+              }}
+            >
+              <View style={styles.actionSheetIconContainer}>
+                <Ionicons name="cloud-upload" size={24} color="#34C759" />
+              </View>
+              <View style={styles.actionSheetTextContainer}>
+                <Text style={styles.actionSheetOptionText}>Upload from Files</Text>
+                <Text style={styles.actionSheetOptionSubtext}>Choose from device storage</Text>
+              </View>
+              <Ionicons name="chevron-forward" size={20} color="#C7C7CC" />
+            </TouchableOpacity>
+            
+            <TouchableOpacity
+              style={styles.actionSheetCancel}
+              onPress={() => setActionSheetVisible(false)}
+            >
+              <Text style={styles.actionSheetCancelText}>Cancel</Text>
+            </TouchableOpacity>
+          </View>
+        </TouchableOpacity>
+      </Modal>
+
+      {/* Camera Scanner Modal */}
+      <Modal
+        visible={cameraVisible}
+        animationType="slide"
+        onRequestClose={() => setCameraVisible(false)}
+      >
+        <View style={styles.cameraContainer}>
+          <CameraView
+            style={styles.camera}
+            ref={(ref) => setCameraRef(ref)}
+            facing="back"
+          >
+            <SafeAreaView style={styles.cameraOverlay} edges={['top', 'bottom']}>
+              <View style={styles.cameraHeader}>
+                <TouchableOpacity
+                  style={styles.cameraCloseButton}
+                  onPress={() => setCameraVisible(false)}
+                >
+                  <Ionicons name="close" size={32} color="#fff" />
+                </TouchableOpacity>
+                <Text style={styles.cameraTitle}>Scan Document</Text>
+                <View style={{ width: 32 }} />
+              </View>
+
+              <View style={styles.cameraInstructions}>
+                <View style={styles.instructionCard}>
+                  <Ionicons name="document-text" size={40} color="#fff" />
+                  <Text style={styles.instructionTitle}>Position Document</Text>
+                  <Text style={styles.instructionText}>
+                    • Place document on flat surface{'\n'}
+                    • Ensure good lighting{'\n'}
+                    • Keep camera steady and level{'\n'}
+                    • Fill frame with document
+                  </Text>
+                </View>
+              </View>
+
+              <View style={styles.cameraControls}>
+                <TouchableOpacity
+                  style={styles.captureButton}
+                  onPress={handleTakePicture}
+                >
+                  <View style={styles.captureButtonInner}>
+                    <Ionicons name="camera" size={32} color="#fff" />
+                  </View>
+                </TouchableOpacity>
+                <Text style={styles.captureHint}>Tap to scan</Text>
+              </View>
+            </SafeAreaView>
+          </CameraView>
+        </View>
+      </Modal>
 
       {/* Name Input Modal */}
       <Modal
