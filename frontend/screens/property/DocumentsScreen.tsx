@@ -51,6 +51,7 @@ export default function DocumentsScreen({ propertyId }: DocumentsScreenProps) {
   const [cameraVisible, setCameraVisible] = useState(false);
   const [permission, requestPermission] = useCameraPermissions();
   const [cameraRef, setCameraRef] = useState<any>(null);
+  const [isPickingDocument, setIsPickingDocument] = useState(false); // Prevent multiple picker calls
 
   useEffect(() => {
     fetchDocuments();
