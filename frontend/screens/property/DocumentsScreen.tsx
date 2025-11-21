@@ -47,6 +47,10 @@ export default function DocumentsScreen({ propertyId }: DocumentsScreenProps) {
   const [nameModalVisible, setNameModalVisible] = useState(false);
   const [tempFileData, setTempFileData] = useState<{base64: string, type: string} | null>(null);
   const [documentName, setDocumentName] = useState('');
+  const [actionSheetVisible, setActionSheetVisible] = useState(false);
+  const [cameraVisible, setCameraVisible] = useState(false);
+  const [permission, requestPermission] = useCameraPermissions();
+  const [cameraRef, setCameraRef] = useState<any>(null);
 
   useEffect(() => {
     fetchDocuments();
