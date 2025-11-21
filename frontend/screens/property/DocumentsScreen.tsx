@@ -933,7 +933,7 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     alignItems: 'center',
     paddingHorizontal: 16,
-    paddingTop: 24,
+    paddingTop: 16,
     paddingBottom: 16,
     backgroundColor: 'rgba(0, 0, 0, 0.5)',
   },
