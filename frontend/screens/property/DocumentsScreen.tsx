@@ -501,13 +501,13 @@ export default function DocumentsScreen({ propertyId }: DocumentsScreenProps) {
         animationType="slide"
         onRequestClose={() => setCameraVisible(false)}
       >
-        <View style={styles.cameraContainer}>
+        <SafeAreaView style={styles.cameraContainer} edges={['top', 'bottom']}>
           <CameraView
             style={styles.camera}
             ref={(ref) => setCameraRef(ref)}
             facing="back"
           >
-            <SafeAreaView style={styles.cameraOverlay} edges={['top', 'bottom']}>
+            <View style={styles.cameraOverlay}>
               <View style={styles.cameraHeader}>
                 <TouchableOpacity
                   style={styles.cameraCloseButton}
@@ -543,9 +543,9 @@ export default function DocumentsScreen({ propertyId }: DocumentsScreenProps) {
                 </TouchableOpacity>
                 <Text style={styles.captureHint}>Tap to scan</Text>
               </View>
-            </SafeAreaView>
+            </View>
           </CameraView>
-        </View>
+        </SafeAreaView>
       </Modal>
 
       {/* Name Input Modal */}
