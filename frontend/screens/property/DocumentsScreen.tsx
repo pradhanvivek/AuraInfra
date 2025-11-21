@@ -933,7 +933,8 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     alignItems: 'center',
     paddingHorizontal: 16,
-    paddingVertical: 16,
+    paddingTop: 24,
+    paddingBottom: 16,
     backgroundColor: 'rgba(0, 0, 0, 0.5)',
   },
   cameraCloseButton: {
