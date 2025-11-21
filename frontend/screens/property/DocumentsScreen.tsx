@@ -21,6 +21,7 @@ import * as DocumentPicker from 'expo-document-picker';
 import * as FileSystem from 'expo-file-system/legacy';
 import * as Sharing from 'expo-sharing';
 import * as IntentLauncher from 'expo-intent-launcher';
+import { CameraView, useCameraPermissions } from 'expo-camera';
 import { useAuth } from '../../contexts/AuthContext';
 import { documentApi } from '../../services/api';
 
