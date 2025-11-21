@@ -398,6 +398,20 @@ export default function AddProperty() {
             </View>
           )}
 
+          <View style={styles.section}>
+            <Text style={styles.label}>
+              {ownershipType === 'tenant' ? 'Monthly Rent (Optional)' : 'Purchase Cost (Optional)'}
+            </Text>
+            <TextInput
+              style={styles.input}
+              placeholder={`${getCurrencyInfo().symbol}0`}
+              value={purchaseCost}
+              onChangeText={setPurchaseCost}
+              keyboardType="decimal-pad"
+              editable={!loading}
+            />
+          </View>
+
           <View style={styles.infoBox}>
             <Ionicons name="information-circle-outline" size={20} color="#007AFF" />
             <Text style={styles.infoText}>
