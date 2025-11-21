@@ -72,15 +72,20 @@ export default function DocumentsScreen({ propertyId }: DocumentsScreenProps) {
   };
 
   const handleUploadDocument = async () => {
+    console.log('=== UPLOAD DOCUMENT START ===');
+    console.log('Platform:', Platform.OS);
+    
     try {
       // Web-specific implementation
       if (Platform.OS === 'web') {
+        console.log('Web: Creating file input');
         const input = document.createElement('input');
         input.type = 'file';
         input.accept = '*/*';
         
         input.onchange = async (e: any) => {
           const file = e.target.files?.[0];
+          console.log('File selected:', file?.name, file?.type, file?.size);
           if (!file) return;
           
           try {
@@ -89,12 +94,15 @@ export default function DocumentsScreen({ propertyId }: DocumentsScreenProps) {
             reader.onload = () => {
               const base64 = (reader.result as string).split(',')[1]; // Remove data URL prefix
               const fileType = file.type || 'application/octet-stream';
+              console.log('File read successfully, base64 length:', base64.length, 'type:', fileType);
               
               setTempFileData({ base64: base64, type: fileType });
               setDocumentName(file.name || 'Document');
               setNameModalVisible(true);
+              console.log('Name modal should be visible now');
             };
             reader.onerror = () => {
+              console.error('FileReader error');
               alert('Failed to read file');
             };
             reader.readAsDataURL(file);
@@ -104,39 +112,53 @@ export default function DocumentsScreen({ propertyId }: DocumentsScreenProps) {
           }
         };
         
+        console.log('Clicking file input');
         input.click();
       } else {
         // Native mobile implementation
+        console.log('Mobile: Opening DocumentPicker');
         const result = await DocumentPicker.getDocumentAsync({
           type: '*/*',
           copyToCacheDirectory: true,
         });
 
+        console.log('DocumentPicker result:', result);
+
         if (result.canceled || !result.assets || result.assets.length === 0) {
+          console.log('User canceled or no files selected');
           return;
         }
 
         const file = result.assets[0];
+        console.log('File selected:', file.name, file.mimeType, file.size);
         
         // Read file as base64
+        console.log('Reading file as base64 from:', file.uri);
         const base64 = await FileSystem.readAsStringAsync(file.uri, {
           encoding: 'base64',
         });
+        
+        console.log('File read successfully, base64 length:', base64.length);
         
         const fileType = file.mimeType || 'application/octet-stream';
         
         setTempFileData({ base64: base64, type: fileType });
         setDocumentName(file.name || 'Document');
         setNameModalVisible(true);
+        console.log('Name modal should be visible now');
       }
     } catch (error: any) {
+      console.error('=== UPLOAD DOCUMENT ERROR ===');
       console.error('Document picker error:', error);
+      console.error('Error message:', error.message);
+      console.error('Error stack:', error.stack);
       if (Platform.OS === 'web') {
         alert('Failed to select document: ' + error.message);
       } else {
         Alert.alert('Error', error.message || 'Failed to select document');
       }
     }
+    console.log('=== UPLOAD DOCUMENT END ===');
   };
 
   const handleAddDocument = () => {
