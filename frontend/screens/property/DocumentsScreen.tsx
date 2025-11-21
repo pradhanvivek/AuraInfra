@@ -75,6 +75,15 @@ export default function DocumentsScreen({ propertyId }: DocumentsScreenProps) {
   const handleUploadDocument = async () => {
     console.log('=== UPLOAD DOCUMENT START ===');
     console.log('Platform:', Platform.OS);
+    console.log('Is picking document?', isPickingDocument);
+    
+    // Prevent multiple simultaneous calls
+    if (isPickingDocument) {
+      console.log('Document picking already in progress, ignoring request');
+      return;
+    }
+    
+    setIsPickingDocument(true);
     
     try {
       // Web-specific implementation
@@ -87,7 +96,10 @@ export default function DocumentsScreen({ propertyId }: DocumentsScreenProps) {
         input.onchange = async (e: any) => {
           const file = e.target.files?.[0];
           console.log('File selected:', file?.name, file?.type, file?.size);
-          if (!file) return;
+          if (!file) {
+            setIsPickingDocument(false);
+            return;
+          }
           
           try {
             // Read file as base64
@@ -100,21 +112,28 @@ export default function DocumentsScreen({ propertyId }: DocumentsScreenProps) {
               setTempFileData({ base64: base64, type: fileType });
               setDocumentName(file.name || 'Document');
               setNameModalVisible(true);
+              setIsPickingDocument(false);
               console.log('Name modal should be visible now');
             };
             reader.onerror = () => {
               console.error('FileReader error');
+              setIsPickingDocument(false);
               alert('Failed to read file');
             };
             reader.readAsDataURL(file);
           } catch (error: any) {
             console.error('File read error:', error);
+            setIsPickingDocument(false);
             alert('Failed to read file: ' + error.message);
           }
         };
         
         console.log('Clicking file input');
         input.click();
+        // Reset flag after a delay for web since we can't track when dialog closes
+        setTimeout(() => {
+          setIsPickingDocument(false);
+        }, 500);
       } else {
         // Native mobile implementation
         console.log('Mobile: Opening DocumentPicker');
@@ -127,6 +146,7 @@ export default function DocumentsScreen({ propertyId }: DocumentsScreenProps) {
 
         if (result.canceled || !result.assets || result.assets.length === 0) {
           console.log('User canceled or no files selected');
+          setIsPickingDocument(false);
           return;
         }
 
@@ -145,6 +165,7 @@ export default function DocumentsScreen({ propertyId }: DocumentsScreenProps) {
         
         setTempFileData({ base64: base64, type: fileType });
         setDocumentName(file.name || 'Document');
+        setIsPickingDocument(false);
         setNameModalVisible(true);
         console.log('Name modal should be visible now');
       }
@@ -153,6 +174,7 @@ export default function DocumentsScreen({ propertyId }: DocumentsScreenProps) {
       console.error('Document picker error:', error);
       console.error('Error message:', error.message);
       console.error('Error stack:', error.stack);
+      setIsPickingDocument(false);
       if (Platform.OS === 'web') {
         alert('Failed to select document: ' + error.message);
       } else {
