@@ -66,8 +66,22 @@ export default function DisclaimerScreen() {
   }, []);
 
   const handleAccept = async () => {
+    console.log('=== ACCEPT DISCLAIMER START ===');
+    console.log('Token exists:', !!token);
+    console.log('Token length:', token?.length);
+    console.log('API URL:', API_URL);
+    
+    if (!token) {
+      console.error('No token available');
+      Alert.alert('Error', 'Authentication required. Please log in again.');
+      await logout();
+      router.replace('/auth/login');
+      return;
+    }
+    
     setAccepting(true);
     try {
+      console.log('Sending POST request to accept disclaimer');
       const response = await axios.post(
         `${API_URL}/api/auth/accept-disclaimer`,
         {},
@@ -83,9 +97,30 @@ export default function DisclaimerScreen() {
       // Navigate to main app
       router.replace('/(tabs)');
     } catch (error: any) {
+      console.error('=== DISCLAIMER ACCEPT ERROR ===');
       console.error('Failed to accept disclaimer:', error);
-      console.error('Error response:', error.response?.data);
-      Alert.alert('Error', error.response?.data?.detail || 'Failed to accept disclaimer. Please try again.');
+      console.error('Error message:', error.message);
+      console.error('Error response status:', error.response?.status);
+      console.error('Error response data:', error.response?.data);
+      
+      if (error.response?.status === 401) {
+        // Token is invalid or expired
+        Alert.alert(
+          'Session Expired',
+          'Your session has expired. Please log in again.',
+          [
+            {
+              text: 'OK',
+              onPress: async () => {
+                await logout();
+                router.replace('/auth/login');
+              }
+            }
+          ]
+        );
+      } else {
+        Alert.alert('Error', error.response?.data?.detail || 'Failed to accept disclaimer. Please try again.');
+      }
     } finally {
       setAccepting(false);
     }
