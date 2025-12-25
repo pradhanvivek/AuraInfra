@@ -23,7 +23,7 @@
     "@react-navigation/native-stack": "^7.3.10",
     "@types/react-datepicker": "^7.0.0",
     "axios": "^1.12.2",
-    "expo": "^54.0.25",
+    "expo": "^54.0.30",
     "expo-blur": "~15.0.7",
     "expo-camera": "^17.0.8",
     "expo-constants": "~18.0.10",
