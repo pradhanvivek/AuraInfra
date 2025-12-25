@@ -1236,6 +1236,13 @@ async def login(user: UserLogin):
     if not user_doc:
         raise HTTPException(status_code=401, detail="Invalid credentials")
     
+    # Check if user has a password (some users might not have passwords if created through admin/social login)
+    if "password" not in user_doc or not user_doc["password"]:
+        raise HTTPException(
+            status_code=401, 
+            detail="This account was created without a password. Please contact the administrator or use social login."
+        )
+    
     # Verify password
     if not bcrypt.checkpw(user.password.encode('utf-8'), user_doc["password"].encode('utf-8')):
         raise HTTPException(status_code=401, detail="Invalid credentials")
