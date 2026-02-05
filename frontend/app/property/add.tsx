@@ -385,7 +385,17 @@ export default function AddProperty() {
                 }}
                 enablePoweredByContainer={false}
                 debounce={300}
-                onFail={(error) => console.error('Google Places Error:', error)}
+                onFail={(error) => {
+                  console.error('Google Places Error:', error);
+                  // Show user-friendly message for API failures
+                  if (error && typeof error === 'string' && error.includes('REQUEST_DENIED')) {
+                    Alert.alert(
+                      'Address Search Unavailable',
+                      'Google Places API is currently unavailable. Please enter your address manually.',
+                      [{ text: 'OK' }]
+                    );
+                  }
+                }}
               />
             ) : (
               <TextInput
