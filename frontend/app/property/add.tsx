@@ -26,8 +26,24 @@ import GooglePlacesAutocomplete from '../../components/NativeGooglePlacesAutocom
 const API_URL = Constants.expoConfig?.extra?.EXPO_PUBLIC_BACKEND_URL || process.env.EXPO_PUBLIC_BACKEND_URL;
 const GOOGLE_MAPS_API_KEY = process.env.EXPO_PUBLIC_GOOGLE_MAPS_API_KEY || Constants.expoConfig?.extra?.googleMapsApiKey || '';
 
+// Debug logging for Google Maps API
+console.log('=== GOOGLE MAPS API DEBUG ===');
+console.log('API Key from process.env:', process.env.EXPO_PUBLIC_GOOGLE_MAPS_API_KEY);
+console.log('API Key from Constants:', Constants.expoConfig?.extra?.googleMapsApiKey);
+console.log('Final API Key:', GOOGLE_MAPS_API_KEY);
+console.log('API Key length:', GOOGLE_MAPS_API_KEY?.length);
+console.log('GooglePlacesAutocomplete available:', !!GooglePlacesAutocomplete);
+console.log('Platform:', Platform.OS);
+
 export default function AddProperty() {
   const router = useRouter();
+  const navigation = useNavigation();
+  const { token } = useAuth();
+  
+  // Log on component mount
+  useEffect(() => {
+    console.log('AddProperty mounted - Google Maps API Key present:', !!GOOGLE_MAPS_API_KEY);
+  }, []);
   const navigation = useNavigation();
   const { token } = useAuth();
   const [name, setName] = useState('');
