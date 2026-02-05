@@ -199,7 +199,7 @@ export default function AddProperty() {
       <KeyboardAvoidingView
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
         style={styles.keyboardView}
-        keyboardVerticalOffset={Platform.OS === 'ios' ? 100 : 0}
+        keyboardVerticalOffset={Platform.OS === 'ios' ? 140 : 0}
       >
         <ScrollView 
           style={styles.scrollView}
