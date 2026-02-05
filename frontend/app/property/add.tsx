@@ -44,8 +44,6 @@ export default function AddProperty() {
   useEffect(() => {
     console.log('AddProperty mounted - Google Maps API Key present:', !!GOOGLE_MAPS_API_KEY);
   }, []);
-  const navigation = useNavigation();
-  const { token } = useAuth();
   const [name, setName] = useState('');
   const [address, setAddress] = useState('');
   const [latitude, setLatitude] = useState<number | undefined>();
