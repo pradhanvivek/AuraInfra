@@ -267,8 +267,7 @@ export default function HOADocumentsScreen() {
         link.download = fileName;
         link.click();
       } else {
-        // iOS & Android: Use in-app PDF viewer with WebView
-        console.log('Opening document in in-app viewer');
+        // iOS & Android: open in the device's system viewer (PDFViewer handles platform specifics)
         setPdfViewerData({
           title: doc.title,
           fileData: fileData,
