@@ -1,41 +1,16 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import AsyncStorage from '@react-native-async-storage/async-storage';
-import { Platform } from 'react-native';
 import axios from 'axios';
 import Constants from 'expo-constants';
+import { secureAuthStorage } from '../utils/secureAuthStorage';
 
 const API_URL = process.env.EXPO_PUBLIC_BACKEND_URL || Constants.expoConfig?.extra?.apiUrl || '';
 
-// Platform-specific storage helpers
+// Auth credentials are stored via secureAuthStorage: platform Keychain/Keystore
+// (expo-secure-store) on native, with an AsyncStorage fallback on web.
 const storage = {
-  setItem: async (key: string, value: string) => {
-    if (Platform.OS === 'web') {
-      localStorage.setItem(key, value);
-    } else {
-      await AsyncStorage.setItem(key, value);
-    }
-  },
-  getItem: async (key: string): Promise<string | null> => {
-    if (Platform.OS === 'web') {
-      return localStorage.getItem(key);
-    } else {
-      return await AsyncStorage.getItem(key);
-    }
-  },
-  removeItem: async (key: string) => {
-    if (Platform.OS === 'web') {
-      localStorage.removeItem(key);
-    } else {
-      await AsyncStorage.removeItem(key);
-    }
-  },
-  clear: async () => {
-    if (Platform.OS === 'web') {
-      localStorage.clear();
-    } else {
-      await AsyncStorage.clear();
-    }
-  }
+  setItem: (key: string, value: string) => secureAuthStorage.setItem(key, value),
+  getItem: (key: string): Promise<string | null> => secureAuthStorage.getItem(key),
+  removeItem: (key: string) => secureAuthStorage.removeItem(key),
 };
 
 interface AuthContextType {

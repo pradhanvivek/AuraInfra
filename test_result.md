@@ -1203,3 +1203,84 @@ agent_communication:
       - working: "NA"
         agent: "main"
         comment: "WEBVIEW RETRY IMPLEMENTATION: Per user request, re-implemented WebView for iOS PDF rendering with enhanced configuration. Changes: 1) Re-added WebView import, 2) Updated handleViewDocument to show both images and PDFs in modal for iOS, 3) Implemented conditional rendering in modal (Image component for images, WebView for PDFs), 4) Added comprehensive WebView props: originWhitelist=['*'], allowFileAccess, allowFileAccessFromFileURLs, allowUniversalAccessFromFileURLs, javaScriptEnabled, domStorageEnabled, startInLoadingState, scalesPageToFit, 5) Added onError and onLoadEnd handlers with console logging for debugging, 6) Added loading indicator with 'Loading PDF...' text, 7) Direct data URI approach: source={{ uri: `data:${mimeType};base64,${fileData}` }}. Frontend service restarted. Ready for testing - this will help determine if enhanced WebView configuration can overcome the known iOS PDF rendering limitations."
+
+# ============================================================
+# MERGE OF EXTERNAL REVIEW (Account deletion, Admin ACL, Rate limit, Secure storage, Permissions, Branding)
+# ============================================================
+backend:
+  - task: "Account Deletion - DELETE /api/auth/account"
+    implemented: true
+    working: "NA"
+    file: "backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "Merged reviewer change. New DELETE /api/auth/account requires JSON body {password}. Verifies password with bcrypt.checkpw, then cascade-deletes property-scoped collections (property_documents, documents, fixtures, measurements, paint_estimations, vastu_analysis) and user-scoped collections (properties, vehicles, appliances, jewelry, furniture, art, maintenance, notifications, property_memberships), then the user. Requires JWT. Test: (a) 403 without auth, (b) 401 wrong password, (c) 200 correct password + subsequent login for that user returns 401, (d) data removed."
+  - task: "Admin ACL - /api/admin/stats requires admin"
+    implemented: true
+    working: "NA"
+    file: "backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "Added get_current_admin_user dependency (DB-checked is_admin OR is_super_admin). GET /api/admin/stats now uses it. Test: regular user (demo_user) gets 403; a user with is_admin/is_super_admin gets 200. New users get is_admin:false at registration."
+  - task: "Rate limiting - login/register"
+    implemented: true
+    working: "NA"
+    file: "backend/server.py"
+    stuck_count: 0
+    priority: "medium"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "In-memory sliding-window limiter. login: 30 attempts/300s per IP and per username; register: 10/3600s per IP. Returns 429 with retry message beyond threshold. Test carefully to avoid locking out other tests - verify a burst > threshold on login yields 429."
+
+frontend:
+  - task: "Account Deletion + Privacy Policy on Profile"
+    implemented: true
+    working: "NA"
+    file: "frontend/app/(tabs)/profile.tsx"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "Added Privacy Policy row (opens WebBrowser) and Delete Account row (Alert confirm -> password modal -> authApi.deleteAccount -> logout). Verified rows render on web screenshot. Password modal is standard RN Modal (device). No frontend automated test needed."
+  - task: "Secure auth token storage"
+    implemented: true
+    working: "NA"
+    file: "frontend/contexts/AuthContext.tsx"
+    stuck_count: 0
+    priority: "medium"
+    needs_retesting: false
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "Token/userId/username now stored via utils/secureAuthStorage.ts (expo-secure-store on native, AsyncStorage on web). Register(email, property_ids) and setToken preserved."
+
+metadata:
+  created_by: "main_agent"
+  version: "1.1"
+  test_sequence: 4
+  run_ui: false
+
+test_plan:
+  current_focus:
+    - "Account Deletion - DELETE /api/auth/account"
+    - "Admin ACL - /api/admin/stats requires admin"
+    - "Rate limiting - login/register"
+  stuck_tasks: []
+  test_all: false
+  test_priority: "high_first"
+
+agent_communication:
+  - agent: "main"
+    message: "Merged external code-review changes via targeted semantic merge (zip was an older snapshot, so no wholesale file copies). Backend: new DELETE /api/auth/account (password-confirmed cascade delete), get_current_admin_user protecting /api/admin/stats (is_admin OR is_super_admin), sliding-window rate limiter on login/register, is_admin:false added at registration. JWT_SECRET was already required (no change). Frontend: secure token storage, Delete Account + Privacy Policy rows on Profile. Please run BACKEND tests for the three focus tasks. Test creds: demo_user / Test@1234 (regular user, is_admin false). Note rate limiter: login 30/300s per IP+username; keep login bursts modest so unrelated tests don't hit 429. To make an admin: python /app/backend/manage_admin.py grant <username>."

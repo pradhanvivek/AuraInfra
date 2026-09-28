@@ -18,6 +18,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import * as ImagePicker from 'expo-image-picker';
+import * as WebBrowser from 'expo-web-browser';
 import { useAuth } from '../../contexts/AuthContext';
 import { authApi } from '../../services/api';
 import { useAppTour } from '../../components/AppTour';
@@ -53,6 +54,9 @@ export default function Profile() {
   const [editField, setEditField] = useState<'email' | 'phone' | null>(null);
   const [editValue, setEditValue] = useState('');
   const [saving, setSaving] = useState(false);
+  const [deleteAccountModalVisible, setDeleteAccountModalVisible] = useState(false);
+  const [deleteAccountPassword, setDeleteAccountPassword] = useState('');
+  const [deletingAccount, setDeletingAccount] = useState(false);
   const [warrantyModalVisible, setWarrantyModalVisible] = useState(false);
   const [selectedReminderDays, setSelectedReminderDays] = useState(30);
   const [geomancyModalVisible, setGeomancyModalVisible] = useState(false);
@@ -256,6 +260,53 @@ export default function Profile() {
       Alert.alert('Error', error.message || 'Failed to update country');
     } finally {
       setSaving(false);
+    }
+  };
+
+  const handleOpenPrivacyPolicy = () => {
+    // NOTE: update this URL once the website is deployed to point at the
+    // real hosted privacy-policy.html (see website/public/privacy-policy.html).
+    WebBrowser.openBrowserAsync('https://aurainfra.ai/privacy-policy.html');
+  };
+
+  const handleDeleteAccountPress = () => {
+    Alert.alert(
+      'Delete Account',
+      'This will permanently delete your account and all of your data — properties, vehicles, appliances, jewelry, furniture, art, and documents. This cannot be undone.',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Continue',
+          style: 'destructive',
+          onPress: () => {
+            setDeleteAccountPassword('');
+            setDeleteAccountModalVisible(true);
+          },
+        },
+      ],
+      { cancelable: true }
+    );
+  };
+
+  const handleConfirmDeleteAccount = async () => {
+    if (!deleteAccountPassword) {
+      Alert.alert('Error', 'Please enter your password to confirm account deletion');
+      return;
+    }
+
+    setDeletingAccount(true);
+    try {
+      await authApi.deleteAccount(token!, deleteAccountPassword);
+      setDeleteAccountModalVisible(false);
+      await logout();
+      router.replace('/auth/login');
+    } catch (error: any) {
+      Alert.alert(
+        'Error',
+        error.response?.data?.detail || 'Failed to delete account. Please try again.'
+      );
+    } finally {
+      setDeletingAccount(false);
     }
   };
 
@@ -544,6 +595,14 @@ export default function Profile() {
             <Ionicons name="chevron-forward" size={20} color="#C7C7CC" />
           </TouchableOpacity>
 
+          <TouchableOpacity style={[styles.logoutCard, { backgroundColor: isDark ? '#1C1C1E' : '#fff' }]} onPress={handleOpenPrivacyPolicy}>
+            <View style={styles.infoIcon}>
+              <Ionicons name="shield-checkmark-outline" size={24} color="#007AFF" />
+            </View>
+            <Text style={styles.linkText}>Privacy Policy</Text>
+            <Ionicons name="chevron-forward" size={20} color="#C7C7CC" />
+          </TouchableOpacity>
+
           <TouchableOpacity style={[styles.logoutCard, { backgroundColor: isDark ? '#1C1C1E' : '#fff' }]} onPress={handleLogout}>
             <View style={styles.infoIcon}>
               <Ionicons name="log-out-outline" size={24} color="#FF3B30" />
@@ -551,8 +610,66 @@ export default function Profile() {
             <Text style={styles.logoutText}>Logout</Text>
             <Ionicons name="chevron-forward" size={20} color="#C7C7CC" />
           </TouchableOpacity>
+
+          <TouchableOpacity style={[styles.logoutCard, { backgroundColor: isDark ? '#1C1C1E' : '#fff' }]} onPress={handleDeleteAccountPress}>
+            <View style={styles.infoIcon}>
+              <Ionicons name="trash-outline" size={24} color="#FF3B30" />
+            </View>
+            <Text style={styles.logoutText}>Delete Account</Text>
+            <Ionicons name="chevron-forward" size={20} color="#C7C7CC" />
+          </TouchableOpacity>
         </View>
       </ScrollView>
+
+      {/* Delete Account Confirmation Modal */}
+      <Modal
+        visible={deleteAccountModalVisible}
+        animationType="slide"
+        presentationStyle="pageSheet"
+        onRequestClose={() => setDeleteAccountModalVisible(false)}
+      >
+        <KeyboardAvoidingView
+          behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+          style={styles.modalContainer}
+        >
+          <View style={styles.modalHeader}>
+            <TouchableOpacity onPress={() => setDeleteAccountModalVisible(false)}>
+              <Text style={styles.cancelButton}>Cancel</Text>
+            </TouchableOpacity>
+            <Text style={styles.modalTitle}>Delete Account</Text>
+            <View style={{ width: 60 }} />
+          </View>
+
+          <View style={styles.modalContent}>
+            <Text style={styles.modalDescription}>
+              Enter your password to permanently delete your account and all associated data.
+              This action cannot be undone.
+            </Text>
+            <Text style={styles.label}>Password</Text>
+            <TextInput
+              style={styles.input}
+              placeholder="Enter your password"
+              value={deleteAccountPassword}
+              onChangeText={setDeleteAccountPassword}
+              secureTextEntry
+              autoCapitalize="none"
+              autoFocus
+            />
+
+            <TouchableOpacity
+              style={[styles.dangerButton, deletingAccount && styles.saveButtonDisabled]}
+              onPress={handleConfirmDeleteAccount}
+              disabled={deletingAccount}
+            >
+              {deletingAccount ? (
+                <ActivityIndicator size="small" color="#fff" />
+              ) : (
+                <Text style={styles.dangerButtonText}>Permanently Delete My Account</Text>
+              )}
+            </TouchableOpacity>
+          </View>
+        </KeyboardAvoidingView>
+      </Modal>
 
       {/* Edit Modal */}
       <Modal
@@ -1312,6 +1429,24 @@ const styles = StyleSheet.create({
     fontSize: 17,
     color: '#FF3B30',
     fontWeight: '500',
+  },
+  linkText: {
+    flex: 1,
+    fontSize: 17,
+    color: '#007AFF',
+    fontWeight: '500',
+  },
+  dangerButton: {
+    backgroundColor: '#FF3B30',
+    borderRadius: 12,
+    padding: 16,
+    alignItems: 'center',
+    marginTop: 32,
+  },
+  dangerButtonText: {
+    color: '#fff',
+    fontSize: 16,
+    fontWeight: '600',
   },
   modalContainer: {
     flex: 1,

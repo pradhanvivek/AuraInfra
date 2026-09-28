@@ -28,6 +28,14 @@ export const authApi = {
     );
     return response.data;
   },
+
+  deleteAccount: async (token: string, password: string) => {
+    const response = await axios.delete(
+      `${API_URL}/api/auth/account`,
+      { ...getAuthHeaders(token), data: { password } }
+    );
+    return response.data;
+  },
 };
 
 // Property API

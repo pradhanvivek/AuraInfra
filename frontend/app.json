@@ -13,15 +13,27 @@
     ],
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.aurainfra.ai"
+      "bundleIdentifier": "com.aurainfra.ai",
+      "buildNumber": "1",
+      "infoPlist": {
+        "NSCameraUsageDescription": "AuraInfra uses your camera to let you photograph properties, vehicles, appliances, jewelry, furniture, and art so you can catalog and track your assets.",
+        "NSPhotoLibraryUsageDescription": "AuraInfra needs access to your photo library so you can attach existing photos to your properties and other tracked assets.",
+        "NSPhotoLibraryAddUsageDescription": "AuraInfra saves exported documents and images to your photo library when you choose to save or share them."
+      }
     },
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/adaptive-icon.png",
-        "backgroundColor": "#000"
+        "backgroundColor": "#0D1B33"
       },
       "edgeToEdgeEnabled": true,
-      "package": "com.aurainfra.ai"
+      "package": "com.aurainfra.ai",
+      "versionCode": 1,
+      "permissions": [
+        "CAMERA",
+        "READ_MEDIA_IMAGES",
+        "READ_EXTERNAL_STORAGE"
+      ]
     },
     "web": {
       "bundler": "metro",
@@ -36,12 +48,26 @@
           "image": "./assets/images/splash-icon.png",
           "imageWidth": 200,
           "resizeMode": "contain",
-          "backgroundColor": "#000"
+          "backgroundColor": "#0D1B33"
         }
       ],
       "expo-font",
       "expo-web-browser",
-      "@react-native-community/datetimepicker"
+      "@react-native-community/datetimepicker",
+      "expo-secure-store",
+      [
+        "expo-camera",
+        {
+          "cameraPermission": "AuraInfra uses your camera to let you photograph properties, vehicles, appliances, jewelry, furniture, and art so you can catalog and track your assets."
+        }
+      ],
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "AuraInfra needs access to your photo library so you can attach existing photos to your properties and other tracked assets.",
+          "cameraPermission": "AuraInfra uses your camera to let you photograph your assets directly from the app."
+        }
+      ]
     ],
     "experiments": {
       "typedRoutes": true

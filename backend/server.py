@@ -13,6 +13,8 @@ import uuid
 import jwt
 import bcrypt
 import base64
+import time
+from collections import defaultdict, deque
 from bson import ObjectId
 
 # Load environment variables
@@ -63,6 +65,9 @@ class UserRegister(BaseModel):
 
 class UserLogin(BaseModel):
     username: str
+    password: str
+
+class AccountDeleteRequest(BaseModel):
     password: str
 
 class Token(BaseModel):
@@ -1137,10 +1142,58 @@ async def get_current_user(credentials: HTTPAuthorizationCredentials = Depends(s
         raise HTTPException(status_code=401, detail="Invalid token")
     return user_id
 
+class LoginRateLimiter:
+    """
+    Simple in-memory sliding-window rate limiter to slow down brute-force /
+    credential-stuffing attempts against login and registration.
+
+    Note: this state lives in process memory, so it resets on restart and
+    is per-instance only (won't share limits across multiple backend
+    replicas). Acceptable for a single instance; use Redis if scaling out.
+    """
+    def __init__(self, max_attempts: int, window_seconds: int):
+        self.max_attempts = max_attempts
+        self.window_seconds = window_seconds
+        self._attempts = defaultdict(deque)
+
+    def check(self, key: str):
+        now = time.time()
+        attempts = self._attempts[key]
+        while attempts and now - attempts[0] > self.window_seconds:
+            attempts.popleft()
+        if len(attempts) >= self.max_attempts:
+            retry_after = int(self.window_seconds - (now - attempts[0]))
+            raise HTTPException(
+                status_code=status.HTTP_429_TOO_MANY_REQUESTS,
+                detail=f"Too many attempts. Try again in {max(retry_after, 1)} seconds.",
+            )
+        attempts.append(now)
+
+login_rate_limiter = LoginRateLimiter(max_attempts=30, window_seconds=300)
+register_rate_limiter = LoginRateLimiter(max_attempts=10, window_seconds=3600)
+
+def get_client_ip(request: Request) -> str:
+    forwarded = request.headers.get("x-forwarded-for")
+    if forwarded:
+        return forwarded.split(",")[0].strip()
+    return request.client.host if request.client else "unknown"
+
+async def get_current_admin_user(user_id: str = Depends(get_current_user)):
+    """
+    Requires the user's is_admin flag (or platform super-admin) to be set in
+    the database before allowing access. Checking the DB (rather than trusting
+    a claim in the JWT) means revoking admin access takes effect immediately.
+    """
+    user_doc = await db.users.find_one({"id": user_id}, {"is_admin": 1, "is_super_admin": 1})
+    if not user_doc or not (user_doc.get("is_admin", False) or user_doc.get("is_super_admin", False)):
+        raise HTTPException(status_code=403, detail="Admin access required")
+    return user_id
+
 # ============= AUTH ENDPOINTS =============
 
 @api_router.post("/auth/register", response_model=Token)
-async def register(user: UserRegister):
+async def register(user: UserRegister, request: Request):
+    register_rate_limiter.check(get_client_ip(request))
     # Check if username exists
     existing_user = await db.users.find_one({"username": user.username})
     if existing_user:
@@ -1166,6 +1219,7 @@ async def register(user: UserRegister):
         "geomancy_preference": "vastu",
         "is_super_admin": False,
         "is_hoa_admin": False,
+        "is_admin": False,
         "managed_properties": [],
         "member_properties": [],
         "disclaimer_accepted": False,
@@ -1223,7 +1277,9 @@ async def register(user: UserRegister):
     )
 
 @api_router.post("/auth/login", response_model=Token)
-async def login(user: UserLogin):
+async def login(user: UserLogin, request: Request):
+    login_rate_limiter.check(get_client_ip(request))
+    login_rate_limiter.check(f"username:{user.username.lower()}")
     # Find user by username or email
     # Check if the input contains '@' to determine if it's an email
     if '@' in user.username:
@@ -1256,6 +1312,66 @@ async def login(user: UserLogin):
         user_id=user_doc["id"],
         username=user_doc["username"]
     )
+
+@api_router.delete("/auth/account")
+async def delete_account(payload: AccountDeleteRequest, user_id: str = Depends(get_current_user)):
+    """
+    Permanently delete the authenticated user's account and all associated data.
+    Requires the user's current password as confirmation, since this is irreversible.
+    Required for App Store guideline 5.1.1(v) and Google Play account-deletion policy.
+    """
+    user_doc = await db.users.find_one({"id": user_id})
+    if not user_doc:
+        raise HTTPException(status_code=404, detail="User not found")
+
+    if not user_doc.get("password"):
+        raise HTTPException(status_code=400, detail="This account has no password set and cannot be self-deleted.")
+
+    if not bcrypt.checkpw(payload.password.encode('utf-8'), user_doc["password"].encode('utf-8')):
+        raise HTTPException(status_code=401, detail="Incorrect password")
+
+    # Collect this user's property ids, since several collections are scoped
+    # by property_id rather than user_id directly.
+    property_ids = [
+        p["id"] async for p in db.properties.find({"user_id": user_id}, {"id": 1})
+    ]
+
+    # Delete data that is scoped by property_id
+    if property_ids:
+        await db.property_documents.delete_many({"property_id": {"$in": property_ids}})
+        await db.documents.delete_many({"property_id": {"$in": property_ids}})
+        await db.fixtures.delete_many({"property_id": {"$in": property_ids}})
+        await db.measurements.delete_many({"property_id": {"$in": property_ids}})
+        await db.paint_estimations.delete_many({"property_id": {"$in": property_ids}})
+        await db.vastu_analysis.delete_many({"property_id": {"$in": property_ids}})
+
+    # Delete data scoped directly by user_id
+    await db.properties.delete_many({"user_id": user_id})
+    await db.vehicles.delete_many({"user_id": user_id})
+    await db.appliances.delete_many({"user_id": user_id})
+    await db.jewelry.delete_many({"user_id": user_id})
+    await db.furniture.delete_many({"user_id": user_id})
+    await db.art.delete_many({"user_id": user_id})
+    await db.maintenance.delete_many({"user_id": user_id})
+    await db.notifications.delete_many({"user_id": user_id})
+    await db.property_memberships.delete_many({"user_id": user_id})
+    # Community / HOA data authored by this user
+    await db.community_posts.delete_many({"user_id": user_id})
+    await db.community_comments.delete_many({"user_id": user_id})
+    await db.post_likes.delete_many({"user_id": user_id})
+    await db.complaints.delete_many({"user_id": user_id})
+    await db.meeting_rsvps.delete_many({"user_id": user_id})
+    await db.amenity_bookings.delete_many({"user_id": user_id})
+    await db.maintenance_dues.delete_many({"user_id": user_id})
+    await db.visitors.delete_many({"host_user_id": user_id})
+    await db.user_sessions.delete_many({"user_id": user_id})
+
+    # Finally, delete the user account itself
+    await db.users.delete_one({"id": user_id})
+
+    logger.info(f"Account and all associated data deleted for user_id={user_id}")
+
+    return {"message": "Account and all associated data have been permanently deleted"}
 
 @api_router.get("/auth/profile", response_model=UserProfile)
 async def get_profile(user_id: str = Depends(get_current_user)):
@@ -1527,7 +1643,7 @@ async def logout(request: Request):
 # ============= ADMIN ENDPOINTS =============
 
 @api_router.get("/admin/stats")
-async def get_admin_stats(user_id: str = Depends(get_current_user)):
+async def get_admin_stats(user_id: str = Depends(get_current_admin_user)):
     """Get admin statistics - user counts, asset counts, etc."""
     try:
         # Get total user count

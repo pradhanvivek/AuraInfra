@@ -1,0 +1,46 @@
+{
+  "summary": "Backend-only verification of newly merged auth/security features (DELETE /api/auth/account, admin-gated /api/admin/stats, login rate limiter, registration is_admin default, demo_user login). All 10 pytest cases passed against public EXPO_PUBLIC_BACKEND_URL. No issues found.",
+  "backend_issues": {
+    "critical": [],
+    "minor": []
+  },
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": [],
+    "react_native_issues": []
+  },
+  "test_report_links": [
+    "/app/backend/tests/test_auth_security.py",
+    "/app/test_reports/pytest/pytest_results.xml"
+  ],
+  "action_items": [],
+  "critical_code_review_comments": [
+    "server.py is >1700 lines and should be split into modules (auth, admin, properties, etc.) per code review guidelines (>700 line threshold).",
+    "LoginRateLimiter is in-memory only; documented in code, but under multi-replica deploy it will not enforce globally. Consider Redis-backed limiter before horizontal scaling.",
+    "delete_account cascades across ~15 collections but does NOT delete: community_posts / community_comments / post_likes / amenity_bookings / complaints / documents (uploaded_by) / meetings / meeting_rsvps / hoa_charges / payment_transactions / visitors / pending_user_approvals authored by the user. If GDPR-style full erasure is intended, extend the cascade. (server.py:1339-1360)",
+    "delete_account allows self-deletion by super_admin/hoa_admin without transferring managed_properties ownership -- may orphan communities. Consider a guard.",
+    "get_current_admin_user grants access when EITHER is_admin OR is_super_admin is true; documented and works. Good that DB is checked (not JWT claim)."
+  ],
+  "updated_files": [
+    "/app/backend/tests/test_auth_security.py (new)",
+    "/app/test_reports/pytest/pytest_results.xml (new)"
+  ],
+  "success_rate": {"backend": "100%", "frontend": "skipped"},
+  "seed_data_creation": "Tests create throwaway TEST_* users via /api/auth/register and clean them up via DELETE /api/auth/account. One super-admin promotion is done via pymongo directly, then the user is deleted. demo_user was NOT modified/deleted. Rate-limit burst uses X-Forwarded-For with a unique spoofed IP + a unique throwaway username so it does not lock out demo_user.",
+  "retest_needed": false,
+  "should_main_agent_self_test": false,
+  "context_for_next_testing_agent": "Regression tests live at /app/backend/tests/test_auth_security.py. Run: `pytest /app/backend/tests/test_auth_security.py -v --junitxml=/app/test_reports/pytest/pytest_results.xml`. BASE_URL is loaded from /app/frontend/.env (EXPO_PUBLIC_BACKEND_URL). Rate-limit test uses spoofed X-Forwarded-For + unique throwaway username so it will not interfere with demo_user or other tests. Tests are idempotent -- all created users are deleted before completion.",
+  "verified_behaviors": [
+    "POST /api/auth/login demo_user/Test@1234 -> 200 with JWT",
+    "POST /api/auth/register -> new user has is_admin=false (proved via 403 on /api/admin/stats)",
+    "GET /api/admin/stats no token -> 403 (HTTPBearer)",
+    "GET /api/admin/stats regular user -> 403 'Admin access required'",
+    "GET /api/admin/stats after `manage_admin.py grant` -> 200 with stats payload {total_users,total_assets,assets_by_category,users}",
+    "GET /api/admin/stats when is_super_admin=true -> 200",
+    "DELETE /api/auth/account no token -> 403",
+    "DELETE /api/auth/account wrong password -> 401 'Incorrect password'",
+    "DELETE /api/auth/account correct password -> 200 message; subsequent login for that username -> 401",
+    "POST /api/auth/login burst of 45 wrong-password attempts (same spoofed IP + username) -> 429 'Too many attempts' triggered before 45th attempt (limit 30/300s)"
+  ]
+}
