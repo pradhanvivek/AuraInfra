@@ -2,13 +2,12 @@ import { View, Text, StyleSheet, TouchableOpacity, ActivityIndicator } from 'rea
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import axios from 'axios';
-import Constants from 'expo-constants';
 import { useAuth } from '../../contexts/AuthContext';
 import MeasurementsScreen from '../../screens/property/MeasurementsScreen';
 
-const API_URL = Constants.expoConfig?.extra?.EXPO_PUBLIC_BACKEND_URL || process.env.EXPO_PUBLIC_BACKEND_URL;
+import { API_URL } from '../../services/config';
 
 export default function PropertyMeasurementsRoute() {
   const { id } = useLocalSearchParams();
@@ -17,22 +16,28 @@ export default function PropertyMeasurementsRoute() {
   const [propertyName, setPropertyName] = useState<string>('Measurements');
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    fetchPropertyName();
-  }, [id]);
-
-  const fetchPropertyName = async () => {
+  const fetchPropertyName = useCallback(async (isActive: () => boolean = () => true) => {
     try {
       const response = await axios.get(`${API_URL}/api/properties/${id}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
+      if (!isActive()) return;
       setPropertyName(response.data.name || 'Measurements');
     } catch (error) {
+      if (!isActive()) return;
       console.error('Error fetching property:', error);
     } finally {
-      setLoading(false);
+      if (isActive()) setLoading(false);
     }
-  };
+  }, [id, token]);
+
+  useEffect(() => {
+    let active = true;
+    void fetchPropertyName(() => active);
+    return () => { active = false; };
+  }, [fetchPropertyName]);
+
+
 
   return (
     <SafeAreaView style={styles.container} edges={['top']}>

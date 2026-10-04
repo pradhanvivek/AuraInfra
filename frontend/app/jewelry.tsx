@@ -14,9 +14,8 @@ import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { useAuth } from '../contexts/AuthContext';
 import axios from 'axios';
-import Constants from 'expo-constants';
 
-const API_URL = Constants.expoConfig?.extra?.EXPO_PUBLIC_BACKEND_URL || process.env.EXPO_PUBLIC_BACKEND_URL;
+import { API_URL } from '../services/config';
 
 interface Jewelry {
   id: string;
@@ -35,11 +34,7 @@ export default function JewelryScreen() {
   const [jewelry, setJewelry] = useState<Jewelry[]>([]);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    fetchJewelry();
-  }, []);
-
-  const fetchJewelry = async () => {
+  async function fetchJewelry() {
     try {
       const response = await axios.get(
         `${API_URL}/api/jewelry`,
@@ -52,7 +47,13 @@ export default function JewelryScreen() {
     } finally {
       setLoading(false);
     }
-  };
+  }
+
+  useEffect(() => {
+    fetchJewelry();
+  }, []);
+
+
 
   const renderJewelry = ({ item }: { item: Jewelry }) => (
     <TouchableOpacity

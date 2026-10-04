@@ -14,9 +14,8 @@ import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { useAuth } from '../../contexts/AuthContext';
 import axios from 'axios';
-import Constants from 'expo-constants';
 
-const API_URL = Constants.expoConfig?.extra?.EXPO_PUBLIC_BACKEND_URL || process.env.EXPO_PUBLIC_BACKEND_URL;
+import { API_URL } from '../../services/config';
 
 interface AmenityBooking {
   id: string;
@@ -63,7 +62,7 @@ export default function BookingApprovals() {
     }
   }, [propertyId]);
 
-  const fetchPropertyId = async () => {
+  async function fetchPropertyId() {
     try {
       const response = await axios.get(`${API_URL}/api/auth/profile`, {
         headers: { 'Authorization': `Bearer ${token}` }
@@ -78,9 +77,9 @@ export default function BookingApprovals() {
       console.error('Error:', error);
       Alert.alert('Error', 'Failed to load profile');
     }
-  };
+  }
 
-  const fetchBookings = async () => {
+  async function fetchBookings() {
     try {
       const response = await axios.get(
         `${API_URL}/api/properties/${propertyId}/amenity-bookings`,
@@ -94,9 +93,9 @@ export default function BookingApprovals() {
     } finally {
       setLoading(false);
     }
-  };
+  }
 
-  const fetchAmenities = async () => {
+  async function fetchAmenities() {
     try {
       const response = await axios.get(
         `${API_URL}/api/properties/${propertyId}/amenities`,
@@ -112,7 +111,7 @@ export default function BookingApprovals() {
     } catch (error) {
       console.error('Error fetching amenities:', error);
     }
-  };
+  }
 
   const handleApprove = async (booking: AmenityBooking) => {
     Alert.alert(

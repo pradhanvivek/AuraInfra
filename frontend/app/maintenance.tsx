@@ -14,9 +14,8 @@ import { useRouter, useFocusEffect } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { useAuth } from '../contexts/AuthContext';
 import axios from 'axios';
-import Constants from 'expo-constants';
 
-const API_URL = Constants.expoConfig?.extra?.EXPO_PUBLIC_BACKEND_URL || process.env.EXPO_PUBLIC_BACKEND_URL;
+import { API_URL } from '../services/config';
 
 interface MaintenanceRecord {
   id: string;
@@ -50,7 +49,7 @@ export default function MaintenanceScreen() {
     }, [token])
   );
 
-  const fetchMaintenance = async () => {
+  async function fetchMaintenance() {
     try {
       // Fetch upcoming
       const upcomingRes = await axios.get(
@@ -79,7 +78,7 @@ export default function MaintenanceScreen() {
       setLoading(false);
       setRefreshing(false);
     }
-  };
+  }
 
   const onRefresh = () => {
     setRefreshing(true);

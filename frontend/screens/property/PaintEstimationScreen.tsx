@@ -18,9 +18,8 @@ import { Ionicons } from '@expo/vector-icons';
 import { Accelerometer } from 'expo-sensors';
 import { useAuth } from '../../contexts/AuthContext';
 import axios from 'axios';
-import Constants from 'expo-constants';
 
-const API_URL = Constants.expoConfig?.extra?.EXPO_PUBLIC_BACKEND_URL || process.env.EXPO_PUBLIC_BACKEND_URL;
+import { API_URL } from '../../services/config';
 
 interface PaintEstimationScreenProps {
   propertyId: string;
@@ -183,7 +182,7 @@ export default function PaintEstimationScreen({ propertyId }: PaintEstimationScr
     return () => subscription && subscription.remove();
   }, [cameraVisible]);
 
-  const fetchEstimations = async () => {
+  async function fetchEstimations() {
     try {
       const response = await axios.get(
         `${API_URL}/api/properties/${propertyId}/paint-estimations`,
@@ -195,7 +194,7 @@ export default function PaintEstimationScreen({ propertyId }: PaintEstimationScr
     } finally {
       setLoading(false);
     }
-  };
+  }
 
   const handleStartCapture = () => {
     setSetupComplete(true);
@@ -357,7 +356,6 @@ export default function PaintEstimationScreen({ propertyId }: PaintEstimationScr
       }}
     >
       <SafeAreaView style={[styles.modalContainer, { backgroundColor: '#F2F2F7' }]} edges={['top', 'bottom']}>
-        {console.log('Modal is rendering! settingsVisible:', settingsVisible)}
         <View style={styles.modalHeader}>
           <View style={{ width: 60 }} />
           <Text style={styles.modalTitle}>Display Settings</Text>

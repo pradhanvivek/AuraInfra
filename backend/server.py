@@ -4,7 +4,15 @@ from dotenv import load_dotenv
 from starlette.middleware.cors import CORSMiddleware
 from motor.motor_asyncio import AsyncIOMotorClient
 from pydantic import BaseModel, Field
-from typing import List, Optional
+from typing import List, Optional, Literal
+import asyncio
+import hashlib
+import hmac
+import secrets
+from access import require_community, community_role, scoped_data, ACTIVE_MEMBERSHIP_STATES
+from account_cleanup import clean_account
+from password_recovery import configured as recovery_configured, send_reset_code
+from moderation import moderation_router, blocked_users, visible_post, require_content_terms, validate_content
 from datetime import datetime, timedelta
 from pathlib import Path
 import os
@@ -16,6 +24,7 @@ import base64
 import time
 from collections import defaultdict, deque
 from bson import ObjectId
+from pymongo.errors import DuplicateKeyError
 
 # Load environment variables
 ROOT_DIR = Path(__file__).parent
@@ -32,7 +41,9 @@ db = client[os.environ['DB_NAME']]
 
 # JWT Configuration
 JWT_SECRET = os.environ['JWT_SECRET']
-JWT_ALGORITHM = os.environ.get('JWT_ALGORITHM', 'HS256')
+JWT_ALGORITHM = 'HS256'
+if IS_PRODUCTION and len(JWT_SECRET) < 32:
+    raise RuntimeError('Production JWT_SECRET must contain at least 32 characters')
 security = HTTPBearer()
 
 # Create the main app with security settings
@@ -41,9 +52,29 @@ app = FastAPI(
     version="1.0.0",
     docs_url="/docs" if not IS_PRODUCTION else None,  # Disable docs in production
     redoc_url="/redoc" if not IS_PRODUCTION else None,
+    openapi_url="/openapi.json" if not IS_PRODUCTION else None,
     # Don't include request/response bodies in error messages
     include_in_schema=not IS_PRODUCTION
 )
+
+from fastapi.exceptions import RequestValidationError
+from fastapi.responses import JSONResponse
+from starlette.exceptions import HTTPException as StarletteHTTPException
+
+
+@app.exception_handler(RequestValidationError)
+async def validation_error(request: Request, exc: RequestValidationError):
+    return JSONResponse(status_code=422, content={"detail": [
+        {"loc": list(error["loc"]), "msg": error["msg"], "type": error["type"]}
+        for error in exc.errors()
+    ]})
+
+
+@app.exception_handler(StarletteHTTPException)
+async def public_http_error(request: Request, exc: StarletteHTTPException):
+    detail = "This service is temporarily unavailable. Please try again." if IS_PRODUCTION and exc.status_code >= 500 else exc.detail
+    return JSONResponse(status_code=exc.status_code, content={"detail": detail}, headers=exc.headers)
+
 
 # Create a router with the /api prefix
 api_router = APIRouter(prefix="/api")
@@ -67,8 +98,20 @@ class UserLogin(BaseModel):
     username: str
     password: str
 
-class AccountDeleteRequest(BaseModel):
+class PasswordRecoveryRequest(BaseModel):
+    email: str = Field(min_length=3, max_length=254)
+
+class PasswordResetRequest(PasswordRecoveryRequest):
+    code: str = Field(pattern=r"^[0-9]{8}$")
     password: str
+
+class AccountDeleteRequest(BaseModel):
+    password: Optional[str] = None
+
+class AppleLoginRequest(BaseModel):
+    identity_token: str
+    nonce: str
+    authorization_code: Optional[str] = None
 
 class Token(BaseModel):
     access_token: str
@@ -93,6 +136,9 @@ class UserProfile(BaseModel):
     member_properties: Optional[List[str]] = []  # List of property IDs (resident)
     disclaimer_accepted: bool = False
     disclaimer_accepted_at: Optional[datetime] = None
+    ai_consent_at: Optional[datetime] = None
+    auth_provider: str = "password"
+    has_password: bool = True
     created_at: datetime
 
 class UserProfileUpdate(BaseModel):
@@ -198,6 +244,7 @@ class MaintenanceDue(BaseModel):
     due_date: datetime
     description: str
     status: str = "unpaid"  # unpaid, paid, overdue
+    user_id: Optional[str] = None
     created_by: str  # Admin user_id
     created_at: datetime = Field(default_factory=datetime.utcnow)
     paid_at: Optional[datetime] = None
@@ -227,8 +274,8 @@ class PropertyMembership(BaseModel):
     id: str = Field(default_factory=lambda: str(uuid.uuid4()))
     user_id: str
     property_id: str
-    status: str = "approved"  # approved, pending, rejected
-    role: str = "resident"  # resident, owner, tenant
+    status: Literal["active", "approved", "pending", "rejected", "inactive"] = "pending"
+    role: Literal["resident", "owner", "tenant", "security"] = "resident"
     unit_number: Optional[str] = None
     joined_at: datetime = Field(default_factory=datetime.utcnow)
     approved_by: Optional[str] = None
@@ -239,7 +286,7 @@ class PropertyMembershipCreate(BaseModel):
     user_id: str
     role: str = "resident"
     unit_number: Optional[str] = None
-    status: str = "approved"
+    status: Literal["active", "approved", "pending", "rejected", "inactive"] = "active"
 
 class PropertyMembershipUpdate(BaseModel):
     status: Optional[str] = None
@@ -727,18 +774,6 @@ class MaintenanceUpdate(BaseModel):
 
 # ============= PROPERTY MANAGEMENT MODELS =============
 
-# Property Membership & Roles
-class PropertyMembership(BaseModel):
-    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
-    property_id: str
-    user_id: str
-    role: str  # "owner", "tenant", "resident"
-    status: str = "active"  # "active", "inactive", "pending"
-    joined_date: datetime = Field(default_factory=datetime.utcnow)
-    end_date: Optional[datetime] = None
-
-# Removed duplicate PropertyMembershipCreate model - using the one at line 149
-
 # HOA Maintenance Charges
 class HOACharge(BaseModel):
     id: str = Field(default_factory=lambda: str(uuid.uuid4()))
@@ -749,6 +784,7 @@ class HOACharge(BaseModel):
     currency: str = "USD"
     due_date: datetime
     status: str = "pending"  # "pending", "paid", "overdue", "cancelled"
+    user_id: Optional[str] = None
     created_by: str  # Admin user_id
     created_at: datetime = Field(default_factory=datetime.utcnow)
     paid_date: Optional[datetime] = None
@@ -771,6 +807,10 @@ class HOAChargeUpdate(BaseModel):
     status: Optional[str] = None
 
 # Payment Transactions
+class HOACheckoutRequest(BaseModel):
+    charge_id: str
+    origin_url: Optional[str] = None
+
 class PaymentTransaction(BaseModel):
     id: str = Field(default_factory=lambda: str(uuid.uuid4()))
     user_id: str
@@ -826,7 +866,7 @@ class VisitorUpdate(BaseModel):
     notes: Optional[str] = None
 
 class VisitorApproval(BaseModel):
-    status: str  # "approved", "rejected"
+    status: Literal["approved", "rejected"]
     notes: Optional[str] = None
 
 class VisitorCheckIn(BaseModel):
@@ -852,6 +892,7 @@ class CommunityPost(BaseModel):
     updated_at: datetime = Field(default_factory=datetime.utcnow)
     likes_count: int = 0
     comments_count: int = 0
+    moderation_status: str = "pending"
 
 class CommunityPostCreate(BaseModel):
     property_id: str
@@ -868,6 +909,7 @@ class CommunityPostUpdate(BaseModel):
     photos: Optional[List[str]] = None
 
 class CommunityComment(BaseModel):
+    moderation_status: str = "pending"
     id: str = Field(default_factory=lambda: str(uuid.uuid4()))
     post_id: str
     user_id: str
@@ -938,7 +980,7 @@ class AmenityBookingCreate(BaseModel):
     purpose: Optional[str] = None
 
 class AmenityBookingUpdate(BaseModel):
-    status: Optional[str] = None
+    status: Optional[Literal["approved", "rejected", "cancelled"]] = None
     payment_status: Optional[str] = None
 
 # Complaints/Service Requests
@@ -1067,13 +1109,13 @@ class PendingUserApproval(BaseModel):
 
 class ApprovalRequest(BaseModel):
     property_id: str
-    requested_role: str
+    requested_role: Literal["owner", "tenant", "resident"]
     documents: List[str]  # base64 documents
     document_names: List[str]
 
 class ApprovalAction(BaseModel):
     approval_id: str
-    action: str  # "approve" or "reject"
+    action: Literal["approve", "reject"]
     admin_notes: Optional[str] = None
 
 class PropertyAdminAssignment(BaseModel):
@@ -1118,10 +1160,21 @@ class UserSettings(BaseModel):
 
 def create_access_token(data: dict):
     to_encode = data.copy()
-    expire = datetime.utcnow() + timedelta(days=30)
-    to_encode.update({"exp": expire})
-    encoded_jwt = jwt.encode(to_encode, JWT_SECRET, algorithm=JWT_ALGORITHM)
-    return encoded_jwt
+    to_encode.update({"exp": datetime.utcnow() + timedelta(days=7), "iat": datetime.utcnow(), "jti": str(uuid.uuid4())})
+    return jwt.encode(to_encode, JWT_SECRET, algorithm=JWT_ALGORITHM)
+
+async def issue_auth_token(user_doc, provider="password"):
+    if user_doc.get("disabled") or user_doc.get("deletion_pending"):
+        raise HTTPException(status_code=401, detail="Account is unavailable")
+    token = create_access_token({"user_id": user_doc["id"], "username": user_doc["username"]})
+    claims = verify_token(token)
+    await db.user_sessions.insert_one({
+        "jti": claims["jti"], "user_id": user_doc["id"], "provider": provider,
+        "authenticated_at": datetime.utcnow(),
+        "credential_version": user_doc.get("credential_version", 0),
+        "expires_at": datetime.utcfromtimestamp(claims["exp"]),
+    })
+    return Token(access_token=token, token_type="bearer", user_id=user_doc["id"], username=user_doc["username"])
 
 def verify_token(token: str):
     try:
@@ -1135,11 +1188,15 @@ def verify_token(token: str):
         raise HTTPException(status_code=401, detail="Invalid token")
 
 async def get_current_user(credentials: HTTPAuthorizationCredentials = Depends(security)):
-    token = credentials.credentials
-    payload = verify_token(token)
-    user_id = payload.get("user_id")
-    if not user_id:
-        raise HTTPException(status_code=401, detail="Invalid token")
+    claims = verify_token(credentials.credentials)
+    user_id, jti = claims.get("user_id"), claims.get("jti")
+    if not user_id or not jti:
+        raise HTTPException(status_code=401, detail="Please sign in again")
+    session = await db.user_sessions.find_one({"jti": jti, "user_id": user_id, "expires_at": {"$gt": datetime.utcnow()}})
+    user = await db.users.find_one({"id": user_id})
+    if (not session or not user or user.get("disabled") or user.get("deletion_pending")
+            or session.get("credential_version", 0) != user.get("credential_version", 0)):
+        raise HTTPException(status_code=401, detail="Session is no longer valid")
     return user_id
 
 class LoginRateLimiter:
@@ -1171,10 +1228,11 @@ class LoginRateLimiter:
 
 login_rate_limiter = LoginRateLimiter(max_attempts=30, window_seconds=300)
 register_rate_limiter = LoginRateLimiter(max_attempts=10, window_seconds=3600)
+recovery_rate_limiter = LoginRateLimiter(max_attempts=3, window_seconds=3600)
 
 def get_client_ip(request: Request) -> str:
     forwarded = request.headers.get("x-forwarded-for")
-    if forwarded:
+    if forwarded and os.environ.get("TRUST_PROXY_HEADERS") == "true":
         return forwarded.split(",")[0].strip()
     return request.client.host if request.client else "unknown"
 
@@ -1193,6 +1251,13 @@ async def get_current_admin_user(user_id: str = Depends(get_current_user)):
 
 @api_router.post("/auth/register", response_model=Token)
 async def register(user: UserRegister, request: Request):
+    if not user.username.strip() or len(user.password.encode("utf-8")) < 8 or len(user.password.encode("utf-8")) > 72:
+        raise HTTPException(status_code=400, detail="Use a username and a password of 8–72 UTF-8 bytes")
+    user.email = user.email.strip().lower()
+    if "@" not in user.email:
+        raise HTTPException(status_code=400, detail="A valid email is required")
+    for property_id in set(user.property_ids or []):
+        await find_joinable_property(property_id)
     register_rate_limiter.check(get_client_ip(request))
     # Check if username exists
     existing_user = await db.users.find_one({"username": user.username})
@@ -1227,54 +1292,14 @@ async def register(user: UserRegister, request: Request):
         "created_at": datetime.utcnow()
     }
     
-    await db.users.insert_one(user_doc)
+    try:
+        await db.users.insert_one(user_doc)
+    except DuplicateKeyError:
+        raise HTTPException(status_code=409, detail="Username or email already exists")
     
-    # Create property memberships if properties were selected
-    if user.property_ids:
-        # Batch verify properties exist (single query instead of N queries)
-        existing_properties = await db.properties.find(
-            {"id": {"$in": user.property_ids}},
-            {"id": 1}
-        ).to_list(length=None)
-        existing_property_ids = [p["id"] for p in existing_properties]
-        
-        if existing_property_ids:
-            # Batch create memberships
-            memberships = []
-            for property_id in existing_property_ids:
-                membership = {
-                    "id": str(uuid.uuid4()),
-                    "user_id": user_id,
-                    "property_id": property_id,
-                    "status": "approved",  # Auto-approve for now
-                    "role": "resident",
-                    "unit_number": None,
-                    "joined_at": datetime.utcnow(),
-                    "approved_by": None,
-                    "approved_at": datetime.utcnow(),
-                    "documents": []
-                }
-                memberships.append(membership)
-            
-            # Batch insert memberships
-            if memberships:
-                await db.property_memberships.insert_many(memberships)
-                
-                # Update user's member_properties with all IDs at once
-                await db.users.update_one(
-                    {"id": user_id},
-                    {"$addToSet": {"member_properties": {"$each": existing_property_ids}}}
-                )
-    
-    # Create token
-    access_token = create_access_token({"user_id": user_id, "username": user.username})
-    
-    return Token(
-        access_token=access_token,
-        token_type="bearer",
-        user_id=user_id,
-        username=user.username
-    )
+    for property_id in set(user.property_ids or []):
+        await submit_membership_request(property_id, user_id, "resident", [], [])
+    return await issue_auth_token(user_doc)
 
 @api_router.post("/auth/login", response_model=Token)
 async def login(user: UserLogin, request: Request):
@@ -1284,7 +1309,7 @@ async def login(user: UserLogin, request: Request):
     # Check if the input contains '@' to determine if it's an email
     if '@' in user.username:
         # Search by email
-        user_doc = await db.users.find_one({"email": user.username})
+        user_doc = await db.users.find_one({"email": user.username.strip().lower()})
     else:
         # Search by username
         user_doc = await db.users.find_one({"username": user.username})
@@ -1300,78 +1325,117 @@ async def login(user: UserLogin, request: Request):
         )
     
     # Verify password
-    if not bcrypt.checkpw(user.password.encode('utf-8'), user_doc["password"].encode('utf-8')):
+    if len(user.password.encode()) > 72 or not bcrypt.checkpw(user.password.encode('utf-8'), user_doc["password"].encode('utf-8')):
         raise HTTPException(status_code=401, detail="Invalid credentials")
     
-    # Create token
-    access_token = create_access_token({"user_id": user_doc["id"], "username": user_doc["username"]})
-    
-    return Token(
-        access_token=access_token,
-        token_type="bearer",
-        user_id=user_doc["id"],
-        username=user_doc["username"]
-    )
+    return await issue_auth_token(user_doc)
+
+def reset_code_hash(email, code):
+    return hmac.new(JWT_SECRET.encode(), f"{email}:{code}".encode(), hashlib.sha256).hexdigest()
+
+
+@api_router.post("/auth/forgot-password")
+async def forgot_password(payload: PasswordRecoveryRequest, request: Request):
+    email = payload.email.strip().lower()
+    login_rate_limiter.check(f"recovery-ip:{get_client_ip(request)}")
+    recovery_rate_limiter.check(f"email:{email}")
+    if not recovery_configured():
+        raise HTTPException(status_code=503, detail="Password recovery is temporarily unavailable. Contact support@aurainfra.ai.")
+    user = await db.users.find_one({"email": email, "disabled": {"$ne": True}, "deletion_pending": {"$ne": True}})
+    if user and user.get("password"):
+        code = f"{secrets.randbelow(100_000_000):08d}"
+        reset_id = str(uuid.uuid4())
+        await db.password_resets.update_one({"email": email}, {"$set": {
+            "id": reset_id, "user_id": user["id"], "code_hash": reset_code_hash(email, code),
+            "attempts": 0, "expires_at": datetime.utcnow() + timedelta(minutes=10),
+            "credential_version": user.get("credential_version", 0),
+        }}, upsert=True)
+        try:
+            await send_reset_code(email, code)
+        except Exception:
+            # Preserve the same public response for all identities and mail failures.
+            await db.password_resets.delete_one({"id": reset_id})
+            logger.warning("Password recovery email delivery failed")
+    return {"message": "If this email belongs to an available password account, a reset code has been sent. For Google or Apple accounts, use the original sign-in provider."}
+
+
+@api_router.post("/auth/reset-password")
+async def reset_password(payload: PasswordResetRequest, request: Request):
+    login_rate_limiter.check(f"reset-ip:{get_client_ip(request)}")
+    if not 8 <= len(payload.password.encode()) <= 72:
+        raise HTTPException(status_code=400, detail="Use a password of 8–72 UTF-8 bytes")
+    email = payload.email.strip().lower()
+    # Increment atomically, including incorrect guesses; at most five attempts per code.
+    from pymongo import ReturnDocument
+    reset = await db.password_resets.find_one_and_update({"email": email,
+        "expires_at": {"$gt": datetime.utcnow()}, "attempts": {"$lt": 5}},
+        {"$inc": {"attempts": 1}}, return_document=ReturnDocument.AFTER)
+    if not reset or not secrets.compare_digest(reset["code_hash"], reset_code_hash(email, payload.code)):
+        raise HTTPException(status_code=400, detail="Invalid or expired reset code. Request a new code.")
+    hashed = await asyncio.to_thread(bcrypt.hashpw, payload.password.encode(), bcrypt.gensalt())
+    version = reset.get("credential_version", 0)
+    # One atomic account update makes the code single-use and revokes every old session,
+    # including a login racing with this request or a partially failed cleanup.
+    result = await db.users.update_one({"id": reset["user_id"], "email": email,
+        "password": {"$type": "string"}, "disabled": {"$ne": True}, "deletion_pending": {"$ne": True},
+        "credential_version": {"$in": [None, 0]} if version == 0 else version},
+        {"$set": {"password": hashed.decode()}, "$inc": {"credential_version": 1}})
+    if not result.modified_count:
+        raise HTTPException(status_code=400, detail="Invalid or expired reset code. Request a new code.")
+    await db.password_resets.delete_one({"id": reset["id"]})
+    return {"message": "Password changed. Sign in again on each device."}
+
 
 @api_router.delete("/auth/account")
-async def delete_account(payload: AccountDeleteRequest, user_id: str = Depends(get_current_user)):
-    """
-    Permanently delete the authenticated user's account and all associated data.
-    Requires the user's current password as confirmation, since this is irreversible.
-    Required for App Store guideline 5.1.1(v) and Google Play account-deletion policy.
-    """
-    user_doc = await db.users.find_one({"id": user_id})
-    if not user_doc:
-        raise HTTPException(status_code=404, detail="User not found")
-
-    if not user_doc.get("password"):
-        raise HTTPException(status_code=400, detail="This account has no password set and cannot be self-deleted.")
-
-    if not bcrypt.checkpw(payload.password.encode('utf-8'), user_doc["password"].encode('utf-8')):
-        raise HTTPException(status_code=401, detail="Incorrect password")
-
-    # Collect this user's property ids, since several collections are scoped
-    # by property_id rather than user_id directly.
-    property_ids = [
-        p["id"] async for p in db.properties.find({"user_id": user_id}, {"id": 1})
-    ]
-
-    # Delete data that is scoped by property_id
-    if property_ids:
-        await db.property_documents.delete_many({"property_id": {"$in": property_ids}})
-        await db.documents.delete_many({"property_id": {"$in": property_ids}})
-        await db.fixtures.delete_many({"property_id": {"$in": property_ids}})
-        await db.measurements.delete_many({"property_id": {"$in": property_ids}})
-        await db.paint_estimations.delete_many({"property_id": {"$in": property_ids}})
-        await db.vastu_analysis.delete_many({"property_id": {"$in": property_ids}})
-
-    # Delete data scoped directly by user_id
-    await db.properties.delete_many({"user_id": user_id})
-    await db.vehicles.delete_many({"user_id": user_id})
-    await db.appliances.delete_many({"user_id": user_id})
-    await db.jewelry.delete_many({"user_id": user_id})
-    await db.furniture.delete_many({"user_id": user_id})
-    await db.art.delete_many({"user_id": user_id})
-    await db.maintenance.delete_many({"user_id": user_id})
-    await db.notifications.delete_many({"user_id": user_id})
-    await db.property_memberships.delete_many({"user_id": user_id})
-    # Community / HOA data authored by this user
-    await db.community_posts.delete_many({"user_id": user_id})
-    await db.community_comments.delete_many({"user_id": user_id})
-    await db.post_likes.delete_many({"user_id": user_id})
-    await db.complaints.delete_many({"user_id": user_id})
-    await db.meeting_rsvps.delete_many({"user_id": user_id})
-    await db.amenity_bookings.delete_many({"user_id": user_id})
-    await db.maintenance_dues.delete_many({"user_id": user_id})
-    await db.visitors.delete_many({"host_user_id": user_id})
+async def delete_account(payload: AccountDeleteRequest, credentials: HTTPAuthorizationCredentials = Depends(security), user_id: str = Depends(get_current_user)):
+    user = await db.users.find_one({"id": user_id})
+    if user.get("password"):
+        if not payload.password or len(payload.password.encode()) > 72 or not bcrypt.checkpw(payload.password.encode(), user["password"].encode()):
+            raise HTTPException(status_code=401, detail="Incorrect password")
+    else:
+        claims = verify_token(credentials.credentials)
+        session = await db.user_sessions.find_one({"jti": claims["jti"], "user_id": user_id,
+            "provider": user.get("auth_provider"), "authenticated_at": {"$gt": datetime.utcnow() - timedelta(minutes=5)}})
+        if not session:
+            raise HTTPException(status_code=401, detail="Sign in again with your original provider before deleting your account")
+    properties = await db.properties.find({"user_id": user_id}, {"id": 1}).to_list(length=None)
+    property_ids = [p["id"] for p in properties]
+    posts = await db.community_posts.find({"$or": [{"user_id": user_id}, {"property_id": {"$in": property_ids}}]}, {"id": 1}).to_list(length=None)
+    meetings = await db.meetings.find({"property_id": {"$in": property_ids}}, {"id": 1}).to_list(length=None)
+    job = {"id": str(uuid.uuid4()), "user_id": user_id, "property_ids": property_ids,
+        "post_ids": [p["id"] for p in posts], "meeting_ids": [m["id"] for m in meetings],
+        "status": "pending", "created_at": datetime.utcnow(), "apple_token": user.get("apple_refresh_token")}
+    await db.account_deletions.insert_one(job)
+    # Durable job is saved first. Every authenticated request now fails immediately.
+    await db.users.update_one({"id": user_id}, {"$set": {"deletion_pending": True}})
     await db.user_sessions.delete_many({"user_id": user_id})
+    try:
+        await process_deletion(job)
+    except Exception:
+        logger.exception("Account cleanup queued for retry")
+        return JSONResponse(status_code=202, content={"status": "pending", "request_id": job["id"],
+            "message": "Account disabled. Deletion is queued and will retry automatically."})
+    return {"status": "completed", "request_id": job["id"], "message": "Account deleted. Community accounting records are anonymized."}
 
-    # Finally, delete the user account itself
-    await db.users.delete_one({"id": user_id})
+async def process_deletion(job):
+    if job.get("apple_token"):
+        await revoke_apple_token(job["apple_token"])
+    await clean_account(db, job)
 
-    logger.info(f"Account and all associated data deleted for user_id={user_id}")
-
-    return {"message": "Account and all associated data have been permanently deleted"}
+async def deletion_worker():
+    while True:
+        try:
+            jobs = await db.account_deletions.find({"status": "pending"}).to_list(length=100)
+            for job in jobs:
+                await db.users.update_one({"id": job["user_id"]}, {"$set": {"deletion_pending": True}})
+                await db.user_sessions.delete_many({"user_id": job["user_id"]})
+                try:
+                    await process_deletion(job)
+                except Exception:
+                    logger.exception("Account deletion retry failed")
+        except Exception:
+            logger.exception("Account deletion worker failed")
+        await asyncio.sleep(30)
 
 @api_router.get("/auth/profile", response_model=UserProfile)
 async def get_profile(user_id: str = Depends(get_current_user)):
@@ -1381,12 +1445,15 @@ async def get_profile(user_id: str = Depends(get_current_user)):
     
     # Get managed properties if user is HOA admin
     managed_properties = []
-    if user_doc.get("is_hoa_admin"):
-        admin_assignments = await db.property_admin_assignments.find({"admin_user_id": user_id}).to_list(length=100)
-        managed_properties = [assignment["property_id"] for assignment in admin_assignments]
+    admin_assignments = await db.property_admin_assignments.find({"admin_user_id": user_id}).to_list(length=1000)
+    managed_properties = [assignment["property_id"] for assignment in admin_assignments]
+    if user_doc.get("is_super_admin"):
+        communities = await db.community_properties.find({"is_active": True}, {"id": 1}).to_list(length=1000)
+        managed_properties = list(set(managed_properties + [c["id"] for c in communities]))
     
     # Get member properties from user document
-    member_properties = user_doc.get("member_properties", [])
+    memberships = await db.property_memberships.find({"user_id": user_id, "status": {"$in": ACTIVE_MEMBERSHIP_STATES}}).to_list(length=1000)
+    member_properties = [m["property_id"] for m in memberships]
     
     return UserProfile(
         id=user_doc["id"],
@@ -1400,9 +1467,14 @@ async def get_profile(user_id: str = Depends(get_current_user)):
         currency_preference=user_doc.get("currency_preference"),
         measurement_system=user_doc.get("measurement_system"),
         is_super_admin=user_doc.get("is_super_admin", False),
-        is_hoa_admin=user_doc.get("is_hoa_admin", False),
+        is_hoa_admin=bool(admin_assignments),
         managed_properties=managed_properties,
         member_properties=member_properties,
+        disclaimer_accepted=user_doc.get("disclaimer_accepted", False),
+        disclaimer_accepted_at=user_doc.get("disclaimer_accepted_at"),
+        ai_consent_at=user_doc.get("ai_consent_at"),
+        auth_provider=user_doc.get("auth_provider", "password"),
+        has_password=bool(user_doc.get("password")),
         created_at=user_doc["created_at"]
     )
 
@@ -1411,7 +1483,16 @@ async def update_profile(profile: UserProfileUpdate, user_id: str = Depends(get_
     # Update user profile
     update_data = {}
     if profile.email is not None:
-        update_data["email"] = profile.email
+        user = await db.users.find_one({"id": user_id})
+        email = profile.email.strip().lower()
+        if user.get("auth_provider") in {"google", "apple"} and email != user.get("email"):
+            raise HTTPException(status_code=400, detail="The sign-in email is managed by your authentication provider")
+        if "@" not in email:
+            raise HTTPException(status_code=400, detail="A valid email is required")
+        existing = await db.users.find_one({"email": email, "id": {"$ne": user_id}})
+        if existing:
+            raise HTTPException(status_code=409, detail="Email already belongs to another account")
+        update_data["email"] = email
     if profile.phone is not None:
         update_data["phone"] = profile.phone
     if profile.avatar is not None:
@@ -1441,21 +1522,7 @@ async def update_profile(profile: UserProfileUpdate, user_id: str = Depends(get_
             {"$set": update_data}
         )
     
-    # Return updated profile
-    user_doc = await db.users.find_one({"id": user_id})
-    return UserProfile(
-        id=user_doc["id"],
-        username=user_doc["username"],
-        email=user_doc.get("email"),
-        phone=user_doc.get("phone"),
-        avatar=user_doc.get("avatar"),
-        warranty_reminder_days=user_doc.get("warranty_reminder_days", 30),
-        geomancy_preference=user_doc.get("geomancy_preference", "vastu"),
-        country=user_doc.get("country"),
-        currency_preference=user_doc.get("currency_preference"),
-        measurement_system=user_doc.get("measurement_system"),
-        created_at=user_doc["created_at"]
-    )
+    return await get_profile(user_id)
 
 # ============= GOOGLE OAUTH SESSION ENDPOINTS =============
 
@@ -1463,147 +1530,145 @@ import httpx
 from fastapi.responses import JSONResponse
 from datetime import timezone
 
-# Helper function to get user from session token (checks both cookie and header)
-async def get_user_from_session(request: Request):
-    """Get user from session token (cookie or Authorization header)"""
-    # First check cookie
-    session_token = request.cookies.get("session_token")
-    
-    # Fall back to Authorization header
-    if not session_token:
-        auth_header = request.headers.get("Authorization")
-        if auth_header and auth_header.startswith("Bearer "):
-            session_token = auth_header.replace("Bearer ", "")
-    
-    if not session_token:
-        raise HTTPException(status_code=401, detail="Not authenticated")
-    
-    # Find session in database
-    session = await db.user_sessions.find_one({"session_token": session_token})
-    if not session:
-        raise HTTPException(status_code=401, detail="Invalid session")
-    
-    # Check if session expired
-    # Make both datetimes timezone-aware for comparison
-    expires_at = session["expires_at"]
-    if not expires_at.tzinfo:
-        expires_at = expires_at.replace(tzinfo=timezone.utc)
-    
-    if expires_at < datetime.now(timezone.utc):
-        await db.user_sessions.delete_one({"session_token": session_token})
-        raise HTTPException(status_code=401, detail="Session expired")
-    
-    # Get user
-    user_doc = await db.users.find_one({"id": session["user_id"]})
-    if not user_doc:
-        raise HTTPException(status_code=404, detail="User not found")
-    
-    return user_doc
-
 @api_router.post("/auth/session")
 async def process_session_id(request: Request):
-    """Process session_id from Emergent Auth and create user session"""
+    login_rate_limiter.check(get_client_ip(request))
+    session_id = request.headers.get("X-Session-ID")
+    if not session_id:
+        raise HTTPException(status_code=400, detail="Missing X-Session-ID header")
     try:
-        # Get session_id from header
-        session_id = request.headers.get("X-Session-ID")
-        if not session_id:
-            raise HTTPException(status_code=400, detail="Missing X-Session-ID header")
-        
-        # Call Emergent Auth API to get user data
         async with httpx.AsyncClient() as client:
             response = await client.get(
                 "https://demobackend.emergentagent.com/auth/v1/env/oauth/session-data",
-                headers={"X-Session-ID": session_id},
-                timeout=10.0
-            )
+                headers={"X-Session-ID": session_id}, timeout=10.0)
+        if response.status_code != 200:
+            raise HTTPException(status_code=401, detail="Invalid Google authentication")
+        identity = response.json()
+        email = str(identity.get("email", "")).strip().lower()
+        if not email or not identity.get("session_token"):
+            raise HTTPException(status_code=401, detail="Invalid Google identity")
+        # Consume the provider session once; refresh requires a new sign-in.
+        digest = hashlib.sha256(session_id.encode()).hexdigest()
+        result = await db.oauth_exchanges.update_one(
+            {"id": digest}, {"$setOnInsert": {"id": digest, "created_at": datetime.utcnow()}}, upsert=True)
+        if not result.upserted_id:
+            raise HTTPException(status_code=401, detail="Authentication has already been used")
+        subject = identity.get("id") or identity.get("sub")
+        user = await db.users.find_one({"google_subject": str(subject), "auth_provider": "google"}) if subject else None
+        if not user:
+            user = await db.users.find_one({"email": email})
+        if user and user.get("auth_provider") != "google":
+            raise HTTPException(status_code=409, detail="Use your original sign-in method for this email")
+        if not user:
+            user = new_social_user("google", email)
+            await db.users.insert_one(user)
+        if subject:
+            if user.get("google_subject") and user["google_subject"] != str(subject):
+                raise HTTPException(status_code=409, detail="Use your original sign-in identity")
+            await db.users.update_one({"id": user["id"]}, {"$set": {"google_subject": str(subject)}})
+        return await issue_auth_token(user, "google")
+    except HTTPException:
+        raise
+    except DuplicateKeyError:
+        raise HTTPException(status_code=409, detail="Account already exists; please sign in again")
+    except (httpx.RequestError, ValueError, KeyError):
+        raise HTTPException(status_code=502, detail="Google authentication is unavailable; try again")
             
-            if response.status_code != 200:
-                raise HTTPException(status_code=400, detail="Invalid session ID")
             
-            google_user_data = response.json()
+def new_social_user(provider, email=None, subject=None):
+    user_id = str(uuid.uuid4())
+    return {
+        "id": user_id, "username": f"{provider}_{user_id[:12]}", "email": email,
+        "auth_provider": provider, "apple_subject": subject, "password": None,
+        "is_admin": False, "is_super_admin": False, "is_hoa_admin": False,
+        "managed_properties": [], "member_properties": [], "disclaimer_accepted": False,
+        "created_at": datetime.utcnow(),
+    }
         
-        # Check if user exists by email
-        existing_user = await db.users.find_one({"email": google_user_data["email"]})
+@api_router.post("/auth/apple/challenge")
+async def apple_challenge(request: Request):
+    login_rate_limiter.check(get_client_ip(request))
+    nonce = secrets.token_urlsafe(32)
+    await db.apple_challenges.insert_one({"id": hashlib.sha256(nonce.encode()).hexdigest(),
+        "expires_at": datetime.utcnow() + timedelta(minutes=5)})
+    return {"nonce": nonce}
         
-        if existing_user:
-            user_id = existing_user["id"]
-        else:
-            # Create new user
-            user_id = str(uuid.uuid4())
-            user_doc = {
-                "id": user_id,
-                "username": google_user_data["email"].split("@")[0],  # Use email prefix as username
-                "email": google_user_data["email"],
-                "name": google_user_data.get("name", ""),
-                "avatar": google_user_data.get("picture"),
-                "warranty_reminder_days": 30,
-                "geomancy_preference": "vastu",
-                "is_super_admin": False,
-                "is_hoa_admin": False,
-                "managed_properties": [],
-                "created_at": datetime.now(timezone.utc),
-                "auth_provider": "google"
-            }
-            await db.users.insert_one(user_doc)
+async def verify_apple_identity(identity_token, nonce):
+    audience = os.environ.get("APPLE_CLIENT_ID", "com.aurainfra.ai")
+    try:
+        jwks = jwt.PyJWKClient("https://appleid.apple.com/auth/keys", timeout=10)
+        key = await asyncio.to_thread(jwks.get_signing_key_from_jwt, identity_token)
+        claims = jwt.decode(identity_token, key.key, algorithms=["RS256"],
+            audience=audience, issuer="https://appleid.apple.com",
+            options={"require": ["exp", "iat", "sub", "nonce"]})
+        # Expo passes the nonce through; it must match the server-issued challenge.
+        if not secrets.compare_digest(str(claims["nonce"]), nonce):
+            raise HTTPException(status_code=401, detail="Invalid Apple nonce")
+        return claims
+    except HTTPException:
+        raise
+    except (jwt.PyJWTError, ValueError):
+        raise HTTPException(status_code=401, detail="Invalid Apple authentication")
         
-        # Create session in database
-        session_token = google_user_data["session_token"]
-        expires_at = datetime.now(timezone.utc) + timedelta(days=7)
-        
-        session_doc = {
-            "user_id": user_id,
-            "session_token": session_token,
-            "expires_at": expires_at,
-            "created_at": datetime.now(timezone.utc)
-        }
-        await db.user_sessions.insert_one(session_doc)
-        
-        # Create response with cookie
-        response = JSONResponse({
-            "id": user_id,
-            "email": google_user_data["email"],
-            "name": google_user_data.get("name", ""),
-            "picture": google_user_data.get("picture"),
-            "session_token": session_token
-        })
-        
-        # Set httpOnly cookie
-        response.set_cookie(
-            key="session_token",
-            value=session_token,
-            httponly=True,
-            secure=True,
-            samesite="none",
-            path="/",
-            max_age=7 * 24 * 60 * 60  # 7 days
-        )
-        
-        return response
-        
-    except httpx.RequestError as e:
-        logger.error(f"Error calling Emergent Auth API: {str(e)}")
-        raise HTTPException(status_code=500, detail="Authentication service error")
-    except Exception as e:
-        logger.error(f"Session processing error: {str(e)}")
-        raise HTTPException(status_code=500, detail="Internal server error")
+@api_router.post("/auth/apple", response_model=Token)
+async def apple_login(payload: AppleLoginRequest, request: Request):
+    login_rate_limiter.check(get_client_ip(request))
+    claims = await verify_apple_identity(payload.identity_token, payload.nonce)
+    challenge = await db.apple_challenges.find_one_and_delete({
+        "id": hashlib.sha256(payload.nonce.encode()).hexdigest(), "expires_at": {"$gt": datetime.utcnow()}})
+    if not challenge:
+        raise HTTPException(status_code=401, detail="Apple authentication expired or already used")
+    if not payload.authorization_code:
+        raise HTTPException(status_code=400, detail="Apple authorization code is required")
+    refresh_token = await exchange_apple_code(payload.authorization_code, claims["sub"], payload.nonce)
+    user = await db.users.find_one({"apple_subject": claims["sub"], "auth_provider": "apple"})
+    if not user:
+        email = claims.get("email")
+        if email and await db.users.find_one({"email": email.lower()}):
+            raise HTTPException(status_code=409, detail="Use your original sign-in method for this email")
+        user = new_social_user("apple", email.lower() if email else None, claims["sub"])
+        await db.users.insert_one(user)
+    await db.users.update_one({"id": user["id"]}, {"$set": {"apple_refresh_token": refresh_token}})
+    return await issue_auth_token(user, "apple")
+
+
+def apple_client_secret():
+    required = ["APPLE_TEAM_ID", "APPLE_KEY_ID", "APPLE_PRIVATE_KEY", "APPLE_TOKEN_ENCRYPTION_KEY"]
+    if any(not os.environ.get(key) for key in required):
+        raise HTTPException(status_code=503, detail="Apple sign-in is not configured")
+    now = int(time.time())
+    return jwt.encode({"iss": os.environ["APPLE_TEAM_ID"], "iat": now, "exp": now + 300,
+        "aud": "https://appleid.apple.com", "sub": os.environ.get("APPLE_CLIENT_ID", "com.aurainfra.ai")},
+        os.environ["APPLE_PRIVATE_KEY"].replace("\\n", "\n"), algorithm="ES256", headers={"kid": os.environ["APPLE_KEY_ID"]})
+
+async def exchange_apple_code(code, expected_subject, nonce):
+    from cryptography.fernet import Fernet
+    secret = apple_client_secret()
+    async with httpx.AsyncClient() as client:
+        response = await client.post("https://appleid.apple.com/auth/token", data={
+            "client_id": os.environ.get("APPLE_CLIENT_ID", "com.aurainfra.ai"), "client_secret": secret,
+            "code": code, "grant_type": "authorization_code"}, timeout=10)
+    if response.status_code != 200 or not response.json().get("refresh_token"):
+        raise HTTPException(status_code=401, detail="Apple authorization failed")
+    identity = await verify_apple_identity(response.json().get("id_token", ""), nonce)
+    if identity["sub"] != expected_subject:
+        raise HTTPException(status_code=401, detail="Apple authorization code does not match the signed-in account")
+    return Fernet(os.environ["APPLE_TOKEN_ENCRYPTION_KEY"].encode()).encrypt(response.json()["refresh_token"].encode()).decode()
+
+async def revoke_apple_token(encrypted_token):
+    from cryptography.fernet import Fernet
+    secret = apple_client_secret()
+    token = Fernet(os.environ["APPLE_TOKEN_ENCRYPTION_KEY"].encode()).decrypt(encrypted_token.encode()).decode()
+    async with httpx.AsyncClient() as client:
+        response = await client.post("https://appleid.apple.com/auth/revoke", data={
+            "client_id": os.environ.get("APPLE_CLIENT_ID", "com.aurainfra.ai"), "client_secret": secret,
+            "token": token, "token_type_hint": "refresh_token"}, timeout=10)
+    if response.status_code != 200:
+        raise HTTPException(status_code=502, detail="Apple revocation is temporarily unavailable")
 
 @api_router.get("/auth/me")
-async def get_current_session_user(request: Request):
-    """Get current user from session"""
-    user_doc = await get_user_from_session(request)
-    return {
-        "id": user_doc["id"],
-        "username": user_doc.get("username"),
-        "email": user_doc.get("email"),
-        "name": user_doc.get("name"),
-        "avatar": user_doc.get("avatar"),
-        "warranty_reminder_days": user_doc.get("warranty_reminder_days", 30),
-        "geomancy_preference": user_doc.get("geomancy_preference", "vastu"),
-        "currency_preference": user_doc.get("currency_preference"),
-        "measurement_system": user_doc.get("measurement_system"),
-        "disclaimer_accepted": user_doc.get("disclaimer_accepted", False),
-        "disclaimer_accepted_at": user_doc.get("disclaimer_accepted_at"),
-    }
+async def get_current_session_user(user_id: str = Depends(get_current_user)):
+    return await get_profile(user_id)
 
 @api_router.post("/auth/accept-disclaimer")
 async def accept_disclaimer(user_id: str = Depends(get_current_user)):
@@ -1626,19 +1691,12 @@ async def accept_disclaimer(user_id: str = Depends(get_current_user)):
         raise HTTPException(status_code=500, detail="Failed to accept disclaimer")
 
 @api_router.post("/auth/logout")
-async def logout(request: Request):
-    """Logout user and clear session"""
-    try:
-        session_token = request.cookies.get("session_token")
-        if session_token:
-            await db.user_sessions.delete_one({"session_token": session_token})
-        
-        response = JSONResponse({"message": "Logged out successfully"})
-        response.delete_cookie(key="session_token", path="/")
-        return response
-    except Exception as e:
-        logger.error(f"Logout error: {str(e)}")
-        raise HTTPException(status_code=500, detail="Logout failed")
+async def logout(user_id: str = Depends(get_current_user)):
+    # Revoke all sessions for this account; stale copies stop working immediately.
+    await db.user_sessions.delete_many({"user_id": user_id})
+    response = JSONResponse({"message": "Logged out successfully"})
+    response.delete_cookie(key="session_token", path="/")
+    return response
 
 # ============= ADMIN ENDPOINTS =============
 
@@ -1706,6 +1764,7 @@ async def create_property(property_data: PropertyCreate, user_id: str = Depends(
         purchase_cost=property_data.purchase_cost,
         current_value=property_data.current_value,
         logo=property_data.logo,
+        ownership_type=property_data.ownership_type,
         user_id=user_id
     )
     await db.properties.insert_one(property_obj.dict())
@@ -1734,39 +1793,16 @@ async def get_properties(user_id: str = Depends(get_current_user)):
 
 @api_router.get("/properties/{property_id}", response_model=Property)
 async def get_property(property_id: str, user_id: str = Depends(get_current_user)):
-    # Try to find as regular property owned by user
-    property_doc = await db.properties.find_one({"id": property_id, "user_id": user_id})
-    
-    if not property_doc:
-        # Check if user is admin managing this property
-        user_doc = await db.users.find_one({"id": user_id})
-        is_super_admin = user_doc.get("is_super_admin", False) if user_doc else False
-        is_hoa_admin = user_doc.get("is_hoa_admin", False) if user_doc else False
-        is_managing = user_doc.get("managed_properties", []) if user_doc else []
-        
-        if is_super_admin or is_hoa_admin or (property_id in is_managing):
-            # Admin can view any property or community property
-            property_doc = await db.properties.find_one({"id": property_id})
-            
-            if not property_doc:
-                # Check if it's a community property
-                community_doc = await db.community_properties.find_one({"id": property_id})
-                if community_doc:
-                    # Convert community property to Property format for response
-                    return Property(
-                        id=community_doc["id"],
-                        name=community_doc["name"],
-                        address=community_doc["address"],
-                        user_id="community",  # Special marker for community properties
-                        latitude=0.0,
-                        longitude=0.0,
-                        created_at=community_doc.get("created_at", datetime.utcnow())
-                    )
-    
-    if not property_doc:
+    await require_community(db, property_id, user_id)
+    property_doc = await db.properties.find_one({"id": property_id})
+    if property_doc:
+        return Property(**property_doc)
+    community = await db.community_properties.find_one({"id": property_id})
+    if not community:
         raise HTTPException(status_code=404, detail="Property not found")
-    
-    return Property(**property_doc)
+    return Property(id=community["id"], name=community["name"], address=community["address"],
+        user_id="community", latitude=0.0, longitude=0.0,
+        created_at=community.get("created_at", datetime.utcnow()))
 
 @api_router.put("/properties/{property_id}", response_model=Property)
 async def update_property(
@@ -1789,6 +1825,8 @@ async def update_property(
         update_data["latitude"] = property_data.latitude
     if property_data.longitude is not None:
         update_data["longitude"] = property_data.longitude
+    if property_data.ownership_type is not None:
+        update_data["ownership_type"] = property_data.ownership_type
     if property_data.purchase_cost is not None:
         update_data["purchase_cost"] = property_data.purchase_cost
     if property_data.current_value is not None:
@@ -2131,6 +2169,7 @@ async def delete_vehicle(vehicle_id: str, user_id: str = Depends(get_current_use
 @api_router.post("/vehicles/scan")
 async def scan_vehicle(scan_request: VehicleScanRequest, user_id: str = Depends(get_current_user)):
     """AI scan for vehicle identification"""
+    await require_ai_consent(user_id)
     try:
         from emergentintegrations.llm.chat import LlmChat, UserMessage, ImageContent
         import json
@@ -2300,6 +2339,7 @@ async def delete_jewelry(jewelry_id: str, user_id: str = Depends(get_current_use
 @api_router.post("/jewelry/scan")
 async def scan_jewelry(scan_request: ImageScanRequest, user_id: str = Depends(get_current_user)):
     """AI scan for jewelry identification"""
+    await require_ai_consent(user_id)
     try:
         from emergentintegrations.llm.chat import LlmChat, UserMessage, ImageContent
         import json
@@ -2468,6 +2508,7 @@ async def delete_art(art_id: str, user_id: str = Depends(get_current_user)):
 @api_router.post("/furniture/scan", response_model=FurnitureScanResult)
 async def scan_furniture(scan_request: ImageScanRequest, user_id: str = Depends(get_current_user)):
     """AI scan furniture from image"""
+    await require_ai_consent(user_id)
     try:
         from emergentintegrations.llm.chat import LlmChat, UserMessage, ImageContent
         import json
@@ -2535,6 +2576,7 @@ Return ONLY the JSON object, no additional text.""",
 @api_router.post("/art/scan", response_model=ArtScanResult)
 async def scan_art(scan_request: ImageScanRequest, user_id: str = Depends(get_current_user)):
     """AI scan art from image"""
+    await require_ai_consent(user_id)
     try:
         from emergentintegrations.llm.chat import LlmChat, UserMessage, ImageContent
         import json
@@ -2607,6 +2649,7 @@ async def scan_furniture_receipt(
     """
     Use Gemini Vision AI to extract furniture purchase information from receipt/invoice images
     """
+    await require_ai_consent(user_id)
     try:
         from emergentintegrations.llm.chat import LlmChat, UserMessage, ImageContent
         import json
@@ -2680,7 +2723,7 @@ Be precise with extracted values. Set confidence between 0.0 and 1.0 based on im
                 
         except (json.JSONDecodeError, ValueError) as e:
             logger.error(f"Failed to parse receipt scan response: {str(e)}")
-            logger.error(f"Raw response: {response}")
+            logger.error("AI response could not be parsed")
             raise HTTPException(
                 status_code=500, 
                 detail=f"Failed to parse receipt data. Please ensure the image is clear and contains a valid receipt."
@@ -2694,6 +2737,7 @@ Be precise with extracted values. Set confidence between 0.0 and 1.0 based on im
 @api_router.post("/identify-asset")
 async def identify_asset(scan_request: ImageScanRequest, user_id: str = Depends(get_current_user)):
     """AI-powered universal asset identifier"""
+    await require_ai_consent(user_id)
     try:
         image_base64 = scan_request.image
         
@@ -2751,6 +2795,7 @@ async def scan_receipt(
     """
     Use Gemini Vision AI to extract information from receipt/invoice images
     """
+    await require_ai_consent(user_id)
     try:
         from emergentintegrations.llm.chat import LlmChat, UserMessage, ImageContent
         import json
@@ -2841,6 +2886,7 @@ async def scan_appliance(
     """
     Use Gemini Vision AI via emergentintegrations to identify appliance from image
     """
+    await require_ai_consent(user_id)
     try:
         from emergentintegrations.llm.chat import LlmChat, UserMessage, ImageContent
         import json
@@ -2899,7 +2945,7 @@ Return ONLY the JSON object, no additional text.""",
         
         # Get AI response (LlmChat returns string directly)
         response_text = await chat.send_message(user_message)
-        logger.info(f"Appliance scan response: {response_text}")
+        logger.debug("Appliance scan completed")
         
         # Parse JSON response
         try:
@@ -3084,6 +3130,7 @@ async def analyze_wall_for_painting(
     """
     Use Gemini Vision AI to estimate wall dimensions and calculate paint requirements
     """
+    await require_ai_consent(user_id)
     try:
         from emergentintegrations.llm.chat import LlmChat, UserMessage, ImageContent
         import json
@@ -3125,7 +3172,7 @@ Return ONLY the JSON object, no additional text.""",
         )
         
         response = await chat.send_message(user_message)
-        logger.info(f"Wall scan response: {response}")
+        logger.debug("Wall scan completed")
         
         # Parse JSON response
         try:
@@ -3188,6 +3235,7 @@ async def analyze_room_for_painting(
     """
     Analyze multiple wall images and optional ceiling for complete room painting estimation
     """
+    await require_ai_consent(user_id)
     try:
         from emergentintegrations.llm.chat import LlmChat, UserMessage, ImageContent
         import json
@@ -3247,7 +3295,7 @@ Return ONLY the JSON object, no additional text."""
         )
         
         response = await chat.send_message(user_message)
-        logger.info(f"Room scan response: {response}")
+        logger.debug("Room scan completed")
         
         # Parse JSON response
         try:
@@ -3541,6 +3589,7 @@ async def analyze_floorplan(
     analysis_data: FloorPlanAnalysis,
     user_id: str = Depends(get_current_user)
 ):
+    await require_ai_consent(user_id)
     try:
         from emergentintegrations.llm.chat import LlmChat, UserMessage, ImageContent
         
@@ -3596,6 +3645,7 @@ async def analyze_floorplan_comprehensive(
     Comprehensive multi-floor plan analysis using Gemini 2.0 Flash.
     Extracts house type, number of rooms, and detailed measurements for each room across all floors.
     """
+    await require_ai_consent(user_id)
     try:
         from emergentintegrations.llm.chat import LlmChat, UserMessage, ImageContent
         import json
@@ -3688,7 +3738,7 @@ Important:
         
         # Get AI response
         response = await chat.send_message(user_message)
-        logger.info(f"Gemini response: {response}")
+        logger.debug("Floor plan analysis completed")
         
         # Parse the JSON response
         try:
@@ -3706,7 +3756,7 @@ Important:
             return ComprehensiveFloorPlanAnalysis(**analysis_result)
             
         except json.JSONDecodeError as je:
-            logger.error(f"JSON parsing error: {str(je)}, Response: {response}")
+            logger.error("AI response could not be parsed")
             raise HTTPException(
                 status_code=500, 
                 detail=f"Failed to parse AI response. Please try again or upload clearer floor plan images."
@@ -3728,6 +3778,7 @@ async def create_vastu_analysis(
     user_id: str = Depends(get_current_user)
 ):
     # Verify property ownership
+    await require_ai_consent(user_id)
     property_doc = await db.properties.find_one({"id": property_id, "user_id": user_id})
     if not property_doc:
         raise HTTPException(status_code=404, detail="Property not found")
@@ -3917,6 +3968,7 @@ async def delete_vastu_analysis(
 # Receipt/Invoice Analysis Endpoint
 @api_router.post("/analyze-receipt")
 async def analyze_receipt(request: dict, user_id: str = Depends(get_current_user)):
+    await require_ai_consent(user_id)
     try:
         from emergentintegrations import openai_client
         import base64
@@ -4212,15 +4264,15 @@ async def get_property_health_score(property_id: str, user_id: str = Depends(get
 # ============= ASSET IDENTIFICATION ENDPOINT =============
 
 @api_router.post("/scan-asset")
-async def scan_asset(request: ImageScanRequest, credentials: HTTPAuthorizationCredentials = Depends(security)):
+async def scan_asset(request: ImageScanRequest, user_id: str = Depends(get_current_user)):
     """
     Identify what type of asset is in an image using Gemini AI
     """
+    await require_ai_consent(user_id)
     import json
     import base64
     
     try:
-        user_id = await get_current_user(credentials)
         
         # Get API key
         api_key = os.environ.get('EMERGENT_LLM_KEY')
@@ -4471,41 +4523,48 @@ async def delete_maintenance(maintenance_id: str, user_id: str = Depends(get_cur
 
 @api_router.get("/users/properties")
 async def get_user_properties(user_id: str = Depends(get_current_user)):
-    """Get all properties user has access to (owned + member)"""
-    # Get owned properties
     owned = await db.properties.find({"user_id": user_id}).to_list(length=1000)
-    
-    # Get properties where user is member
-    memberships = await db.property_memberships.find({
-        "user_id": user_id,
-        "status": "active"
-    }).to_list(length=1000)
-    
-    member_property_ids = [m['property_id'] for m in memberships]
-    member_properties = []
-    
-    if member_property_ids:
-        member_properties = await db.properties.find({
-            "id": {"$in": member_property_ids}
-        }).to_list(length=1000)
-    
-    # Combine and mark role
-    all_properties = []
-    for prop in owned:
-        prop['user_role'] = 'owner'
-        if '_id' in prop:
-            prop['_id'] = str(prop['_id'])
-        all_properties.append(prop)
-    
-    for prop in member_properties:
-        # Find user's role for this property
-        membership = next((m for m in memberships if m['property_id'] == prop['id']), None)
-        prop['user_role'] = membership['role'] if membership else 'member'
-        if '_id' in prop:
-            prop['_id'] = str(prop['_id'])
-        all_properties.append(prop)
-    
-    return all_properties
+    memberships = await db.property_memberships.find({"user_id": user_id,
+        "status": {"$in": ACTIVE_MEMBERSHIP_STATES}}).to_list(length=1000)
+    assignments = await db.property_admin_assignments.find({"admin_user_id": user_id}).to_list(length=1000)
+    result = {p["id"]: {**p, "user_role": "owner"} for p in owned}
+    for row in memberships + assignments:
+        property_id = row["property_id"]
+        prop = await db.community_properties.find_one({"id": property_id, "is_active": True})
+        if not prop:
+            prop = await db.properties.find_one({"id": property_id})
+        if prop:
+            result[property_id] = {**prop, "user_role": "admin" if "admin_user_id" in row else row.get("role", "resident")}
+    for prop in result.values():
+        prop.pop("_id", None)
+    return list(result.values())
+
+async def find_joinable_property(property_id):
+    prop = await db.community_properties.find_one({"id": property_id, "is_active": True})
+    if not prop:
+        raise HTTPException(status_code=404, detail="Active community not found")
+    return prop
+
+async def submit_membership_request(property_id, user_id, role, documents, document_names):
+    prop = await find_joinable_property(property_id)
+    user = await db.users.find_one({"id": user_id})
+    if not user:
+        raise HTTPException(status_code=401, detail="Account is unavailable")
+    membership = await db.property_memberships.find_one({"property_id": property_id, "user_id": user_id,
+        "status": {"$in": ACTIVE_MEMBERSHIP_STATES}})
+    if membership:
+        raise HTTPException(status_code=409, detail="Already a community member")
+    data = {"id": str(uuid.uuid4()), "user_id": user_id, "username": user["username"],
+        "email": user.get("email") or "", "property_id": property_id, "property_name": prop["name"],
+        "requested_role": role, "documents": documents, "document_names": document_names,
+        "status": "pending", "created_at": datetime.utcnow()}
+    # A repeated onboarding submission updates the same pending request.
+    await db.pending_user_approvals.update_one({"user_id": user_id, "property_id": property_id},
+        {"$set": {k: v for k, v in data.items() if k != "id"}, "$setOnInsert": {"id": data["id"]}}, upsert=True)
+    await db.property_memberships.update_one({"user_id": user_id, "property_id": property_id},
+        {"$set": {"status": "pending", "role": role}, "$setOnInsert": {
+            "id": str(uuid.uuid4()), "user_id": user_id, "property_id": property_id, "joined_at": datetime.utcnow()}}, upsert=True)
+    return {"message": "Community membership submitted for approval", "status": "pending"}
 
 # ============= PROPERTY MEMBERSHIP ENDPOINTS =============
 
@@ -4533,48 +4592,16 @@ async def get_all_properties():
 
 @api_router.get("/properties/{property_id}/members")
 async def get_property_members(property_id: str, user_id: str = Depends(get_current_user)):
-    """Get all members/residents of a property (admin only) - works for both regular and community properties"""
-    # Check if user is admin of this property
-    user_doc = await db.users.find_one({"id": user_id})
-    if not user_doc:
-        raise HTTPException(status_code=404, detail="User not found")
-    
-    # Check if user is super admin
-    is_super_admin = user_doc.get("is_super_admin", False)
-    
-    # Check if user is HOA admin
-    is_hoa_admin = user_doc.get("is_hoa_admin", False)
-    
-    # Check if user manages this specific property
-    admin_assignment = await db.property_admin_assignments.find_one({
-        "admin_user_id": user_id,
-        "property_id": property_id
-    })
-    
-    # Only allow access if user is super admin, HOA admin, OR manages this specific property
-    if not is_super_admin and not is_hoa_admin and not admin_assignment:
-        raise HTTPException(status_code=403, detail="Not authorized to view members")
-    
-    # Get all memberships for this property (works for both regular and community properties)
+    await require_community(db, property_id, user_id, {"admin"})
     memberships = await db.property_memberships.find({"property_id": property_id}).to_list(length=1000)
-    
-    # Get user details for each member
     result = []
     for membership in memberships:
         user = await db.users.find_one({"id": membership["user_id"]})
         if user:
-            result.append({
-                "membership_id": membership["id"],
-                "user_id": user["id"],
-                "username": user["username"],
-                "email": user.get("email"),
-                "phone": user.get("phone"),
-                "role": membership.get("role", "resident"),
-                "unit_number": membership.get("unit_number"),
-                "status": membership.get("status", "approved"),
-                "joined_at": membership.get("joined_at")
-            })
-    
+            result.append({"membership_id": membership["id"], "user_id": user["id"],
+                "username": user["username"], "email": user.get("email"), "phone": user.get("phone"),
+                "role": membership.get("role", "resident"), "unit_number": membership.get("unit_number"),
+                "status": membership.get("status", "pending"), "joined_at": membership.get("joined_at")})
     return result
 
 @api_router.post("/properties/{property_id}/members")
@@ -4628,7 +4655,7 @@ async def add_property_member(
         "id": str(uuid.uuid4()),
         "user_id": membership.user_id,
         "property_id": property_id,
-        "status": membership.status,
+        "status": "active" if membership.status == "approved" else membership.status,
         "role": membership.role,
         "unit_number": membership.unit_number,
         "joined_at": datetime.utcnow(),
@@ -4690,48 +4717,11 @@ async def remove_property_member(
     return {"message": "Member removed successfully"}
 
 @api_router.post("/properties/{property_id}/join")
-async def join_property(
-    property_id: str,
-    unit_number: Optional[str] = None,
-    user_id: str = Depends(get_current_user)
-):
-    """User requests to join a property (auto-approved for now)"""
-    # Verify property exists
-    property_doc = await db.properties.find_one({"id": property_id})
-    if not property_doc:
-        raise HTTPException(status_code=404, detail="Property not found")
-    
-    # Check if membership already exists
-    existing = await db.property_memberships.find_one({
-        "user_id": user_id,
-        "property_id": property_id
-    })
-    if existing:
-        raise HTTPException(status_code=400, detail="You are already a member of this property")
-    
-    # Create membership (auto-approved)
-    new_membership = {
-        "id": str(uuid.uuid4()),
-        "user_id": user_id,
-        "property_id": property_id,
-        "status": "approved",  # Auto-approve for now
-        "role": "resident",
-        "unit_number": unit_number,
-        "joined_at": datetime.utcnow(),
-        "approved_by": None,
-        "approved_at": datetime.utcnow(),
-        "documents": []
-    }
-    
-    await db.property_memberships.insert_one(new_membership)
-    
-    # Add to user's member_properties
-    await db.users.update_one(
-        {"id": user_id},
-        {"$addToSet": {"member_properties": property_id}}
-    )
-    
-    return {"message": "Successfully joined property", "membership_id": new_membership["id"]}
+async def join_property(property_id: str, unit_number: Optional[str] = None, user_id: str = Depends(get_current_user)):
+    result = await submit_membership_request(property_id, user_id, "resident", [], [])
+    if unit_number:
+        await db.property_memberships.update_one({"property_id": property_id, "user_id": user_id}, {"$set": {"unit_number": unit_number}})
+    return result
 
 # ============= HOA CHARGES & PAYMENT ENDPOINTS =============
 
@@ -4742,15 +4732,10 @@ async def create_hoa_charge(
     user_id: str = Depends(get_current_user)
 ):
     """Create HOA maintenance charge (admin/owner only)"""
-    # For MVP, allowing property owner to create charges
-    # In production, this would be restricted to HOA admin role
-    property_doc = await db.properties.find_one({"id": property_id, "user_id": user_id})
-    if not property_doc:
-        raise HTTPException(status_code=403, detail="Only property owner can create charges")
-    
+    await require_community(db, property_id, user_id, {"admin"})
     charge = HOACharge(
         created_by=user_id,
-        **charge_data.dict()
+        **scoped_data(charge_data, "property_id", property_id)
     )
     await db.hoa_charges.insert_one(charge.dict())
     return charge
@@ -4762,15 +4747,7 @@ async def get_hoa_charges(
     status: Optional[str] = None
 ):
     """Get HOA charges for a property"""
-    # Verify user has access
-    has_access = await db.property_memberships.find_one({
-        "property_id": property_id,
-        "user_id": user_id
-    })
-    property_doc = await db.properties.find_one({"id": property_id, "user_id": user_id})
-    
-    if not has_access and not property_doc:
-        raise HTTPException(status_code=403, detail="Access denied")
+    await require_community(db, property_id, user_id)
     
     query = {"property_id": property_id}
     if status:
@@ -4787,13 +4764,14 @@ async def get_hoa_charges(
 # Stripe payment integration
 @api_router.post("/payments/hoa/create-checkout")
 async def create_hoa_payment_checkout(
-    charge_id: str,
-    origin_url: str,
+    payload: HOACheckoutRequest,
     user_id: str = Depends(get_current_user)
 ):
     """Create Stripe checkout session for HOA charge payment"""
-    from emergentintegrations.payments.stripe.checkout import StripeCheckout, CheckoutSessionRequest
-    
+    charge_id = payload.charge_id
+    origin_url = os.environ.get("PAYMENT_RETURN_ORIGIN", "https://aurainfra.ai").rstrip("/")
+    if payload.origin_url and payload.origin_url.rstrip("/") != origin_url:
+        raise HTTPException(status_code=400, detail="Invalid payment return origin")
     # Get charge details
     charge = await db.hoa_charges.find_one({"id": charge_id})
     if not charge:
@@ -4802,24 +4780,22 @@ async def create_hoa_payment_checkout(
     if charge['status'] == 'paid':
         raise HTTPException(status_code=400, detail="Charge already paid")
     
-    # Verify user has access to this property
-    property_id = charge['property_id']
-    has_access = await db.property_memberships.find_one({
-        "property_id": property_id,
-        "user_id": user_id
-    })
-    property_doc = await db.properties.find_one({"id": property_id, "user_id": user_id})
+    property_id = charge["property_id"]
+    await require_community(db, property_id, user_id)
     
-    if not has_access and not property_doc:
-        raise HTTPException(status_code=403, detail="Access denied")
-    
+    if origin_url.rstrip("/") != os.environ.get("PAYMENT_RETURN_ORIGIN", "https://aurainfra.ai").rstrip("/"):
+        raise HTTPException(status_code=400, detail="Invalid payment return origin")
+    if charge.get("user_id") and charge["user_id"] != user_id:
+        raise HTTPException(status_code=403, detail="This charge belongs to another resident")
+    from emergentintegrations.payments.stripe.checkout import StripeCheckout, CheckoutSessionRequest
     # Initialize Stripe
     stripe_api_key = os.environ.get('STRIPE_API_KEY')
-    webhook_url = f"{origin_url}/api/webhook/stripe"
+    webhook_origin = os.environ.get("BACKEND_PUBLIC_URL", origin_url).rstrip("/")
+    webhook_url = f"{webhook_origin}/api/webhook/stripe"
     stripe_checkout = StripeCheckout(api_key=stripe_api_key, webhook_url=webhook_url)
     
     # Build success and cancel URLs
-    success_url = f"{origin_url}/payment-success?session_id={{{{CHECKOUT_SESSION_ID}}}}"
+    success_url = f"{origin_url}/payment-success?session_id={{CHECKOUT_SESSION_ID}}"
     cancel_url = f"{origin_url}/properties"
     
     # Create checkout session
@@ -4961,15 +4937,7 @@ async def create_visitor(
     user_id: str = Depends(get_current_user)
 ):
     """Create/register a visitor"""
-    # Verify user has access to property
-    has_access = await db.property_memberships.find_one({
-        "property_id": property_id,
-        "user_id": user_id
-    })
-    property_doc = await db.properties.find_one({"id": property_id, "user_id": user_id})
-    
-    if not has_access and not property_doc:
-        raise HTTPException(status_code=403, detail="Access denied")
+    await require_community(db, property_id, user_id)
     
     # Generate approval code
     approval_code = str(uuid.uuid4())[:8].upper()
@@ -4977,7 +4945,7 @@ async def create_visitor(
     visitor = Visitor(
         host_user_id=user_id,
         approval_code=approval_code,
-        **visitor_data.dict()
+        **scoped_data(visitor_data, "property_id", property_id)
     )
     await db.visitors.insert_one(visitor.dict())
     return visitor
@@ -4990,21 +4958,12 @@ async def get_property_visitors(
     date_filter: Optional[str] = None  # "today", "upcoming", "past"
 ):
     """Get visitors for a property"""
-    # Verify access
-    has_access = await db.property_memberships.find_one({
-        "property_id": property_id,
-        "user_id": user_id
-    })
-    property_doc = await db.properties.find_one({"id": property_id, "user_id": user_id})
-    
-    if not has_access and not property_doc:
-        raise HTTPException(status_code=403, detail="Access denied")
-    
+    role = await require_community(db, property_id, user_id)
     query = {"property_id": property_id}
-    
+    if role == "resident":
+        query["host_user_id"] = user_id
     if status:
         query["status"] = status
-    
     if date_filter == "today":
         today = datetime.utcnow().date()
         query["expected_date"] = {
@@ -5034,9 +4993,8 @@ async def approve_visitor(
     visitor = await db.visitors.find_one({"id": visitor_id})
     if not visitor:
         raise HTTPException(status_code=404, detail="Visitor not found")
+    await require_community(db, visitor["property_id"], user_id, {"admin", "security"})
     
-    # For MVP, allowing any property member to approve
-    # In production, restrict to admin/security role
     
     update_data = {
         "status": approval_data.status,
@@ -5064,6 +5022,7 @@ async def check_in_visitor(
     visitor = await db.visitors.find_one({"id": visitor_id})
     if not visitor:
         raise HTTPException(status_code=404, detail="Visitor not found")
+    await require_community(db, visitor["property_id"], user_id, {"admin", "security"})
     
     if visitor['status'] != 'approved':
         raise HTTPException(status_code=400, detail="Visitor not approved")
@@ -5090,6 +5049,7 @@ async def check_out_visitor(
     visitor = await db.visitors.find_one({"id": visitor_id})
     if not visitor:
         raise HTTPException(status_code=404, detail="Visitor not found")
+    await require_community(db, visitor["property_id"], user_id, {"admin", "security"})
     
     if visitor['status'] != 'checked_in':
         raise HTTPException(status_code=400, detail="Visitor not checked in")
@@ -5109,47 +5069,15 @@ async def check_out_visitor(
 # ============= COMMUNITY BOARD ENDPOINTS =============
 
 @api_router.post("/properties/{property_id}/community/posts", response_model=CommunityPost)
-async def create_community_post(
-    property_id: str,
-    post_data: CommunityPostCreate,
-    user_id: str = Depends(get_current_user)
-):
-    """Create a community board post"""
-    # Verify user has access to property
-    has_access = await db.property_memberships.find_one({
-        "property_id": property_id,
-        "user_id": user_id
-    })
-    property_doc = await db.properties.find_one({"id": property_id, "user_id": user_id})
-    
-    if not has_access and not property_doc:
-        raise HTTPException(status_code=403, detail="Access denied")
-    
-    # Get user info
+async def create_community_post(property_id: str, post_data: CommunityPostCreate, user_id: str = Depends(get_current_user)):
+    role = await require_community(db, property_id, user_id)
+    await require_content_terms(db, user_id)
+    validate_content(post_data.title, post_data.content)
+    if sum(len(photo) for photo in (post_data.photos or [])) > 14_000_000:
+        raise HTTPException(status_code=413, detail="Photos are too large")
     user = await db.users.find_one({"id": user_id})
-    user_name = user.get('username', 'Unknown') if user else 'Unknown'
-    
-    # Check if property owner
-    is_admin = property_doc is not None  # Property owner is admin
-    
-    # Get user role from property membership
-    user_role = None
-    membership = await db.property_memberships.find_one({
-        "property_id": property_id,
-        "user_id": user_id
-    })
-    if membership:
-        user_role = membership.get('role')  # "owner", "tenant", "resident"
-    elif is_admin:
-        user_role = "owner"  # Property owner is always owner
-    
-    post = CommunityPost(
-        user_id=user_id,
-        user_name=user_name,
-        user_role=user_role,
-        is_admin_post=is_admin,
-        **post_data.dict()
-    )
+    post = CommunityPost(user_id=user_id, user_name=user["username"], user_role=role,
+        is_admin_post=role == "admin", **scoped_data(post_data, "property_id", property_id))
     await db.community_posts.insert_one(post.dict())
     return post
 
@@ -5162,17 +5090,12 @@ async def get_community_posts(
     skip: int = 0
 ):
     """Get community posts for a property"""
-    # Verify access
-    has_access = await db.property_memberships.find_one({
-        "property_id": property_id,
-        "user_id": user_id
-    })
-    property_doc = await db.properties.find_one({"id": property_id, "user_id": user_id})
+    await require_community(db, property_id, user_id)
     
-    if not has_access and not property_doc:
-        raise HTTPException(status_code=403, detail="Access denied")
-    
-    query = {"property_id": property_id}
+    if not 1 <= limit <= 100 or skip < 0:
+        raise HTTPException(status_code=400, detail="Invalid pagination")
+    query = {"property_id": property_id, "moderation_status": "approved",
+        "user_id": {"$nin": await blocked_users(db, user_id)}}
     if category:
         query["category"] = category
     
@@ -5190,150 +5113,64 @@ async def get_community_posts(
 
 @api_router.get("/community/posts/{post_id}")
 async def get_post(post_id: str, user_id: str = Depends(get_current_user)):
-    """Get a specific post"""
-    post = await db.community_posts.find_one({"id": post_id})
-    if not post:
-        raise HTTPException(status_code=404, detail="Post not found")
-    
-    # Verify user has access to the property
-    property_id = post['property_id']
-    has_access = await db.property_memberships.find_one({
-        "property_id": property_id,
-        "user_id": user_id
-    })
-    property_doc = await db.properties.find_one({"id": property_id, "user_id": user_id})
-    
-    if not has_access and not property_doc:
-        raise HTTPException(status_code=403, detail="Access denied")
-    
-    if '_id' in post:
-        post['_id'] = str(post['_id'])
-    
+    post = await visible_post(db, post_id, user_id)
+    post.pop("_id", None)
     return post
 
 @api_router.put("/community/posts/{post_id}")
-async def update_post(
-    post_id: str,
-    post_data: CommunityPostUpdate,
-    user_id: str = Depends(get_current_user)
-):
-    """Update a post (author or admin only)"""
+async def update_post(post_id: str, post_data: CommunityPostUpdate, user_id: str = Depends(get_current_user)):
     post = await db.community_posts.find_one({"id": post_id})
     if not post:
         raise HTTPException(status_code=404, detail="Post not found")
+    role = await require_community(db, post["property_id"], user_id)
+    if post["user_id"] != user_id and role != "admin":
+        raise HTTPException(status_code=403, detail="Only the author or community administrator may edit")
+    changes = post_data.dict(exclude_none=True)
+    if "is_pinned" in changes and role != "admin":
+        raise HTTPException(status_code=403, detail="Only administrators can pin posts")
+    if any(field in changes for field in ("title", "content", "photos")):
+        validate_content(changes.get("title", post["title"]), changes.get("content", post["content"]))
+        changes["moderation_status"] = "pending"
+    changes["updated_at"] = datetime.utcnow()
+    await db.community_posts.update_one({"id": post_id}, {"$set": changes})
+    return {"message": "Post updated; changed content requires review"}
     
-    # Verify user is author or property owner
-    property_doc = await db.properties.find_one({
-        "id": post['property_id'],
-        "user_id": user_id
-    })
-    
-    if post['user_id'] != user_id and not property_doc:
-        raise HTTPException(status_code=403, detail="Access denied")
-    
-    update_data = {k: v for k, v in post_data.dict().items() if v is not None}
-    update_data["updated_at"] = datetime.utcnow()
-    
-    await db.community_posts.update_one(
-        {"id": post_id},
-        {"$set": update_data}
-    )
-    
-    return {"message": "Post updated"}
-
 @api_router.delete("/community/posts/{post_id}")
 async def delete_post(post_id: str, user_id: str = Depends(get_current_user)):
-    """Delete a post (author or admin only)"""
     post = await db.community_posts.find_one({"id": post_id})
     if not post:
         raise HTTPException(status_code=404, detail="Post not found")
-    
-    # Verify user is author or property owner
-    property_doc = await db.properties.find_one({
-        "id": post['property_id'],
-        "user_id": user_id
-    })
-    
-    if post['user_id'] != user_id and not property_doc:
+    role = await require_community(db, post["property_id"], user_id)
+    if post["user_id"] != user_id and role != "admin":
         raise HTTPException(status_code=403, detail="Access denied")
-    
-    # Delete post and all comments
-    await db.community_posts.delete_one({"id": post_id})
     await db.community_comments.delete_many({"post_id": post_id})
     await db.post_likes.delete_many({"post_id": post_id})
-    
+    await db.community_posts.delete_one({"id": post_id})
     return {"message": "Post deleted"}
 
 @api_router.post("/community/posts/{post_id}/comments", response_model=CommunityComment)
-async def create_comment(
-    post_id: str,
-    comment_data: CommunityCommentCreate,
-    user_id: str = Depends(get_current_user)
-):
-    """Add a comment to a post"""
-    # Verify post exists and user has access
-    post = await db.community_posts.find_one({"id": post_id})
-    if not post:
-        raise HTTPException(status_code=404, detail="Post not found")
-    
-    property_id = post['property_id']
-    has_access = await db.property_memberships.find_one({
-        "property_id": property_id,
-        "user_id": user_id
-    })
-    property_doc = await db.properties.find_one({"id": property_id, "user_id": user_id})
-    
-    if not has_access and not property_doc:
-        raise HTTPException(status_code=403, detail="Access denied")
-    
-    # Get user info
+async def create_comment(post_id: str, comment_data: CommunityCommentCreate, user_id: str = Depends(get_current_user)):
+    await visible_post(db, post_id, user_id)
+    await require_content_terms(db, user_id)
+    validate_content(comment_data.content)
     user = await db.users.find_one({"id": user_id})
-    user_name = user.get('username', 'Unknown') if user else 'Unknown'
-    
-    comment = CommunityComment(
-        user_id=user_id,
-        user_name=user_name,
-        **comment_data.dict()
-    )
+    comment = CommunityComment(user_id=user_id, user_name=user["username"], **scoped_data(comment_data, "post_id", post_id))
     await db.community_comments.insert_one(comment.dict())
-    
-    # Increment comment count
-    await db.community_posts.update_one(
-        {"id": post_id},
-        {"$inc": {"comments_count": 1}}
-    )
-    
     return comment
 
 @api_router.get("/community/posts/{post_id}/comments")
 async def get_comments(post_id: str, user_id: str = Depends(get_current_user)):
-    """Get all comments for a post"""
-    # Verify post exists and user has access
-    post = await db.community_posts.find_one({"id": post_id})
-    if not post:
-        raise HTTPException(status_code=404, detail="Post not found")
-    
-    property_id = post['property_id']
-    has_access = await db.property_memberships.find_one({
-        "property_id": property_id,
-        "user_id": user_id
-    })
-    property_doc = await db.properties.find_one({"id": property_id, "user_id": user_id})
-    
-    if not has_access and not property_doc:
-        raise HTTPException(status_code=403, detail="Access denied")
-    
-    comments = await db.community_comments.find({"post_id": post_id}).sort("created_at", 1).to_list(length=1000)
-    
-    for c in comments:
-        if '_id' in c:
-            c['_id'] = str(c['_id'])
-    
+    await visible_post(db, post_id, user_id)
+    comments = await db.community_comments.find({"post_id": post_id, "moderation_status": "approved",
+        "user_id": {"$nin": await blocked_users(db, user_id)}}).sort("created_at", 1).to_list(length=1000)
+    for comment in comments:
+        comment.pop("_id", None)
     return comments
 
 @api_router.post("/community/posts/{post_id}/like")
 async def toggle_post_like(post_id: str, user_id: str = Depends(get_current_user)):
     """Like or unlike a post"""
+    await visible_post(db, post_id, user_id)
     # Check if already liked
     existing_like = await db.post_likes.find_one({
         "post_id": post_id,
@@ -5368,24 +5205,15 @@ async def create_amenity(
     user_id: str = Depends(get_current_user)
 ):
     """Create amenity (admin only)"""
-    # Check if user is property owner or HOA admin managing this property
-    user = await db.users.find_one({"id": user_id})
-    if not user:
-        raise HTTPException(status_code=403, detail="User not found")
-    
-    property_doc = await db.properties.find_one({"id": property_id, "user_id": user_id})
-    is_managed = user.get("managed_properties") and property_id in user.get("managed_properties", [])
-    
-    if not property_doc and not is_managed:
-        raise HTTPException(status_code=403, detail="Only property owner or HOA admin can create amenities")
-    
-    amenity = Amenity(**amenity_data.dict())
+    await require_community(db, property_id, user_id, {"admin"})
+    amenity = Amenity(**scoped_data(amenity_data, "property_id", property_id))
     await db.amenities.insert_one(amenity.dict())
     return amenity
 
 @api_router.get("/properties/{property_id}/amenities")
 async def get_amenities(property_id: str, user_id: str = Depends(get_current_user)):
     """Get all amenities for a property"""
+    await require_community(db, property_id, user_id)
     amenities = await db.amenities.find({"property_id": property_id}).to_list(length=1000)
     for a in amenities:
         if '_id' in a:
@@ -5401,6 +5229,7 @@ async def book_amenity(
     amenity = await db.amenities.find_one({"id": booking_data.amenity_id})
     if not amenity:
         raise HTTPException(status_code=404, detail="Amenity not found")
+    await require_community(db, amenity["property_id"], user_id)
     
     user = await db.users.find_one({"id": user_id})
     user_name = user.get('username', 'Unknown') if user else 'Unknown'
@@ -5421,6 +5250,7 @@ async def get_amenity_bookings(
     status: Optional[str] = None
 ):
     """Get amenity bookings for a property"""
+    await require_community(db, property_id, user_id)
     query = {"property_id": property_id}
     if status:
         query["status"] = status
@@ -5438,6 +5268,12 @@ async def update_booking(
     user_id: str = Depends(get_current_user)
 ):
     """Update booking status (approve/reject)"""
+    booking = await db.amenity_bookings.find_one({"id": booking_id})
+    if not booking:
+        raise HTTPException(status_code=404, detail="Booking not found")
+    role = await require_community(db, booking["property_id"], user_id)
+    if role != "admin" and not (booking["user_id"] == user_id and booking_data.status == "cancelled" and booking_data.payment_status is None):
+        raise HTTPException(status_code=403, detail="Only administrators can approve bookings or change payment status")
     update_data = {k: v for k, v in booking_data.dict().items() if v is not None}
     
     if 'status' in update_data and update_data['status'] in ['approved', 'rejected']:
@@ -5463,13 +5299,14 @@ async def create_complaint(
     user_id: str = Depends(get_current_user)
 ):
     """Submit a complaint or service request"""
+    await require_community(db, property_id, user_id)
     user = await db.users.find_one({"id": user_id})
     user_name = user.get('username', 'Unknown') if user else 'Unknown'
     
     complaint = Complaint(
         user_id=user_id,
         user_name=user_name,
-        **complaint_data.dict()
+        **scoped_data(complaint_data, "property_id", property_id)
     )
     await db.complaints.insert_one(complaint.dict())
     return complaint
@@ -5482,6 +5319,7 @@ async def get_complaints(
     category: Optional[str] = None
 ):
     """Get complaints for a property"""
+    await require_community(db, property_id, user_id)
     query = {"property_id": property_id}
     if status:
         query["status"] = status
@@ -5501,6 +5339,10 @@ async def update_complaint(
     user_id: str = Depends(get_current_user)
 ):
     """Update complaint status"""
+    complaint = await db.complaints.find_one({"id": complaint_id})
+    if not complaint:
+        raise HTTPException(status_code=404, detail="Complaint not found")
+    await require_community(db, complaint["property_id"], user_id, {"admin"})
     update_data = {k: v for k, v in complaint_data.dict().items() if v is not None}
     update_data["updated_at"] = datetime.utcnow()
     
@@ -5529,8 +5371,9 @@ async def upload_hoa_document(
     # Verify user is HOA admin for this property
     await verify_hoa_admin(property_id, user_id)
     
-    # Remove property_id from document_data if it exists to avoid duplication
-    doc_dict = document_data.dict()
+    if document_data.file_data and len(document_data.file_data) > 14_000_000:
+        raise HTTPException(status_code=413, detail="Document is too large")
+    doc_dict = scoped_data(document_data, "property_id", property_id)
     doc_dict.pop('property_id', None)
     
     document = Document(
@@ -5548,6 +5391,7 @@ async def get_hoa_documents(
     category: Optional[str] = None
 ):
     """Get HOA documents for a property"""
+    await require_community(db, property_id, user_id)
     query = {"property_id": property_id}
     if category:
         query["category"] = category
@@ -5565,6 +5409,7 @@ async def get_hoa_document_by_id(
     user_id: str = Depends(get_current_user)
 ):
     """Get a single HOA document with file data"""
+    await require_community(db, property_id, user_id)
     document = await db.documents.find_one({"id": document_id, "property_id": property_id})
     if not document:
         raise HTTPException(status_code=404, detail="Document not found")
@@ -5576,16 +5421,10 @@ async def get_hoa_document_by_id(
 
 @api_router.delete("/documents/{document_id}")
 async def delete_document_simple(document_id: str, user_id: str = Depends(get_current_user)):
-    """Delete a document (uploader or admin only) - Legacy endpoint"""
     document = await db.documents.find_one({"id": document_id})
     if not document:
         raise HTTPException(status_code=404, detail="Document not found")
-    
-    # Check if user is uploader or property owner
-    property_doc = await db.properties.find_one({"id": document['property_id'], "user_id": user_id})
-    if document['uploaded_by'] != user_id and not property_doc:
-        raise HTTPException(status_code=403, detail="Access denied")
-    
+    await require_community(db, document["property_id"], user_id, {"admin"})
     await db.documents.delete_one({"id": document_id})
     return {"message": "Document deleted successfully"}
 
@@ -5598,29 +5437,14 @@ async def create_meeting(
     user_id: str = Depends(get_current_user)
 ):
     """Create a meeting (admin/committee/residents)"""
-    # Check if user is property owner, HOA admin, or member of this property
+    await require_community(db, property_id, user_id)
     user = await db.users.find_one({"id": user_id})
-    if not user:
-        raise HTTPException(status_code=403, detail="User not found")
-    
-    # Check if user owns the property
-    property_doc = await db.properties.find_one({"id": property_id, "user_id": user_id})
-    
-    # Check if user manages this property (HOA admin)
-    is_managed = user.get("managed_properties") and property_id in user.get("managed_properties", [])
-    
-    # Check if user is a member of this property (resident)
-    is_member = user.get("member_properties") and property_id in user.get("member_properties", [])
-    
-    if not property_doc and not is_managed and not is_member:
-        raise HTTPException(status_code=403, detail="Only property owner, HOA admin, or property members can create meetings")
-    
     user_name = user.get('username', 'Unknown')
     
     meeting = Meeting(
         organizer_id=user_id,
         organizer_name=user_name,
-        **meeting_data.dict()
+        **scoped_data(meeting_data, "property_id", property_id)
     )
     await db.meetings.insert_one(meeting.dict())
     return meeting
@@ -5632,6 +5456,7 @@ async def get_meetings(
     upcoming: bool = True
 ):
     """Get meetings for a property"""
+    await require_community(db, property_id, user_id)
     query = {"property_id": property_id}
     
     if upcoming:
@@ -5649,6 +5474,10 @@ async def rsvp_meeting(
     user_id: str = Depends(get_current_user)
 ):
     """RSVP to a meeting"""
+    meeting = await db.meetings.find_one({"id": rsvp_data.meeting_id})
+    if not meeting:
+        raise HTTPException(status_code=404, detail="Meeting not found")
+    await require_community(db, meeting["property_id"], user_id)
     user = await db.users.find_one({"id": user_id})
     user_name = user.get('username', 'Unknown') if user else 'Unknown'
     
@@ -5682,6 +5511,10 @@ async def rsvp_meeting(
 @api_router.get("/meetings/{meeting_id}/rsvps")
 async def get_meeting_rsvps(meeting_id: str, user_id: str = Depends(get_current_user)):
     """Get RSVPs for a meeting"""
+    meeting = await db.meetings.find_one({"id": meeting_id})
+    if not meeting:
+        raise HTTPException(status_code=404, detail="Meeting not found")
+    await require_community(db, meeting["property_id"], user_id, {"admin"})
     rsvps = await db.meeting_rsvps.find({"meeting_id": meeting_id}).to_list(length=1000)
     for r in rsvps:
         if '_id' in r:
@@ -5697,6 +5530,7 @@ async def create_maintenance_due(
     user_id: str = Depends(get_current_user)
 ):
     """Send maintenance due to individual resident (admin only)"""
+    await require_community(db, property_id, user_id, {"admin"})
     # Check if user is admin of this property
     user_doc = await db.users.find_one({"id": user_id})
     if not user_doc:
@@ -5714,7 +5548,7 @@ async def create_maintenance_due(
     # Verify target user is member of this property
     membership = await db.property_memberships.find_one({
         "user_id": due_data.user_id,
-        "property_id": property_id
+        "property_id": property_id, "status": {"$in": ACTIVE_MEMBERSHIP_STATES}
     })
     if not membership:
         raise HTTPException(status_code=400, detail="User is not a member of this property")
@@ -5739,6 +5573,7 @@ async def create_bulk_maintenance_dues(
     user_id: str = Depends(get_current_user)
 ):
     """Send maintenance dues to all residents of property (admin only)"""
+    await require_community(db, property_id, user_id, {"admin"})
     # Check if user is admin of this property
     user_doc = await db.users.find_one({"id": user_id})
     if not user_doc:
@@ -5754,7 +5589,7 @@ async def create_bulk_maintenance_dues(
         raise HTTPException(status_code=403, detail="Not authorized to send dues")
     
     # Get all residents of this property
-    memberships = await db.property_memberships.find({"property_id": property_id}).to_list(length=1000)
+    memberships = await db.property_memberships.find({"property_id": property_id, "status": {"$in": ACTIVE_MEMBERSHIP_STATES}}).to_list(length=1000)
     
     if not memberships:
         raise HTTPException(status_code=400, detail="No residents found for this property")
@@ -5782,6 +5617,7 @@ async def get_property_dues(
     user_id: str = Depends(get_current_user)
 ):
     """Get all maintenance dues for a property (admin only)"""
+    await require_community(db, property_id, user_id, {"admin"})
     # Check if user is admin of this property
     user_doc = await db.users.find_one({"id": user_id})
     if not user_doc:
@@ -5899,26 +5735,7 @@ async def verify_super_admin(user_id: str = Depends(get_current_user)):
 
 # Helper function to check if user is HOA admin for a property
 async def verify_hoa_admin(property_id: str, user_id: str):
-    user = await db.users.find_one({"id": user_id})
-    if not user:
-        raise HTTPException(status_code=404, detail="User not found")
-    
-    # Super admins can access everything
-    if user.get("is_super_admin"):
-        return True
-    
-    # Check if user is HOA admin for this property
-    if not user.get("is_hoa_admin"):
-        raise HTTPException(status_code=403, detail="HOA admin access required")
-    
-    admin_assignment = await db.property_admin_assignments.find_one({
-        "admin_user_id": user_id,
-        "property_id": property_id
-    })
-    
-    if not admin_assignment:
-        raise HTTPException(status_code=403, detail="Not authorized for this property")
-    
+    await require_community(db, property_id, user_id, {"admin"})
     return True
 
 # -------- SUPER ADMIN ENDPOINTS --------
@@ -6146,10 +5963,9 @@ async def get_admin_dashboard(
     
     # Count payment requests
     payment_requests_sent = await db.hoa_maintenance_charges.count_documents({"property_id": property_id})
+    charges = await db.hoa_maintenance_charges.find({"property_id": property_id}, {"id": 1}).to_list(length=None)
     payments_received = await db.payments.count_documents({
-        "charge_id": {"$exists": True},
-        "status": "paid"
-    })
+        "charge_id": {"$in": [charge["id"] for charge in charges]}, "status": "paid"})
     
     # Calculate unpaid amount
     unpaid_charges = await db.hoa_maintenance_charges.find({
@@ -6203,56 +6019,39 @@ async def get_pending_approvals(
     return approvals
 
 @api_router.post("/admin/properties/{property_id}/approve-user")
-async def approve_or_reject_user(
-    property_id: str,
-    action: ApprovalAction,
-    user_id: str = Depends(get_current_user)
-):
-    """Approve or reject a user approval request"""
+async def approve_or_reject_user(property_id: str, action: ApprovalAction, user_id: str = Depends(get_current_user)):
     await verify_hoa_admin(property_id, user_id)
-    
-    # Get the approval request
-    approval = await db.pending_user_approvals.find_one({"id": action.approval_id})
+    approval = await db.pending_user_approvals.find_one({"id": action.approval_id, "property_id": property_id})
     if not approval:
-        raise HTTPException(status_code=404, detail="Approval request not found")
-    
-    if approval["status"] != "pending":
-        raise HTTPException(status_code=400, detail="Approval already processed")
-    
-    # Update approval status
-    await db.pending_user_approvals.update_one(
-        {"id": action.approval_id},
-        {
-            "$set": {
-                "status": action.action,  # "approve" or "reject"
-                "admin_notes": action.admin_notes,
-                "reviewed_at": datetime.utcnow(),
-                "reviewed_by": user_id
-            }
-        }
-    )
-    
-    if action.action == "approve":
-        # Create property membership
-        membership = PropertyMembership(
-            user_id=approval["user_id"],
-            property_id=property_id,
-            role=approval["requested_role"],
-            status="active"
-        )
-        await db.property_memberships.insert_one(membership.dict())
-        
-        # Mark user as approved (can now login)
-        await db.users.update_one(
-            {"id": approval["user_id"]},
-            {"$set": {"account_approved": True}}
-        )
-        
-        message = "User approved successfully"
-    else:
-        message = "User rejected"
-    
-    return {"message": message}
+        raise HTTPException(status_code=404, detail="Approval request not found in this community")
+    target = await db.users.find_one({"id": approval["user_id"]})
+    if not target or target.get("deletion_pending") or target.get("disabled"):
+        raise HTTPException(status_code=409, detail="Applicant account is unavailable")
+    approved = action.action == "approve"
+    status_value = "active" if approved else "rejected"
+    decision = "approved" if approved else "rejected"
+    claimed = await db.pending_user_approvals.update_one(
+        {"id": action.approval_id, "property_id": property_id, "status": "pending"},
+        {"$set": {"status": decision, "admin_notes": action.admin_notes,
+            "reviewed_at": datetime.utcnow(), "reviewed_by": user_id,
+            "documents": [], "document_names": [], "membership_applied": False}})
+    if not claimed.modified_count:
+        current = await db.pending_user_approvals.find_one({"id": action.approval_id, "property_id": property_id})
+        if not current or current["status"] != decision or current.get("membership_applied", True):
+            raise HTTPException(status_code=409, detail="Approval already processed")
+    # The atomic decision prevents simultaneous approve/reject from granting access.
+    # An interrupted application can retry the same decision safely.
+    # Membership is the access source of truth; retried updates are idempotent.
+    await db.property_memberships.update_one({"user_id": approval["user_id"], "property_id": property_id},
+        {"$set": {"status": status_value, "role": approval["requested_role"],
+            "approved_by": user_id, "approved_at": datetime.utcnow()}, "$setOnInsert": {
+                "id": str(uuid.uuid4()), "user_id": approval["user_id"], "property_id": property_id,
+                "joined_at": datetime.utcnow()}}, upsert=True)
+    await db.users.update_one({"id": approval["user_id"]},
+        {"$addToSet" if approved else "$pull": {"member_properties": property_id}})
+    await db.pending_user_approvals.update_one({"id": action.approval_id, "property_id": property_id},
+        {"$set": {"membership_applied": True}})
+    return {"message": "User approved" if approved else "User rejected"}
 
 @api_router.post("/admin/properties/{property_id}/create-payment-request", response_model=HOACharge)
 async def create_payment_request_admin(
@@ -6270,7 +6069,7 @@ async def create_payment_request_admin(
     # Verify target user is a member
     membership = await db.property_memberships.find_one({
         "user_id": target_user_id,
-        "property_id": property_id
+        "property_id": property_id, "status": {"$in": ACTIVE_MEMBERSHIP_STATES}
     })
     
     if not membership:
@@ -6280,6 +6079,7 @@ async def create_payment_request_admin(
     charge = HOACharge(
         property_id=property_id,
         user_id=target_user_id,
+        created_by=user_id,
         amount=amount,
         title=title,
         description=description,
@@ -6300,13 +6100,15 @@ async def create_post_admin(
     user_id: str = Depends(get_current_user)
 ):
     """HOA admin creates a community post/announcement"""
+    await require_content_terms(db, user_id)
+    validate_content(post.title, post.content)
     await verify_hoa_admin(property_id, user_id)
     
     # Get admin info
     admin = await db.users.find_one({"id": user_id})
     
-    post_data = post.dict()
-    post_data.pop('property_id', None)  # Remove property_id from post data to avoid duplicate
+    post_data = scoped_data(post, "property_id", property_id)
+    post_data.pop("property_id")  # Remove property_id from post data to avoid duplicate
     
     new_post = CommunityPost(
         property_id=property_id,
@@ -6359,79 +6161,57 @@ async def get_all_payments(
 # -------- USER APPROVAL REQUEST ENDPOINT --------
 
 @api_router.post("/user/request-property-approval")
-async def request_property_approval(
-    request: ApprovalRequest,
-    user_id: str = Depends(get_current_user)
-):
-    """User submits approval request with documents to join a property"""
-    
-    # Get user info
-    user = await db.users.find_one({"id": user_id})
-    if not user:
-        raise HTTPException(status_code=404, detail="User not found")
-    
-    # Get property info
-    property_doc = await db.properties.find_one({"id": request.property_id})
-    if not property_doc:
-        raise HTTPException(status_code=404, detail="Property not found")
-    
-    # Check if already submitted
-    existing = await db.pending_user_approvals.find_one({
-        "user_id": user_id,
-        "property_id": request.property_id,
-        "status": "pending"
-    })
-    
-    if existing:
-        raise HTTPException(status_code=400, detail="Approval request already pending")
-    
-    # Create approval request
-    approval = PendingUserApproval(
-        user_id=user_id,
-        username=user["username"],
-        email=user.get("email", ""),
-        property_id=request.property_id,
-        property_name=property_doc["name"],
-        requested_role=request.requested_role,
-        documents=request.documents,
-        document_names=request.document_names,
-        status="pending"
-    )
-    
-    await db.pending_user_approvals.insert_one(approval.dict())
-    
-    # Mark user as pending approval (block login)
-    await db.users.update_one(
-        {"id": user_id},
-        {"$set": {"account_approved": False}}
-    )
-    
-    # TODO: Send notification to property admin
-    
-    return {"message": "Approval request submitted successfully", "approval_id": approval.id}
+async def request_property_approval(request: ApprovalRequest, user_id: str = Depends(get_current_user)):
+    if len(request.documents) != len(request.document_names) or len(request.documents) > 2:
+        raise HTTPException(status_code=400, detail="Provide up to two documents with matching names")
+    if sum(len(d) for d in request.documents) > 14_000_000:
+        raise HTTPException(status_code=413, detail="Documents are too large")
+    return await submit_membership_request(request.property_id, user_id, request.requested_role, request.documents, request.document_names)
 
 @api_router.get("/user/approval-status/{property_id}")
-async def get_approval_status(
-    property_id: str,
-    user_id: str = Depends(get_current_user)
-):
-    """Get user's approval status for a property"""
-    
-    approval = await db.pending_user_approvals.find_one({
-        "user_id": user_id,
-        "property_id": property_id
-    }, sort=[("created_at", -1)])
-    
-    if not approval:
-        return {"status": "not_submitted"}
-    
-    if '_id' in approval:
-        approval['_id'] = str(approval['_id'])
-    
-    return approval
+async def get_approval_status(property_id: str, user_id: str = Depends(get_current_user)):
+    membership = await db.property_memberships.find_one({"user_id": user_id, "property_id": property_id})
+    approval = await db.pending_user_approvals.find_one({"user_id": user_id, "property_id": property_id})
+    if membership and membership.get("status") == "active":
+        return {"status": "approved"}
+    return {"status": membership.get("status", "not_submitted") if membership else (approval or {}).get("status", "not_submitted"),
+        "admin_notes": (approval or {}).get("admin_notes")}
 
+
+class AIConsentRequest(BaseModel):
+    accepted: bool
+
+@api_router.post("/auth/ai-consent")
+async def update_ai_consent(payload: AIConsentRequest, user_id: str = Depends(get_current_user)):
+    await db.users.update_one({"id": user_id}, {"$set": {"ai_consent_at": datetime.utcnow() if payload.accepted else None}})
+    return {"accepted": payload.accepted}
+
+async def require_ai_consent(user_id):
+    user = await db.users.find_one({"id": user_id})
+    if not user or not user.get("ai_consent_at"):
+        raise HTTPException(status_code=403, detail="Consent is required before sending information to AI providers")
 
 app.include_router(api_router)
+app.include_router(moderation_router(db, get_current_user))
+
+@app.on_event("startup")
+async def start_security_services():
+    # Unique keys prevent duplicate memberships, reports and replayed OAuth exchanges.
+    await db.password_resets.create_index("email", unique=True)
+    await db.password_resets.create_index("expires_at", expireAfterSeconds=0)
+    await db.user_sessions.create_index("jti", unique=True, sparse=True)
+    await db.user_sessions.create_index("expires_at", expireAfterSeconds=0)
+    await db.oauth_exchanges.create_index("id", unique=True)
+    await db.apple_challenges.create_index("expires_at", expireAfterSeconds=0)
+    await db.apple_challenges.create_index("id", unique=True)
+    await db.account_deletions.create_index("expires_at", expireAfterSeconds=0)
+    await db.property_memberships.create_index([("user_id", 1), ("property_id", 1)], unique=True)
+    await db.pending_user_approvals.create_index([("user_id", 1), ("property_id", 1)], unique=True)
+    await db.users.create_index("username", unique=True)
+    await db.users.create_index("email", unique=True, partialFilterExpression={"email": {"$type": "string"}})
+    await db.community_blocks.create_index([("user_id", 1), ("blocked_user_id", 1)], unique=True)
+    app.state.deletion_worker = asyncio.create_task(deletion_worker())
+
 
 # ============= ERROR MONITORING & ALERTING =============
 from collections import defaultdict
@@ -6542,7 +6322,7 @@ if IS_PRODUCTION:
         allow_credentials=True,
         allow_origins=allowed_origins if allowed_origins else ["https://yourdomain.com"],
         allow_methods=["GET", "POST", "PUT", "DELETE"],
-        allow_headers=["Content-Type", "Authorization"],
+        allow_headers=["Content-Type", "Authorization", "X-Session-ID"],
     )
 else:
     # Development - allow all
@@ -6556,4 +6336,11 @@ else:
 
 @app.on_event("shutdown")
 async def shutdown_db_client():
+    worker = getattr(app.state, "deletion_worker", None)
+    if worker:
+        worker.cancel()
+        try:
+            await worker
+        except asyncio.CancelledError:
+            pass
     client.close()

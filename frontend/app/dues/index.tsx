@@ -16,9 +16,8 @@ import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { useAuth } from '../../contexts/AuthContext';
 import axios from 'axios';
-import Constants from 'expo-constants';
 
-const API_URL = Constants.expoConfig?.extra?.EXPO_PUBLIC_BACKEND_URL || process.env.EXPO_PUBLIC_BACKEND_URL;
+import { API_URL } from '../../services/config';
 
 interface MaintenanceDue {
   id: string;
@@ -51,7 +50,7 @@ export default function MyDuesScreen() {
     fetchDues();
   }, []);
 
-  const fetchDues = async () => {
+  async function fetchDues() {
     setLoading(true);
     try {
       const response = await axios.get(`${API_URL}/api/users/dues`, {
@@ -63,7 +62,7 @@ export default function MyDuesScreen() {
     } finally {
       setLoading(false);
     }
-  };
+  }
 
   const getFilteredDues = () => {
     if (filterStatus === 'all') return dues;

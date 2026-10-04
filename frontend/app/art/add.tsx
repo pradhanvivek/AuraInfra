@@ -17,13 +17,12 @@ import { useRouter, useLocalSearchParams } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { useAuth } from '../../contexts/AuthContext';
 import axios from 'axios';
-import Constants from 'expo-constants';
 import * as ImagePicker from 'expo-image-picker';
 import { CameraView, useCameraPermissions } from 'expo-camera';
 import DateTimePickerModal from 'react-native-modal-datetime-picker';
 import { getCurrencyInfo } from '../../utils/localeUtils';
 
-const API_URL = Constants.expoConfig?.extra?.EXPO_PUBLIC_BACKEND_URL || process.env.EXPO_PUBLIC_BACKEND_URL;
+import { API_URL } from '../../services/config';
 
 const ART_TYPES = ['Painting', 'Sculpture', 'Print', 'Photograph', 'Drawing', 'Collage', 'Digital Art', 'Mixed Media', 'Other'];
 const MEDIUMS = ['Oil', 'Acrylic', 'Watercolor', 'Bronze', 'Marble', 'Wood', 'Canvas', 'Paper', 'Digital', 'Other'];
@@ -65,13 +64,7 @@ export default function AddArtScreen() {
   const [datePickerVisible, setDatePickerVisible] = useState(false);
   const [datePickerMode, setDatePickerMode] = useState<'purchase' | 'appraisal'>('purchase');
 
-  useEffect(() => {
-    if (isEditing) {
-      fetchArt();
-    }
-  }, [editId]);
-
-  const fetchArt = async () => {
+  async function fetchArt() {
     try {
       const response = await axios.get(
         `${API_URL}/api/art/${editId}`,
@@ -100,7 +93,15 @@ export default function AddArtScreen() {
     } finally {
       setLoading(false);
     }
-  };
+  }
+
+  useEffect(() => {
+    if (isEditing) {
+      fetchArt();
+    }
+  }, [editId]);
+
+
 
   const handleSave = async () => {
     if (!name.trim()) {

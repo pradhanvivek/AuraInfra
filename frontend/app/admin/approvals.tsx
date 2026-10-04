@@ -15,9 +15,8 @@ import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { useAuth } from '../../contexts/AuthContext';
 import axios from 'axios';
-import Constants from 'expo-constants';
 
-const API_URL = Constants.expoConfig?.extra?.EXPO_PUBLIC_BACKEND_URL || process.env.EXPO_PUBLIC_BACKEND_URL;
+import { API_URL } from '../../services/config';
 
 interface PendingApproval {
   id: string;
@@ -44,11 +43,23 @@ export default function AdminApprovals() {
   const [actionLoading, setActionLoading] = useState(false);
   const [propertyId, setPropertyId] = useState('');
 
-  useEffect(() => {
-    fetchPropertyAndApprovals();
-  }, []);
+  async function fetchApprovals(propId: string) {
+    try {
+      const response = await axios.get(
+        `${API_URL}/api/admin/properties/${propId}/pending-approvals`,
+        {
+          headers: { 'Authorization': `Bearer ${token}` }
+        }
+      );
+      setApprovals(response.data);
+    } catch (error) {
+      console.error('Error fetching approvals:', error);
+    } finally {
+      setLoading(false);
+    }
+  }
 
-  const fetchPropertyAndApprovals = async () => {
+  async function fetchPropertyAndApprovals() {
     try {
       const profileResponse = await axios.get(`${API_URL}/api/auth/profile`, {
         headers: { 'Authorization': `Bearer ${token}` }
@@ -65,23 +76,15 @@ export default function AdminApprovals() {
       console.error('Error fetching property:', error);
       setLoading(false);
     }
-  };
+  }
 
-  const fetchApprovals = async (propId: string) => {
-    try {
-      const response = await axios.get(
-        `${API_URL}/api/admin/properties/${propId}/pending-approvals`,
-        {
-          headers: { 'Authorization': `Bearer ${token}` }
-        }
-      );
-      setApprovals(response.data);
-    } catch (error) {
-      console.error('Error fetching approvals:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
+  useEffect(() => {
+    fetchPropertyAndApprovals();
+  }, []);
+
+
+
+
 
   const handleApprovalClick = (approval: PendingApproval) => {
     setSelectedApproval(approval);

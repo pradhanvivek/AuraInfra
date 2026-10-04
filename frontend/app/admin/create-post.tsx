@@ -14,9 +14,8 @@ import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { useAuth } from '../../contexts/AuthContext';
 import axios from 'axios';
-import Constants from 'expo-constants';
 
-const API_URL = Constants.expoConfig?.extra?.EXPO_PUBLIC_BACKEND_URL || process.env.EXPO_PUBLIC_BACKEND_URL;
+import { API_URL } from '../../services/config';
 
 const categories = [
   { id: 'announcement', name: 'Announcement', icon: 'megaphone', color: '#FF3B30' },
@@ -33,13 +32,10 @@ export default function CreateCommunityPost() {
   const [content, setContent] = useState('');
   const [category, setCategory] = useState('announcement');
   const [saving, setSaving] = useState(false);
+  const [standardsAccepted, setStandardsAccepted] = useState(false);
   const [propertyId, setPropertyId] = useState('');
 
-  useEffect(() => {
-    fetchPropertyId();
-  }, []);
-
-  const fetchPropertyId = async () => {
+  async function fetchPropertyId() {
     try {
       const response = await axios.get(`${API_URL}/api/auth/profile`, {
         headers: { 'Authorization': `Bearer ${token}` }
@@ -50,9 +46,16 @@ export default function CreateCommunityPost() {
     } catch (error) {
       console.error('Error:', error);
     }
-  };
+  }
+
+  useEffect(() => {
+    fetchPropertyId();
+  }, []);
+
+
 
   const handleSubmit = async () => {
+    if (!standardsAccepted) { Alert.alert('Community standards', 'Accept the standards before submitting.'); return; }
     if (!title || !content) {
       Alert.alert('Error', 'Please enter title and content');
       return;
@@ -65,6 +68,7 @@ export default function CreateCommunityPost() {
 
     setSaving(true);
     try {
+      await axios.post(`${API_URL}/api/community/accept-standards`, {}, { headers: { Authorization: `Bearer ${token}` } });
       await axios.post(
         `${API_URL}/api/admin/properties/${propertyId}/create-post`,
         {
@@ -152,10 +156,13 @@ export default function CreateCommunityPost() {
           <View style={styles.noteCard}>
             <Ionicons name="information-circle" size={20} color="#007AFF" />
             <Text style={styles.noteText}>
-              Posts marked as "Announcement" will be pinned and all residents will receive notifications.
+              Announcements are pinned after approval. Content must be reviewed before residents can see it.
             </Text>
           </View>
 
+          <TouchableOpacity accessibilityRole="checkbox" accessibilityState={{ checked: standardsAccepted }} onPress={() => setStandardsAccepted(!standardsAccepted)}>
+            <Text style={{ fontSize: 16, lineHeight: 24, paddingVertical: 16 }}>{standardsAccepted ? '✓' : '☐'} I agree to the community standards: no harassment, threats, explicit material, spam, or private information shared without permission. New content requires review before publication.</Text>
+          </TouchableOpacity>
           <TouchableOpacity
             style={styles.submitButton}
             onPress={handleSubmit}

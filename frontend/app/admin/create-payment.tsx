@@ -15,12 +15,12 @@ import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { useAuth } from '../../contexts/AuthContext';
 import axios from 'axios';
-import Constants from 'expo-constants';
 import DateTimePicker from '@react-native-community/datetimepicker';
 
-const API_URL = Constants.expoConfig?.extra?.EXPO_PUBLIC_BACKEND_URL || process.env.EXPO_PUBLIC_BACKEND_URL;
+import { API_URL } from '../../services/config';
 
 interface PropertyMember {
+  role?: string;
   id: string;
   user_id: string;
   username?: string;
@@ -41,11 +41,21 @@ export default function CreatePaymentRequest() {
   const [dueDate, setDueDate] = useState(new Date());
   const [showDatePicker, setShowDatePicker] = useState(false);
 
-  useEffect(() => {
-    fetchPropertyAndMembers();
-  }, []);
+  async function fetchMembers(propId: string) {
+    try {
+      const response = await axios.get(
+        `${API_URL}/api/properties/${propId}/members`,
+        {
+          headers: { 'Authorization': `Bearer ${token}` }
+        }
+      );
+      setMembers(response.data);
+    } catch (error) {
+      console.error('Error fetching members:', error);
+    }
+  }
 
-  const fetchPropertyAndMembers = async () => {
+  async function fetchPropertyAndMembers() {
     try {
       const profileResponse = await axios.get(`${API_URL}/api/auth/profile`, {
         headers: { 'Authorization': `Bearer ${token}` }
@@ -61,21 +71,15 @@ export default function CreatePaymentRequest() {
     } finally {
       setLoading(false);
     }
-  };
+  }
 
-  const fetchMembers = async (propId: string) => {
-    try {
-      const response = await axios.get(
-        `${API_URL}/api/properties/${propId}/members`,
-        {
-          headers: { 'Authorization': `Bearer ${token}` }
-        }
-      );
-      setMembers(response.data);
-    } catch (error) {
-      console.error('Error fetching members:', error);
-    }
-  };
+  useEffect(() => {
+    fetchPropertyAndMembers();
+  }, []);
+
+
+
+
 
   const handleSubmit = async () => {
     if (!selectedUser || !amount || !title || !description) {

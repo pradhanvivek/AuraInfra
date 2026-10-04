@@ -8,6 +8,7 @@ export default function CreateCommunityPost() {
   const [title, setTitle] = useState('');
   const [content, setContent] = useState('');
   const [category, setCategory] = useState('announcement');
+  const [acceptedStandards, setAcceptedStandards] = useState(false);
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
@@ -25,9 +26,13 @@ export default function CreateCommunityPost() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!acceptedStandards) return;
     setLoading(true);
 
     try {
+      await axios.post(`${API_URL}/api/community/accept-standards`, {}, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
       await axios.post(
         `${API_URL}/api/admin/properties/${propertyId}/create-post`,
         {
@@ -42,7 +47,7 @@ export default function CreateCommunityPost() {
         }
       );
 
-      alert('Post created successfully!');
+      alert('Post submitted for moderation. It will appear after approval.');
       navigate('/admin/dashboard');
     } catch (error: any) {
       alert(error.response?.data?.detail || 'Failed to create post');
@@ -120,13 +125,18 @@ export default function CreateCommunityPost() {
 
           <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
             <p className="text-sm text-blue-800">
-              <strong>Note:</strong> Posts marked as "Announcement" will be automatically pinned and all residents will receive a push notification.
+              Posts are reviewed before publication.
             </p>
           </div>
 
+          <label className="flex gap-2 items-center">
+            <input type="checkbox" checked={acceptedStandards} onChange={e => setAcceptedStandards(e.target.checked)} required />
+            <span>I agree to the <a href="/community-standards.html" target="_blank" rel="noreferrer" className="underline">Community Standards</a>.</span>
+          </label>
+
           <button
             type="submit"
-            disabled={loading}
+            disabled={loading || !acceptedStandards}
             className="w-full px-4 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-semibold disabled:bg-gray-400"
           >
             {loading ? 'Creating...' : 'Create Post'}

@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useEffectEvent } from 'react';
 import {
   View,
   Text,
@@ -43,58 +43,56 @@ export default function PDFViewer({
   mimeType = 'application/pdf',
 }: PDFViewerProps) {
   const isImage = mimeType.startsWith('image/');
-
+  const close = useEffectEvent(() => onClose());
   useEffect(() => {
-    // Only auto-open external viewer for non-image files.
-    if (visible && fileData && !isImage) {
-      openDocument();
-    }
-  }, [visible, fileData]);
-
-  const openDocument = async () => {
-    try {
-      setLoading(true);
-
-      if (!fileData) {
-        throw new Error('No file data provided');
-      }
-
-      const safeTitle = (title || 'document').replace(/[^a-z0-9]/gi, '_');
-      const extension = getExtension(mimeType);
-      const fileName = `${safeTitle}.${extension}`;
-      const localFileUri = `${FileSystem.cacheDirectory}${fileName}`;
-
-      // Write base64 data to a local file
-      await FileSystem.writeAsStringAsync(localFileUri, fileData, {
-        encoding: FileSystem.EncodingType.Base64,
-      });
-
-      if (Platform.OS === 'android') {
-        // Android: open directly in a viewer app via IntentLauncher
-        const contentUri = await FileSystem.getContentUriAsync(localFileUri);
-        await IntentLauncher.startActivityAsync('android.intent.action.VIEW', {
-          data: contentUri,
-          flags: 1,
-          type: mimeType,
-        });
-      } else {
-        // iOS: open in the system viewer (QuickLook) via the Sharing API
-        const shareOptions: { mimeType: string; UTI?: string } = { mimeType };
-        if (mimeType.includes('pdf')) {
-          shareOptions.UTI = 'com.adobe.pdf';
+    if (!visible || !fileData || isImage) return;
+    let cancelled = false;
+    let localFileUri: string | undefined;
+    const open = async () => {
+      try {
+        const safeTitle = (title || 'document').replace(/[^a-z0-9]/gi, '_').slice(0, 80);
+        const fileName = `${safeTitle}_${Date.now()}.${getExtension(mimeType)}`;
+        if (Platform.OS === 'web') {
+          const binary = atob(fileData.replace(/^data:[^,]+,/, ''));
+          const bytes = Uint8Array.from(binary, char => char.charCodeAt(0));
+          const url = URL.createObjectURL(new Blob([bytes], { type: mimeType }));
+          const link = document.createElement('a');
+          link.href = url; link.download = fileName;
+          document.body.appendChild(link); link.click(); link.remove();
+          setTimeout(() => URL.revokeObjectURL(url), 60000);
+        } else {
+          localFileUri = `${FileSystem.cacheDirectory}${fileName}`;
+          await FileSystem.writeAsStringAsync(localFileUri, fileData.replace(/^data:[^,]+,/, ''), {
+            encoding: FileSystem.EncodingType.Base64,
+          });
+          if (cancelled) return;
+          if (Platform.OS === 'android') {
+            try {
+              const contentUri = await FileSystem.getContentUriAsync(localFileUri);
+              await IntentLauncher.startActivityAsync('android.intent.action.VIEW', {
+                data: contentUri, flags: 1, type: mimeType,
+              });
+            } catch {
+              if (!await Sharing.isAvailableAsync()) throw new Error('Install an app that can open this document.');
+              await Sharing.shareAsync(localFileUri, { mimeType });
+            }
+          } else {
+            if (!await Sharing.isAvailableAsync()) throw new Error('Document sharing is unavailable on this device.');
+            await Sharing.shareAsync(localFileUri, {
+              mimeType, ...(mimeType.includes('pdf') ? { UTI: 'com.adobe.pdf' } : {}),
+            });
+          }
         }
-        await Sharing.shareAsync(localFileUri, shareOptions);
+      } catch {
+        if (!cancelled) Alert.alert('Unable to open document', 'Please try again or use a compatible document viewer.');
+      } finally {
+        if (localFileUri) await FileSystem.deleteAsync(localFileUri, { idempotent: true }).catch(() => {});
+        if (!cancelled) close();
       }
-
-      setLoading(false);
-      onClose();
-    } catch (error: any) {
-      console.error('PDFViewer error:', error?.message);
-      setLoading(false);
-      Alert.alert('Error', `Failed to open document: ${error?.message || 'Unknown error'}`);
-      onClose();
-    }
-  };
+    };
+    void open();
+    return () => { cancelled = true; };
+  }, [visible, fileData, mimeType, title, isImage]);
 
   // Images render in-app for a smooth preview
   if (isImage) {

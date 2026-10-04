@@ -1,7 +1,6 @@
 import axios from 'axios';
-import Constants from 'expo-constants';
 
-const API_URL = process.env.EXPO_PUBLIC_BACKEND_URL || Constants.expoConfig?.extra?.apiUrl || '';
+import { API_URL } from './config';
 
 const getAuthHeaders = (token: string) => ({
   headers: {
@@ -20,7 +19,7 @@ export const authApi = {
     return response.data;
   },
 
-  updateProfile: async (token: string, data: { email?: string; phone?: string; warranty_reminder_days?: number }) => {
+  updateProfile: async (token: string, data: { email?: string; phone?: string; avatar?: string; warranty_reminder_days?: number; geomancy_preference?: string; currency_preference?: string; measurement_system?: string; country?: string }) => {
     const response = await axios.put(
       `${API_URL}/api/auth/profile`,
       data,
@@ -29,7 +28,7 @@ export const authApi = {
     return response.data;
   },
 
-  deleteAccount: async (token: string, password: string) => {
+  deleteAccount: async (token: string, password?: string) => {
     const response = await axios.delete(
       `${API_URL}/api/auth/account`,
       { ...getAuthHeaders(token), data: { password } }
@@ -56,7 +55,7 @@ export const propertyApi = {
     return response.data;
   },
 
-  create: async (token: string, data: { name: string; address: string; latitude?: number; longitude?: number }) => {
+  create: async (token: string, data: { name: string; address: string; latitude?: number; longitude?: number; purchase_cost?: number; current_value?: number; purchase_date?: string; logo?: string | null; ownership_type?: string }) => {
     const response = await axios.post(
       `${API_URL}/api/properties`,
       data,
@@ -65,7 +64,7 @@ export const propertyApi = {
     return response.data;
   },
 
-  update: async (token: string, id: string, data: { name?: string; address?: string; latitude?: number; longitude?: number }) => {
+  update: async (token: string, id: string, data: { name?: string; address?: string; latitude?: number; longitude?: number; purchase_cost?: number; current_value?: number; purchase_date?: string; logo?: string | null; ownership_type?: string }) => {
     const response = await axios.put(
       `${API_URL}/api/properties/${id}`,
       data,

@@ -35,7 +35,7 @@ export default function NotificationsScreen() {
     fetchNotifications();
   }, []);
 
-  const fetchNotifications = async () => {
+  async function fetchNotifications() {
     try {
       const data = await notificationApi.getAll(token!);
       setNotifications(data);
@@ -45,7 +45,7 @@ export default function NotificationsScreen() {
       setLoading(false);
       setRefreshing(false);
     }
-  };
+  }
 
   const handleMarkAsRead = async (notificationId: string) => {
     try {
@@ -135,7 +135,7 @@ export default function NotificationsScreen() {
             <Ionicons name="notifications-off-outline" size={64} color="#C7C7CC" />
             <Text style={styles.emptyTitle}>No Notifications</Text>
             <Text style={styles.emptySubtitle}>
-              You're all caught up! Check back later.
+              You&apos;re all caught up! Check back later.
             </Text>
           </View>
         ) : (

@@ -19,14 +19,13 @@ import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { useAuth } from '../contexts/AuthContext';
 import axios from 'axios';
-import Constants from 'expo-constants';
 import { formatCurrency } from '../utils/localeUtils';
 import { PieChart } from 'react-native-chart-kit';
 import * as Print from 'expo-print';
 import * as Sharing from 'expo-sharing';
 import { generateInsuranceReportHTML } from '../utils/insuranceReportGenerator';
 
-const API_URL = Constants.expoConfig?.extra?.EXPO_PUBLIC_BACKEND_URL || process.env.EXPO_PUBLIC_BACKEND_URL;
+import { API_URL } from '../services/config';
 const screenWidth = Dimensions.get('window').width;
 
 interface PortfolioData {
@@ -58,11 +57,7 @@ export default function PortfolioScreen() {
   const [detailedData, setDetailedData] = useState<any>(null);
   const [loadingAssets, setLoadingAssets] = useState(false);
 
-  useEffect(() => {
-    fetchPortfolio();
-  }, []);
-
-  const fetchPortfolio = async () => {
+  async function fetchPortfolio() {
     try {
       const response = await axios.get(
         `${API_URL}/api/portfolio/summary`,
@@ -75,7 +70,13 @@ export default function PortfolioScreen() {
     } finally {
       setLoading(false);
     }
-  };
+  }
+
+  useEffect(() => {
+    fetchPortfolio();
+  }, []);
+
+
 
   const handleGeneratePDF = async () => {
     if (!portfolio) return;
@@ -1133,12 +1134,7 @@ const styles = StyleSheet.create({
     padding: 16,
     marginBottom: 12,
   },
-  categoryHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 12,
-  },
+
   categoryInfo: {
     flexDirection: 'row',
     alignItems: 'center',

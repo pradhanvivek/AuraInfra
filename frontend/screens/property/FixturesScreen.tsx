@@ -22,7 +22,6 @@ import DateTimePickerModal from 'react-native-modal-datetime-picker';
 import { useAuth } from '../../contexts/AuthContext';
 import { fixtureApi } from '../../services/api';
 import axios from 'axios';
-import Constants from 'expo-constants';
 import ImageViewer from '../../components/ImageViewer';
 
 // Conditionally import react-datepicker only on web
@@ -32,7 +31,8 @@ if (Platform.OS === 'web') {
   require('react-datepicker/dist/react-datepicker.css');
 }
 
-const API_URL = Constants.expoConfig?.extra?.EXPO_PUBLIC_BACKEND_URL || process.env.EXPO_PUBLIC_BACKEND_URL;
+import { ensureAIConsent } from '../../services/aiConsent';
+import { API_URL } from '../../services/config';
 
 interface Fixture {
   id: string;
@@ -224,7 +224,7 @@ export default function FixturesScreen({ propertyId }: FixturesScreenProps) {
     }
   }, []);
 
-  const fetchFixtures = async () => {
+  async function fetchFixtures() {
     try {
       const data = await fixtureApi.getAll(token!, propertyId);
       setFixtures(data);
@@ -233,7 +233,7 @@ export default function FixturesScreen({ propertyId }: FixturesScreenProps) {
     } finally {
       setLoading(false);
     }
-  };
+  }
 
   const resetForm = () => {
     setName('');
@@ -359,11 +359,6 @@ export default function FixturesScreen({ propertyId }: FixturesScreenProps) {
   };
 
   const handlePickImage = async () => {
-    const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
-    if (status !== 'granted') {
-      Alert.alert('Permission Required', 'Please grant camera roll permissions');
-      return;
-    }
 
     const result = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ['images'],
@@ -378,11 +373,6 @@ export default function FixturesScreen({ propertyId }: FixturesScreenProps) {
   };
 
   const handlePickInvoice = async () => {
-    const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
-    if (status !== 'granted') {
-      Alert.alert('Permission Required', 'Please grant camera roll permissions');
-      return;
-    }
 
     const result = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ['images'],
@@ -400,11 +390,6 @@ export default function FixturesScreen({ propertyId }: FixturesScreenProps) {
     // Platform-specific handling
     if (Platform.OS === 'web') {
       // For web, directly open image picker
-      const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
-      if (status !== 'granted') {
-        alert('Please grant permission to access images');
-        return;
-      }
 
       const result = await ImagePicker.launchImageLibraryAsync({
         mediaTypes: ['images'],
@@ -446,11 +431,6 @@ export default function FixturesScreen({ propertyId }: FixturesScreenProps) {
           {
             text: 'Choose from Gallery',
             onPress: async () => {
-              const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
-              if (status !== 'granted') {
-                Alert.alert('Permission Required', 'Please grant gallery permissions');
-                return;
-              }
 
               const result = await ImagePicker.launchImageLibraryAsync({
                 mediaTypes: ['images'],
@@ -476,6 +456,7 @@ export default function FixturesScreen({ propertyId }: FixturesScreenProps) {
   const analyzeReceipt = async (base64Image: string) => {
     setScanningReceipt(true);
     try {
+      await ensureAIConsent(token!);
       const response = await fetch(`${API_URL}/api/scan-receipt`, {
         method: 'POST',
         headers: {
@@ -1218,10 +1199,7 @@ const styles = StyleSheet.create({
     fontSize: 12,
     fontWeight: '600',
   },
-  warrantyStatusDisplay: {
-    marginTop: 8,
-    marginBottom: 16,
-  },
+
   fixtureCategory: {
     fontSize: 14,
     color: '#8E8E93',
@@ -1451,11 +1429,7 @@ const styles = StyleSheet.create({
     marginBottom: 8,
     gap: 8,
   },
-  scanningText: {
-    color: '#007AFF',
-    fontSize: 14,
-    fontWeight: '500',
-  },
+
   divider: {
     flexDirection: 'row',
     alignItems: 'center',

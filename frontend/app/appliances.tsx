@@ -14,10 +14,9 @@ import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { useAuth } from '../contexts/AuthContext';
 import axios from 'axios';
-import Constants from 'expo-constants';
 import { formatCurrency } from '../utils/localeUtils';
 
-const API_URL = Constants.expoConfig?.extra?.EXPO_PUBLIC_BACKEND_URL || process.env.EXPO_PUBLIC_BACKEND_URL;
+import { API_URL } from '../services/config';
 const LOGO_URL = 'https://customer-assets.emergentagent.com/job_f39f8d1e-b9ca-4840-9416-b6502fc8ae5e/artifacts/pyxhwxcq_Screenshot%202025-11-03%20at%201.19.46%E2%80%AFPM.png';
 
 interface Appliance {
@@ -38,11 +37,7 @@ export default function AppliancesScreen() {
   const [appliances, setAppliances] = useState<Appliance[]>([]);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    fetchAppliances();
-  }, []);
-
-  const fetchAppliances = async () => {
+  async function fetchAppliances() {
     try {
       const response = await axios.get(
         `${API_URL}/api/appliances`,
@@ -55,7 +50,13 @@ export default function AppliancesScreen() {
     } finally {
       setLoading(false);
     }
-  };
+  }
+
+  useEffect(() => {
+    fetchAppliances();
+  }, []);
+
+
 
   const getWarrantyStatus = (expiryDate?: string) => {
     if (!expiryDate) return null;

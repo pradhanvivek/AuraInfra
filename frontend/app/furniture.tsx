@@ -14,11 +14,10 @@ import { useRouter, useFocusEffect } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { useAuth } from '../contexts/AuthContext';
 import axios from 'axios';
-import Constants from 'expo-constants';
 import { useCallback } from 'react';
 import { formatCurrency } from '../utils/localeUtils';
 
-const API_URL = Constants.expoConfig?.extra?.EXPO_PUBLIC_BACKEND_URL || process.env.EXPO_PUBLIC_BACKEND_URL;
+import { API_URL } from '../services/config';
 
 interface Furniture {
   id: string;

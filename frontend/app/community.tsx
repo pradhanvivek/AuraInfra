@@ -12,17 +12,18 @@ import {
   TextInput,
   KeyboardAvoidingView,
   Platform,
+  Linking,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { useAuth } from '../contexts/AuthContext';
 import axios from 'axios';
-import Constants from 'expo-constants';
 
-const API_URL = Constants.expoConfig?.extra?.EXPO_PUBLIC_BACKEND_URL || process.env.EXPO_PUBLIC_BACKEND_URL;
+import { API_URL } from '../services/config';
 
 interface Post {
+  user_id: string;
   id: string;
   title: string;
   content: string;
@@ -37,6 +38,7 @@ interface Post {
 }
 
 interface Comment {
+  user_id: string;
   id: string;
   content: string;
   user_name: string;
@@ -46,7 +48,7 @@ interface Comment {
 export default function CommunityBoardScreen() {
   const router = useRouter();
   const { propertyId } = useLocalSearchParams<{ propertyId: string }>();
-  const { token } = useAuth();
+  const { token, userId } = useAuth();
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [posts, setPosts] = useState<Post[]>([]);
@@ -56,6 +58,44 @@ export default function CommunityBoardScreen() {
   const [selectedPost, setSelectedPost] = useState<Post | null>(null);
   const [comments, setComments] = useState<Comment[]>([]);
   const [newComment, setNewComment] = useState('');
+  const [standardsAccepted, setStandardsAccepted] = useState(false);
+  const [reportTarget, setReportTarget] = useState<{ type: 'post' | 'comment'; id: string } | null>(null);
+  const [reportReason, setReportReason] = useState('');
+  const [reporting, setReporting] = useState(false);
+  const [blockedAccounts, setBlockedAccounts] = useState<{ blocked_user_id: string }[]>([]);
+
+  const acceptStandards = async () => {
+    try {
+      await axios.post(`${API_URL}/api/community/accept-standards`, {}, { headers: { Authorization: `Bearer ${token}` } });
+      setStandardsAccepted(true);
+    } catch { Alert.alert('Unable to accept standards', 'Please try again.'); }
+  };
+  const submitReport = async () => {
+    if (!reportTarget || reportReason.trim().length < 3) return;
+    setReporting(true);
+    try {
+      await axios.post(`${API_URL}/api/properties/${propertyId}/community/reports`, {
+        content_type: reportTarget.type, content_id: reportTarget.id, reason: reportReason.trim(),
+      }, { headers: { Authorization: `Bearer ${token}` } });
+      setReportTarget(null); setReportReason('');
+      Alert.alert('Report submitted', 'The community administrator will review your report. Contact support@aurainfra.ai if you need further help.');
+    } catch (error: any) { Alert.alert('Unable to report', error.response?.data?.detail || 'Please try again.'); }
+    finally { setReporting(false); }
+  };
+  const blockUser = (id: string) => Alert.alert('Block this user?', 'You will no longer see each other’s posts or comments.', [
+    { text: 'Cancel', style: 'cancel' }, { text: 'Block', style: 'destructive', onPress: async () => {
+      try {
+        await axios.post(`${API_URL}/api/properties/${propertyId}/community/blocks/${id}`, {}, { headers: { Authorization: `Bearer ${token}` } });
+        setCommentsModalVisible(false); await fetchPosts();
+      } catch (error: any) { Alert.alert('Unable to block', error.response?.data?.detail || 'Please try again.'); }
+    } },
+  ]);
+  const unblockUser = async (id: string) => {
+    try {
+      await axios.delete(`${API_URL}/api/community/blocks/${id}`, { headers: { Authorization: `Bearer ${token}` } });
+      await fetchPosts();
+    } catch { Alert.alert('Unable to unblock', 'Please try again.'); }
+  };
   const [formData, setFormData] = useState({
     title: '',
     content: '',
@@ -70,13 +110,7 @@ export default function CommunityBoardScreen() {
     { id: 'complaint', name: 'Complaints', icon: 'alert-circle-outline' },
   ];
 
-  useEffect(() => {
-    if (propertyId) {
-      fetchPosts();
-    }
-  }, [propertyId, selectedCategory]);
-
-  const fetchPosts = async () => {
+  async function fetchPosts() {
     try {
       const categoryParam = selectedCategory !== 'all' ? `?category=${selectedCategory}` : '';
       const response = await axios.get(
@@ -84,6 +118,8 @@ export default function CommunityBoardScreen() {
         { headers: { Authorization: `Bearer ${token}` } }
       );
       setPosts(response.data);
+      const blocks = await axios.get(`${API_URL}/api/community/blocks`, { headers: { Authorization: `Bearer ${token}` } });
+      setBlockedAccounts(blocks.data);
     } catch (error) {
       console.error('Error fetching posts:', error);
       Alert.alert('Error', 'Failed to load community posts');
@@ -91,7 +127,15 @@ export default function CommunityBoardScreen() {
       setLoading(false);
       setRefreshing(false);
     }
-  };
+  }
+
+  useEffect(() => {
+    if (propertyId) {
+      fetchPosts();
+    }
+  }, [propertyId, selectedCategory]);
+
+
 
   const onRefresh = () => {
     setRefreshing(true);
@@ -99,6 +143,7 @@ export default function CommunityBoardScreen() {
   };
 
   const handleCreatePost = async () => {
+    if (!standardsAccepted) { Alert.alert('Community standards', 'Accept the community standards before posting.'); return; }
     if (!formData.title || !formData.content) {
       Alert.alert('Error', 'Please fill in all required fields');
       return;
@@ -114,7 +159,7 @@ export default function CommunityBoardScreen() {
         { headers: { Authorization: `Bearer ${token}` } }
       );
       
-      Alert.alert('Success', 'Post created successfully');
+      Alert.alert('Submitted for review', 'Your post will appear after a community administrator approves it.');
       setAddModalVisible(false);
       setFormData({ title: '', content: '', category: 'general' });
       fetchPosts();
@@ -154,6 +199,7 @@ export default function CommunityBoardScreen() {
 
   const handleAddComment = async () => {
     if (!newComment.trim() || !selectedPost) return;
+    if (!standardsAccepted) { Alert.alert('Community standards', 'Accept the community standards before commenting.'); return; }
 
     try {
       await axios.post(
@@ -166,6 +212,7 @@ export default function CommunityBoardScreen() {
       );
       
       setNewComment('');
+      Alert.alert('Submitted for review', 'Your comment will appear after approval.');
       // Refresh comments
       const response = await axios.get(
         `${API_URL}/api/community/posts/${selectedPost.id}/comments`,
@@ -276,9 +323,12 @@ export default function CommunityBoardScreen() {
             <Text style={styles.actionText}>{post.comments_count}</Text>
           </TouchableOpacity>
 
-          <TouchableOpacity style={styles.actionButton}>
-            <Ionicons name="share-outline" size={20} color="#8E8E93" />
+          <TouchableOpacity style={styles.actionButton} onPress={() => { setReportReason(''); setReportTarget({ type: 'post', id: post.id }); }}>
+            <Text style={styles.actionText}>Report</Text>
           </TouchableOpacity>
+          {post.user_id !== userId && <TouchableOpacity style={styles.actionButton} onPress={() => blockUser(post.user_id)}>
+            <Text style={styles.actionText}>Block</Text>
+          </TouchableOpacity>}
         </View>
       </View>
     );
@@ -305,6 +355,17 @@ export default function CommunityBoardScreen() {
           </TouchableOpacity>
         </View>
 
+      <View style={{ padding: 16, backgroundColor: '#fff' }}>
+        <TouchableOpacity onPress={() => Linking.openURL('https://aurainfra.ai/community-standards.html')}>
+          <Text style={{ color: '#007AFF' }}>Read community standards · Contact support</Text>
+        </TouchableOpacity>
+        <TouchableOpacity onPress={acceptStandards} accessibilityRole="checkbox" accessibilityState={{ checked: standardsAccepted }}>
+          <Text style={{ paddingVertical: 10 }}>{standardsAccepted ? '✓ ' : '☐ '}I agree to the community standards before posting.</Text>
+        </TouchableOpacity>
+        {blockedAccounts.map(account => <TouchableOpacity key={account.blocked_user_id} onPress={() => unblockUser(account.blocked_user_id)}>
+          <Text style={{ paddingVertical: 6, color: '#007AFF' }}>Unblock account {account.blocked_user_id.slice(0, 8)}</Text>
+        </TouchableOpacity>)}
+      </View>
       {/* Category Filter */}
       <View style={styles.categoriesContainer}>
         <ScrollView
@@ -352,6 +413,16 @@ export default function CommunityBoardScreen() {
         )}
       </ScrollView>
 
+      <Modal visible={!!reportTarget} transparent animationType="slide" onRequestClose={() => setReportTarget(null)}>
+        <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} style={styles.modalOverlay}>
+          <View style={styles.modalContent}>
+            <Text style={styles.modalTitle}>Report content</Text>
+            <TextInput style={[styles.input, styles.textArea]} value={reportReason} onChangeText={setReportReason} placeholder="What should the administrator review?" multiline maxLength={1000} />
+            <TouchableOpacity disabled={reporting || reportReason.trim().length < 3} style={styles.submitButton} onPress={submitReport}><Text style={styles.submitButtonText}>{reporting ? 'Sending…' : 'Submit report'}</Text></TouchableOpacity>
+            <TouchableOpacity onPress={() => setReportTarget(null)}><Text style={{ textAlign: 'center', padding: 20 }}>Cancel</Text></TouchableOpacity>
+          </View>
+        </KeyboardAvoidingView>
+      </Modal>
       {/* Create Post Modal */}
       <Modal
         visible={addModalVisible}
@@ -451,6 +522,10 @@ export default function CommunityBoardScreen() {
                       <Text style={styles.commentTime}>{formatDate(comment.created_at)}</Text>
                     </View>
                     <Text style={styles.commentContent}>{comment.content}</Text>
+                    <View style={{ flexDirection: 'row', gap: 20 }}>
+                      <TouchableOpacity onPress={() => { setReportReason(''); setReportTarget({ type: 'comment', id: comment.id }); }}><Text style={{ color: '#007AFF', paddingVertical: 10 }}>Report</Text></TouchableOpacity>
+                      {comment.user_id !== userId && <TouchableOpacity onPress={() => blockUser(comment.user_id)}><Text style={{ color: '#007AFF', paddingVertical: 10 }}>Block</Text></TouchableOpacity>}
+                    </View>
                   </View>
                 ))
               )}

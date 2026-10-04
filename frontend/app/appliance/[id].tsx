@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import {
   View,
   Text,
@@ -14,11 +14,10 @@ import { Ionicons } from '@expo/vector-icons';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useAuth } from '../../contexts/AuthContext';
 import axios from 'axios';
-import Constants from 'expo-constants';
 import { formatCurrency, formatDate } from '../../utils/localeUtils';
 import ImageViewer from '../../components/ImageViewer';
 
-const API_URL = Constants.expoConfig?.extra?.EXPO_PUBLIC_BACKEND_URL || process.env.EXPO_PUBLIC_BACKEND_URL;
+import { API_URL } from '../../services/config';
 
 interface Appliance {
   id: string;
@@ -50,24 +49,30 @@ export default function ApplianceDetailsScreen() {
   const [deleting, setDeleting] = useState(false);
   const [selectedImageIndex, setSelectedImageIndex] = useState<number | null>(null);
 
-  useEffect(() => {
-    fetchAppliance();
-  }, [id]);
-
-  const fetchAppliance = async () => {
+  const fetchAppliance = useCallback(async (isActive: () => boolean = () => true) => {
     try {
       const response = await axios.get(
         `${API_URL}/api/appliances/${id}`,
         { headers: { Authorization: `Bearer ${token}` } }
       );
+      if (!isActive()) return;
       setAppliance(response.data);
     } catch (error: any) {
+      if (!isActive()) return;
       console.error('Failed to fetch appliance:', error);
       Alert.alert('Error', 'Failed to load appliance details');
     } finally {
-      setLoading(false);
+      if (isActive()) setLoading(false);
     }
-  };
+  }, [id, token]);
+
+  useEffect(() => {
+    let active = true;
+    void fetchAppliance(() => active);
+    return () => { active = false; };
+  }, [fetchAppliance]);
+
+
 
   const handleDelete = () => {
     Alert.alert(

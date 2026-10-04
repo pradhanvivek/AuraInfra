@@ -14,9 +14,8 @@ import { CameraView, useCameraPermissions } from 'expo-camera';
 import { Ionicons } from '@expo/vector-icons';
 import { useAuth } from '../../contexts/AuthContext';
 import axios from 'axios';
-import Constants from 'expo-constants';
 
-const API_URL = Constants.expoConfig?.extra?.EXPO_PUBLIC_BACKEND_URL || process.env.EXPO_PUBLIC_BACKEND_URL;
+import { API_URL } from '../../services/config';
 
 interface PaintEstimationScreenProps {
   propertyId: string;
@@ -64,7 +63,7 @@ export default function PaintEstimationScreen({ propertyId }: PaintEstimationScr
     fetchEstimations();
   }, []);
 
-  const fetchEstimations = async () => {
+  async function fetchEstimations() {
     try {
       const response = await axios.get(
         `${API_URL}/api/properties/${propertyId}/paint-estimations`,
@@ -76,7 +75,7 @@ export default function PaintEstimationScreen({ propertyId }: PaintEstimationScr
     } finally {
       setLoading(false);
     }
-  };
+  }
 
   const handleStartScan = async () => {
     if (!permission?.granted) {

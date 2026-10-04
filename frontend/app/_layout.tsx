@@ -1,8 +1,11 @@
+export { default as ErrorBoundary } from '../components/ScreenError';
 import { Stack } from 'expo-router';
 import { AuthProvider } from '../contexts/AuthContext';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { useEffect } from 'react';
 import { initializePreferences } from '../utils/localeUtils';
+import SessionGate from '../components/SessionGate';
+import AIConsent from '../components/AIConsent';
 import { StatusBar } from 'expo-status-bar';
 import { useColorScheme } from 'react-native';
 
@@ -11,13 +14,15 @@ export default function RootLayout() {
 
   useEffect(() => {
     // Initialize locale preferences on app start
-    initializePreferences();
+    void initializePreferences().catch(() => {});
   }, []);
 
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
       <StatusBar style={colorScheme === 'dark' ? 'light' : 'dark'} />
       <AuthProvider>
+        <AIConsent />
+        <SessionGate>
         <Stack screenOptions={{ headerShown: false }}>
           <Stack.Screen name="index" />
           <Stack.Screen name="auth/login" />
@@ -38,6 +43,7 @@ export default function RootLayout() {
             }} 
           />
         </Stack>
+        </SessionGate>
       </AuthProvider>
     </GestureHandlerRootView>
   );

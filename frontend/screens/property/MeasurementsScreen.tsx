@@ -109,7 +109,7 @@ export default function MeasurementsScreen({ propertyId }: MeasurementsScreenPro
     fetchMeasurements();
   }, []);
 
-  const fetchMeasurements = async () => {
+  async function fetchMeasurements() {
     try {
       const data = await measurementApi.getAll(token!, propertyId);
       setMeasurements(data);
@@ -118,7 +118,7 @@ export default function MeasurementsScreen({ propertyId }: MeasurementsScreenPro
     } finally {
       setLoading(false);
     }
-  };
+  }
 
   const resetForm = () => {
     setRoomType('master_bedroom');
@@ -222,11 +222,6 @@ export default function MeasurementsScreen({ propertyId }: MeasurementsScreenPro
   };
 
   const handlePickFloorPlan = async () => {
-    const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
-    if (status !== 'granted') {
-      Alert.alert('Permission Required', 'Please grant camera roll permissions');
-      return;
-    }
 
     const result = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ['images'],
@@ -678,11 +673,6 @@ export default function MeasurementsScreen({ propertyId }: MeasurementsScreenPro
                     <TouchableOpacity 
                       style={styles.photoButton} 
                       onPress={async () => {
-                        const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
-                        if (status !== 'granted') {
-                          Alert.alert('Permission Required', 'Please grant camera roll permissions');
-                          return;
-                        }
 
                         const result = await ImagePicker.launchImageLibraryAsync({
                           mediaTypes: ['images'],

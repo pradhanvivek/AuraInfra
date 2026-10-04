@@ -16,10 +16,9 @@ import { useRouter, useLocalSearchParams } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { useAuth } from '../../../contexts/AuthContext';
 import axios from 'axios';
-import Constants from 'expo-constants';
 import DateTimePicker from '@react-native-community/datetimepicker';
 
-const API_URL = Constants.expoConfig?.extra?.EXPO_PUBLIC_BACKEND_URL || process.env.EXPO_PUBLIC_BACKEND_URL;
+import { API_URL } from '../../../services/config';
 
 interface MaintenanceDue {
   id: string;
@@ -65,7 +64,7 @@ export default function MaintenanceDuesScreen() {
     fetchResidents();
   }, [filterStatus]);
 
-  const fetchDues = async () => {
+  async function fetchDues() {
     setLoading(true);
     try {
       const url =
@@ -82,9 +81,9 @@ export default function MaintenanceDuesScreen() {
     } finally {
       setLoading(false);
     }
-  };
+  }
 
-  const fetchResidents = async () => {
+  async function fetchResidents() {
     try {
       const response = await axios.get(`${API_URL}/api/properties/${propertyId}/members`, {
         headers: { Authorization: `Bearer ${token}` },
@@ -93,7 +92,7 @@ export default function MaintenanceDuesScreen() {
     } catch (error: any) {
       console.error('Error fetching residents:', error);
     }
-  };
+  }
 
   const openSendModal = (type: 'individual' | 'bulk') => {
     setSendType(type);

@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import {
   View,
   Text,
@@ -14,11 +14,10 @@ import { Ionicons } from '@expo/vector-icons';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useAuth } from '../../contexts/AuthContext';
 import axios from 'axios';
-import Constants from 'expo-constants';
 import { formatCurrency, formatDate } from '../../utils/localeUtils';
 import ImageViewer from '../../components/ImageViewer';
 
-const API_URL = Constants.expoConfig?.extra?.EXPO_PUBLIC_BACKEND_URL || process.env.EXPO_PUBLIC_BACKEND_URL;
+import { API_URL } from '../../services/config';
 
 interface Vehicle {
   id: string;
@@ -58,24 +57,30 @@ export default function VehicleDetailsScreen() {
   const [deleting, setDeleting] = useState(false);
   const [selectedImageIndex, setSelectedImageIndex] = useState<number | null>(null);
 
-  useEffect(() => {
-    fetchVehicle();
-  }, [id]);
-
-  const fetchVehicle = async () => {
+  const fetchVehicle = useCallback(async (isActive: () => boolean = () => true) => {
     try {
       const response = await axios.get(
         `${API_URL}/api/vehicles/${id}`,
         { headers: { Authorization: `Bearer ${token}` } }
       );
+      if (!isActive()) return;
       setVehicle(response.data);
     } catch (error: any) {
+      if (!isActive()) return;
       console.error('Failed to fetch vehicle:', error);
       Alert.alert('Error', 'Failed to load vehicle details');
     } finally {
-      setLoading(false);
+      if (isActive()) setLoading(false);
     }
-  };
+  }, [id, token]);
+
+  useEffect(() => {
+    let active = true;
+    void fetchVehicle(() => active);
+    return () => { active = false; };
+  }, [fetchVehicle]);
+
+
 
   const handleDelete = () => {
     Alert.alert(

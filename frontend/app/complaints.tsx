@@ -18,9 +18,8 @@ import { useRouter, useLocalSearchParams } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { useAuth } from '../contexts/AuthContext';
 import axios from 'axios';
-import Constants from 'expo-constants';
 
-const API_URL = Constants.expoConfig?.extra?.EXPO_PUBLIC_BACKEND_URL || process.env.EXPO_PUBLIC_BACKEND_URL;
+import { API_URL } from '../services/config';
 
 interface Complaint {
   id: string;
@@ -68,7 +67,7 @@ export default function ComplaintsScreen() {
     }
   }, [propertyId, activeTab]);
 
-  const fetchComplaints = async () => {
+  async function fetchComplaints() {
     try {
       const response = await axios.get(
         `${API_URL}/api/properties/${propertyId}/complaints?status=${activeTab}`,
@@ -82,7 +81,7 @@ export default function ComplaintsScreen() {
       setLoading(false);
       setRefreshing(false);
     }
-  };
+  }
 
   const onRefresh = () => {
     setRefreshing(true);

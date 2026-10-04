@@ -18,10 +18,9 @@ import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { useAuth } from '../../contexts/AuthContext';
 import axios from 'axios';
-import Constants from 'expo-constants';
 import * as ImagePicker from 'expo-image-picker';
 
-const API_URL = Constants.expoConfig?.extra?.EXPO_PUBLIC_BACKEND_URL || process.env.EXPO_PUBLIC_BACKEND_URL;
+import { API_URL } from '../../services/config';
 
 interface CommunityProperty {
   id: string;
@@ -65,7 +64,7 @@ export default function CommunityPropertiesScreen() {
     fetchProperties();
   }, []);
 
-  const fetchProperties = async () => {
+  async function fetchProperties() {
     setLoading(true);
     try {
       const response = await axios.get(`${API_URL}/api/admin/super/community-properties`, {
@@ -77,12 +76,12 @@ export default function CommunityPropertiesScreen() {
     } finally {
       setLoading(false);
     }
-  };
+  }
 
   const pickImage = async () => {
     try {
       const result = await ImagePicker.launchImageLibraryAsync({
-        mediaTypes: Platform.OS === 'web' ? 'Images' as any : ImagePicker.MediaType.Images,
+        mediaTypes: ['images'],
         allowsEditing: true,
         aspect: [1, 1],
         quality: 0.5,

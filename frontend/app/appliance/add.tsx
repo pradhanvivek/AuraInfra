@@ -19,7 +19,6 @@ import { CameraView, useCameraPermissions } from 'expo-camera';
 import * as ImagePicker from 'expo-image-picker';
 import { useAuth } from '../../contexts/AuthContext';
 import axios from 'axios';
-import Constants from 'expo-constants';
 import DateTimePickerModal from 'react-native-modal-datetime-picker';
 import { getCurrencyInfo } from '../../utils/localeUtils';
 
@@ -30,7 +29,7 @@ if (Platform.OS === 'web') {
   require('react-datepicker/dist/react-datepicker.css');
 }
 
-const API_URL = Constants.expoConfig?.extra?.EXPO_PUBLIC_BACKEND_URL || process.env.EXPO_PUBLIC_BACKEND_URL;
+import { API_URL } from '../../services/config';
 
 const categories = [
   'TV', 'Laptop', 'Refrigerator', 'Washing Machine', 'Microwave',
@@ -84,6 +83,101 @@ export default function AddApplianceScreen() {
   const [datePickerMode, setDatePickerMode] = useState<'purchase' | 'warranty' | 'lastMaint' | 'nextMaint'>('purchase');
 
   // Handle prescan mode - automatically scan the provided image
+  async function fetchAppliance() {
+    try {
+      const response = await axios.get(
+        `${API_URL}/api/appliances/${editId}`,
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      const data = response.data;
+      setName(data.name || '');
+      setCategory(data.category || 'TV');
+      setBrand(data.brand || '');
+      setModel(data.model || '');
+      setSerialNumber(data.serial_number || '');
+      setPurchaseDate(data.purchase_date || '');
+      setPurchaseCost(data.purchase_cost ? data.purchase_cost.toString() : '');
+      setCurrentValue(data.current_value ? data.current_value.toString() : '');
+      setWarrantyInfo(data.warranty_info || '');
+      setWarrantyExpiry(data.warranty_expiry || '');
+      setPhotos(data.photos || []);
+      setInvoice(data.invoice || '');
+      setNotes(data.notes || '');
+      setLastMaintenance(data.last_maintenance || '');
+      setNextMaintenance(data.next_maintenance || '');
+      setMaintenanceFrequency(data.maintenance_frequency ? data.maintenance_frequency.toString() : '');
+    } catch (error: any) {
+      console.error('Failed to fetch appliance:', error);
+      Alert.alert('Error', 'Failed to load appliance details');
+      router.back();
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  async function processApplianceScan(base64Data: string) {
+    setScanning(true);
+    try {
+      const response = await axios.post(
+        `${API_URL}/api/fixtures/scan-appliance`,
+        { image: base64Data },
+        {
+          headers: { Authorization: `Bearer ${token}` },
+          timeout: 60000
+        }
+      );
+
+      const data = response.data;
+      if (data.name) setName(data.name);
+      if (data.category) setCategory(data.category);
+      if (data.make) setBrand(data.make);
+      if (data.model) setModel(data.model);
+      if (data.serial_number) setSerialNumber(data.serial_number);
+      setPhotos([`data:image/jpeg;base64,${base64Data}`]);
+
+      if (Platform.OS === 'web') {
+        alert(`Appliance Detected!\n${data.name || 'Appliance'} identified. Please review and complete the details.`);
+      } else {
+        Alert.alert(
+          'Appliance Detected!',
+          `${data.name || 'Appliance'} identified. Please review and complete the details.`
+        );
+      }
+    } catch (error: any) {
+      if (Platform.OS === 'web') {
+        alert('Failed to scan appliance');
+      } else {
+        Alert.alert('Error', 'Failed to scan appliance');
+      }
+    } finally {
+      setScanning(false);
+    }
+  }
+
+  async function handlePrescanImage(imageData: string) {
+    // Process the pre-scanned image without opening camera
+    try {
+      // Extract clean base64 data
+      let base64Data = imageData;
+      if (imageData.includes('base64,')) {
+        base64Data = imageData.split('base64,')[1];
+      } else if (imageData.startsWith('data:')) {
+        // Handle edge case where prefix exists but no comma
+        base64Data = imageData.replace(/^data:image\/[^;]+;base64,?/, '');
+      }
+
+      // Store the full image with prefix for display
+      const imageWithPrefix = `data:image/jpeg;base64,${base64Data}`;
+      setPhotos([imageWithPrefix]);
+
+      await processApplianceScan(base64Data);
+    } catch (error) {
+      console.error('Failed to process prescan image:', error);
+    }
+  }
+
+
+
   useEffect(() => {
     if (prescanMode && prescanImage) {
       // Use the pre-scanned image directly
@@ -203,59 +297,9 @@ export default function AddApplianceScreen() {
     }
   }, []);
 
-  const fetchAppliance = async () => {
-    try {
-      const response = await axios.get(
-        `${API_URL}/api/appliances/${editId}`,
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
-      const data = response.data;
-      setName(data.name || '');
-      setCategory(data.category || 'TV');
-      setBrand(data.brand || '');
-      setModel(data.model || '');
-      setSerialNumber(data.serial_number || '');
-      setPurchaseDate(data.purchase_date || '');
-      setPurchaseCost(data.purchase_cost ? data.purchase_cost.toString() : '');
-      setCurrentValue(data.current_value ? data.current_value.toString() : '');
-      setWarrantyInfo(data.warranty_info || '');
-      setWarrantyExpiry(data.warranty_expiry || '');
-      setPhotos(data.photos || []);
-      setInvoice(data.invoice || '');
-      setNotes(data.notes || '');
-      setLastMaintenance(data.last_maintenance || '');
-      setNextMaintenance(data.next_maintenance || '');
-      setMaintenanceFrequency(data.maintenance_frequency ? data.maintenance_frequency.toString() : '');
-    } catch (error: any) {
-      console.error('Failed to fetch appliance:', error);
-      Alert.alert('Error', 'Failed to load appliance details');
-      router.back();
-    } finally {
-      setLoading(false);
-    }
-  };
 
-  const handlePrescanImage = async (imageData: string) => {
-    // Process the pre-scanned image without opening camera
-    try {
-      // Extract clean base64 data
-      let base64Data = imageData;
-      if (imageData.includes('base64,')) {
-        base64Data = imageData.split('base64,')[1];
-      } else if (imageData.startsWith('data:')) {
-        // Handle edge case where prefix exists but no comma
-        base64Data = imageData.replace(/^data:image\/[^;]+;base64,?/, '');
-      }
       
-      // Store the full image with prefix for display
-      const imageWithPrefix = `data:image/jpeg;base64,${base64Data}`;
-      setPhotos([imageWithPrefix]);
       
-      await processApplianceScan(base64Data);
-    } catch (error) {
-      console.error('Failed to process prescan image:', error);
-    }
-  };
 
   const handleScan = async () => {
     if (Platform.OS === 'web') {
@@ -283,44 +327,7 @@ export default function AddApplianceScreen() {
     }
   };
 
-  const processApplianceScan = async (base64Data: string) => {
-    setScanning(true);
-    try {
-      const response = await axios.post(
-        `${API_URL}/api/fixtures/scan-appliance`,
-        { image: base64Data },
-        { 
-          headers: { Authorization: `Bearer ${token}` },
-          timeout: 60000
-        }
-      );
 
-      const data = response.data;
-      if (data.name) setName(data.name);
-      if (data.category) setCategory(data.category);
-      if (data.make) setBrand(data.make);
-      if (data.model) setModel(data.model);
-      if (data.serial_number) setSerialNumber(data.serial_number);
-      setPhotos([`data:image/jpeg;base64,${base64Data}`]);
-      
-      if (Platform.OS === 'web') {
-        alert(`Appliance Detected!\n${data.name || 'Appliance'} identified. Please review and complete the details.`);
-      } else {
-        Alert.alert(
-          'Appliance Detected!',
-          `${data.name || 'Appliance'} identified. Please review and complete the details.`
-        );
-      }
-    } catch (error: any) {
-      if (Platform.OS === 'web') {
-        alert('Failed to scan appliance');
-      } else {
-        Alert.alert('Error', 'Failed to scan appliance');
-      }
-    } finally {
-      setScanning(false);
-    }
-  };
 
   const handleTakePicture = async () => {
     if (!cameraRef) return;
@@ -479,11 +486,6 @@ export default function AddApplianceScreen() {
   };
 
   const handleAddPhoto = async () => {
-    const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
-    if (status !== 'granted') {
-      Alert.alert('Permission Required', 'Please grant photo library permissions');
-      return;
-    }
 
     const result = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ['images'],

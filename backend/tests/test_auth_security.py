@@ -20,7 +20,8 @@ FRONTEND_ENV = Path("/app/frontend/.env")
 load_dotenv(FRONTEND_ENV)
 
 BASE_URL = os.environ.get("EXPO_PUBLIC_BACKEND_URL", "").rstrip("/")
-assert BASE_URL, "EXPO_PUBLIC_BACKEND_URL missing from /app/frontend/.env"
+if not BASE_URL or os.environ.get("RUN_LIVE_TESTS") != "1":
+    pytest.skip("Live integration tests require RUN_LIVE_TESTS=1 and an isolated test deployment", allow_module_level=True)
 
 API = f"{BASE_URL}/api"
 

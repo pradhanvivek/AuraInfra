@@ -17,10 +17,9 @@ import { useRouter, useLocalSearchParams } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { useAuth } from '../contexts/AuthContext';
 import axios from 'axios';
-import Constants from 'expo-constants';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-const API_URL = Constants.expoConfig?.extra?.EXPO_PUBLIC_BACKEND_URL || process.env.EXPO_PUBLIC_BACKEND_URL;
+import { API_URL } from '../services/config';
 
 interface Amenity {
   id: string;
@@ -68,7 +67,7 @@ export default function AmenitiesScreen() {
     }
   }, [propertyId, activeTab]);
 
-  const fetchData = async () => {
+  async function fetchData() {
     try {
       const [amenitiesRes, bookingsRes] = await Promise.all([
         axios.get(
@@ -89,7 +88,7 @@ export default function AmenitiesScreen() {
       setLoading(false);
       setRefreshing(false);
     }
-  };
+  }
 
   const onRefresh = () => {
     setRefreshing(true);

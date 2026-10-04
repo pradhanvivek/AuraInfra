@@ -57,7 +57,7 @@ export default function DocumentsScreen({ propertyId }: DocumentsScreenProps) {
     fetchDocuments();
   }, []);
 
-  const fetchDocuments = async () => {
+  async function fetchDocuments() {
     try {
       const data = await documentApi.getAll(token!, propertyId);
       setDocuments(data);
@@ -70,7 +70,7 @@ export default function DocumentsScreen({ propertyId }: DocumentsScreenProps) {
     } finally {
       setLoading(false);
     }
-  };
+  }
 
   const handleUploadDocument = async () => {
     console.log('=== UPLOAD DOCUMENT START ===');

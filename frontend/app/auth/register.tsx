@@ -20,9 +20,8 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import * as ImagePicker from 'expo-image-picker';
 import axios from 'axios';
-import Constants from 'expo-constants';
 
-const API_URL = Constants.expoConfig?.extra?.EXPO_PUBLIC_BACKEND_URL || process.env.EXPO_PUBLIC_BACKEND_URL;
+import { API_URL } from '../../services/config';
 
 interface Property {
   id: string;
@@ -44,11 +43,7 @@ export default function Register() {
   const [propertyModalVisible, setPropertyModalVisible] = useState(false);
   const [loadingProperties, setLoadingProperties] = useState(false);
 
-  useEffect(() => {
-    fetchProperties();
-  }, []);
-
-  const fetchProperties = async () => {
+  async function fetchProperties() {
     setLoadingProperties(true);
     try {
       const response = await axios.get(`${API_URL}/api/public/properties`);
@@ -58,7 +53,13 @@ export default function Register() {
     } finally {
       setLoadingProperties(false);
     }
-  };
+  }
+
+  useEffect(() => {
+    fetchProperties();
+  }, []);
+
+
 
   const togglePropertySelection = (propertyId: string) => {
     setSelectedProperties(prev =>
@@ -69,14 +70,15 @@ export default function Register() {
   };
 
   const handleRegister = async () => {
-    if (!username || !email || !password || !confirmPassword) {
+    if (loading) return;
+    if (!username.trim() || !email.trim() || !password || !confirmPassword) {
       Alert.alert('Error', 'Please fill in all fields');
       return;
     }
 
     // Basic email validation
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(email)) {
+    if (!emailRegex.test(email.trim())) {
       Alert.alert('Error', 'Please enter a valid email address');
       return;
     }
@@ -86,15 +88,15 @@ export default function Register() {
       return;
     }
 
-    if (password.length < 6) {
-      Alert.alert('Error', 'Password must be at least 6 characters');
+    if (password.length < 8) {
+      Alert.alert('Error', 'Password must be at least 8 characters');
       return;
     }
 
     setLoading(true);
     try {
-      await register(username, email, password, selectedProperties);
-      router.replace('/(tabs)');
+      await register(username.trim(), email.trim().toLowerCase(), password, selectedProperties);
+      router.replace('/auth/disclaimer');
     } catch (error: any) {
       Alert.alert('Registration Failed', error.message);
     } finally {
@@ -108,7 +110,7 @@ export default function Register() {
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
         style={styles.keyboardView}
       >
-        <View style={styles.content}>
+        <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
           <View style={styles.logoContainer}>
             <View style={styles.logoBox}>
               <Text style={styles.logoText}>A</Text>
@@ -118,7 +120,7 @@ export default function Register() {
           </View>
 
           <Text style={styles.title}>Create Account</Text>
-          <Text style={styles.subtitle}>Sign up to get started</Text>
+          <Text style={styles.subtitle}>Create an account. Community access requires approval.</Text>
 
           <View style={styles.form}>
             <TextInput
@@ -136,6 +138,8 @@ export default function Register() {
               value={email}
               onChangeText={setEmail}
               autoCapitalize="none"
+              autoComplete="email"
+              maxLength={254}
               keyboardType="email-address"
               editable={!loading}
             />
@@ -145,6 +149,7 @@ export default function Register() {
               placeholder="Password"
               value={password}
               onChangeText={setPassword}
+              autoComplete="new-password"
               secureTextEntry
               editable={!loading}
             />
@@ -154,6 +159,7 @@ export default function Register() {
               placeholder="Confirm Password"
               value={confirmPassword}
               onChangeText={setConfirmPassword}
+              autoComplete="new-password"
               secureTextEntry
               editable={!loading}
             />
@@ -165,7 +171,7 @@ export default function Register() {
             >
               <View style={styles.propertySelectorContent}>
                 <View>
-                  <Text style={styles.propertySelectorLabel}>Select Properties (Optional)</Text>
+                  <Text style={styles.propertySelectorLabel}>Request community membership (optional)</Text>
                   <Text style={styles.propertySelectorValue}>
                     {selectedProperties.length > 0
                       ? `${selectedProperties.length} propert${selectedProperties.length === 1 ? 'y' : 'ies'} selected`
@@ -195,7 +201,7 @@ export default function Register() {
               <Text style={styles.linkText}>Already have an account? Login</Text>
             </TouchableOpacity>
           </View>
-        </View>
+        </ScrollView>
       </KeyboardAvoidingView>
 
       {/* Property Selection Modal */}
@@ -269,7 +275,8 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   content: {
-    flex: 1,
+    flexGrow: 1,
+    width: '100%', maxWidth: 600, alignSelf: 'center',
     padding: 24,
     justifyContent: 'center',
   },

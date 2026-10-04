@@ -16,10 +16,9 @@ import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { useAuth } from '../../contexts/AuthContext';
 import axios from 'axios';
-import Constants from 'expo-constants';
 import DateTimePicker from '@react-native-community/datetimepicker';
 
-const API_URL = Constants.expoConfig?.extra?.EXPO_PUBLIC_BACKEND_URL || process.env.EXPO_PUBLIC_BACKEND_URL;
+import { API_URL } from '../../services/config';
 
 interface Meeting {
   id: string;
@@ -76,7 +75,7 @@ export default function AdminMeetings() {
     }
   }, [propertyId]);
 
-  const fetchPropertyId = async () => {
+  async function fetchPropertyId() {
     try {
       const response = await axios.get(`${API_URL}/api/auth/profile`, {
         headers: { 'Authorization': `Bearer ${token}` }
@@ -91,9 +90,9 @@ export default function AdminMeetings() {
       console.error('Error:', error);
       Alert.alert('Error', 'Failed to load profile');
     }
-  };
+  }
 
-  const fetchMeetings = async () => {
+  async function fetchMeetings() {
     try {
       const response = await axios.get(
         `${API_URL}/api/properties/${propertyId}/meetings`,
@@ -107,7 +106,7 @@ export default function AdminMeetings() {
     } finally {
       setLoading(false);
     }
-  };
+  }
 
   const handleSubmit = async () => {
     if (!formData.title || !formData.description || !formData.location) {

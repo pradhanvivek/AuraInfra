@@ -5,13 +5,12 @@ import { Ionicons } from '@expo/vector-icons';
 import { useAuth } from '../../contexts/AuthContext';
 import { useState, useCallback } from 'react';
 import axios from 'axios';
-import Constants from 'expo-constants';
 import { formatCurrency } from '../../utils/localeUtils';
 import { getCurrencyInfo } from '../../utils/localeUtils';
 import { PieChart } from 'react-native-chart-kit';
 import PageDemo, { assetsPageSteps } from '../../components/PageDemo';
 
-const API_URL = Constants.expoConfig?.extra?.EXPO_PUBLIC_BACKEND_URL || process.env.EXPO_PUBLIC_BACKEND_URL;
+import { API_URL } from '../../services/config';
 
 const { width } = Dimensions.get('window');
 // Responsive tile size: smaller on larger screens, rectangular shape
@@ -57,6 +56,8 @@ export default function DashboardScreen() {
       // Set default values if API fails
       setPortfolioData({
         total_value: 0,
+        properties_value: 0, vehicles_value: 0, appliances_value: 0,
+        jewelry_value: 0, furniture_value: 0, art_value: 0,
         properties_count: 0,
         vehicles_count: 0,
         appliances_count: 0,

@@ -138,7 +138,7 @@ Once the build completes:
 The app uses these environment variables from `.env`:
 ```
 EXPO_PUBLIC_BACKEND_URL=https://hoa-portal-fixes.emergent.host
-EXPO_PUBLIC_GOOGLE_MAPS_API_KEY=AIzaSyAKpmba-0cD6Mrtgq1HWztqk0Scp5RV9KI
+EXPO_PUBLIC_GOOGLE_MAPS_API_KEY=<your-restricted-maps-key>
 ```
 
 These are automatically included in the build.

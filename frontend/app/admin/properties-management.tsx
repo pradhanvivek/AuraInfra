@@ -13,9 +13,8 @@ import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { useAuth } from '../../contexts/AuthContext';
 import axios from 'axios';
-import Constants from 'expo-constants';
 
-const API_URL = Constants.expoConfig?.extra?.EXPO_PUBLIC_BACKEND_URL || process.env.EXPO_PUBLIC_BACKEND_URL;
+import { API_URL } from '../../services/config';
 
 interface Property {
   id: string;
@@ -34,7 +33,7 @@ export default function PropertiesManagementScreen() {
     fetchProperties();
   }, []);
 
-  const fetchProperties = async () => {
+  async function fetchProperties() {
     setLoading(true);
     try {
       const response = await axios.get(`${API_URL}/api/admin/super/all-properties`, {
@@ -46,7 +45,7 @@ export default function PropertiesManagementScreen() {
     } finally {
       setLoading(false);
     }
-  };
+  }
 
   return (
     <SafeAreaView style={styles.container}>

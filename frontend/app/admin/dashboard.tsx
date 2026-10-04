@@ -13,9 +13,8 @@ import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { useAuth } from '../../contexts/AuthContext';
 import axios from 'axios';
-import Constants from 'expo-constants';
 
-const API_URL = Constants.expoConfig?.extra?.EXPO_PUBLIC_BACKEND_URL || process.env.EXPO_PUBLIC_BACKEND_URL;
+import { API_URL } from '../../services/config';
 
 interface DashboardStats {
   property_id: string;
@@ -40,17 +39,7 @@ export default function AdminDashboard() {
   const [managedProperties, setManagedProperties] = useState<any[]>([]);
   const [selectorVisible, setSelectorVisible] = useState(false);
 
-  useEffect(() => {
-    fetchProfile();
-  }, []);
-
-  useEffect(() => {
-    if (selectedProperty) {
-      fetchDashboardStats();
-    }
-  }, [selectedProperty]);
-
-  const fetchProfile = async () => {
+  async function fetchProfile() {
     try {
       const response = await axios.get(`${API_URL}/api/auth/profile`, {
         headers: { 'Authorization': `Bearer ${token}` }
@@ -77,9 +66,9 @@ export default function AdminDashboard() {
     } finally {
       setLoading(false);
     }
-  };
+  }
 
-  const fetchDashboardStats = async () => {
+  async function fetchDashboardStats() {
     try {
       const response = await axios.get(
         `${API_URL}/api/admin/properties/${selectedProperty}/dashboard`,
@@ -100,7 +89,21 @@ export default function AdminDashboard() {
     } catch (error) {
       console.error('Error fetching stats:', error);
     }
-  };
+  }
+
+  useEffect(() => {
+    fetchProfile();
+  }, []);
+
+  useEffect(() => {
+    if (selectedProperty) {
+      fetchDashboardStats();
+    }
+  }, [selectedProperty]);
+
+
+
+
 
   if (loading) {
     return (
@@ -209,6 +212,10 @@ export default function AdminDashboard() {
       {/* Quick Actions */}
       <View style={styles.section}>
         <Text style={styles.sectionTitle}>Management</Text>
+        <TouchableOpacity style={styles.actionButton} disabled={!selectedProperty} onPress={() => router.push({ pathname: '/admin/moderation', params: { propertyId: selectedProperty } })}>
+          <Ionicons name="shield-checkmark-outline" size={24} color="#007AFF" />
+          <Text style={styles.actionText}>Content moderation & reports</Text>
+        </TouchableOpacity>
         
         <TouchableOpacity
           style={styles.actionButton}

@@ -15,9 +15,8 @@ import { useRouter, useLocalSearchParams } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { useAuth } from '../contexts/AuthContext';
 import axios from 'axios';
-import Constants from 'expo-constants';
 
-const API_URL = Constants.expoConfig?.extra?.EXPO_PUBLIC_BACKEND_URL || process.env.EXPO_PUBLIC_BACKEND_URL;
+import { API_URL } from '../services/config';
 
 interface HOACharge {
   id: string;
@@ -47,7 +46,7 @@ export default function HOAMaintenanceScreen() {
     }
   }, [propertyId]);
 
-  const fetchCharges = async () => {
+  async function fetchCharges() {
     try {
       const response = await axios.get(
         `${API_URL}/api/properties/${propertyId}/hoa-charges`,
@@ -61,7 +60,7 @@ export default function HOAMaintenanceScreen() {
       setLoading(false);
       setRefreshing(false);
     }
-  };
+  }
 
   const onRefresh = () => {
     setRefreshing(true);
@@ -72,7 +71,7 @@ export default function HOAMaintenanceScreen() {
     setPayingChargeId(chargeId);
     try {
       // Get origin URL for redirect
-      const origin = API_URL.replace('/api', '');
+      const origin = process.env.EXPO_PUBLIC_PAYMENT_RETURN_ORIGIN || 'https://aurainfra.ai';
       
       // Create Stripe checkout session
       const response = await axios.post(

@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import {
   View,
   Text,
@@ -13,11 +13,10 @@ import { useLocalSearchParams, useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { useAuth } from '../../contexts/AuthContext';
 import axios from 'axios';
-import Constants from 'expo-constants';
 import { formatCurrency, formatDate } from '../../utils/localeUtils';
 import ImageViewer from '../../components/ImageViewer';
 
-const API_URL = Constants.expoConfig?.extra?.EXPO_PUBLIC_BACKEND_URL || process.env.EXPO_PUBLIC_BACKEND_URL;
+import { API_URL } from '../../services/config';
 
 interface Jewelry {
   id: string;
@@ -49,24 +48,30 @@ export default function JewelryDetailsScreen() {
   const [deleting, setDeleting] = useState(false);
   const [selectedImageIndex, setSelectedImageIndex] = useState<number | null>(null);
 
-  useEffect(() => {
-    fetchJewelry();
-  }, [id]);
-
-  const fetchJewelry = async () => {
+  const fetchJewelry = useCallback(async (isActive: () => boolean = () => true) => {
     try {
       const response = await axios.get(
         `${API_URL}/api/jewelry/${id}`,
         { headers: { Authorization: `Bearer ${token}` } }
       );
+      if (!isActive()) return;
       setJewelry(response.data);
     } catch (error: any) {
+      if (!isActive()) return;
       console.error('Failed to fetch jewelry:', error);
       Alert.alert('Error', 'Failed to load jewelry details');
     } finally {
-      setLoading(false);
+      if (isActive()) setLoading(false);
     }
-  };
+  }, [id, token]);
+
+  useEffect(() => {
+    let active = true;
+    void fetchJewelry(() => active);
+    return () => { active = false; };
+  }, [fetchJewelry]);
+
+
 
   const handleDelete = () => {
     Alert.alert(

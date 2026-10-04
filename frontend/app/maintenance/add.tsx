@@ -16,7 +16,6 @@ import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { useAuth } from '../../contexts/AuthContext';
 import axios from 'axios';
-import Constants from 'expo-constants';
 import DateTimePickerModal from 'react-native-modal-datetime-picker';
 
 // Conditionally import react-datepicker only on web
@@ -25,7 +24,7 @@ if (Platform.OS === 'web') {
   ReactDatePicker = require('react-datepicker').default;
 }
 
-const API_URL = Constants.expoConfig?.extra?.EXPO_PUBLIC_BACKEND_URL || process.env.EXPO_PUBLIC_BACKEND_URL;
+import { API_URL } from '../../services/config';
 
 const ASSET_TYPES = [
   { label: 'Property', value: 'property' },
@@ -88,6 +87,31 @@ export default function AddMaintenanceScreen() {
   
   const [availableAssets, setAvailableAssets] = useState<Asset[]>([]);
   const [loadingAssets, setLoadingAssets] = useState(false);
+
+  async function fetchAssets() {
+    setLoadingAssets(true);
+    try {
+      const endpoint = assetType === 'property'
+        ? '/api/users/properties'
+        : `/api/${assetType}s`;
+
+      const response = await axios.get(`${API_URL}${endpoint}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+
+      const assets = response.data.map((asset: any) => ({
+        id: asset.id,
+        name: asset.name || asset.address || asset.make || asset.title || 'Unnamed',
+      }));
+
+      setAvailableAssets(assets);
+    } catch (error: any) {
+      console.error('Failed to fetch assets:', error);
+      Alert.alert('Error', 'Failed to load assets');
+    } finally {
+      setLoadingAssets(false);
+    }
+  }
 
   useEffect(() => {
     if (assetType) {
@@ -201,30 +225,7 @@ export default function AddMaintenanceScreen() {
     }
   }, []);
 
-  const fetchAssets = async () => {
-    setLoadingAssets(true);
-    try {
-      const endpoint = assetType === 'property' 
-        ? '/api/users/properties' 
-        : `/api/${assetType}s`;
       
-      const response = await axios.get(`${API_URL}${endpoint}`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-
-      const assets = response.data.map((asset: any) => ({
-        id: asset.id,
-        name: asset.name || asset.address || asset.make || asset.title || 'Unnamed',
-      }));
-
-      setAvailableAssets(assets);
-    } catch (error: any) {
-      console.error('Failed to fetch assets:', error);
-      Alert.alert('Error', 'Failed to load assets');
-    } finally {
-      setLoadingAssets(false);
-    }
-  };
 
   const handleSave = async () => {
     // Validation

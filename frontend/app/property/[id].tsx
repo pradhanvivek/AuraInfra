@@ -1,6 +1,6 @@
 import { createMaterialTopTabNavigator } from 'expo-router/js-top-tabs';
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { View, Text, StyleSheet, ActivityIndicator, TouchableOpacity, Platform } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
@@ -32,20 +32,26 @@ export default function PropertyDetails() {
   const [property, setProperty] = useState<Property | null>(null);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    fetchProperty();
-  }, [id]);
-
-  const fetchProperty = async () => {
+  const fetchProperty = useCallback(async (isActive: () => boolean = () => true) => {
     try {
       const data = await propertyApi.getById(token!, id!);
+      if (!isActive()) return;
       setProperty(data);
     } catch (error) {
+      if (!isActive()) return;
       console.error('Failed to fetch property:', error);
     } finally {
-      setLoading(false);
+      if (isActive()) setLoading(false);
     }
-  };
+  }, [id, token]);
+
+  useEffect(() => {
+    let active = true;
+    void fetchProperty(() => active);
+    return () => { active = false; };
+  }, [fetchProperty]);
+
+
 
   if (loading) {
     return (
@@ -108,38 +114,14 @@ export default function PropertyDetails() {
             tabBarScrollEnabled: true,
           }}
         >
-          <Tab.Screen
-            name="Health"
-            children={() => <HealthScoreScreen propertyId={id!} />}
-          />
-          <Tab.Screen
-            name="Documents"
-            children={() => <DocumentsScreen propertyId={id!} />}
-          />
-          <Tab.Screen
-            name="Fixtures"
-            children={() => <FixturesScreen propertyId={id!} />}
-          />
-          <Tab.Screen
-            name="Measurements"
-            children={() => <MeasurementsScreen propertyId={id!} />}
-          />
-          <Tab.Screen
-            name="Paint"
-            children={() => <PaintEstimationScreen propertyId={id!} />}
-          />
-          <Tab.Screen
-            name="Vastu"
-            children={() => <VastuScreen propertyId={id!} geomancyType="vastu" />}
-          />
-          <Tab.Screen
-            name="Feng Shui"
-            children={() => <VastuScreen propertyId={id!} geomancyType="feng_shui" />}
-          />
-          <Tab.Screen
-            name="Near Me"
-            children={() => <NearMeScreen propertyId={id!} />}
-          />
+          <Tab.Screen name="Health">{() => <HealthScoreScreen propertyId={id!} />}</Tab.Screen>
+          <Tab.Screen name="Documents">{() => <DocumentsScreen propertyId={id!} />}</Tab.Screen>
+          <Tab.Screen name="Fixtures">{() => <FixturesScreen propertyId={id!} />}</Tab.Screen>
+          <Tab.Screen name="Measurements">{() => <MeasurementsScreen propertyId={id!} />}</Tab.Screen>
+          <Tab.Screen name="Paint">{() => <PaintEstimationScreen propertyId={id!} />}</Tab.Screen>
+          <Tab.Screen name="Vastu">{() => <VastuScreen propertyId={id!} geomancyType="vastu" />}</Tab.Screen>
+          <Tab.Screen name="Feng Shui">{() => <VastuScreen propertyId={id!} geomancyType="feng_shui" />}</Tab.Screen>
+          <Tab.Screen name="Near Me">{() => <NearMeScreen propertyId={id!} />}</Tab.Screen>
         </Tab.Navigator>
       </View>
     </View>

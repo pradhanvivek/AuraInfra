@@ -19,14 +19,13 @@ import { useRouter, useLocalSearchParams } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { useAuth } from '../contexts/AuthContext';
 import axios from 'axios';
-import Constants from 'expo-constants';
 import * as DocumentPicker from 'expo-document-picker';
 import * as FileSystem from 'expo-file-system/legacy';
 import * as Sharing from 'expo-sharing';
 import * as IntentLauncher from 'expo-intent-launcher';
 import PDFViewer from '../components/PDFViewer';
 
-const API_URL = Constants.expoConfig?.extra?.EXPO_PUBLIC_BACKEND_URL || process.env.EXPO_PUBLIC_BACKEND_URL;
+import { API_URL } from '../services/config';
 
 interface Document {
   id: string;
@@ -81,7 +80,7 @@ export default function HOADocumentsScreen() {
     }
   }, [propertyId, selectedCategory]);
 
-  const fetchDocuments = async () => {
+  async function fetchDocuments() {
     try {
       if (!propertyId) {
         console.error('No property ID provided');
@@ -102,9 +101,9 @@ export default function HOADocumentsScreen() {
       setLoading(false);
       setRefreshing(false);
     }
-  };
+  }
 
-  const checkUserAdmin = async () => {
+  async function checkUserAdmin() {
     try {
       const response = await axios.get(`${API_URL}/api/auth/profile`, {
         headers: { Authorization: `Bearer ${token}` }
@@ -115,7 +114,7 @@ export default function HOADocumentsScreen() {
     } catch (error) {
       console.error('Error checking admin status:', error);
     }
-  };
+  }
 
   const pickDocument = async () => {
     try {
@@ -141,56 +140,35 @@ export default function HOADocumentsScreen() {
 
   const handleUpload = async () => {
     if (!uploadForm.title || !uploadForm.fileUri) {
-      Alert.alert('Error', 'Please provide title and select a file');
-      return;
+      Alert.alert('Error', 'Please provide a title and select a file'); return;
     }
-
     setUploading(true);
     try {
-      const response = await fetch(uploadForm.fileUri);
-      const blob = await response.blob();
-      const reader = new FileReader();
-      
-      reader.onloadend = async () => {
-        const base64data = reader.result as string;
-        
-        try {
-          await axios.post(
-            `${API_URL}/api/properties/${propertyId}/hoa-documents`,
-            {
-              property_id: propertyId,
-              title: uploadForm.title,
-              category: uploadForm.category,
-              description: uploadForm.description,
-              file_data: base64data,
-              file_type: uploadForm.fileType,
-              file_name: uploadForm.fileName,
-            },
-            { headers: { Authorization: `Bearer ${token}` } }
-          );
-
-          Alert.alert('Success', 'Document uploaded successfully');
-          setShowUploadModal(false);
-          setUploadForm({
-            title: '',
-            category: 'bylaws',
-            description: '',
-            fileUri: '',
-            fileName: '',
-            fileType: '',
-          });
-          fetchDocuments();
-        } catch (error: any) {
-          Alert.alert('Error', error.response?.data?.detail || 'Failed to upload document');
-        }
-      };
-      
-      reader.readAsDataURL(blob);
-    } catch (error) {
-      Alert.alert('Error', 'Failed to process file');
-    } finally {
-      setUploading(false);
-    }
+      let fileData: string;
+      if (Platform.OS === 'web') {
+        const response = await fetch(uploadForm.fileUri);
+        const blob = await response.blob();
+        fileData = await new Promise<string>((resolve, reject) => {
+          const reader = new FileReader();
+          reader.onload = () => resolve(String(reader.result));
+          reader.onerror = () => reject(new Error('Unable to read document'));
+          reader.readAsDataURL(blob);
+        });
+      } else {
+        fileData = await FileSystem.readAsStringAsync(uploadForm.fileUri, { encoding: FileSystem.EncodingType.Base64 });
+      }
+      if (fileData.length > 14_000_000) throw new Error('Choose a document smaller than 10 MB.');
+      await axios.post(`${API_URL}/api/properties/${propertyId}/hoa-documents`, {
+        property_id: propertyId, title: uploadForm.title, category: uploadForm.category,
+        description: uploadForm.description, file_data: fileData,
+        file_type: uploadForm.fileType, file_name: uploadForm.fileName,
+      }, { headers: { Authorization: `Bearer ${token}` } });
+      Alert.alert('Success', 'Document uploaded successfully');
+      setShowUploadModal(false);
+      setUploadForm({ title: '', category: 'bylaws', description: '', fileUri: '', fileName: '', fileType: '' });
+      await fetchDocuments();
+    } catch (error: any) { Alert.alert('Upload failed', error.response?.data?.detail || error.message); }
+    finally { setUploading(false); }
   };
 
   const onRefresh = () => {

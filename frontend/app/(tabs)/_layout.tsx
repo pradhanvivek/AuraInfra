@@ -6,9 +6,8 @@ import { notificationApi } from '../../services/api';
 import { View, Text, StyleSheet, Platform } from 'react-native';
 import AppTour, { useAppTour } from '../../components/AppTour';
 import axios from 'axios';
-import Constants from 'expo-constants';
 
-const API_URL = Constants.expoConfig?.extra?.EXPO_PUBLIC_BACKEND_URL || process.env.EXPO_PUBLIC_BACKEND_URL;
+import { API_URL } from '../../services/config';
 
 export default function TabsLayout() {
   const { token } = useAuth();
@@ -17,33 +16,20 @@ export default function TabsLayout() {
   const { tourVisible, completeTour, skipTour } = useAppTour();
 
   useEffect(() => {
-    fetchUnreadCount();
-    checkAdminStatus();
-    // Check for warranties on mount
-    notificationApi.checkWarranties(token!).catch(console.error);
-  }, []);
+    if (!token) return;
+    let active = true;
+    void axios.get(`${API_URL}/api/auth/profile`, {
+      headers: { Authorization: `Bearer ${token}` }, timeout: 15000,
+    }).then(response => {
+      if (active) setIsAdmin(Boolean(response.data.managed_properties?.length));
+    }).catch(() => { if (active) setIsAdmin(false); });
+    void notificationApi.getAll(token).then(notifications => {
+      if (active) setUnreadCount(notifications.filter((n: any) => !n.is_read).length);
+    }).catch(() => {});
+    void notificationApi.checkWarranties(token).catch(() => {});
+    return () => { active = false; };
+  }, [token]);
 
-  const checkAdminStatus = async () => {
-    try {
-      const response = await axios.get(`${API_URL}/api/auth/profile`, {
-        headers: { 'Authorization': `Bearer ${token}` }
-      });
-      // Check if user has managed_properties (is an admin)
-      setIsAdmin(response.data.managed_properties && response.data.managed_properties.length > 0);
-    } catch (error) {
-      console.error('Error checking admin status:', error);
-    }
-  };
-
-  const fetchUnreadCount = async () => {
-    try {
-      const notifications = await notificationApi.getAll(token!);
-      const unread = notifications.filter((n: any) => !n.is_read).length;
-      setUnreadCount(unread);
-    } catch (error) {
-      console.error('Error fetching notifications:', error);
-    }
-  };
 
   return (
     <>

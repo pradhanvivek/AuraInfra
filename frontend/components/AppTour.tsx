@@ -221,45 +221,24 @@ export default function AppTour({ visible, onComplete, onSkip }: AppTourProps) {
 }
 
 // Hook to manage tour state
-export function useAppTour() {
+const tourListeners = new Set<() => void>();
+
+export function useAppTour(autoShow = true) {
   const [tourVisible, setTourVisible] = useState(false);
   const [tourCompleted, setTourCompleted] = useState(false);
 
   useEffect(() => {
-    checkTourStatus();
-    
-    // Poll for tour_show_now signal every 500ms
-    const interval = setInterval(async () => {
-      try {
-        const showNow = await AsyncStorage.getItem('tour_show_now');
-        if (showNow === 'true') {
-          await AsyncStorage.removeItem('tour_show_now');
-          setTourVisible(true);
-          setTourCompleted(false);
-        }
-      } catch (error) {
-        console.error('Error checking tour signal:', error);
-      }
-    }, 500);
-    
-    return () => clearInterval(interval);
-  }, []);
-
-  const checkTourStatus = async () => {
-    try {
-      const completed = await AsyncStorage.getItem('tour_completed');
-      if (completed === 'true') {
-        setTourCompleted(true);
-      } else {
-        // Show tour for first-time users after a short delay
-        setTimeout(() => {
-          setTourVisible(true);
-        }, 1000);
-      }
-    } catch (error) {
-      console.error('Error checking tour status:', error);
-    }
-  };
+    let active = true;
+    let timer: ReturnType<typeof setTimeout> | undefined;
+    const showTour = () => { if (active) { setTourVisible(true); setTourCompleted(false); } };
+    tourListeners.add(showTour);
+    void AsyncStorage.getItem('tour_completed').then(completed => {
+      if (!active) return;
+      if (completed === 'true') setTourCompleted(true);
+      else if (autoShow) timer = setTimeout(showTour, 1000);
+    }).catch(() => {});
+    return () => { active = false; if (timer) clearTimeout(timer); tourListeners.delete(showTour); };
+  }, [autoShow]);
 
   const completeTour = async () => {
     try {
@@ -288,9 +267,7 @@ export function useAppTour() {
   const resetTour = async () => {
     try {
       await AsyncStorage.removeItem('tour_completed');
-      await AsyncStorage.setItem('tour_show_now', 'true');
-      setTourCompleted(false);
-      setTourVisible(true);
+      tourListeners.forEach(show => show());
     } catch (error) {
       console.error('Error resetting tour:', error);
     }
@@ -314,7 +291,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   darkOverlay: {
-    ...StyleSheet.absoluteFillObject,
+    position: 'absolute', top: 0, right: 0, bottom: 0, left: 0,
   },
   contentContainer: {
     width: Platform.OS === 'web' ? Math.min(SCREEN_WIDTH * 0.9, 500) : SCREEN_WIDTH * 0.9,

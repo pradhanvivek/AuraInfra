@@ -47,7 +47,7 @@ export default function VastuScreen({ propertyId, geomancyType = 'vastu' }: Vast
     fetchAnalyses();
   }, []);
 
-  const fetchAnalyses = async () => {
+  async function fetchAnalyses() {
     try {
       const data = await vastuApi.getAll(token!, propertyId, geomancyType);
       setAnalyses(data);
@@ -56,14 +56,9 @@ export default function VastuScreen({ propertyId, geomancyType = 'vastu' }: Vast
     } finally {
       setLoading(false);
     }
-  };
+  }
 
   const handleAnalyzeFloorPlan = async () => {
-    const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
-    if (status !== 'granted') {
-      Alert.alert('Permission Required', 'Please grant camera roll permissions');
-      return;
-    }
 
     const result = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ['images'],
@@ -232,7 +227,7 @@ export default function VastuScreen({ propertyId, geomancyType = 'vastu' }: Vast
             return (
               <Swipeable
                 key={analysis.id}
-                ref={(ref) => (swipeableRefs.current[analysis.id] = ref)}
+                ref={(ref) => { swipeableRefs.current[analysis.id] = ref; }}
                 renderRightActions={(progress, dragX) =>
                   renderRightActions(progress, dragX, analysis)
                 }

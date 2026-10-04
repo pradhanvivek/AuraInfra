@@ -6,9 +6,8 @@ import { useState, useCallback } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import NearMeScreen from '../screens/property/NearMeScreen';
 import axios from 'axios';
-import Constants from 'expo-constants';
 
-const API_URL = Constants.expoConfig?.extra?.EXPO_PUBLIC_BACKEND_URL || process.env.EXPO_PUBLIC_BACKEND_URL;
+import { API_URL } from '../services/config';
 
 export default function NearMeRoute() {
   const router = useRouter();
@@ -16,13 +15,7 @@ export default function NearMeRoute() {
   const [selectedProperty, setSelectedProperty] = useState<any>(null);
 
   // Refetch selected property whenever the page comes into focus
-  useFocusEffect(
-    useCallback(() => {
-      fetchSelectedProperty();
-    }, [])
-  );
-
-  const fetchSelectedProperty = async () => {
+  async function fetchSelectedProperty() {
     try {
       // Get selected property from AsyncStorage (saved from dashboard)
       const AsyncStorage = await import('@react-native-async-storage/async-storage').then(
@@ -50,7 +43,15 @@ export default function NearMeRoute() {
     } catch (error) {
       console.error('Failed to fetch properties:', error);
     }
-  };
+  }
+
+  useFocusEffect(
+    useCallback(() => {
+      fetchSelectedProperty();
+    }, [])
+  );
+
+
 
   if (!selectedProperty) {
     return (

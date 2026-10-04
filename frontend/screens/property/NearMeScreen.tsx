@@ -11,12 +11,11 @@ import {
   RefreshControl,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import Constants from 'expo-constants';
 import { useAuth } from '../../contexts/AuthContext';
 import { propertyApi } from '../../services/api';
 
 // API endpoint configuration
-const API_URL = Constants.expoConfig?.extra?.EXPO_PUBLIC_BACKEND_URL || process.env.EXPO_PUBLIC_BACKEND_URL;
+import { API_URL } from '../../services/config';
 const NOMINATIM_URL = process.env.EXPO_PUBLIC_NOMINATIM_URL || 'https://nominatim.openstreetmap.org';
 
 interface NearbyPlace {
@@ -77,7 +76,7 @@ export default function NearMeScreen({ propertyId }: NearMeScreenProps) {
     fetchPropertyAndPlaces();
   }, []);
 
-  const fetchPropertyAndPlaces = async () => {
+  async function fetchPropertyAndPlaces() {
     try {
       const propertyData = await propertyApi.getById(token!, propertyId);
       setProperty(propertyData);
@@ -96,7 +95,7 @@ export default function NearMeScreen({ propertyId }: NearMeScreenProps) {
     } finally {
       setLoading(false);
     }
-  };
+  }
 
   const geocodeAndFetchPlaces = async (address: string) => {
     try {

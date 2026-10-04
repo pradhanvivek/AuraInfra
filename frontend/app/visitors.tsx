@@ -17,10 +17,9 @@ import { useRouter, useLocalSearchParams } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { useAuth } from '../contexts/AuthContext';
 import axios from 'axios';
-import Constants from 'expo-constants';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-const API_URL = Constants.expoConfig?.extra?.EXPO_PUBLIC_BACKEND_URL || process.env.EXPO_PUBLIC_BACKEND_URL;
+import { API_URL } from '../services/config';
 
 interface Visitor {
   id: string;
@@ -60,7 +59,7 @@ export default function VisitorsScreen() {
     }
   }, [propertyId, activeTab]);
 
-  const fetchVisitors = async () => {
+  async function fetchVisitors() {
     try {
       const response = await axios.get(
         `${API_URL}/api/properties/${propertyId}/visitors?date_filter=${activeTab}`,
@@ -74,7 +73,7 @@ export default function VisitorsScreen() {
       setLoading(false);
       setRefreshing(false);
     }
-  };
+  }
 
   const onRefresh = () => {
     setRefreshing(true);

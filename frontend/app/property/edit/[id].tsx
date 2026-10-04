@@ -26,7 +26,7 @@ if (Platform.OS !== 'web') {
   GooglePlacesAutocomplete = require('react-native-google-places-autocomplete').GooglePlacesAutocomplete;
 }
 
-const API_URL = Constants.expoConfig?.extra?.EXPO_PUBLIC_BACKEND_URL || process.env.EXPO_PUBLIC_BACKEND_URL;
+import { API_URL } from '../../../services/config';
 const GOOGLE_MAPS_API_KEY = process.env.EXPO_PUBLIC_GOOGLE_MAPS_API_KEY || Constants.expoConfig?.extra?.googleMapsApiKey || '';
 
 export default function EditPropertyScreen() {
@@ -51,11 +51,7 @@ export default function EditPropertyScreen() {
   const [showSuggestions, setShowSuggestions] = useState(false);
   const debounceTimer = useRef<any>(null);
 
-  useEffect(() => {
-    fetchProperty();
-  }, []);
-
-  const fetchProperty = async () => {
+  async function fetchProperty() {
     try {
       const property = await propertyApi.getById(token!, id!);
       console.log('Property fetched:', property.name, 'Address:', property.address);
@@ -72,7 +68,13 @@ export default function EditPropertyScreen() {
     } finally {
       setLoading(false);
     }
-  };
+  }
+
+  useEffect(() => {
+    fetchProperty();
+  }, []);
+
+
 
   // Web-specific autocomplete functions using backend proxy
   const fetchPlaceSuggestions = async (input: string) => {
@@ -318,8 +320,8 @@ export default function EditPropertyScreen() {
                   minLength={2}
                   fetchDetails={true}
                   predefinedPlaces={[]}
-                  listViewDisplayed="auto"
-                  enablePoweredByContainer={false}
+
+
                   disableScroll={true}
                   onPress={(data: any, details: any = null) => {
                     console.log('GooglePlaces onPress - data:', data?.description, 'details:', details);
@@ -398,7 +400,7 @@ export default function EditPropertyScreen() {
                 listViewDisplayed="auto"
                 keyboardShouldPersistTaps="handled"
                 nestedScrollEnabled={true}
-                renderRow={(rowData) => {
+                renderRow={(rowData: any) => {
                   const title = rowData.structured_formatting.main_text;
                   const address = rowData.structured_formatting.secondary_text;
                   return (
@@ -410,7 +412,7 @@ export default function EditPropertyScreen() {
                 }}
                 enablePoweredByContainer={false}
                 debounce={300}
-                onFail={(error) => console.error('Google Places Error:', error)}
+                onFail={(error: unknown) => console.error('Google Places Error:', error)}
                 requestUrl={{
                   useOnPlatform: 'web',
                   url: 'https://cors-anywhere.herokuapp.com/https://maps.googleapis.com/maps/api',

@@ -18,9 +18,8 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import * as ImagePicker from 'expo-image-picker';
 import axios from 'axios';
-import Constants from 'expo-constants';
 
-const API_URL = Constants.expoConfig?.extra?.EXPO_PUBLIC_BACKEND_URL || process.env.EXPO_PUBLIC_BACKEND_URL;
+import { API_URL } from '../../services/config';
 
 interface Property {
   id: string;
@@ -30,7 +29,8 @@ interface Property {
 
 export default function RegisterWithApproval() {
   const router = useRouter();
-  const [step, setStep] = useState(1); // 1: Basic Info, 2: Property & Role, 3: Documents
+  const [step, setStep] = useState(1);
+  const [registrationToken, setRegistrationToken] = useState<string | null>(null); // 1: Basic Info, 2: Property & Role, 3: Documents
   const [username, setUsername] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -42,20 +42,22 @@ export default function RegisterWithApproval() {
   const [documentNames, setDocumentNames] = useState<string[]>([]);
   const [loading, setLoading] = useState(false);
 
+  async function fetchProperties() {
+    try {
+      const response = await axios.get(`${API_URL}/api/public/properties`);
+      setProperties(response.data);
+    } catch (error) {
+      console.error('Error fetching properties:', error);
+    }
+  }
+
   useEffect(() => {
     if (step === 2) {
       fetchProperties();
     }
   }, [step]);
 
-  const fetchProperties = async () => {
-    try {
-      const response = await axios.get(`${API_URL}/api/properties`);
-      setProperties(response.data);
-    } catch (error) {
-      console.error('Error fetching properties:', error);
-    }
-  };
+
 
   const handleStep1Next = () => {
     if (!username || !email || !password || !confirmPassword) {
@@ -74,8 +76,8 @@ export default function RegisterWithApproval() {
       return;
     }
 
-    if (password.length < 6) {
-      Alert.alert('Error', 'Password must be at least 6 characters');
+    if (password.length < 8) {
+      Alert.alert('Error', 'Password must be at least 8 characters');
       return;
     }
 
@@ -96,11 +98,6 @@ export default function RegisterWithApproval() {
       return;
     }
 
-    const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
-    if (status !== 'granted') {
-      Alert.alert('Permission Required', 'Camera roll permissions are required to upload documents');
-      return;
-    }
 
     const result = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ImagePicker.MediaTypeOptions.Images,
@@ -129,14 +126,12 @@ export default function RegisterWithApproval() {
 
     setLoading(true);
     try {
-      // Step 1: Register user
-      const registerResponse = await axios.post(`${API_URL}/api/auth/register`, {
-        username,
-        email,
-        password,
-      });
-
-      const { access_token, user_id } = registerResponse.data;
+      let access_token = registrationToken;
+      if (!access_token) {
+        const response = await axios.post(`${API_URL}/api/auth/register`, { username, email, password });
+        access_token = response.data.access_token;
+        setRegistrationToken(access_token);
+      }
 
       // Step 2: Submit approval request
       await axios.post(
@@ -154,7 +149,7 @@ export default function RegisterWithApproval() {
 
       Alert.alert(
         'Registration Submitted!',
-        'Your registration has been submitted for approval. You will be notified once the HOA admin reviews your request.',
+        'Your community membership is pending approval. You can sign in now to manage your personal assets and check your membership status.',
         [
           {
             text: 'OK',

@@ -17,7 +17,6 @@ import { useRouter, useLocalSearchParams } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { useAuth } from '../../contexts/AuthContext';
 import axios from 'axios';
-import Constants from 'expo-constants';
 import * as ImagePicker from 'expo-image-picker';
 import DateTimePickerModal from 'react-native-modal-datetime-picker';
 import { getCurrencyInfo } from '../../utils/localeUtils';
@@ -30,7 +29,7 @@ if (Platform.OS === 'web') {
   require('react-datepicker/dist/react-datepicker.css');
 }
 
-const API_URL = Constants.expoConfig?.extra?.EXPO_PUBLIC_BACKEND_URL || process.env.EXPO_PUBLIC_BACKEND_URL;
+import { API_URL } from '../../services/config';
 
 const FURNITURE_CATEGORIES = ['Sofa', 'Table', 'Chair', 'Bed', 'Cabinet', 'Desk', 'Shelf', 'Wardrobe', 'Other'];
 const MATERIALS = ['Wood', 'Metal', 'Fabric', 'Leather', 'Glass', 'Plastic', 'Mixed', 'Other'];
@@ -74,6 +73,37 @@ export default function AddFurnitureScreen() {
   const [conditionModalVisible, setConditionModalVisible] = useState(false);
   const [datePickerVisible, setDatePickerVisible] = useState(false);
   const [datePickerMode, setDatePickerMode] = useState<'purchase' | 'warranty'>('purchase');
+
+  async function fetchFurniture() {
+    try {
+      const response = await axios.get(
+        `${API_URL}/api/furniture/${editId}`,
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      const data = response.data;
+      setName(data.name || '');
+      setCategory(data.category || 'Sofa');
+      setBrand(data.brand || '');
+      setMaterial(data.material || 'Wood');
+      setDimensions(data.dimensions || '');
+      setRoomLocation(data.room_location || '');
+      setCondition(data.condition || 'Good');
+      setPurchaseDate(data.purchase_date || '');
+      setPurchaseCost(data.purchase_cost ? data.purchase_cost.toString() : '');
+      setCurrentValue(data.current_value ? data.current_value.toString() : '');
+      setWarrantyInfo(data.warranty_info || '');
+      setWarrantyExpiry(data.warranty_expiry_date || '');
+      setPhotos(data.photos || []);
+      setInvoice(data.invoice || '');
+      setNotes(data.notes || '');
+    } catch (error: any) {
+      console.error('Failed to fetch furniture:', error);
+      Alert.alert('Error', 'Failed to load furniture details');
+      router.back();
+    } finally {
+      setLoading(false);
+    }
+  }
 
   useEffect(() => {
     if (isEditing) {
@@ -187,36 +217,7 @@ export default function AddFurnitureScreen() {
     }
   }, []);
 
-  const fetchFurniture = async () => {
-    try {
-      const response = await axios.get(
-        `${API_URL}/api/furniture/${editId}`,
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
-      const data = response.data;
-      setName(data.name || '');
-      setCategory(data.category || 'Sofa');
-      setBrand(data.brand || '');
-      setMaterial(data.material || 'Wood');
-      setDimensions(data.dimensions || '');
-      setRoomLocation(data.room_location || '');
-      setCondition(data.condition || 'Good');
-      setPurchaseDate(data.purchase_date || '');
-      setPurchaseCost(data.purchase_cost ? data.purchase_cost.toString() : '');
-      setCurrentValue(data.current_value ? data.current_value.toString() : '');
-      setWarrantyInfo(data.warranty_info || '');
-      setWarrantyExpiry(data.warranty_expiry_date || '');
-      setPhotos(data.photos || []);
-      setInvoice(data.invoice || '');
-      setNotes(data.notes || '');
-    } catch (error: any) {
-      console.error('Failed to fetch furniture:', error);
-      Alert.alert('Error', 'Failed to load furniture details');
-      router.back();
-    } finally {
-      setLoading(false);
-    }
-  };
+
 
   const handleScan = async () => {
     if (!permission?.granted) {

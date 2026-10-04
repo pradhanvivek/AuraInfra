@@ -2,14 +2,13 @@ import { View, Text, StyleSheet, ScrollView, TouchableOpacity, ActivityIndicator
 import { useRouter, useFocusEffect } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { useAuth } from '../../contexts/AuthContext';
-import { useState, useCallback, useEffect } from 'react';
+import { useState, useCallback } from 'react';
 import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import Constants from 'expo-constants';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import PageDemo, { propertiesPageSteps } from '../../components/PageDemo';
 
-const API_URL = Constants.expoConfig?.extra?.EXPO_PUBLIC_BACKEND_URL || process.env.EXPO_PUBLIC_BACKEND_URL;
+import { API_URL } from '../../services/config';
 
 interface Property {
   id: string;
@@ -29,21 +28,7 @@ export default function PropertiesScreen() {
   const [viewMoreModalVisible, setViewMoreModalVisible] = useState(false);
   const [demoVisible, setDemoVisible] = useState(false);
 
-  useFocusEffect(
-    useCallback(() => {
-      fetchProperties();
-    }, [token])
-  );
-
-  const saveSelectedProperty = async (property: Property) => {
-    try {
-      await AsyncStorage.setItem('selectedProperty', JSON.stringify(property));
-    } catch (error) {
-      console.error('Error saving selected property:', error);
-    }
-  };
-
-  const loadSelectedProperty = async (): Promise<Property | null> => {
+  async function loadSelectedProperty(): Promise<Property | null> {
     try {
       const saved = await AsyncStorage.getItem('selectedProperty');
       return saved ? JSON.parse(saved) : null;
@@ -51,9 +36,17 @@ export default function PropertiesScreen() {
       console.error('Error loading selected property:', error);
       return null;
     }
-  };
+  }
 
-  const fetchProperties = async () => {
+  async function saveSelectedProperty(property: Property) {
+    try {
+      await AsyncStorage.setItem('selectedProperty', JSON.stringify(property));
+    } catch (error) {
+      console.error('Error saving selected property:', error);
+    }
+  }
+
+  const fetchProperties = useCallback(async () => {
     try {
       const response = await axios.get(
         `${API_URL}/api/users/properties`,
@@ -61,23 +54,30 @@ export default function PropertiesScreen() {
       );
       setProperties(response.data);
       
-      // Try to load previously selected property
+      // Use current server data; a revoked community must not remain selected.
       const savedProperty = await loadSelectedProperty();
-      if (savedProperty && response.data.find((p: Property) => p.id === savedProperty.id)) {
-        // If saved property still exists in the list, use it
-        setSelectedProperty(savedProperty);
-      } else if (response.data.length > 0 && !selectedProperty) {
-        // Otherwise, default to first property
-        const firstProperty = response.data[0];
-        setSelectedProperty(firstProperty);
-        await saveSelectedProperty(firstProperty);
-      }
+      const current = response.data.find((p: Property) => p.id === savedProperty?.id) || response.data[0] || null;
+      setSelectedProperty(current);
+      if (current) await saveSelectedProperty(current);
+      else await AsyncStorage.removeItem('selectedProperty');
     } catch (error) {
       console.error('Error fetching properties:', error);
     } finally {
       setLoading(false);
     }
-  };
+  }, [token]);
+
+  useFocusEffect(
+    useCallback(() => {
+      fetchProperties();
+    }, [fetchProperties])
+  );
+
+
+
+
+
+
 
   const myPropertyCards = [
     {
@@ -588,6 +588,7 @@ export default function PropertiesScreen() {
 }
 
 const styles = StyleSheet.create({
+  headerTitle: { fontSize: 22, fontWeight: '700', color: '#000' },
   safeArea: {
     flex: 1,
     backgroundColor: '#fff',
@@ -720,11 +721,7 @@ const styles = StyleSheet.create({
     fontStyle: 'italic',
     fontSize: 10,
   },
-  modalOverlay: {
-    flex: 1,
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
-    justifyContent: 'flex-end',
-  },
+
   modalContent: {
     backgroundColor: '#fff',
     borderTopLeftRadius: 24,

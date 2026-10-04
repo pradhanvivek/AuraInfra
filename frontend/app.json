@@ -16,9 +16,10 @@
       "buildNumber": "1",
       "infoPlist": {
         "NSCameraUsageDescription": "AuraInfra uses your camera to let you photograph properties, vehicles, appliances, jewelry, furniture, and art so you can catalog and track your assets.",
-        "NSPhotoLibraryUsageDescription": "AuraInfra needs access to your photo library so you can attach existing photos to your properties and other tracked assets.",
-        "NSPhotoLibraryAddUsageDescription": "AuraInfra saves exported documents and images to your photo library when you choose to save or share them."
-      }
+        "NSPhotoLibraryUsageDescription": "AuraInfra lets you select existing photos to attach to your assets and community records.",
+        "NSMotionUsageDescription": "AuraInfra uses device orientation while you measure and estimate painting requirements for a property."
+      },
+      "usesAppleSignIn": true
     },
     "android": {
       "adaptiveIcon": {
@@ -28,9 +29,15 @@
       "package": "com.aurainfra.ai",
       "versionCode": 1,
       "permissions": [
-        "CAMERA",
-        "READ_MEDIA_IMAGES",
-        "READ_EXTERNAL_STORAGE"
+        "CAMERA"
+      ],
+      "blockedPermissions": [
+        "android.permission.READ_MEDIA_IMAGES",
+        "android.permission.READ_MEDIA_VIDEO",
+        "android.permission.READ_EXTERNAL_STORAGE",
+        "android.permission.WRITE_EXTERNAL_STORAGE",
+        "android.permission.RECORD_AUDIO",
+        "android.permission.SYSTEM_ALERT_WINDOW"
       ]
     },
     "web": {
@@ -52,23 +59,41 @@
       "expo-font",
       "expo-web-browser",
       "@react-native-community/datetimepicker",
-      "expo-secure-store",
+      [
+        "expo-secure-store",
+        {
+          "faceIDPermission": false
+        }
+      ],
       [
         "expo-camera",
         {
-          "cameraPermission": "AuraInfra uses your camera to let you photograph properties, vehicles, appliances, jewelry, furniture, and art so you can catalog and track your assets."
+          "cameraPermission": "AuraInfra uses your camera to let you photograph properties, vehicles, appliances, jewelry, furniture, and art so you can catalog and track your assets.",
+          "recordAudioAndroid": false,
+          "microphonePermission": false
         }
       ],
       [
         "expo-image-picker",
         {
-          "photosPermission": "AuraInfra needs access to your photo library so you can attach existing photos to your properties and other tracked assets.",
-          "cameraPermission": "AuraInfra uses your camera to let you photograph your assets directly from the app."
+          "photosPermission": "AuraInfra lets you select existing photos to attach to your assets and community records.",
+          "cameraPermission": "AuraInfra uses your camera to let you photograph your assets directly from the app.",
+          "microphonePermission": false
         }
       ],
       "expo-image",
       "expo-sharing",
-      "expo-status-bar"
+      "expo-status-bar",
+      "expo-apple-authentication",
+      [
+        "expo-build-properties",
+        {
+          "android": {
+            "targetSdkVersion": 36,
+            "compileSdkVersion": 36
+          }
+        }
+      ]
     ],
     "experiments": {
       "typedRoutes": true

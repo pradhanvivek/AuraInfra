@@ -23,7 +23,7 @@ import { getCurrencyInfo } from '../../utils/localeUtils';
 // Import GooglePlacesAutocomplete for native platforms only
 import GooglePlacesAutocomplete from '../../components/NativeGooglePlacesAutocomplete';
 
-const API_URL = Constants.expoConfig?.extra?.EXPO_PUBLIC_BACKEND_URL || process.env.EXPO_PUBLIC_BACKEND_URL;
+import { API_URL } from '../../services/config';
 const GOOGLE_MAPS_API_KEY = process.env.EXPO_PUBLIC_GOOGLE_MAPS_API_KEY || Constants.expoConfig?.extra?.googleMapsApiKey || '';
 
 // Debug logging for Google Maps API
@@ -371,7 +371,6 @@ export default function AddProperty() {
                 }}
                 listViewDisplayed="auto"
                 keyboardShouldPersistTaps="handled"
-                scrollEnabled={false}
                 renderRow={(rowData) => {
                   const title = rowData.structured_formatting.main_text;
                   const address = rowData.structured_formatting.secondary_text;

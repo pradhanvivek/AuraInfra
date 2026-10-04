@@ -1,6 +1,8 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import {
   View,
+  ScrollView,
+  Linking,
   Text,
   TextInput,
   TouchableOpacity,
@@ -10,15 +12,16 @@ import {
   Alert,
   ActivityIndicator,
   useColorScheme,
-  Linking,
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useAuth } from '../../contexts/AuthContext';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
-import Constants from 'expo-constants';
+import * as AppleAuthentication from 'expo-apple-authentication';
+import { signInGoogle, finishGoogleCallback, signInApple, isNativeGoogleAuthActive } from '../../services/socialAuth';
 
-const API_URL = Constants.expoConfig?.extra?.EXPO_PUBLIC_BACKEND_URL || process.env.EXPO_PUBLIC_BACKEND_URL;
+import { API_URL } from '../../services/config';
+import axios from 'axios';
 
 export default function Login() {
   const router = useRouter();
@@ -27,6 +30,8 @@ export default function Login() {
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [googleLoading, setGoogleLoading] = useState(false);
+  const [appleAvailable, setAppleAvailable] = useState(false);
+  const callbackStarted = useRef(false);
   const colorScheme = useColorScheme();
   
   // Dynamic colors based on theme
@@ -38,99 +43,59 @@ export default function Login() {
   const inputBorderColor = isDark ? '#38383A' : '#e0e0e0';
   const placeholderColor = isDark ? '#999' : '#666';
 
-  // Check for session_id in URL fragment on mount
+  const finishSignIn = useCallback(async (newToken: string, deleting = false) => {
+    await setToken(newToken);
+    if (deleting) {
+      router.replace('/(tabs)/profile');
+      Alert.alert('Identity confirmed', 'You can now delete your account from Profile.');
+      return;
+    }
+    const response = await axios.get(`${API_URL}/api/auth/profile`, { headers: { Authorization: `Bearer ${newToken}` }, timeout: 15000 });
+    const profile = response.data;
+    router.replace(profile.disclaimer_accepted ? '/(tabs)' : '/auth/disclaimer');
+  }, [setToken, router]);
+
   useEffect(() => {
-    const processSessionId = async () => {
-      if (Platform.OS === 'web' && typeof window !== 'undefined') {
-        const hash = window.location.hash;
-        const params = new URLSearchParams(hash.substring(1));
-        const sessionId = params.get('session_id');
-        
-        if (sessionId) {
-          setGoogleLoading(true);
-          try {
-            // Call backend to exchange session_id for session_token
-            const response = await fetch(`${API_URL}/api/auth/session`, {
-              method: 'POST',
-              headers: {
-                'X-Session-ID': sessionId,
-              },
-            });
-
-            if (!response.ok) {
-              throw new Error('Failed to authenticate with Google');
-            }
-
-            const data = await response.json();
-            
-            // Store session token
-            if (setToken) {
-              await setToken(data.session_token);
-            }
-            
-            // Clean URL fragment
-            window.history.replaceState(null, '', window.location.pathname);
-            
-            // Check if user needs to accept disclaimer
-            const userResponse = await fetch(`${API_URL}/api/auth/me`, {
-              headers: {
-                'Authorization': `Bearer ${data.session_token}`,
-              },
-            });
-            
-            if (userResponse.ok) {
-              const userData = await userResponse.json();
-              if (!userData.disclaimer_accepted) {
-                // Navigate to disclaimer page
-                router.replace('/auth/disclaimer');
-                return;
-              }
-            }
-            
-            // Navigate to main app
-            router.replace('/(tabs)');
-          } catch (error: any) {
-            console.error('Google auth error:', error);
-            Alert.alert('Authentication Failed', error.message || 'Failed to sign in with Google');
-            // Clean URL fragment on error too
-            window.history.replaceState(null, '', window.location.pathname);
-          } finally {
-            setGoogleLoading(false);
-          }
-        }
+    let active = true;
+    if (Platform.OS === 'ios') void AppleAuthentication.isAvailableAsync().then(value => {
+      if (active) setAppleAvailable(value);
+    }).catch(() => {});
+    const processCallback = async (url: string | null) => {
+      if (!url || !url.includes('session_id=') || callbackStarted.current || isNativeGoogleAuthActive()) return;
+      const parsed = new URL(url);
+      if (Platform.OS !== 'web' && (parsed.protocol !== 'aurainfra:' || parsed.hostname !== 'auth' || parsed.pathname !== '/login')) return;
+      callbackStarted.current = true;
+      setGoogleLoading(true);
+      try {
+        const { auth, pending } = await finishGoogleCallback(url);
+        if (active) await finishSignIn(auth.access_token, pending.purpose === 'delete');
+      } catch (error: any) {
+        if (active) Alert.alert('Sign-in failed', error.response?.data?.detail || error.message);
+      } finally {
+        if (Platform.OS === 'web') window.history.replaceState(null, '', window.location.pathname);
+        if (active) setGoogleLoading(false);
       }
     };
-
-    processSessionId();
-  }, []);
+    if (Platform.OS === 'web') void processCallback(window.location.href);
+    else void Linking.getInitialURL().then(url => { if (active) return processCallback(url); }).catch(() => {});
+    return () => { active = false; };
+  }, [finishSignIn]);
 
   const handleLogin = async () => {
-    if (!username || !password) {
+    if (loading || googleLoading) return;
+    if (!username.trim() || !password) {
       Alert.alert('Error', 'Please fill in all fields');
       return;
     }
 
     setLoading(true);
     try {
-      const loginToken = await login(username, password);
+      const loginToken = await login(username.trim(), password);
       
-      // Check if user needs to accept disclaimer
-      const userResponse = await fetch(`${API_URL}/api/auth/profile`, {
-        headers: {
-          'Authorization': `Bearer ${loginToken}`,
-        },
+      const response = await axios.get(`${API_URL}/api/auth/profile`, {
+        headers: { Authorization: `Bearer ${loginToken}` }, timeout: 15000,
       });
-      
-      if (userResponse.ok) {
-        const userData = await userResponse.json();
-        if (!userData.disclaimer_accepted) {
-          // Navigate to disclaimer page
-          router.replace('/auth/disclaimer');
-          return;
-        }
-      }
-      
-      router.replace('/(tabs)');
+      router.replace(response.data.disclaimer_accepted ? '/(tabs)' : '/auth/disclaimer');
     } catch (error: any) {
       Alert.alert('Login Failed', error.message);
     } finally {
@@ -139,27 +104,25 @@ export default function Login() {
   };
 
   const handleGoogleSignIn = async () => {
-    const AUTH_URL = Constants.expoConfig?.extra?.EXPO_PUBLIC_AUTH_URL || process.env.EXPO_PUBLIC_AUTH_URL || 'https://auth.emergentagent.com';
+    if (loading || googleLoading) return;
+    setGoogleLoading(true);
+    try {
+      const auth = await signInGoogle();
+      if (auth) await finishSignIn(auth.access_token);
+    } catch (error: any) {
+      Alert.alert('Sign-in failed', error.response?.data?.detail || error.message);
+    } finally { setGoogleLoading(false); }
+  };
     
-    if (Platform.OS === 'web' && typeof window !== 'undefined') {
-      // Get current URL as redirect target
-      const redirectUrl = encodeURIComponent(window.location.origin + window.location.pathname);
-      const authUrl = `${AUTH_URL}/?redirect=${redirectUrl}`;
-      
-      // Redirect to Emergent Auth
-      window.location.href = authUrl;
-    } else {
-      // For mobile, use Linking API
-      const redirectUrl = 'aurainfraa://auth/login'; // Deep link back to app
-      const authUrl = `${AUTH_URL}/?redirect=${encodeURIComponent(redirectUrl)}`;
-      
-      const supported = await Linking.canOpenURL(authUrl);
-      if (supported) {
-        await Linking.openURL(authUrl);
-      } else {
-        Alert.alert('Error', 'Cannot open authentication page');
-      }
-    }
+  const handleAppleSignIn = async () => {
+    if (googleLoading || loading) return;
+    setGoogleLoading(true);
+    try {
+      const auth = await signInApple();
+      await finishSignIn(auth.access_token);
+    } catch (error: any) {
+      if (error.code !== 'ERR_REQUEST_CANCELED') Alert.alert('Sign-in failed', error.response?.data?.detail || error.message);
+    } finally { setGoogleLoading(false); }
   };
 
   return (
@@ -168,7 +131,7 @@ export default function Login() {
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
         style={styles.keyboardView}
       >
-        <View style={styles.innerContainer}>
+        <ScrollView contentContainerStyle={styles.innerContainer} keyboardShouldPersistTaps="handled">
           <View style={styles.content}>
             <View style={styles.logoContainer}>
               <View style={styles.logoBox}>
@@ -193,7 +156,10 @@ export default function Login() {
                 value={username}
                 onChangeText={setUsername}
                 autoCapitalize="none"
-                editable={!loading}
+                autoCorrect={false}
+                autoComplete="username"
+                accessibilityLabel="Email or username"
+                editable={!loading && !googleLoading}
               />
 
               <TextInput
@@ -207,7 +173,9 @@ export default function Login() {
                 value={password}
                 onChangeText={setPassword}
                 secureTextEntry
-                editable={!loading}
+                autoComplete="current-password"
+                accessibilityLabel="Password"
+                editable={!loading && !googleLoading}
               />
 
               <TouchableOpacity
@@ -222,6 +190,9 @@ export default function Login() {
                 )}
               </TouchableOpacity>
 
+              <TouchableOpacity accessibilityRole="button" onPress={() => router.push('/auth/reset-password')} disabled={loading || googleLoading}>
+                <Text style={styles.linkText}>Forgot password?</Text>
+              </TouchableOpacity>
               {/* Divider */}
               <View style={styles.divider}>
                 <View style={[styles.dividerLine, { backgroundColor: inputBorderColor }]} />
@@ -229,6 +200,15 @@ export default function Login() {
                 <View style={[styles.dividerLine, { backgroundColor: inputBorderColor }]} />
               </View>
 
+              {appleAvailable && (
+                <AppleAuthentication.AppleAuthenticationButton
+                  buttonType={AppleAuthentication.AppleAuthenticationButtonType.CONTINUE}
+                  buttonStyle={isDark ? AppleAuthentication.AppleAuthenticationButtonStyle.WHITE : AppleAuthentication.AppleAuthenticationButtonStyle.BLACK}
+                  cornerRadius={12}
+                  style={{ width: '100%', height: 50 }}
+                  onPress={handleAppleSignIn}
+                />
+              )}
               {/* Google Sign-In Button */}
               <TouchableOpacity
                 style={[styles.googleButton, { 
@@ -254,17 +234,19 @@ export default function Login() {
                 onPress={() => router.push('/auth/register')}
                 disabled={loading || googleLoading}
               >
-                <Text style={styles.linkText}>Don't have an account? Register</Text>
+                <Text style={styles.linkText}>Don&apos;t have an account? Register</Text>
               </TouchableOpacity>
             </View>
           </View>
           
           <View style={styles.footer}>
+            <TouchableOpacity accessibilityRole="link" onPress={() => Linking.openURL('https://aurainfra.ai/privacy-policy.html')}><Text style={styles.linkText}>Privacy policy</Text></TouchableOpacity>
+            <TouchableOpacity accessibilityRole="link" onPress={() => Linking.openURL('mailto:support@aurainfra.ai')}><Text style={styles.linkText}>Contact support</Text></TouchableOpacity>
             <Text style={[styles.companyName, { color: subtextColor }]}>
               Jash Vish Infratech Private Limited
             </Text>
           </View>
-        </View>
+        </ScrollView>
       </KeyboardAvoidingView>
     </SafeAreaView>
   );
@@ -279,17 +261,20 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   innerContainer: {
-    flex: 1,
+    flexGrow: 1,
     justifyContent: 'space-between',
   },
   content: {
-    flex: 1,
+    flexGrow: 1,
+    width: '100%',
+    maxWidth: 600,
+    alignSelf: 'center',
     padding: 24,
     justifyContent: 'center',
   },
   logoContainer: {
     alignItems: 'center',
-    marginBottom: 48,
+    marginBottom: 24,
   },
   logoBox: {
     width: 80,

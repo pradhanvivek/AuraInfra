@@ -26,11 +26,7 @@ export default function HealthScoreScreen({ propertyId }: HealthScoreScreenProps
   const [healthData, setHealthData] = useState<any>(null);
   const [geomancyPreference, setGeomancyPreference] = useState<'vastu' | 'feng_shui'>('vastu');
 
-  useEffect(() => {
-    fetchUserPreferenceAndHealthScore();
-  }, []);
-
-  const fetchUserPreferenceAndHealthScore = async () => {
+  async function fetchUserPreferenceAndHealthScore() {
     try {
       // Fetch user preference first
       const profile = await authApi.getProfile(token!);
@@ -44,7 +40,13 @@ export default function HealthScoreScreen({ propertyId }: HealthScoreScreenProps
     } finally {
       setLoading(false);
     }
-  };
+  }
+
+  useEffect(() => {
+    fetchUserPreferenceAndHealthScore();
+  }, []);
+
+
 
   const handleCategoryPress = (key: string) => {
     // Since all tabs are already visible in the property detail page,

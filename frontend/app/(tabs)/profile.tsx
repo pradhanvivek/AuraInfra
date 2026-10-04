@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useCallback } from 'react';
 import {
   View,
   Text,
@@ -13,14 +13,18 @@ import {
   ScrollView,
   Image,
   useColorScheme,
+  Linking,
 } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { useRouter } from 'expo-router';
+import { useRouter, useFocusEffect } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import * as ImagePicker from 'expo-image-picker';
 import * as WebBrowser from 'expo-web-browser';
 import { useAuth } from '../../contexts/AuthContext';
 import { authApi } from '../../services/api';
+import axios from 'axios';
+import { API_URL } from '../../services/config';
+import { signInGoogle, signInApple } from '../../services/socialAuth';
 import { useAppTour } from '../../components/AppTour';
 
 interface UserProfile {
@@ -37,19 +41,21 @@ interface UserProfile {
   is_super_admin?: boolean;
   is_hoa_admin?: boolean;
   managed_properties?: string[];
+  auth_provider?: string;
+  has_password?: boolean;
   created_at: string;
 }
 
 export default function Profile() {
   const router = useRouter();
-  const { username, logout, token, loading: authLoading } = useAuth();
-  const { resetTour } = useAppTour();
+  const { username, logout, token, userId, setToken, loading: authLoading } = useAuth();
+  const { resetTour } = useAppTour(false);
   const colorScheme = useColorScheme();
   const isDark = colorScheme === 'dark';
-  
+
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState(true);
-  const [fetchComplete, setFetchComplete] = useState(false);
+
   const [editModalVisible, setEditModalVisible] = useState(false);
   const [editField, setEditField] = useState<'email' | 'phone' | null>(null);
   const [editValue, setEditValue] = useState('');
@@ -69,25 +75,13 @@ export default function Profile() {
   const [selectedCountry, setSelectedCountry] = useState<'India' | 'US' | 'UK' | 'Canada' | 'Australia' | 'UAE'>('India');
   const [uploadingAvatar, setUploadingAvatar] = useState(false);
 
-  useEffect(() => {
-    // Only fetch profile once when auth is ready and we haven't fetched yet
-    if (!authLoading && !fetchComplete) {
-      if (token && token !== 'null' && token.length > 10) {
-        fetchProfile();
-      } else {
-        setLoading(false);
-        setFetchComplete(true);
-      }
-    }
-  }, [authLoading, fetchComplete]); // Removed token dependency to prevent Safari reference issues
-
-  const fetchProfile = async () => {
+  const fetchProfile = useCallback(async () => {
     if (!token || token === 'null' || token.length < 10) {
       setLoading(false);
-      setFetchComplete(true);
+
       return;
     }
-    
+
     try {
       const data = await authApi.getProfile(token);
       setProfile(data);
@@ -96,15 +90,15 @@ export default function Profile() {
       setSelectedCountry(data.country || 'India');
       setSelectedCurrency(data.currency_preference || 'INR');
       setSelectedMeasurement(data.measurement_system || 'metric');
-      
+
       // Store preferences using the helper functions from localeUtils
       const { setCurrencyPreference, setMeasurementPreference, initializePreferences } = await import('../../utils/localeUtils');
-      
+
       console.log('Profile data received:', {
         currency_preference: data.currency_preference,
         measurement_system: data.measurement_system
       });
-      
+
       if (data.currency_preference) {
         await setCurrencyPreference(data.currency_preference);
         console.log('Currency preference set to:', data.currency_preference);
@@ -112,7 +106,7 @@ export default function Profile() {
         console.log('No currency preference in profile data, defaulting to INR');
         await setCurrencyPreference('INR');
       }
-      
+
       if (data.measurement_system) {
         await setMeasurementPreference(data.measurement_system);
         console.log('Measurement preference set to:', data.measurement_system);
@@ -120,19 +114,23 @@ export default function Profile() {
         console.log('No measurement preference in profile data, defaulting to metric');
         await setMeasurementPreference('metric');
       }
-      
+
       // Re-initialize preferences to update cache
       await initializePreferences();
       console.log('Preferences reinitialized after profile fetch');
-      
-      setFetchComplete(true);
+
+
     } catch (error: any) {
       Alert.alert('Error', 'Failed to load profile');
-      setFetchComplete(true);
+
     } finally {
       setLoading(false);
     }
-  };
+  }, [token]);
+
+  useFocusEffect(useCallback(() => {
+    if (!authLoading && token) void fetchProfile();
+  }, [authLoading, token, fetchProfile]));
 
   const handleEdit = (field: 'email' | 'phone') => {
     setEditField(field);
@@ -148,10 +146,10 @@ export default function Profile() {
 
     setSaving(true);
     try {
-      const updateData = editField === 'email' 
+      const updateData = editField === 'email'
         ? { email: editValue.trim() }
         : { phone: editValue.trim() };
-      
+
       const updatedProfile = await authApi.updateProfile(token!, updateData);
       setProfile(updatedProfile);
       setEditModalVisible(false);
@@ -166,8 +164,8 @@ export default function Profile() {
   const handleWarrantyReminderChange = async (days: number) => {
     setSaving(true);
     try {
-      const updatedProfile = await authApi.updateProfile(token!, { 
-        warranty_reminder_days: days 
+      const updatedProfile = await authApi.updateProfile(token!, {
+        warranty_reminder_days: days
       });
       setProfile(updatedProfile);
       setSelectedReminderDays(days);
@@ -183,8 +181,8 @@ export default function Profile() {
   const handleGeomancyChange = async (preference: 'vastu' | 'feng_shui') => {
     setSaving(true);
     try {
-      const updatedProfile = await authApi.updateProfile(token!, { 
-        geomancy_preference: preference 
+      const updatedProfile = await authApi.updateProfile(token!, {
+        geomancy_preference: preference
       });
       setProfile(updatedProfile);
       setSelectedGeomancy(preference);
@@ -200,16 +198,16 @@ export default function Profile() {
   const handleCurrencyChange = async (currency: string) => {
     setSaving(true);
     try {
-      const updatedProfile = await authApi.updateProfile(token!, { 
-        currency_preference: currency 
+      const updatedProfile = await authApi.updateProfile(token!, {
+        currency_preference: currency
       });
       setProfile(updatedProfile);
       setSelectedCurrency(currency);
-      
+
       // Update cache using the helper function
       const { setCurrencyPreference } = await import('../../utils/localeUtils');
       await setCurrencyPreference(currency);
-      
+
       setCurrencyModalVisible(false);
       Alert.alert('Success', `Currency updated to ${currency}. App will now display prices in ${currency}.`, [
         { text: 'OK', onPress: () => {
@@ -227,16 +225,16 @@ export default function Profile() {
   const handleMeasurementChange = async (system: 'metric' | 'imperial') => {
     setSaving(true);
     try {
-      const updatedProfile = await authApi.updateProfile(token!, { 
-        measurement_system: system 
+      const updatedProfile = await authApi.updateProfile(token!, {
+        measurement_system: system
       });
       setProfile(updatedProfile);
       setSelectedMeasurement(system);
-      
+
       // Update cache using the helper function
       const { setMeasurementPreference } = await import('../../utils/localeUtils');
       await setMeasurementPreference(system);
-      
+
       setMeasurementModalVisible(false);
       Alert.alert('Success', `Measurement system updated to ${system === 'metric' ? 'Metric' : 'Imperial'}`);
     } catch (error: any) {
@@ -249,8 +247,8 @@ export default function Profile() {
   const handleCountryChange = async (country: 'India' | 'US' | 'UK' | 'Canada' | 'Australia' | 'UAE') => {
     setSaving(true);
     try {
-      const updatedProfile = await authApi.updateProfile(token!, { 
-        country: country 
+      const updatedProfile = await authApi.updateProfile(token!, {
+        country: country
       });
       setProfile(updatedProfile);
       setSelectedCountry(country);
@@ -264,15 +262,13 @@ export default function Profile() {
   };
 
   const handleOpenPrivacyPolicy = () => {
-    // NOTE: update this URL once the website is deployed to point at the
-    // real hosted privacy-policy.html (see website/public/privacy-policy.html).
-    WebBrowser.openBrowserAsync('https://aurainfra.ai/privacy-policy.html');
+    void WebBrowser.openBrowserAsync('https://aurainfra.ai/privacy-policy.html');
   };
 
   const handleDeleteAccountPress = () => {
     Alert.alert(
       'Delete Account',
-      'This will permanently delete your account and all of your data — properties, vehicles, appliances, jewelry, furniture, art, and documents. This cannot be undone.',
+      'This deletes your account and personal data. Shared community accounting records are anonymized. This cannot be undone.',
       [
         { text: 'Cancel', style: 'cancel' },
         {
@@ -289,14 +285,25 @@ export default function Profile() {
   };
 
   const handleConfirmDeleteAccount = async () => {
-    if (!deleteAccountPassword) {
+    if (profile?.has_password !== false && !deleteAccountPassword) {
       Alert.alert('Error', 'Please enter your password to confirm account deletion');
       return;
     }
 
     setDeletingAccount(true);
     try {
-      await authApi.deleteAccount(token!, deleteAccountPassword);
+      let deletionToken = token!;
+      if (profile?.has_password === false) {
+        const auth = profile.auth_provider === 'apple'
+          ? await signInApple(userId!) : await signInGoogle(userId!);
+        if (!auth) return; // Cancelled, or web redirect is in progress.
+        deletionToken = auth.access_token;
+        await setToken(deletionToken);
+      }
+      const result = await authApi.deleteAccount(deletionToken, deleteAccountPassword || undefined);
+      if (result.status === 'pending') {
+        Alert.alert('Deletion requested', `${result.message} Reference: ${result.request_id}`);
+      }
       setDeleteAccountModalVisible(false);
       await logout();
       router.replace('/auth/login');
@@ -363,12 +370,12 @@ export default function Profile() {
 
       if (!result.canceled && result.assets[0].base64) {
         setUploadingAvatar(true);
-        
+
         // Update profile with new avatar
-        const updatedProfile = await authApi.updateProfile(token!, { 
-          avatar: result.assets[0].base64 
+        const updatedProfile = await authApi.updateProfile(token!, {
+          avatar: result.assets[0].base64
         });
-        
+
         setProfile(updatedProfile);
         Alert.alert('Success', 'Avatar updated successfully!');
       }
@@ -391,7 +398,7 @@ export default function Profile() {
     <View style={[styles.container, { backgroundColor: isDark ? '#000' : '#F2F2F7' }]}>
       <ScrollView style={[styles.content, { backgroundColor: isDark ? '#000' : '#F2F2F7' }]}>
         <View style={[styles.profileSection, { backgroundColor: isDark ? '#1C1C1E' : '#fff' }]}>
-          <TouchableOpacity 
+          <TouchableOpacity
             style={styles.avatarContainer}
             onPress={handleChangeAvatar}
             disabled={uploadingAvatar}
@@ -399,7 +406,7 @@ export default function Profile() {
             {uploadingAvatar ? (
               <ActivityIndicator size="large" color="#007AFF" />
             ) : profile?.avatar ? (
-              <Image 
+              <Image
                 source={{ uri: `data:image/jpeg;base64,${profile.avatar}` }}
                 style={styles.avatar}
               />
@@ -500,7 +507,7 @@ export default function Profile() {
 
         <View style={styles.section}>
           <Text style={[styles.sectionTitle, { color: isDark ? '#A0A0A0' : '#8E8E93' }]}>Notifications</Text>
-          
+
           <TouchableOpacity
             style={styles.infoCard}
             onPress={() => router.push('/notifications' as any)}
@@ -595,6 +602,22 @@ export default function Profile() {
             <Ionicons name="chevron-forward" size={20} color="#C7C7CC" />
           </TouchableOpacity>
 
+          <TouchableOpacity style={styles.logoutCard} onPress={async () => {
+            try { await axios.post(`${API_URL}/api/auth/ai-consent`, { accepted: false }, { headers: { Authorization: `Bearer ${token}` } }); Alert.alert('AI consent revoked', 'You will be asked again before your next AI analysis.'); }
+            catch { Alert.alert('Unable to update consent', 'Please try again.'); }
+          }}><Text style={styles.linkText}>Revoke permission for AI analysis</Text></TouchableOpacity>
+          <TouchableOpacity style={styles.logoutCard} onPress={() => router.push('/community-membership')}>
+            <Text style={styles.linkText}>Community membership & approval status</Text>
+          </TouchableOpacity>
+          <TouchableOpacity accessibilityRole="link" style={styles.logoutCard} onPress={() => WebBrowser.openBrowserAsync('https://aurainfra.ai/community-standards.html')}>
+            <Text style={styles.linkText}>Community standards</Text>
+          </TouchableOpacity>
+          <TouchableOpacity accessibilityRole="link" style={styles.logoutCard} onPress={() => Linking.openURL('mailto:support@aurainfra.ai')}>
+            <Text style={styles.linkText}>Contact support</Text>
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.logoutCard} onPress={() => WebBrowser.openBrowserAsync('https://aurainfra.ai/account-deletion.html')}>
+            <Text style={styles.linkText}>Account deletion help</Text>
+          </TouchableOpacity>
           <TouchableOpacity style={[styles.logoutCard, { backgroundColor: isDark ? '#1C1C1E' : '#fff' }]} onPress={handleOpenPrivacyPolicy}>
             <View style={styles.infoIcon}>
               <Ionicons name="shield-checkmark-outline" size={24} color="#007AFF" />
@@ -642,9 +665,10 @@ export default function Profile() {
 
           <View style={styles.modalContent}>
             <Text style={styles.modalDescription}>
-              Enter your password to permanently delete your account and all associated data.
-              This action cannot be undone.
+              {profile?.has_password === false ? 'Confirm your identity with your original sign-in provider.' : 'Enter your password to confirm deletion.'}
+              {' '}Your personal data will be deleted and shared accounting records anonymized. This action cannot be undone.
             </Text>
+            {profile?.has_password !== false && <>
             <Text style={styles.label}>Password</Text>
             <TextInput
               style={styles.input}
@@ -655,6 +679,7 @@ export default function Profile() {
               autoCapitalize="none"
               autoFocus
             />
+            </>}
 
             <TouchableOpacity
               style={[styles.dangerButton, deletingAccount && styles.saveButtonDisabled]}
@@ -703,8 +728,8 @@ export default function Profile() {
             <TextInput
               style={[styles.input, { backgroundColor: isDark ? '#1C1C1E' : '#fff', color: isDark ? '#FFFFFF' : '#000', borderColor: isDark ? '#2C2C2E' : '#E5E5EA' }]}
               placeholder={
-                editField === 'email' 
-                  ? 'your.email@example.com' 
+                editField === 'email'
+                  ? 'your.email@example.com'
                   : '+1 234 567 8900'
               }
               value={editValue}

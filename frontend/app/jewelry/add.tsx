@@ -18,7 +18,6 @@ import { CameraView, useCameraPermissions } from 'expo-camera';
 import * as ImagePicker from 'expo-image-picker';
 import { useAuth } from '../../contexts/AuthContext';
 import axios from 'axios';
-import Constants from 'expo-constants';
 import DateTimePickerModal from 'react-native-modal-datetime-picker';
 import { getCurrencyInfo } from '../../utils/localeUtils';
 import { Platform } from 'react-native';
@@ -30,7 +29,7 @@ if (Platform.OS === 'web') {
   require('react-datepicker/dist/react-datepicker.css');
 }
 
-const API_URL = Constants.expoConfig?.extra?.EXPO_PUBLIC_BACKEND_URL || process.env.EXPO_PUBLIC_BACKEND_URL;
+import { API_URL } from '../../services/config';
 
 const jewelryTypes = [
   'Ring', 'Necklace', 'Bracelet', 'Earrings', 'Watch',
@@ -86,27 +85,7 @@ export default function AddJewelryScreen() {
   const [datePickerVisible, setDatePickerVisible] = useState(false);
   const [datePickerMode, setDatePickerMode] = useState<'purchase' | 'appraisal' | 'warranty'>('purchase');
 
-  useEffect(() => {
-    if (isEditing) {
-      fetchJewelry();
-    }
-  }, [editId]);
-
-  // Inject custom CSS for react-datepicker on web
-  useEffect(() => {
-    if (Platform.OS === 'web' && typeof document !== 'undefined') {
-      const baseCssId = 'react-datepicker-base-css-jewelry';
-      if (!document.getElementById(baseCssId)) {
-        const link = document.createElement('link');
-        link.id = baseCssId;
-        link.rel = 'stylesheet';
-        link.href = 'https://cdn.jsdelivr.net/npm/react-datepicker@6.9.0/dist/react-datepicker.min.css';
-        document.head.appendChild(link);
-      }
-    }
-  }, []);
-
-  const fetchJewelry = async () => {
+  async function fetchJewelry() {
     try {
       const response = await axios.get(
         `${API_URL}/api/jewelry/${editId}`,
@@ -136,7 +115,29 @@ export default function AddJewelryScreen() {
     } finally {
       setLoading(false);
     }
-  };
+  }
+
+  useEffect(() => {
+    if (isEditing) {
+      fetchJewelry();
+    }
+  }, [editId]);
+
+  // Inject custom CSS for react-datepicker on web
+  useEffect(() => {
+    if (Platform.OS === 'web' && typeof document !== 'undefined') {
+      const baseCssId = 'react-datepicker-base-css-jewelry';
+      if (!document.getElementById(baseCssId)) {
+        const link = document.createElement('link');
+        link.id = baseCssId;
+        link.rel = 'stylesheet';
+        link.href = 'https://cdn.jsdelivr.net/npm/react-datepicker@6.9.0/dist/react-datepicker.min.css';
+        document.head.appendChild(link);
+      }
+    }
+  }, []);
+
+
   const handleScan = async () => {
     if (!permission?.granted) {
       const result = await requestPermission();
@@ -244,11 +245,6 @@ export default function AddJewelryScreen() {
   };
 
   const handleAddPhoto = async () => {
-    const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
-    if (status !== 'granted') {
-      Alert.alert('Permission Required', 'Please grant photo library permissions');
-      return;
-    }
 
     const result = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ['images'],

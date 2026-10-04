@@ -14,10 +14,9 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { useAuth } from '../../contexts/AuthContext';
-import Constants from 'expo-constants';
 import axios from 'axios';
 
-const API_URL = Constants.expoConfig?.extra?.EXPO_PUBLIC_BACKEND_URL || process.env.EXPO_PUBLIC_BACKEND_URL;
+import { API_URL } from '../../services/config';
 
 export default function DisclaimerScreen() {
   const router = useRouter();
@@ -221,7 +220,7 @@ export default function DisclaimerScreen() {
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Disclaimer of Liability</Text>
           <Text style={styles.text}>
-            • AuraInfra.ai is provided "as is" without warranties of any kind.{'\n\n'}
+            • AuraInfra.ai is provided &quot;as is&quot; without warranties of any kind.{'\n\n'}
             • We are not responsible for any loss, damage, or legal issues arising from the use of this application.{'\n\n'}
             • Property valuations, Vastu/Feng Shui analysis, and paint estimates are for informational purposes only.{'\n\n'}
             • Always consult with professional advisors for legal, financial, or property-related decisions.
@@ -250,7 +249,7 @@ export default function DisclaimerScreen() {
         <View style={styles.importantBox}>
           <Ionicons name="warning" size={24} color="#FF9500" />
           <Text style={styles.importantText}>
-            By clicking "I Accept", you acknowledge that you have read, understood, and agree to be bound by these terms and disclaimer.
+            By clicking &quot;I Accept&quot;, you acknowledge that you have read, understood, and agree to be bound by these terms and disclaimer.
           </Text>
         </View>
       </ScrollView>

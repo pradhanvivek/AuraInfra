@@ -1,14 +1,13 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, ActivityIndicator, Alert, Image } from 'react-native';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { useAuth } from '../../contexts/AuthContext';
 import axios from 'axios';
-import Constants from 'expo-constants';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import ImageViewer from '../../components/ImageViewer';
 
-const API_URL = Constants.expoConfig?.extra?.EXPO_PUBLIC_BACKEND_URL || process.env.EXPO_PUBLIC_BACKEND_URL;
+import { API_URL } from '../../services/config';
 
 interface Art {
   id: string;
@@ -38,25 +37,31 @@ export default function ArtDetailScreen() {
   const [imageViewerVisible, setImageViewerVisible] = useState(false);
   const [selectedImageIndex, setSelectedImageIndex] = useState(0);
 
-  useEffect(() => {
-    fetchArt();
-  }, [id]);
-
-  const fetchArt = async () => {
+  const fetchArt = useCallback(async (isActive: () => boolean = () => true) => {
     try {
       const response = await axios.get(
         `${API_URL}/api/art/${id}`,
         { headers: { Authorization: `Bearer ${token}` } }
       );
+      if (!isActive()) return;
       setArt(response.data);
     } catch (error) {
+      if (!isActive()) return;
       console.error('Error fetching art:', error);
       Alert.alert('Error', 'Failed to load art details');
       router.back();
     } finally {
-      setLoading(false);
+      if (isActive()) setLoading(false);
     }
-  };
+  }, [id, token, router]);
+
+  useEffect(() => {
+    let active = true;
+    void fetchArt(() => active);
+    return () => { active = false; };
+  }, [fetchArt]);
+
+
 
   const handleEdit = () => {
     router.push(`/art/add?id=${id}`);

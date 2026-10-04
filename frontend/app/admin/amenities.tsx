@@ -16,9 +16,8 @@ import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { useAuth } from '../../contexts/AuthContext';
 import axios from 'axios';
-import Constants from 'expo-constants';
 
-const API_URL = Constants.expoConfig?.extra?.EXPO_PUBLIC_BACKEND_URL || process.env.EXPO_PUBLIC_BACKEND_URL;
+import { API_URL } from '../../services/config';
 
 interface Amenity {
   id: string;
@@ -71,7 +70,7 @@ export default function AdminAmenities() {
     }
   }, [propertyId]);
 
-  const fetchPropertyId = async () => {
+  async function fetchPropertyId() {
     try {
       const response = await axios.get(`${API_URL}/api/auth/profile`, {
         headers: { 'Authorization': `Bearer ${token}` }
@@ -86,9 +85,9 @@ export default function AdminAmenities() {
       console.error('Error:', error);
       Alert.alert('Error', 'Failed to load profile');
     }
-  };
+  }
 
-  const fetchAmenities = async () => {
+  async function fetchAmenities() {
     try {
       const response = await axios.get(
         `${API_URL}/api/properties/${propertyId}/amenities`,
@@ -102,7 +101,7 @@ export default function AdminAmenities() {
     } finally {
       setLoading(false);
     }
-  };
+  }
 
   const handleSubmit = async () => {
     if (!formData.name || !formData.description || !formData.capacity || !formData.booking_fee) {

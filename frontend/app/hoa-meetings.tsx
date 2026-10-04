@@ -15,9 +15,8 @@ import { useRouter, useLocalSearchParams } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { useAuth } from '../contexts/AuthContext';
 import axios from 'axios';
-import Constants from 'expo-constants';
 
-const API_URL = Constants.expoConfig?.extra?.EXPO_PUBLIC_BACKEND_URL || process.env.EXPO_PUBLIC_BACKEND_URL;
+import { API_URL } from '../services/config';
 
 interface Meeting {
   id: string;
@@ -56,13 +55,22 @@ export default function HOAMeetingsScreen() {
   const [showDetailModal, setShowDetailModal] = useState(false);
   const [rsvpingMeetingId, setRsvpingMeetingId] = useState<string | null>(null);
 
-  useEffect(() => {
-    if (propertyId) {
-      fetchMeetings();
+  async function fetchRSVPForMeeting(meetingId: string) {
+    try {
+      const response = await axios.get(
+        `${API_URL}/api/meetings/${meetingId}/rsvps`,
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      const myRsvp = response.data.find((r: RSVP) => r.user_id === userId);
+      if (myRsvp) {
+        setRsvps(prev => ({ ...prev, [meetingId]: myRsvp }));
+      }
+    } catch (error) {
+      console.error('Error fetching RSVP:', error);
     }
-  }, [propertyId, activeTab]);
+  }
 
-  const fetchMeetings = async () => {
+  async function fetchMeetings() {
     try {
       const response = await axios.get(
         `${API_URL}/api/properties/${propertyId}/meetings?upcoming=${activeTab === 'upcoming'}`,
@@ -82,22 +90,17 @@ export default function HOAMeetingsScreen() {
       setLoading(false);
       setRefreshing(false);
     }
-  };
+  }
 
-  const fetchRSVPForMeeting = async (meetingId: string) => {
-    try {
-      const response = await axios.get(
-        `${API_URL}/api/meetings/${meetingId}/rsvps`,
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
-      const myRsvp = response.data.find((r: RSVP) => r.user_id === userId);
-      if (myRsvp) {
-        setRsvps(prev => ({ ...prev, [meetingId]: myRsvp }));
-      }
-    } catch (error) {
-      console.error('Error fetching RSVP:', error);
+  useEffect(() => {
+    if (propertyId) {
+      fetchMeetings();
     }
-  };
+  }, [propertyId, activeTab]);
+
+
+
+
 
   const onRefresh = () => {
     setRefreshing(true);
@@ -290,7 +293,7 @@ export default function HOAMeetingsScreen() {
               ) : (
                 <>
                   <Ionicons name="close-circle-outline" size={18} color="#fff" />
-                  <Text style={styles.rsvpButtonText}>Can't Attend</Text>
+                  <Text style={styles.rsvpButtonText}>Can&apos;t Attend</Text>
                 </>
               )}
             </TouchableOpacity>
@@ -437,7 +440,7 @@ export default function HOAMeetingsScreen() {
                     setShowDetailModal(false);
                   }}
                 >
-                  <Text style={styles.modalButtonText}>Can't Attend</Text>
+                  <Text style={styles.modalButtonText}>Can&apos;t Attend</Text>
                 </TouchableOpacity>
               </View>
             )}

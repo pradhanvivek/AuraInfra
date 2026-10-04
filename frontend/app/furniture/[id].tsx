@@ -1,14 +1,13 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, ActivityIndicator, Alert, Image } from 'react-native';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { useAuth } from '../../contexts/AuthContext';
 import axios from 'axios';
-import Constants from 'expo-constants';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import ImageViewer from '../../components/ImageViewer';
 
-const API_URL = Constants.expoConfig?.extra?.EXPO_PUBLIC_BACKEND_URL || process.env.EXPO_PUBLIC_BACKEND_URL;
+import { API_URL } from '../../services/config';
 
 interface Furniture {
   id: string;
@@ -38,25 +37,31 @@ export default function FurnitureDetailScreen() {
   const [imageViewerVisible, setImageViewerVisible] = useState(false);
   const [selectedImageIndex, setSelectedImageIndex] = useState(0);
 
-  useEffect(() => {
-    fetchFurniture();
-  }, [id]);
-
-  const fetchFurniture = async () => {
+  const fetchFurniture = useCallback(async (isActive: () => boolean = () => true) => {
     try {
       const response = await axios.get(
         `${API_URL}/api/furniture/${id}`,
         { headers: { Authorization: `Bearer ${token}` } }
       );
+      if (!isActive()) return;
       setFurniture(response.data);
     } catch (error) {
+      if (!isActive()) return;
       console.error('Error fetching furniture:', error);
       Alert.alert('Error', 'Failed to load furniture details');
       router.back();
     } finally {
-      setLoading(false);
+      if (isActive()) setLoading(false);
     }
-  };
+  }, [id, token, router]);
+
+  useEffect(() => {
+    let active = true;
+    void fetchFurniture(() => active);
+    return () => { active = false; };
+  }, [fetchFurniture]);
+
+
 
   const handleEdit = () => {
     router.push(`/furniture/add?id=${id}`);

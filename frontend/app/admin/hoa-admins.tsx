@@ -16,9 +16,8 @@ import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { useAuth } from '../../contexts/AuthContext';
 import axios from 'axios';
-import Constants from 'expo-constants';
 
-const API_URL = Constants.expoConfig?.extra?.EXPO_PUBLIC_BACKEND_URL || process.env.EXPO_PUBLIC_BACKEND_URL;
+import { API_URL } from '../../services/config';
 
 interface Property {
   id: string;
@@ -57,7 +56,7 @@ export default function HOAAdminsScreen() {
     fetchData();
   }, []);
 
-  const fetchData = async () => {
+  async function fetchData() {
     setLoading(true);
     try {
       const [propertiesRes, adminsRes] = await Promise.all([
@@ -76,7 +75,7 @@ export default function HOAAdminsScreen() {
     } finally {
       setLoading(false);
     }
-  };
+  }
 
   const fetchAllUsers = async () => {
     try {
