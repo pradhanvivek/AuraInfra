@@ -1,7 +1,7 @@
 {
   "name": "frontend",
   "main": "expo-router/entry",
-  "version": "1.0.0",
+  "version": "1.0.2",
   "scripts": {
     "start": "expo start",
     "reset-project": "node ./scripts/reset-project.js",
@@ -10,7 +10,8 @@
     "web": "expo start --web",
     "lint": "expo lint",
     "typecheck": "tsc --noEmit",
-    "test:security": "node --test tests/*.test.cjs"
+    "test:security": "node --test tests/*.test.cjs",
+    "rc:check": "npm run typecheck && npm run lint && npm run test:security && npx expo export --platform android --platform ios --output-dir /tmp/aurainfra-mobile-bundles"
   },
   "dependencies": {
     "@expo/ngrok": "^4.1.3",
