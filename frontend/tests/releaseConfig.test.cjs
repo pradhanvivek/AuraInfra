@@ -37,3 +37,13 @@ test('production Babel removes diagnostic calls before Hermes while development 
   assert.doesNotMatch(production, /private-diagnostic-marker|console\.error/);
   assert.match(development, /private-diagnostic-marker/);
 });
+
+test('release repository ignores generated caches and credential files', () => {
+  const rootIgnore = fs.readFileSync(require.resolve('../../.gitignore'), 'utf8');
+  const frontendIgnore = fs.readFileSync(require.resolve('../.gitignore'), 'utf8');
+  assert.match(frontendIgnore, /^\.metro-cache\/$/m);
+  assert.match(rootIgnore, /^\.env$/m);
+  assert.match(rootIgnore, /^\.env\.\*$/m);
+  assert.match(rootIgnore, /^credentials\.json$/m);
+  assert.match(rootIgnore, /^\*\.key$/m);
+});
