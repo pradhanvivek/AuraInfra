@@ -2,7 +2,7 @@ name: Security and release checks
 on:
   pull_request:
   push:
-    branches: [HOA-and-asset, fix/store-security-readiness]
+    branches: [HOA-and-asset, fix/store-security-readiness-published, release/ios-android-hardening, main]
 jobs:
   backend-security:
     runs-on: ubuntu-latest
