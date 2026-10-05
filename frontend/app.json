@@ -97,6 +97,12 @@
     ],
     "experiments": {
       "typedRoutes": true
+    },
+    "owner": "pradhan.vivek",
+    "extra": {
+      "eas": {
+        "projectId": "dca69d50-2def-48d0-8e38-c50d1db0b456"
+      }
     }
   }
 }
