@@ -54,3 +54,13 @@ test('store builds reject unsafe OAuth provider overrides', () => {
   }
   assert.doesNotThrow(() => config('https://api.aurainfra.ai', 'production', 'https://auth.emergentagent.com'));
 });
+
+test('store identifiers and reviewer-facing policy pages stay release-ready', () => {
+  const app = require('../app.json').expo;
+  assert.equal(app.ios.bundleIdentifier, 'com.aurainfra.ai');
+  assert.equal(app.android.package, 'com.aurainfra.ai');
+  assert.equal(app.scheme, 'aurainfra');
+  for (const file of ['privacy-policy.html', 'account-deletion.html', 'community-standards.html']) {
+    assert.ok(fs.existsSync(require.resolve(`../../website/public/${file}`)), `${file} must ship with the website`);
+  }
+});
