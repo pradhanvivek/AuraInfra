@@ -60,6 +60,8 @@ test('store identifiers and reviewer-facing policy pages stay release-ready', ()
   assert.equal(app.ios.bundleIdentifier, 'com.aurainfra.ai');
   assert.equal(app.android.package, 'com.aurainfra.ai');
   assert.equal(app.scheme, 'aurainfra');
+  assert.equal(app.owner, 'pradhan.vivek');
+  assert.equal(app.extra?.eas?.projectId, 'dca69d50-2def-48d0-8e38-c50d1db0b456');
   for (const file of ['privacy-policy.html', 'account-deletion.html', 'community-standards.html']) {
     assert.ok(fs.existsSync(require.resolve(`../../website/public/${file}`)), `${file} must ship with the website`);
   }
