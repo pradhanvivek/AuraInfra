@@ -2,10 +2,10 @@ const { test } = require('node:test');
 const assert = require('node:assert/strict');
 const vm = require('node:vm');
 const fs = require('node:fs');
-function config(url, profile = 'production') {
+function config(url, profile = 'production', authUrl) {
   const module = { exports: {} };
   vm.runInNewContext(fs.readFileSync(require.resolve('../app.config.js'), 'utf8'), {
-    module, URL, process: { env: { EAS_BUILD_PROFILE: profile, EXPO_PUBLIC_BACKEND_URL: url } },
+    module, URL, process: { env: { EAS_BUILD_PROFILE: profile, EXPO_PUBLIC_BACKEND_URL: url, EXPO_PUBLIC_AUTH_URL: authUrl } },
     require: () => require('../app.json'),
   });
   return module.exports();
@@ -46,4 +46,11 @@ test('release repository ignores generated caches and credential files', () => {
   assert.match(rootIgnore, /^\.env\.\*$/m);
   assert.match(rootIgnore, /^credentials\.json$/m);
   assert.match(rootIgnore, /^\*\.key$/m);
+});
+
+test('store builds reject unsafe OAuth provider overrides', () => {
+  for (const authUrl of ['http://auth.aurainfra.ai', 'https://localhost', 'https://auth.example.test', 'https://auth.aurainfra.ai/path', 'https://user:secret@auth.aurainfra.ai']) {
+    assert.throws(() => config('https://api.aurainfra.ai', 'production', authUrl), /EXPO_PUBLIC_AUTH_URL/);
+  }
+  assert.doesNotThrow(() => config('https://api.aurainfra.ai', 'production', 'https://auth.emergentagent.com'));
 });
