@@ -30,7 +30,16 @@ next-env.d.ts
 dist/
 dist
 
-# Environment and credential files\n*.env\n*.env.*\n*token.json*\n*credentials.json*\ncredentials.json\n*.key\n.credentials
+# Environment and credential files
+.env
+.env.*
+*.env
+*.env.*
+*token.json*
+*credentials.json*
+credentials.json
+*.key
+.credentials
 
 # Logs and debug files
 npm-debug.log*
@@ -73,4 +82,5 @@ agenthub/agents/youtube/db
 # Build caches
 .cache/
 
-# Mobile development\nandroid-sdk/\n
+# Mobile development
+android-sdk/

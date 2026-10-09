@@ -15,13 +15,14 @@ async def clean_account(db, job):
                            "paint_estimations", "vastu_analysis", "property_memberships",
                            "property_admin_assignments", "pending_user_approvals", "visitors",
                            "amenities", "amenity_bookings", "complaints", "meetings",
+                           "sop_templates", "sop_runs", "community_services", "service_bookings",
                            "hoa_meetings", "hoa_charges", "hoa_maintenance_charges", "maintenance_dues"):
             await db[collection].delete_many(property_scope)
         await db.meeting_rsvps.delete_many({"meeting_id": {"$in": job["meeting_ids"]}})
         await db.users.update_many({}, {"$pull": {
             "member_properties": {"$in": property_ids}, "managed_properties": {"$in": property_ids}}})
     for collection in ("properties", "vehicles", "appliances", "jewelry", "furniture", "art",
-                       "maintenance", "notifications", "property_memberships", "community_posts",
+                       "service_bookings", "maintenance", "notifications", "property_memberships", "community_posts",
                        "community_comments", "post_likes", "complaints", "meeting_rsvps",
                        "amenity_bookings", "maintenance_dues", "pending_user_approvals", "user_sessions", "password_resets"):
         await db[collection].delete_many({"user_id": user_id})
@@ -44,10 +45,24 @@ async def clean_account(db, job):
         "property_memberships": ["approved_by"], "pending_user_approvals": ["reviewed_by"],
         "complaints": ["assigned_to"], "community_reports": ["reviewed_by"],
         "community_posts": ["moderated_by"], "community_comments": ["moderated_by"],
+        "sop_templates": ["created_by"], "community_services": ["created_by"],
+        "sop_runs": ["assignee_id"], "app_configuration": ["updated_by"],
         "hoa_charges": ["created_by"], "maintenance_dues": ["created_by"],
     }.items():
         for field in fields:
             await db[collection].update_many({field: user_id}, {"$set": {field: "deleted"}})
+    # Preserve association workflow history while removing deleted-account evidence.
+    for collection in ("sop_runs", "service_bookings"):
+        records = await db[collection].find({"history.by": user_id}).to_list(length=None)
+        for record in records:
+            history = [{**event, "by": "deleted", **({"note": "Removed after account deletion"} if "note" in event else {})}
+                       if event.get("by") == user_id else event for event in record.get("history", [])]
+            await db[collection].update_one({"id": record["id"]}, {"$set": {"history": history}})
+    records = await db.sop_runs.find({"steps.completed_by": user_id}).to_list(length=None)
+    for record in records:
+        steps = [{**step, "completed_by": "deleted", "evidence": "Removed after account deletion"}
+                 if step.get("completed_by") == user_id else step for step in record["steps"]]
+        await db.sop_runs.update_one({"id": record["id"]}, {"$set": {"steps": steps}})
     # Recompute public counters after author/comment removal.
     affected_posts = await db.community_posts.find({}).to_list(length=None)
     for post in affected_posts:

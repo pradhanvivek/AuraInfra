@@ -207,9 +207,12 @@ export default function DashboardScreen() {
   const chartData = getChartData();
 
   return (
-    <SafeAreaView style={styles.safeArea} edges={['top']}>
+    <SafeAreaView style={styles.safeArea} edges={[]}>
       <View style={styles.container}>
         <View style={styles.header}>
+        <TouchableOpacity onPress={() => router.push('/property-tools' as any)} style={{ padding: 12 }}>
+          <Text style={{ color: '#007AFF', fontWeight: '600' }}>Property tools & documents</Text>
+        </TouchableOpacity>
         <View style={styles.headerContent}>
           <View style={styles.headerTop}>
             <View style={styles.greetingContainer}>
