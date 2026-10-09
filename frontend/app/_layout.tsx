@@ -1,4 +1,6 @@
 export { default as ErrorBoundary } from '../components/ScreenError';
+import { FeatureFlagsProvider } from '../contexts/FeatureFlagsContext';
+import ModuleGate from '../components/ModuleGate';
 import { Stack } from 'expo-router';
 import { AuthProvider } from '../contexts/AuthContext';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
@@ -22,7 +24,9 @@ export default function RootLayout() {
       <StatusBar style={colorScheme === 'dark' ? 'light' : 'dark'} />
       <AuthProvider>
         <AIConsent />
+        <FeatureFlagsProvider>
         <SessionGate>
+        <ModuleGate>
         <Stack screenOptions={{ headerShown: false }}>
           <Stack.Screen name="index" />
           <Stack.Screen name="auth/login" />
@@ -43,7 +47,9 @@ export default function RootLayout() {
             }} 
           />
         </Stack>
+        </ModuleGate>
         </SessionGate>
+        </FeatureFlagsProvider>
       </AuthProvider>
     </GestureHandlerRootView>
   );

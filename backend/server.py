@@ -6191,6 +6191,12 @@ async def require_ai_consent(user_id):
     if not user or not user.get("ai_consent_at"):
         raise HTTPException(status_code=403, detail="Consent is required before sending information to AI providers")
 
+from community_services import services_router
+app.include_router(services_router(db, get_current_user))
+from sops import sop_router
+app.include_router(sop_router(db, get_current_user))
+from feature_flags import feature_flags_router
+app.include_router(feature_flags_router(db, get_current_user, verify_super_admin))
 app.include_router(api_router)
 app.include_router(moderation_router(db, get_current_user))
 
